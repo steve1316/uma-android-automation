@@ -1,12 +1,13 @@
 <resources>
-    <string name="app_name">ウマ娘 Automation</string>
+    <string name="app_name">ウマ娘 Android Automation</string>
 
+    <!-- This is the name of the app that will appear right below its icon on the Android Home screen. -->
     <string name="title_activity_main">ウマ娘 Automation</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_settings">Settings</string>
 
-    <string name="nav_header_title">ウマ娘 Automation</string>
+    <string name="nav_header_title">ウマ娘 Android Automation</string>
     <string name="nav_header_subtitle">Fully automates a run of Uma Musume Pretty Derby to its conclusion.</string>
 
     <string name="start">Start</string>
@@ -14,10 +15,20 @@
 
     <string name="stop_process">Stop Process</string>
 
-    <string name="go_to_settings">Go to Settings</string>
+    <string name="accessibility_service_label">Accessibility Service for ウマ娘 Android Automation</string>
+    <string name="accessibility_service_description">This is the Accessibility Service that will allow the bot process to interact with the screen
+        like tapping and swiping via gestures.\n\nNOTE: If the Toast message does not pop up immediately, disable and enable this again. Seeing the
+        Toast message appear on the screen indicates that the Accessibility Service is now running!</string>
+    <string name="accessibility_service_action">Stop Bot</string>
+    <string name="accessibility_disabled">Accessibility Service Currently Disabled</string>
+    <string name="accessibility_disabled_message">This app requires its Accessibility Service to be turned on to allow the bot to navigate
+        through the game.</string>
 
     <string name="overlay_disabled">Missing Overlay Permission</string>
     <string name="overlay_disabled_message">This app requires that it is granted Overlay Permission to display the START/STOP Floating Action
     Button.</string>
+
+    <string name="go_to_settings">Go to Settings</string>
+
     <string name="go_to_github">Go to GitHub</string>
 </resources>

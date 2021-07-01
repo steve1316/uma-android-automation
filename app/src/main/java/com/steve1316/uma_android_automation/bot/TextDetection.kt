@@ -7,7 +7,6 @@ import com.steve1316.uma_android_automation.data.StatusData
 import com.steve1316.uma_android_automation.data.SupportData
 import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.ImageUtils
-import com.steve1316.uma_android_automation.utils.NotificationUtils
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 
@@ -23,9 +22,6 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	private var eventOptionsSkillsNumbers: ArrayList<Int> = arrayListOf()
 	private var eventOptionStatus: ArrayList<String> = arrayListOf()
 	private var eventOptionsStatusNumbers: ArrayList<Int> = arrayListOf()
-	private var firstLine = true
-	private var notificationTextBody: String = ""
-	private val notificationTextArray = arrayListOf<String>()
 	
 	private val character = SettingsFragment.getStringSharedPreference(myContext, "character")
 	private val supportCards: List<String> = SettingsFragment.getStringSharedPreference(myContext, "supportList").split("|")
@@ -212,91 +208,6 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		return tempReward
 	}
 	
-	/**
-	 * Construct the result's text body and then display it as a Notification.
-	 */
-	private fun constructNotification(): Boolean {
-		// Now construct the text body for the Notification.
-		if (confidence >= minimumConfidence) {
-			game.printToLog("\n####################")
-			game.printToLog("####################")
-			
-			// Process the resulting string from the acquired information.
-			eventOptionRewards.forEach { reward ->
-				if (eventOptionRewards.size == 1) {
-					if (notificationTextArray.size < 9) {
-						val lineList = reward.split("\n")
-						lineList.forEach { line ->
-							if (notificationTextArray.size < 9) {
-								if (firstLine) {
-									notificationTextArray.add(line)
-									firstLine = false
-								} else {
-									notificationTextArray.add("\n$line")
-								}
-							}
-						}
-					}
-					
-					// Begin appending to the reward string for english translations of skills and statuses if necessary.
-					val tempReward = formatResultForSkillsAndStatus(reward, isSingleOption = true)
-					
-					game.printToLog("\n\n$tempReward\n", isOption = true)
-					eventOptionNumber += 1
-				} else {
-					if (notificationTextArray.size < 9) {
-						val lineList = reward.split("\n")
-						if (!firstLine) {
-							notificationTextArray.add("\n[OPTION $eventOptionNumber]")
-						} else {
-							notificationTextArray.add("[OPTION $eventOptionNumber]\n")
-						}
-						
-						lineList.forEach { line ->
-							if (notificationTextArray.size < 9) {
-								if (firstLine) {
-									notificationTextArray.add(line)
-									firstLine = false
-								} else {
-									notificationTextArray.add("\n$line")
-								}
-							}
-						}
-					}
-					
-					// Begin appending to the reward string for english translations of skills and statuses if necessary.
-					val tempReward = formatResultForSkillsAndStatus(reward)
-					
-					game.printToLog("\n[OPTION $eventOptionNumber] \n$tempReward\n", isOption = true)
-					eventOptionNumber += 1
-				}
-			}
-			
-			game.printToLog("####################")
-			game.printToLog("####################\n")
-			
-			// Append this last line to the Notification's text body if the rest of the text was going to be cut off as the Notification's expanded mode is set only at 256dp.
-			if (notificationTextArray.size >= 8) {
-				notificationTextArray.removeAt(notificationTextArray.lastIndex)
-				notificationTextArray.add("\n*Text is cut off. Please Tap me to see the full text!*")
-			}
-			
-			// Now join the array into its new text body string for the Notification.
-			notificationTextBody = notificationTextArray.joinToString("")
-			
-			// Display the information to the user as a newly updated Notification.
-			NotificationUtils.updateNotification(myContext, eventTitle, notificationTextBody, confidence)
-			return true
-		} else {
-			game.printToLog("\n####################")
-			game.printToLog("####################")
-			game.printToLog("[ERROR] Confidence of $confidence failed to be greater than or equal to the minimum of $minimumConfidence.", isError = true)
-			game.printToLog("####################")
-			game.printToLog("####################\n")
-			return false
-		}
-	}
-	
 	fun start() {
 		if (minimumConfidence > 1.0) {
 			minimumConfidence = 0.8
@@ -342,7 +253,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 				}
 				
 				// Now construct and display the Notification containing the results from OCR, whether it was successful or not.
-				flag = constructNotification()
+				// flag =
 				if (!flag && enableIncrementalThreshold) {
 					increment += 5.0
 				} else {
@@ -351,12 +262,6 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 			} else {
 				increment += 5.0
 			}
-		}
-		
-		if (!flag) {
-			NotificationUtils.updateNotification(
-				myContext, "OCR Failed", "Confidence of $confidence failed to be greater than or equal to the minimum of $minimumConfidence.",
-				confidence)
 		}
 	}
 }

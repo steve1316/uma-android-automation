@@ -13,6 +13,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.Toast
+import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 import com.steve1316.uma_android_automation.bot.Game
 import kotlin.concurrent.thread
@@ -25,7 +26,8 @@ import kotlin.math.roundToInt
  * https://www.tutorialspoint.com/in-android-how-to-register-a-custom-intent-filter-to-a-broadcast-receiver
  */
 class BotService : Service() {
-	private val TAG: String = "UATH_BotService"
+	private var appName = ""
+	private val TAG: String = "[${MainActivity.loggerTag}]BotService"
 	private lateinit var myContext: Context
 	private lateinit var overlayView: View
 	private lateinit var overlayButton: ImageButton
@@ -52,6 +54,8 @@ class BotService : Service() {
 		super.onCreate()
 		
 		myContext = this
+		appName = myContext.getString(R.string.app_name)
+		
 		
 		overlayView = LayoutInflater.from(this).inflate(R.layout.bot_actions, null)
 		windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -83,8 +87,8 @@ class BotService : Service() {
 					if (elapsedTime < 100L) {
 						// Update both the Notification and the overlay button to reflect the current bot status.
 						if (!isRunning) {
-							Log.d(TAG, "Service for Uma Android Training Helper is now running.")
-							Toast.makeText(myContext, "Service for Uma Android Training Helper is now running.", Toast.LENGTH_SHORT).show()
+							Log.d(TAG, "Service for $appName is now running.")
+							Toast.makeText(myContext, "Service for $appName is now running.", Toast.LENGTH_SHORT).show()
 							isRunning = true
 							overlayButton.setImageResource(R.drawable.ic_baseline_stop_circle_24)
 							
@@ -103,12 +107,9 @@ class BotService : Service() {
 									newIntent.putExtra("SUCCESS", "Bot has completed successfully with no errors.")
 									sendBroadcast(newIntent)
 									
-									MessageLog.saveLogToFile(myContext)
-									Log.d(TAG, "Service for Uma Android Training Helper is now stopped.")
-									isRunning = false
-									overlayButton.setImageResource(R.drawable.ic_baseline_play_circle_outline_24)
+									performCleanUp()
 								} catch (e: Exception) {
-									game.printToLog("Uma Android Training Helper encountered an Exception: $e", MESSAGE_TAG = TAG, isError = true)
+									game.printToLog("$appName encountered an Exception: $e", MESSAGE_TAG = TAG, isError = true)
 									
 									val newIntent = Intent("CUSTOM_INTENT")
 									if (e.toString() == "java.lang.InterruptedException") {
@@ -117,19 +118,15 @@ class BotService : Service() {
 										newIntent.putExtra("EXCEPTION", e.toString())
 									}
 									
+									// Send a Broadcast with information on whether the bot stopped successfully or not.
 									sendBroadcast(newIntent)
 									
-									MessageLog.saveLogToFile(myContext)
+									performCleanUp()
 								}
 							}
 						} else {
 							thread.interrupt()
-							MessageLog.saveLogToFile(myContext)
-							
-							Log.d(TAG, "Service for Uma Android Training Helper is now stopped.")
-							Toast.makeText(myContext, "Service for Uma Android Training Helper is now stopped.", Toast.LENGTH_SHORT).show()
-							isRunning = false
-							overlayButton.setImageResource(R.drawable.ic_baseline_play_circle_outline_24)
+							performCleanUp()
 						}
 						
 						// Returning true here freezes the animation of the click on the button.
@@ -167,5 +164,23 @@ class BotService : Service() {
 		
 		// Remove the overlay View that holds the overlay button.
 		windowManager.removeView(overlayView)
+	}
+	
+	/**
+	 * Perform cleanup upon app completion or encountering an Exception.
+	 */
+	private fun performCleanUp() {
+		// Save the message log.
+		MessageLog.saveLogToFile(myContext)
+		
+		Log.d(TAG, "Bot Service for $appName is now stopped.")
+		Toast.makeText(myContext, "Bot Service for $appName is now stopped.", Toast.LENGTH_SHORT).show()
+		isRunning = false
+		
+		// Update the app's notification with the status.
+		NotificationUtils.updateNotification(myContext, isRunning)
+		
+		// Reset the overlay button's image.
+		overlayButton.setImageResource(R.drawable.ic_baseline_play_circle_outline_24)
 	}
 }

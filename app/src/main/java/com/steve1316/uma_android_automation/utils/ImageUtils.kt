@@ -19,7 +19,7 @@ import java.io.IOException
  * Utility functions for image processing via CV like OpenCV.
  */
 class ImageUtils(context: Context, private val game: Game) {
-	private val TAG: String = "UATH_ImageUtils"
+	private val TAG: String = "[${MainActivity.loggerTag}]ImageUtils"
 	private var myContext = context
 	
 	private val matchMethod: Int = Imgproc.TM_CCOEFF_NORMED

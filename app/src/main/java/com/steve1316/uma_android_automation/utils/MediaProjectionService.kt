@@ -23,6 +23,8 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.R
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
@@ -36,10 +38,11 @@ import java.util.*
  * added to suit this application's purposes.
  */
 class MediaProjectionService : Service() {
+	private var appName: String = ""
 	private lateinit var myContext: Context
 	
 	companion object {
-		private const val TAG: String = "UATH_MediaProjectionService"
+		private const val TAG: String = "[${MainActivity.loggerTag}]MediaProjectionService"
 		
 		private var mediaProjection: MediaProjection? = null
 		private var orientationChangeCallback: OrientationEventListener? = null
@@ -205,6 +208,7 @@ class MediaProjectionService : Service() {
 	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		// Save a reference to the context.
 		myContext = this
+		appName = myContext.getString(R.string.app_name)
 		
 		if (isStartCommand(intent)) {
 			// Create a new Notification in the foreground telling users that the MediaProjection Service is now active.
@@ -238,7 +242,7 @@ class MediaProjectionService : Service() {
 	 * Custom Callback for when the user rotates their device from horizontal to vertical and vice-versa.
 	 */
 	private inner class OrientationChangeCallback(context: Context) : OrientationEventListener(context) {
-		private val TAG_OrientationChangeCallback: String = "UATH_OrientationChangeCallback"
+		private val TAG_OrientationChangeCallback: String = "[${MainActivity.loggerTag}]OrientationChangeCallback"
 		
 		override fun onOrientationChanged(orientation: Int) {
 			val newRotation: Int = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
@@ -265,7 +269,7 @@ class MediaProjectionService : Service() {
 	 * Custom Callback for when it is necessary to stop the MediaProjection.
 	 */
 	private inner class MediaProjectionStopCallback : MediaProjection.Callback() {
-		private val TAG_MediaProjectionStopCallback = "UATH_MediaProjectionStopCallback"
+		private val TAG_MediaProjectionStopCallback = "[${MainActivity.loggerTag}]MediaProjectionStopCallback"
 		
 		override fun onStop() {
 			threadHandler.post {
@@ -287,8 +291,8 @@ class MediaProjectionService : Service() {
 				// Now set the MediaProjection object to null to eliminate the "Invalid media projection" error.
 				mediaProjection = null
 				
-				Log.d(TAG_MediaProjectionStopCallback, "MediaProjection Service for ウマ娘 Training Helper has stopped.")
-				Toast.makeText(myContext, "MediaProjection Service for ウマ娘 Training Helper has stopped.", Toast.LENGTH_SHORT).show()
+				Log.d(TAG_MediaProjectionStopCallback, "MediaProjection Service for $appName has stopped.")
+				Toast.makeText(myContext, "MediaProjection Service for $appName has stopped.", Toast.LENGTH_SHORT).show()
 			}
 		}
 	}
@@ -323,8 +327,8 @@ class MediaProjectionService : Service() {
 		// Attach the MediaProjectionStopCallback to the MediaProjection object.
 		mediaProjection?.registerCallback(MediaProjectionStopCallback(), threadHandler)
 		
-		Log.d(TAG, "MediaProjection Service for ウマ娘 Training Helper is now running.")
-		Toast.makeText(myContext, "MediaProjection Service for ウマ娘 Training Helper is now running.", Toast.LENGTH_SHORT).show()
+		Log.d(TAG, "MediaProjection Service for $appName is now running.")
+		Toast.makeText(myContext, "MediaProjection Service for $appName is now running.", Toast.LENGTH_SHORT).show()
 	}
 	
 	/**
@@ -356,7 +360,7 @@ class MediaProjectionService : Service() {
 		
 		// Now create the VirtualDisplay.
 		virtualDisplay = mediaProjection?.createVirtualDisplay(
-			"ウマ娘 Training Helper Virtual Display", displayWidth, displayHeight,
+			"$appName's Virtual Display", displayWidth, displayHeight,
 			displayDPI, getVirtualDisplayFlags(), imageReader.surface, null, threadHandler
 		)!!
 	}

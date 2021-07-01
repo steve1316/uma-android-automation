@@ -2,6 +2,7 @@ package com.steve1316.uma_android_automation.bot
 
 import android.content.Context
 import android.util.Log
+import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MessageLog
 import java.util.concurrent.TimeUnit
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit
  * Main driver for bot activity and navigation.
  */
 class Game(private val myContext: Context) {
-	private val TAG: String = "UATH_Game"
+	private val TAG: String = "[${MainActivity.loggerTag}]Game"
 	
 	private val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
@@ -76,7 +77,6 @@ class Game(private val myContext: Context) {
 		val startTime: Long = System.currentTimeMillis()
 		
 		val endTime: Long = System.currentTimeMillis()
-		
 		Log.d(TAG, "Total Runtime: ${endTime - startTime}ms")
 		
 		return true

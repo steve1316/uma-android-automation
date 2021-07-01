@@ -18,6 +18,10 @@ import org.opencv.android.OpenCVLoader
 class MainActivity : AppCompatActivity() {
 	private lateinit var appBarConfiguration: AppBarConfiguration
 	
+	companion object {
+		const val loggerTag: String = "UAA"
+	}
+	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)

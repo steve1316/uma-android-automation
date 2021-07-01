@@ -1,16 +1,16 @@
 package com.steve1316.uma_android_automation.ui.settings
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import androidx.core.content.edit
-import androidx.preference.*
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
+import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
-	private val TAG: String = "UATH_SettingsFragment"
+	private val TAG: String = "[${MainActivity.loggerTag}]SettingsFragment"
 	
 	private lateinit var sharedPreferences: SharedPreferences
 	
@@ -55,12 +55,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 	// This listener is triggered whenever the user changes a Preference setting in the Settings Page.
 	private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
 		
-		if (key != null) {
-			// Note that is no need to handle the Preference that allows multiple selection here as it is already handled in its own function.
-			when (key) {
-			
-			}
-		}
+//		if (key != null) {
+//			// Note that is no need to handle the Preference that allows multiple selection here as it is already handled in its own function.
+//			when (key) {
+//
+//			}
+//		}
 	}
 	
 	override fun onResume() {
