@@ -1,0 +1,2283 @@
+{
+	"Agnes Tachyon": {
+		"速くなれるお薬依頼？": [
+			"Power +5\nGuts +5",
+			"Speed +5\nIntelligence +5"
+		],
+		"黒い空からの贈り物": [
+			"Speed +5\nPower +5",
+			"Guts +10"
+		],
+		"肉体改造思いのまま！": [
+			"Power +5\nIntelligence +5",
+			"Stamina +10"
+		],
+		"だだっ子タキオン": [
+			"Stamina +10\nGuts +10\n(random) Get Sharp status",
+			"Intelligence +20\n(random) Get Sharp status"
+		],
+		"目指す場所に近道はない": [
+			"Guts +10",
+			"Intelligence +10",
+			"Power +10"
+		],
+		"データを手に入れろ！": [
+			"Intelligence +20",
+			"Power +20"
+		],
+		"研究の真意": [
+			"Intelligence +10",
+			"Speed +10"
+		],
+		"信念を表すもの": [
+			"Stamina +20",
+			"Speed +20"
+		],
+		"正義の圧？": [
+			"Intelligence +10\nSkill points +15",
+			"コーナー巧者○ hint +1"
+		],
+		"お手伝いハンバーガー！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"マイペース・タキオン": [
+			"Guts +10",
+			"Speed +5\nPower +5"
+		],
+		"最強の協力者！？": [
+			"Energy -20\nStamina +15\nGuts +10",
+			"Energy +5\nIntelligence +5"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Air Groove": {
+		"道導": [
+			"Speed +20\n(random) Get Rising Star status",
+			"Power +20\n(random) Get Rising Star status"
+		],
+		"麗しきストレス発散法？": [
+			"Stamina +20",
+			"Guts +20"
+		],
+		"フリーダム目安箱": [
+			"Energy +10",
+			"Energy -10\nMotivation +1\nIntelligence +10"
+		],
+		"花壇制作大作戦": [
+			"Energy +5\nIntelligence +5",
+			"Energy -10\nSpeed +10\nPower +10"
+		],
+		"君に花を": [
+			"Intelligence +20",
+			"Speed +20"
+		],
+		"点滅信号、渡るべからず": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"\\\"女帝\\\"と\\\"皇帝\\\"": [
+			"末脚 hint +1",
+			"Motivation +1\nSkill points +15"
+		],
+		"捕獲せよ！": [
+			"Energy +10",
+			"Energy -10\nMotivation +1\nSpeed +10"
+		],
+		"尻尾ケアは大切に": [
+			"Energy +10",
+			"Energy -10\nMotivation +1\nPower +10"
+		],
+		"\\\"女帝\\\"と\\\"帝王\\\"": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"静寂に燃えて": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"さつまいもケーキ": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"努力の味見": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"麗姿、瞳に焼き付いて": [
+			"Speed +10",
+			"Power +10",
+			"Stamina +10"
+		],
+		"小さな出会い": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		],
+		"女帝、甘える": [
+			"Speed +10\nStamina +10\n(random) Get Charming ○ status",
+			"Stamina +10\nPower +10"
+		],
+		"ネバー・エンディング・ロード": [
+			"テンポアップ hint +2",
+			"Power +20"
+		],
+		"隣に立つのは……！": [
+			"臨機応変 hint +2",
+			"Guts +10\nIntelligence +10"
+		]
+	},
+	"Biwa Hayahide": {
+		"持つべきか、捨てるべきか": [
+			"Intelligence +20",
+			"Stamina +10\nPower +10"
+		],
+		"理論に基づいた昔ばなし": [
+			"Power +20",
+			"Guts +20"
+		],
+		"かくれんぼマイスター": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"バ･ナ･ナ･先･輩♪": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"ゲームに関する実践証明": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"カフェで読書を": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"緊急プレゼンテーション": [
+			"Intelligence +10",
+			"Power +10",
+			"Stamina +10"
+		],
+		"理論こそ最大の武器": [
+			"Stamina +20\n(random) Get Rising Star status",
+			"Intelligence +20\n(random) Get Rising Star status\n(random) Get Good Practice ○ status"
+		],
+		"料理と姉妹の思い出": [
+			"Power +10",
+			"Stamina +5\nIntelligence +5"
+		],
+		"暴れ龍との攻防": [
+			"Power +5\nGuts +10",
+			"阪神レース場○ hint +1"
+		],
+		"彼女の新たな側面": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"明暗を分かつ": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Curren Chan": {
+		"これがカレンの勝負服": [
+			"Speed +10\nStamina +10\n(random) Get Good Practice ○ status",
+			"Speed +10\nPower +10\n(random) Get Good Practice ○ status"
+		],
+		"お勉強させてもらいます♪": [
+			"Energy -10\nSpeed +20",
+			"差し駆け引き hint +1"
+		],
+		"どんなカレンがお・す・き？": [
+			"Speed +10\nPower +10",
+			"Stamina +10\nGuts +10"
+		],
+		"ガタン、ゴトン、ころん": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"せーのっ！": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"いっしょに、食べよ？": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"もっと、つながるため": [
+			"Guts +10",
+			"Power +10"
+		],
+		"World is……？": [
+			"Power +10",
+			"Speed +10"
+		],
+		"思い出の味": [
+			"Stamina +10",
+			"Power +10"
+		],
+		"カレン的SNSとの付き合い方": [
+			"Speed +20",
+			"Intelligence +20"
+		],
+		"てはーーーのため": [
+			"Speed +5\nPower +5",
+			"Speed +10",
+			"Speed +5\nIntelligence +5"
+		],
+		"まずは、なかよくなるため": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Daiwa Scarlet": {
+		"1番は見逃せない！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"もうちょっとだけ": [
+			"Skill points +30",
+			"Power +10"
+		],
+		"楽しめ！1番！": [
+			"Stamina +10\nSkill points +15",
+			"負けん気 hint +1"
+		],
+		"優等生としては…": [
+			"Intelligence +10",
+			"Skill points +30"
+		],
+		"雨に降られて": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"おススメのお店": [
+			"Speed +5\nPower +5",
+			"Guts +5\nMotivation +1"
+		],
+		"アイツの存在": [
+			"Power +5",
+			"Power +5\nNext race changed to Japanese Derby"
+		],
+		"一番星の下で": [
+			"Skill points +30",
+			"Speed +5\nStamina +5",
+			"Power +10"
+		],
+		"最高のポーズ": [
+			"Stamina +10\nPower +10",
+			"Intelligence +20"
+		],
+		"休日の過ごし方": [
+			"Energy +10",
+			"Motivation +1\nIntelligence +5"
+		],
+		"先輩のアドバイス": [
+			"Speed +10",
+			"Power +10"
+		],
+		"あの服が似合う自分": [
+			"Speed +20",
+			"Guts +20"
+		],
+		"ついつい着たくなる！": [
+			"Stamina +10\nIntelligence +10\n(random) Get Rising Star status",
+			"Speed +10\nGuts +10\n(random) Get Rising Star status"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"El Condor Pasa": {
+		"もう１度、決意を": [
+			"Speed +5\nStamina +5",
+			"Guts +10"
+		],
+		"オリジナル・マスク": [
+			"Speed +10",
+			"Power +10"
+		],
+		"世界最強の決意を": [
+			"Power +20",
+			"Stamina +20"
+		],
+		"憧れのレスラー": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"夜の学園のご老公？": [
+			"Motivation +1\nGuts +5",
+			"Energy +10"
+		],
+		"特大ピザを狙え！": [
+			"Power +10\nSkill points +15",
+			"軽やかステップ hint +1"
+		],
+		"ホット＆フライ！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"衝撃の引退": [
+			"Guts +10",
+			"Power +10"
+		],
+		"贈る花言葉": [
+			"Motivation +1\nIntelligence +5",
+			"Energy +10"
+		],
+		"勇気の入場曲": [
+			"Power +20\n(random) Get Sharp status",
+			"Speed +10\nPower +10\n(random) Get Sharp status"
+		],
+		"サルサ・ロハ": [
+			"Stamina +10",
+			"Power +10"
+		],
+		"サボテン料理をご馳走デース！": [
+			"Speed +10\nStamina +10",
+			"Intelligence +20"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		],
+		"過去からの挑戦状！": [
+			"Speed +10\nPower +10\n(random) Get Charming ○ status",
+			"臨機応変 hint +2\n(random) Get Charming ○ status"
+		],
+		"もう1度、決意を": [
+			"Guts +10",
+			"Stamina +10",
+			"Speed +5\nStamina +5"
+		],
+		"熱！伝！導！": [
+			"Power +20",
+			"Motivation +1\nIntelligence +10"
+		],
+		"衣装に宿る熱き炎！": [
+			"ウマ込み冷静 hint +2",
+			"Speed +7\nPower +7\nGuts +7"
+		]
+	},
+	"Gold Ship": {
+		"落としたものは？": [
+			"Energy -10\nPower +20",
+			"Speed +10"
+		],
+		"ゴルシの！いきなり過去編！": [
+			"Stamina +10\nIntelligence +10\n(random) Get Sharp status",
+			"Speed +20\n(random) Get Sharp status"
+		],
+		"約15億年前からコンニチハ": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"ペア割常習犯": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"硬派な甘さ": [
+			"Energy +10",
+			"Power +10"
+		],
+		"主人公の赤！": [
+			"Intelligence +20",
+			"Guts +20"
+		],
+		"いざ、真剣勝負！": [
+			"Energy +10",
+			"One of these will be selected at random\n----------\nSkill points +60\n非根幹距離○ hint +1\n----------\nSkill points +15\nGet Lazy Habit status"
+		],
+		"夜の公園で遊ぼう": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"ゴルシ流デート": [
+			"Stamina +20\n",
+			"Power +20"
+		],
+		"食べすぎ御免！": [
+			"Energy +10\n",
+			"Skill points +5"
+		],
+		"左にホクロはないらしい": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"翌日揃ってしわがれ声": [
+			"Stamina +10",
+			"Guts +10"
+		],
+		"ちょっと寄りたいステキな場所": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"えっアタシのバイト……ヤバすぎ？": [
+			"Stamina +10\nSkill points +15",
+			"阪神レース場○ hint +1"
+		],
+		"夏合宿(3年目)終了": [
+			"3 random stats +5",
+			"3 random stats +5"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Grass Wonder": {
+		"ナデシコ・ガール": [
+			"Power +10",
+			"Intelligence +10",
+			"Speed +10"
+		],
+		"花瓶": [
+			"Guts +5\nIntelligence +5",
+			"Speed +5\nStamina +5"
+		],
+		"秘められた意味": [
+			"Stamina +10\nGuts +10",
+			"Power +20"
+		],
+		"でも負けるのは嫌": [
+			"Intelligence +20\n(random) Get Sharp status",
+			"Stamina +10\nGuts +10\n(random) Get Sharp status"
+		],
+		"おつかいは人のためならず": [
+			"Speed +5\nStamina +5",
+			"Energy +5\nIntelligence +5"
+		],
+		"涼夏を求めて": [
+			"Motivation -1\nGuts +25",
+			"Motivation -1\nIntelligence +25"
+		],
+		"譲れないこと": [
+			"Speed +20",
+			"Stamina +20"
+		],
+		"大和撫子・ウマ娘？": [
+			"Power +5\nIntelligence +5",
+			"Speed +10"
+		],
+		"トレセン学園百人一首クイーン決定戦": [
+			"Speed +10\nIntelligence +5",
+			"対抗意識○ hint +1"
+		],
+		"小さな頃からの夢": [
+			"Speed +5\nGuts +5",
+			"Stamina +5\nIntelligence +5"
+		],
+		"ケッコウなオテマエデ！": [
+			"Intelligence +5\nSkill points +15",
+			"Speed +10"
+		],
+		"みんなで野点傘の下": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"ふたつの原風景": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		],
+		"たゆまぬ気魄【バトルクライ】": [
+			"Motivation +1\nPower +10",
+			"Energy +15"
+		],
+		"永劫続く追撃【エンドレスマイターン】": [
+			"鋭い眼光 hint +2\n(random) Get Rising Star status",
+			"Speed +10\nSkill points +15\n(random) Get Rising Star status"
+		],
+		"邂逅する想慕【ミラージュメモリー】": [
+			"Guts +10\nIntelligence +10",
+			"Stamina +20"
+		]
+	},
+	"Haru Urara": {
+		"かっくいいね！": [
+			"Skill points +30",
+			"Intelligence +10"
+		],
+		"砂の修業！": [
+			"Guts +10\nSkill points +15",
+			"Energy +15"
+		],
+		"ラスボスはスペ": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"大事な探しもの": [
+			"Energy −10\nGuts +20",
+			"Stamina +10"
+		],
+		"腕相撲で勝負！": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"食べるの忘れてた！": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"秘密のおやすみ計画！": [
+			"Speed +10",
+			"Power +10",
+			"Intelligence +10"
+		],
+		"ちょっと寄り道！": [
+			"Skill points +30",
+			"Stamina +10"
+		],
+		"公園って楽しい！": [
+			"Speed +10",
+			"Power +10"
+		],
+		"一緒に取材！": [
+			"Power +20",
+			"Stamina +20"
+		],
+		"綱引き大会！": [
+			"Guts +20\n(random) Get Rising Star status",
+			"Speed +20\n(random) Get Rising Star status"
+		],
+		"大好きな勝負服！": [
+			"Speed +20",
+			"Power +20"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Guts +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Hishi Amazon": {
+		"炎の思い出": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"ヒシアマ姐さんの山菜採り": [
+			"Power +10\nSkill points +15",
+			"末脚 hint +1"
+		],
+		"スイーツの魔法？": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"情熱は激流のごとく": [
+			"Speed +10",
+			"Intelligence +10",
+			"Power +10"
+		],
+		"友か、好敵手か": [
+			"Power +20\n(random) Get Good Practice ○ status",
+			"Intelligence +20\n(random) Get Good Practice ○ status"
+		],
+		"ヒシアマ姐さんの特等席": [
+			"Speed +5\nPower +5",
+			"Guts +10"
+		],
+		"ヒシアマ姐さんの裁縫テク": [
+			"Power +10",
+			"Stamina +5\nGuts +5"
+		],
+		"手も足も出せない相手……！？": [
+			"Power +20",
+			"Guts +20"
+		],
+		"ヒシアマ寮長の朝ご飯": [
+			"Speed +10",
+			"Power +10"
+		],
+		"タイマン！スケバン！勝負服！": [
+			"Power +20",
+			"Stamina +20"
+		],
+		"ヒシアマ姐さんと芸術": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"クールでホットな姉妹": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"King Halo": {
+		"門限破りは二流よ": [
+			"Guts +5\nIntelligence +5",
+			"Speed +5\nPower +5"
+		],
+		"一流のスポット": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"三人寄れば一流の知恵": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"甘党の誘惑": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Power +5\nSpeed -5\nGet Overweight status"
+		],
+		"キングは疲れ知らずよ": [
+			"Energy +5\n(random) Motivation +1",
+			"Power +10"
+		],
+		"映画は学びでいっぱいよ": [
+			"Speed +5\nGuts +5",
+			"Stamina +10"
+		],
+		"私に1番似合う服": [
+			"Speed +10\nGuts +10",
+			"Power +20"
+		],
+		"学力だって一流よ": [
+			"Intelligence +10\nSkill points +15",
+			"外差し準備 hint +1"
+		],
+		"人混みなんて問題じゃないわ": [
+			"Speed +10",
+			"Power +10"
+		],
+		"走るだけがすべてではないのよ": [
+			"Stamina +20",
+			"Speed +10\nPower +10"
+		],
+		"一流の条件": [
+			"Power +10",
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"マナーくらい常識よ？": [
+			"Guts +20\n(random) Get Good Practice ○ status",
+			"Stamina +10\nIntelligence +10\n(random) Get Good Practice ○ status"
+		],
+		"放課後サイダー": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"一流の収穫": [
+			"Power +5\nGuts +5",
+			"Speed +5\nStamina +5"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Guts +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Maruzensky": {
+		"ヘイカノジョ、遊びましょ♪": [
+			"Energy +10",
+			"Energy -5\nPower +10\nGuts +5"
+		],
+		"お出かけ後のお楽しみ♪": [
+			"ESpeed +5\nIntelligence +5",
+			"Stamina +5\nPower +5"
+		],
+		"支え合いの秘訣": [
+			"Speed +10",
+			"Power +10"
+		],
+		"お任せハンドル": [
+			"Intelligence +10",
+			"Guts +10",
+			"Power +10"
+		],
+		"レッツらお料理！": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"家事テクだってお任せよ！": [
+			"Guts +20",
+			"Stamina +10\nPower +10"
+		],
+		"支えあいの秘訣": [
+			"Speed +10",
+			"Power +10"
+		],
+		"思い出の味でフィーバー☆": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"スーパーカーでドライブ！": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"お姉さんの流儀☆": [
+			"Speed +5\nSkill points +5\nMotivation +1",
+			"大きなリード hint +1"
+		],
+		"イケイケ必勝法！": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"ルゼンスキー、「好き」を語る": [
+			"Speed +20\n(random) Get Sharp status",
+			"Stamina +10\nGuts +10\n(random) Get Sharp status"
+		],
+		"街のトレンドメーカー♪": [
+			"Speed +10\nIntelligence +10",
+			"Power +20"
+		],
+		"ダンスにゾッコン！": [
+			"Speed +10",
+			"Power +10"
+		],
+		"頼れるお姉さんも、実は……": [
+			"Stamina +5\nGuts +5",
+			"Speed +5\nPower +5"
+		],
+		"出会いはトレンディー☆": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Matikanefukukitaru": {
+		"フクキタル的厄除けキタル": [
+			"Guts +10",
+			"Power +10"
+		],
+		"選ばれし者の間": [
+			"Guts +20",
+			"Speed +20"
+		],
+		"流星群でグングンと": [
+			"Speed +10\nPower +10\n(random) Get Charming ○ status",
+			"Stamina +10\nGuts +10\n(random) Get Charming ○ status"
+		],
+		"食い倒れ！七福神グルメめぐり": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\n(random) Get Overweight status"
+		],
+		"マンハッタンの夢": [
+			"逃げためらい hint +1",
+			"Stamina +10"
+		],
+		"お礼参り": [
+			"Power +5\nGuts +5",
+			"Speed +5\nStamina +5"
+		],
+		"開運！ラッキーテレフォン": [
+			"Stamina +10\nIntelligence +10",
+			"Power +20"
+		],
+		"呪いのカメラ": [
+			"Intelligence +10",
+			"Skill points +30"
+		],
+		"プリティー・ガンマンズ": [
+			"Skill points +15\nMotivation +1",
+			"Power +10"
+		],
+		"ピンチの後は…？": [
+			"Speed +10",
+			"Stamina +5\nIntelligence +5"
+		],
+		"レッツ・バンジー☆": [
+			"Stamina +10",
+			"Speed +5\nIntelligence +5"
+		],
+		"開運カードはどれ！？": [
+			"One of these will be selected at random\n----------\nSpeed +5\nStamina +5\n----------\nMotivation +1\nSkill points +15\n----------\nMotivation -1",
+			"Same as Option 1",
+			"Same as Option 1"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Mayano Top Gun": {
+		"大人なモデルの秘訣！": [
+			"Energy -10\nStamina +20\n",
+			"Speed +10"
+		],
+		"マヤのドキドキ☆肝試し！": [
+			"Power +20",
+			"Guts +20"
+		],
+		"マヤの大切な人！": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"勉強はマヤにおまかせ☆": [
+			"Power +5\nGuts +5",
+			"Intelligence +10"
+		],
+		"マヤちんのレース講座☆": [
+			"Stamina +10\nSkill points +15",
+			"直線巧者 hint +1"
+		],
+		"マヤノ・テイクオフ☆": [
+			"Speed +20\n(random) Get Charming ○ status",
+			"Stamina +20\n(random) Get Charming ○ status"
+		],
+		"星に願いを": [
+			"Intelligence +10",
+			"Speed +10"
+		],
+		"マヤのワクワク☆配信！": [
+			"Stamina +5\nPower +5",
+			"Guts +10"
+		],
+		"マヤのキラキラ☆決心": [
+			"Speed +5\nStamina +5",
+			"Power +10",
+			"Intelligence +10"
+		],
+		"甘いキモチをキミに♪": [
+			"Stamina +20",
+			"Intelligence +20"
+		],
+		"目指せ！大人のちゃんこ鍋☆": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"マヤのルンルン☆配信！": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		],
+		"Meant To Be♪": [
+			"ペースキープ hint +2",
+			"直線加速 hint +2"
+		],
+		"You're My Sunshine☆": [
+			"Stamina +20",
+			"Power +20"
+		],
+		"With My Whole Heart!": [
+			"Stamina +10\nSkill points +15\n(random) Get Good Practice ○ status",
+			"Energy +15\n(random) Get Good Practice ○ status"
+		]
+	},
+	"Mejiro McQueen": {
+		"レース場グルメの誘惑": [
+			"Energy +30\nStamina +10\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status",
+			"Guts +15\nSkill points +5"
+		],
+		"孤島の女王": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"エキサイティングお嬢様": [
+			"Guts +10",
+			"Power +10"
+		],
+		"覚悟と使命の証": [
+			"Speed +10\nIntelligence +10",
+			"Power +20"
+		],
+		"ご令嬢の風格": [
+			"Stamina +10\nPower +10\n(random) Get Good Practice ○ status",
+			"Intelligence +20\n(random) Get Good Practice ○ status"
+		],
+		"掘り出し物": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"ラーメン3杯分の誘惑": [
+			"Skill points +30",
+			"Speed +5\nStamina +5"
+		],
+		"銀幕の2人": [
+			"Stamina +10",
+			"Intelligence +5\nSkill points +15"
+		],
+		"栗祭り襲来！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"その名はホヤ！": [
+			"Skill points +30",
+			"Stamina +10"
+		],
+		"思い出クッキング": [
+			"Energy +15",
+			"先駆け hint +1"
+		],
+		"果てなき王国": [
+			"Stamina +10",
+			"Intelligence +10",
+			"Speed +5\nPower +5"
+		],
+		"夜中のファンサ特訓": [
+			"Guts +20",
+			"Speed +20"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		],
+		"メジロ家のあの子たち~難しい選択~": [
+			"Speed +10\nPower +10",
+			"Stamina +7\nGuts +7\nIntelligence +7"
+		],
+		"同室のあの子~そうだと思いましたわ~": [
+			"ウマ込み冷静 hint +2",
+			"Stamina +10\nSkill points +15"
+		],
+		"ライバルのあの子~どんな舞台でも~": [
+			"ポジションセンス hint +2\n(random) Get Rising Star status",
+			"Intelligence +10\nSkill points +15\n(random) Get Rising Star status"
+		]
+	},
+	"Mejiro Ryan": {
+		"はやる気持ち": [
+			"Intelligence +10",
+			"Speed +10"
+		],
+		"ウマドルの小さなファンたち": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"マッスル・ジェラシー": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"ポニー少女とオオカミ王子": [
+			"Energy +5\nStamina +5",
+			"Energy +5\nSpeed +5"
+		],
+		"本当の爽やかさ": [
+			"Stamina +20\n(random) Get Rising Star status",
+			"Power +20\n(random) Get Rising Star status"
+		],
+		"積み上げた本当のこと": [
+			"Power +10\nSkill points +15",
+			"道悪○ hint +1"
+		],
+		"ドキドキ水族館": [
+			"Power +10\nIntelligence +10",
+			"Stamina +10\nIntelligence +10"
+		],
+		"筋肉の休息日": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"頼れる助っ人、登場！": [
+			"Power +10",
+			"Guts +10"
+		],
+		"周りから見た勝負服姿": [
+			"Guts +20",
+			"Speed +20"
+		],
+		"息詰まる息抜き": [
+			"Stamina +10",
+			"Power +10"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Mihono Bourbon": {
+		"『オペレーション：補習』": [
+			"Energy +10\nMotivation +1",
+			"Intelligence +10"
+		],
+		"『オペレーション：オーダー遂行』": [
+			"Stamina +10",
+			"Power +10"
+		],
+		"鬼トレーニング": [
+			"Energy -10\nPower +5/+20\nSkill points +5/+10",
+			"Energy +5"
+		],
+		"憧れの光跡": [
+			"Speed +20",
+			"Power +20"
+		],
+		"頼るべきは": [
+			"Intelligence +20\n(random) Get Rising Star status",
+			"Power +20\n(random) Get Rising Star status"
+		],
+		"完全無欠のスイーツ": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"笑顔の連鎖": [
+			"Stamina +20",
+			"Guts +20"
+		],
+		"『オペレーション：エンジョイ縁日』": [
+			"Power +10",
+			"Stamina +5\nGuts +5"
+		],
+		"『オペレーション：外出時トラブル』": [
+			"Stamina +10\nSkill points +15",
+			"道悪○ hint +1"
+		],
+		"『オペレーション：ダンスフィーバー』": [
+			"Stamina +5\nGuts +5",
+			"Stamina +5\nIntelligence +5"
+		],
+		"思い出を作ろう": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"ブルボンの挑戦？": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"かけがえのないすべて": [
+			"Stamina +10",
+			"Power +10",
+			"Speed +10"
+		],
+		"ダンスレッスン": [
+			"Skill points +20",
+			"Stamina +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Narita Brian": {
+		"肉食": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\n(random) Get Overweight status"
+		],
+		"得意距離？": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"飢えた戦士たち": [
+			"Energy +5\nIntelligence +10",
+			"One of these will be selected at random\n----------\nEnergy -10\nMotivation +1\nSpeed +25\n----------\nEnergy -10\nSpeed +10",
+			"One of these will be selected at random\n----------\nEnergy -10\nMotivation +1\nStamina +25\n----------\nEnergy -10\nStamina +10",
+			"One of these will be selected at random\n----------\nEnergy -10\nMotivation +1\nPower +25\n----------\nEnergy -10\nPower +10"
+		],
+		"手腕": [
+			"Speed +15",
+			"パス上手 hint +1"
+		],
+		"憧憬": [
+			"Power +10",
+			"Energy -10\nPower +20"
+		],
+		"超越": [
+			"Power +10",
+			"Stamina +5\nGuts +5"
+		],
+		"不動": [
+			"Speed +20\n(random) Get Rising Star status",
+			"Guts +20\n(random) Get Rising Star status"
+		],
+		"孤高のグルメ？": [
+			"Speed +5\nPower +5",
+			"Stamina +10"
+		],
+		"意匠": [
+			"Speed +20",
+			"Power +20"
+		],
+		"ブライアンは見た……！": [
+			"Stamina +10",
+			"Guts +10"
+		],
+		"武骨": [
+			"Stamina +20",
+			"Intelligence +20"
+		],
+		"孤高の責任": [
+			"Stamina +5\nGuts +5",
+			"Power +5\nIntelligence +5"
+		],
+		"岐": [
+			"Increased difficulty of future training goals\nIncreased rewards for future training goals",
+			"Nothing happens"
+		],
+		"ファミリーレストラン": [
+			"Speed +10",
+			"Stamina +10",
+			"Guts +10"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Narita Taishin": {
+		"後日レポート提出済": [
+			"Speed +10",
+			"Stamina +5\nPower +5"
+		],
+		"タイシンのSOS": [
+			"Speed +10\nIntelligence +10",
+			"Stamina +20"
+		],
+		"ムカつく気持ちは自主トレで": [
+			"Energy +10",
+			"Energy -10\nSkill points +25",
+			"One of these will be selected at random\n----------\nEnergy -15\nLast trained stat +10\n----------\nEnergy -15\nMotivation +1\n2 random stats +15"
+		],
+		"Unknown music": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"ハラハラなサバイバル": [
+			"Power +20\n(random) Get Charming ○ status",
+			"Guts +10\nIntelligence +10\n(random) Get Charming ○ status"
+		],
+		"かごの扉はその手で開けろ": [
+			"Stamina +5\nGuts +5",
+			"Speed +5\nPower +5"
+		],
+		"『gg』": [
+			"Guts +10",
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"寡黙なふたり": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"距離": [
+			"Motivation +1\nGuts +10",
+			"後方待機 hint +1"
+		],
+		"『easy game』": [
+			"Power +10",
+			"Guts +10"
+		],
+		"栄養食品は希望の食品？": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"お大事に！": [
+			"Motivation -1\nLast trained stat -5\n(random) Get Bad Practice status",
+			"One of these will be selected at random\n----------\nMotivation -1\nLast trained stat -10\n(random) Get Bad Practice status\n----------\nGet Good Practice ○ status"
+		],
+		"アタシのまま、強く": [
+			"Power +20",
+			"Speed +20"
+		],
+		"『bg』": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Nice Nature": {
+		"願いを叶えるクリスマスカラー": [
+			"Guts +20\n(random) Get Charming ○ status"
+		],
+		"雨の日の遊戯": [
+			"Intelligence +10",
+			"Energy -10\nStamina +10\nGuts +10"
+		],
+		"嵐の如き助っ人": [
+			"読解力 hint +1",
+			"Speed +5\nStamina +5\nPower +5"
+		],
+		"アタシもたまには": [
+			"Stamina +5\nGuts +5",
+			"Stamina +5\nPower +5"
+		],
+		"ガラじゃないですし": [
+			"Energy +5\nMotivation +1",
+			"Speed +5\nPower +5"
+		],
+		"ネイチャさんとお疲れトレーナー": [
+			"Power +20",
+			"Stamina +20"
+		],
+		"お魚、観ましょ": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"映す想い": [
+			"Speed +10",
+			"Power +10"
+		],
+		"おふくろからの電話": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"よいではないか？": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"黄昏ビタースイート": [
+			"Speed +10",
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"ほろ苦いキラキラ": [
+			"Power +20",
+			"Speed +20"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Oguri Cap": {
+		"畑でビルドアップ": [
+			"Guts +10",
+			"Power +10"
+		],
+		"オグリの大食い選手権": [
+			"Energy +30\nSkill points +10\n(random) Power +5~10\nSpeed -5\nGet Overweight status",
+			"Energy +10\nPower +5\nSkill points +5"
+		],
+		"迷いウマ娘": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"オグリ、成長する": [
+			"Intelligence +10",
+			"Stamina +10",
+			"Power +10"
+		],
+		"オグリ、決意する": [
+			"Speed +5\nIntelligence +5",
+			"Stamina +5\nGuts +5"
+		],
+		"オグリ、頑張る": [
+			"Guts +10",
+			"Power +10"
+		],
+		"レースとグルメで満腹に": [
+			"Energy +10\nSkill points +15",
+			"中山レース場○ hint +1"
+		],
+		"高みのライバル": [
+			"Speed +5\nStamina+5",
+			"Power+5\nIntelligence +5"
+		],
+		"オグリは森の案内ウマ娘？": [
+			"Speed +20",
+			"Power +20"
+		],
+		"食いしん坊は伊達じゃない": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random)Speed -5\nPower +5\nGet Overweight status"
+		],
+		"ぬいぐるみよりもずっと": [
+			"Guts +20\n(random) Get Rising Star status",
+			"Stamina +20\n(random) Get Rising Star status"
+		],
+		"託された想い": [
+			"Stamina +10\nPower +10",
+			"Intelligence +20"
+		],
+		"気になる隣の晩ご飯！": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Rice Shower": {
+		"ライスにお任せ……！": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"てんとう虫が離れても": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"甘くて真っ赤な1ページ": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"雲が空を覆っても": [
+			"Speed+5\nPower +5",
+			"Guts +10"
+		],
+		"相応しい自分": [
+			"Guts +10\nIntelligence +10\n(random) Get Charming status",
+			"Stamina +10\nPower +10\n(random) Get Charming status"
+		],
+		"甘く賑やかな幸福": [
+			"Speed +10\n Stamina +10",
+			"Intelligence +20"
+		],
+		"わたしのたいよう": [
+			"Guts +5\nIntelligence +5",
+			"Speed +5\nPower+5",
+			"Stamina +10"
+		],
+		"夕焼けの1ページ": [
+			"Power +5\nGuts +5",
+			"Stamina +5\nIntelligence +5"
+		],
+		"素敵な世界に会いたくて": [
+			"Stamina +10",
+			"Speed +5\nIntelligence +5"
+		],
+		"何事も前向きに？": [
+			"Stamina +5\nGuts +10",
+			"良バ場○ hint +1"
+		],
+		"相応しくない自分！": [
+			"Guts +20",
+			"Power +20"
+		],
+		"参考にしたくて": [
+			"Energy -10\nGuts +20",
+			"Energy +5\nSkill points+15"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Guts +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Sakura Bakushin O": {
+		"求む、生徒の声！！": [
+			"Energy −10\nStamina +10\nPower +10",
+			"Speed +10"
+		],
+		"バクシン的な謎解き！": [
+			"Guts +10\nSkill points +15",
+			"中山レース場○ hint +1"
+		],
+		"最速の王": [
+			"Power +5\nIntelligence +5",
+			"Stamina +10"
+		],
+		"これからもバクシン！": [
+			"Speed +10",
+			"Guts +5\nIntelligence +5",
+			"Power +10"
+		],
+		"大切な方と、一緒にッ！": [
+			"Guts +10",
+			"Speed +5\nStamina +5"
+		],
+		"勝負服でバクシン！": [
+			"Power +10\nGuts +10\n(random) Get Rising Star status",
+			"Intelligence +20\n(random) Get Rising Star status"
+		],
+		"恋はバクシン！": [
+			"Stamina +10\nIntelligence +10",
+			"Guts +20"
+		],
+		"マクラノバクシン": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"最高のバクシン！": [
+			"Intelligence +10",
+			"Stamina +5\nGuts +5"
+		],
+		"粋か！ バクシンか！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"クラスメイトとバクシン！": [
+			"Power +5\nGuts +5",
+			"Speed +5\nIntelligence +5"
+		],
+		"委員長のいない日": [
+			"Speed +20",
+			"Power +20"
+		],
+		"大切な方と一緒にッ！": [
+			"Guts +10",
+			"Speed +5\nStamina +5"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Seiun Sky": {
+		"ネコの名人": [
+			"Intelligence +10",
+			"Speed +10"
+		],
+		"ネコとの散歩": [
+			"Stamina +10",
+			"Guts +10"
+		],
+		"晴天の攻防": [
+			"One of these will be selected at random\n----------\nSpeed +20\n----------\nSpeed +5\nMotivation -1",
+			"One of these will be selected at random\n----------\nEnergy +20\n深呼吸 hint +1\n----------\nEnergy +10\nGet Lazy Habit status",
+			"Energy +5\nSpeed +5"
+		],
+		"外でもくつろぎ上手？": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\n(random) Power +5\n(random) Get Overweight status"
+		],
+		"曇りのち……": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"セイちゃん脱出作戦": [
+			"Speed +10\nSkill points +15",
+			"差しけん制 hint +1"
+		],
+		"ネコとの別れ": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"策士VS王": [
+			"Guts +20",
+			"Speed +20"
+		],
+		"お香でおやすみ": [
+			"Intelligence +20",
+			"Stamina +20"
+		],
+		"闇の仕事？": [
+			"Speed +10",
+			"Power +10"
+		],
+		"検証〜ネコ語は実在するのか？": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"誰がために君は走る": [
+			"Stamina +20\n(random) Get Charming ○ status",
+			"Power +20\n(random) Get Charming ○ status"
+		],
+		"お昼寝マイスター": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Silence Suzuka": {
+		"スズカ流後輩指導？": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"しっとりパーティータイム": [
+			"Energy +10",
+			"Stamina +5\nPower +5"
+		],
+		"趣味、特技、休日の過ごし方": [
+			"Stamina +20",
+			"Speed +10\nIntelligence +10"
+		],
+		"私とあなたの、小さな雪景色": [
+			"Stamina +10",
+			"Speed +10",
+			"Power +10"
+		],
+		"雨の日の過ごし方": [
+			"Guts +10",
+			"Speed +5\nIntelligence +5"
+		],
+		"Landscape color": [
+			"Guts +20",
+			"Power +20"
+		],
+		"背を追ってくれるから": [
+			"Speed +5\nSkill points +15",
+			"左回り○ hint +1"
+		],
+		"ウマドル☆猛特訓！": [
+			"Speed +10\nPower +10\n(random) Get Rising Star status",
+			"Guts +10\nIntelligence +10\n(random) Get Rising Star status"
+		],
+		"白い誘惑": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\n(random) Get Overweight status"
+		],
+		"あなたの喜ぶ景色": [
+			"Power +10",
+			"Speed +5\nGuts +5"
+		],
+		"ふたりの相性はいかに！？": [
+			"Power +5\nGuts +5",
+			"Stamina +10"
+		],
+		"私の小さな雪景色": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"ダンスレッスン": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Smart Falcon": {
+		"キュート☆リサーチ": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"ウマドル☆Friendship！": [
+			"Intelligence +20",
+			"Power +20"
+		],
+		"メモリー☆聖地巡礼": [
+			"Power +10",
+			"Guts +10",
+			"Speed +10"
+		],
+		"テストdeリカバリー☆": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"研究対象はウマドル？": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"ドキドキ☆シチュエーション": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"燃やせ☆ウマドル魂": [
+			"Stamina +10\nGuts +10",
+			"先頭プライド hint +1"
+		],
+		"ドタバタ☆KIDSパニック！": [
+			"Speed +20\n(random) Get Charming ○ status",
+			"Stamina +20"
+		],
+		"シェアリング☆メモリー": [
+			"Stamina +10",
+			"Guts +10"
+		],
+		"磨いて☆DIAMOND": [
+			"Speed +20",
+			"Power +10\nGuts +10"
+		],
+		"届いてforYou☆恩返し♪": [
+			"Speed +10",
+			"Power +10"
+		],
+		"フューチャー☆ロケハン": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Special Week": {
+		"食堂でお腹いっぱい": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"あなたと行きたい場所": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"もう少しだけ": [
+			"末脚 hint +1",
+			"コーナー巧者○ hint +1"
+		],
+		"想い、服に託して": [
+			"Stamina +20",
+			"Guts +20"
+		],
+		"昼下がりの恩返し": [
+			"Energy +5\nIntelligence +5",
+			"ペースキープ hint +1"
+		],
+		"ポーズはどうする": [
+			"Power +20",
+			"Skill points +40"
+		],
+		"今日も、明日からも": [
+			"Speed +20\n(random) Get Rising Star status",
+			"Intelligence +20\n(random) Get Rising Star status"
+		],
+		"特別だからこそ": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"カラオケグルメ♪": [
+			"Energy +10",
+			"Power +10"
+		],
+		"研究熱心": [
+			"東京レース場○ hint +1",
+			"中山レース場○ hint +1"
+		],
+		"青春のテニス日和": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Super Creek": {
+		"友だちのために": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"息抜きは甘え？": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"ギュッとマッサージ": [
+			"Guts +10",
+			"Speed +5\nIntelligence +5"
+		],
+		"自己満足な願い": [
+			"Power +20",
+			"Stamina +20"
+		],
+		"夜の甘い誘惑": [
+			"Energy +30\nSpeed +10\nSkill points +10\n(random) Motivation -1\nGet Overweight status",
+			"Energy +10\nSpeed +5\nSkill points +5"
+		],
+		"迷子を捜せ！": [
+			"Energy -10\nStamina +10\nPower +10",
+			"Intelligence +10"
+		],
+		"分かち合いましょう": [
+			"Stamina +10",
+			"Speed +10",
+			"Power +10"
+		],
+		"不安を拭って": [
+			"Power +10",
+			"Speed +5\nGuts +5"
+		],
+		"危険なご褒美": [
+			"Guts +10\nSkill points +15",
+			"コーナー回復○ hint +1"
+		],
+		"焦らずにいきましょう": [
+			"Guts +20\n(random) Get Rising Star status",
+			"Stamina +10\nPower +10\n(random) Get Rising Star status"
+		],
+		"命には愛を込めて": [
+			"One of these will be selected at random\n----------\nSpeed +10\nStamina +10\n----------\nIntelligence +20",
+			"Intelligence +20"
+		],
+		"星を見るなら2人で": [
+			"Power +5\nGuts +5",
+			"Stamina +10"
+		],
+		"1日体験☆陶芸教室": [
+			"Speed +5\nIntelligence +5",
+			"Stamina +10"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Symboli Rudolf": {
+		"皇帝の飽食": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+		],
+		"皇帝の道": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"皇帝の日課": [
+			"Power +10",
+			"Guts +10"
+		],
+		"突然の厚意": [
+			"Energy -10\nStamina +20\nYayoi Akikawa bond +10",
+			"Energy +10"
+		],
+		"道半ば、顧みて": [
+			"Speed +20",
+			"Power +20"
+		],
+		"道の果て、遠く望む": [
+			"Stamina +20\n(random) Get Rising Star status",
+			"Guts +20\n(random) Get Rising Star status"
+		],
+		"竜吟虎嘯": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"皇帝の社会勉強": [
+			"Energy -10\nStamina +10\nPower +10",
+			"Intelligence +5\nSkill points +15"
+		],
+		"笑う会長は服着たがる": [
+			"Intelligence +20",
+			"Guts +20"
+		],
+		"有言実行": [
+			"Energy -10\nPower +20\nYayoi Akikawa bond +10",
+			"Energy +10"
+		],
+		"徳高望重": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"清風明月": [
+			"Speed +10",
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"前を往く者": [
+			"Speed +5\nPower +5",
+			"Stamina +5\nGuts +5"
+		],
+		"いついかなる時も": [
+			"Energy -10\nGuts +20\nYayoi Akikawa bond +10",
+			"Energy +10"
+		],
+		"皇帝の余暇": [
+			"Intelligence +10\nSkill points +15",
+			"雨の日○ hint +1"
+		],
+		"ダンスレッスン": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"TM Opera O": {
+		"聞こえる声は": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"鏡が映すのは": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"パジャマ姿の姫君": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"夕暮れ時のオペラオー劇場": [
+			"Power +10",
+			"Energy +10"
+		],
+		"素晴らしき美を維持するために……": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"愛しき瞳の為に": [
+			"Stamina +10\nGuts +10",
+			"Speed +20"
+		],
+		"輝きを君に": [
+			"Power +10",
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"尽くせ、礼": [
+			"Speed +10",
+			"Skill points +15",
+			"非根幹距離○ hint +1"
+		],
+		"意志の力": [
+			"Intelligence +20\n(random) Get Sharp status",
+			"Speed +10\nPower +10\n(random) Speed +20\n(random) Get Sharp status"
+		],
+		"\\\"覇王\\\"として": [
+			"Intelligence +20",
+			"Power +20"
+		],
+		"幾重もの輝き": [
+			"Energy -10\nPower +20",
+			"Speed +10"
+		],
+		"王者の戦い～ラーメン編～": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Taiki Shuttle": {
+		"TO THE NO.1！": [
+			"Power +10\nGuts +10\n(random) Get Sharp status",
+			"Speed +10\nIntelligence +10\n(random) Get Sharp status"
+		],
+		"シャル・ウィー・ハグ？": [
+			"Power +10",
+			"Energy +10"
+		],
+		"バーガー・イン・ジャパン！": [
+			"One of these will be selected at random\n----------\nMotivation +1\nSpeed +10\nPower +5\n----------\nMotivation -1",
+			"Intelligence +10"
+		],
+		"ハイド・アンド・シーク！": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"レイニー・ピックアップ": [
+			"Skill points +30",
+			"Power +5\nIntelligence +5",
+			"Speed +5\nGuts +5"
+		],
+		"負けられない戦いが、あるのデス": [
+			"Intelligence +20",
+			"Stamina +20"
+		],
+		"レイニー・チョイス！": [
+			"Speed +5\nGuts +5",
+			"Stamina +5\nIntelligence +5"
+		],
+		"レイニー・パワフル！": [
+			"Power +10",
+			"Skill points +30"
+		],
+		"一緒に帰るデース！": [
+			"Motivation +1\nSpeed +5",
+			"Motivation +1\nStamina +5"
+		],
+		"特急リドル便？": [
+			"Motivation +1\nStamina +5\nPower +10\n(random) Motivation -1",
+			"Intelligence +10"
+		],
+		"肉の空へ！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nSkill points +10\nGet Overweight status"
+		],
+		"レッツ・ミマワリ！": [
+			"Power +10",
+			"Energy +10"
+		],
+		"ハヤウチ・バトル！": [
+			"Energy +10\nSpeed +10",
+			"Energy +10\nIntelligence +10"
+		],
+		"収穫フェスティバル": [
+			"Power +10\nSkill points +15",
+			"抜け出し準備 hint +1"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Tokai Teio": {
+		"\\\"女帝\\\"vs.\\\"帝王\\\"": [
+			"Guts +10",
+			"Skill points +30"
+		],
+		"叱られちゃった": [
+			"Intelligence +10",
+			"Power +5\nGuts +5"
+		],
+		"気づいちゃった！": [
+			"Speed +5\nStamina +5",
+			"Guts +5\nIntelligence +5",
+			"Power +10"
+		],
+		"カラオケでパワーアップ！？": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"わがままテイオーと思い出の景色": [
+			"Guts +20",
+			"Speed +10\nPower +10"
+		],
+		"ボクとマヤノとオトナの時間": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"カイチョーみたいな勝負服": [
+			"Speed +10\nIntelligence +10\n(random) Get Rising Star status",
+			"Stamina +10\nGuts +10\n(random) Get Rising Star status"
+		],
+		"テイオーのジンクス": [
+			"Stamina +20",
+			"Intelligence +20"
+		],
+		"テイオーの武者修行": [
+			"Guts +10\nSkill points +15",
+			"抜け出し準備 hint +1"
+		],
+		"ボクとみんなとカップケーキ": [
+			"Energy +5\nMotivation +1",
+			"Speed +5\nPower +5"
+		],
+		"力のヒミツ！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nGet Overweight status"
+		],
+		"褒められちゃった！": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"カイチョーとダジャレ": [
+			"Stamina +5\nPower +5",
+			"Speed +10"
+		],
+		"テイオー、ウマドルになる！？": [
+			"Power +10",
+			"Speed +10"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Power +10"
+		],
+		"新年の抱負": [
+			"Guts +10",
+			"Energy +20",
+			"Skill points +20"
+		],
+		"ネバー･ギブ･アップ･ワガハイ！": [
+			"Stamina +15\nGuts +5\n(random) Get Good Practice ○ status",
+			"Power +5\nIntelligence +15\n(random) Get Good Practice ○ status"
+		],
+		"好敵手と書いて友と呼ぶ！": [
+			"スタミナキープ hint +2",
+			"Speed +10\nSkill points +15"
+		],
+		"ワガハイがテイオー先輩だ！": [
+			"コーナー加速○ hint +2",
+			"Intelligence +10\nSkill points +15"
+		]
+	},
+	"Vodka": {
+		"共に極めよ、カッコ良さの道": [
+			"Power +10",
+			"Speed +10",
+			"Stamina +5\nGuts +5"
+		],
+		"挑め、”宿命”": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"憧れヴィンテージ": [
+			"Power +20",
+			"Stamina +20"
+		],
+		"カッコ良さの基準": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"甘くなれない素直さ": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Motivation -1\nGet Overweight status"
+		],
+		"クール・アンド・ヒート": [
+			"Speed +20\n(random) Get Good Practice ○ status",
+			"Speed +10\nPower +10\n(random) Get Good Practice ○ status"
+		],
+		"河川敷でガチバトル！": [
+			"Intelligence +10\nSkill points +15",
+			"ギアシフト hint +1"
+		],
+		"たまにはガキの頃みたく": [
+			"Speed +10",
+			"Power +10"
+		],
+		"響け、熱いサウンド！": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"“寄り道”しようぜ": [
+			"Speed +10",
+			"Energy +5\nMotivation +1"
+		],
+		"硬派な甘さ": [
+			"Energy +5",
+			"Power +10"
+		],
+		"俺的ダチ道": [
+			"Speed +20\n(random) Get Good Practice ○ status",
+			"Guts +20"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Winning Ticket": {
+		"この壁を超えてゆけ！": [
+			"Motivation +1\nGuts +5",
+			"Motivation +1\nPower +5"
+		],
+		"悩みなんて吹き飛ばせ！": [
+			"Motivation +1\nPower +5",
+			"Speed +5\nSkill points +15"
+		],
+		"全力ファッション！": [
+			"Stamina +20",
+			"Power +10\nGuts +10"
+		],
+		"三国志演技": [
+			"Stamina +5\nSkill points +15",
+			"Power +5\nSkill points +15"
+		],
+		"全力テスト": [
+			"Guts +20",
+			"Speed +20"
+		],
+		"全力がんばる！": [
+			"Speed +10\nIntelligence +10\n(random) Get Rising Star status",
+			"Power +20\n(random) Get Rising Star status"
+		],
+		"いきなりフットサル！？": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"雨ニモ負ケズ": [
+			"Energy -10\nStamina +10\nSkill points +15",
+			"Power +10"
+		],
+		"新たな気づき": [
+			"Speed +10\nSkill points +15",
+			"垂れウマ回避 hint +1"
+		],
+		"よく泣くお姉ちゃん": [
+			"Guts +5\nSkill points +15",
+			"Motivation +1\nPower +5"
+		],
+		"ごはんも全力！！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Guts +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Shared": {
+		"レース勝利！(1着)": [
+			"1 random stat +5(OP)/+8(G2/G3)/+10(G1)\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+			"1 random stat +5(OP)/+8(G2/G3)/+10(G1)\nSkill points +45\nEnergy -5/-20/-30\n(random) Hint for a skill related to the race"
+		],
+		"レース入着(2~5着)": [
+			"1 random stat +2-4(OP)/+4-6(G2/G3)/+5-8(G1)\nSkill points +40-45\nEnergy -20\n(random) Hint for a skill related to the race",
+			"1 random stat +2-4(OP)/+4-6(G2/G3)/+5-8(G1)\nSkill points +40-45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+		],
+		"レース敗北(6着以下)": [
+			"1 random stat +1(G2/G3)/+4(G1)\nSkill points +10(OP)/+20(G2/G3)/+25(G1)\nEnergy -25\n(random) Hint for a skill related to the race",
+			"1 random stat +1(G2/G3)/+4(G1)\nSkill points +10(OP)/+20(G2/G3)/+25(G1)\nEnergy -15/-25/-35\n(random) Hint for a skill related to the race"
+		],
+		"お大事に！": [
+			"Motivation -1\nLast trained stat -5\n(random) Get Bad Practice status",
+			"One of these will be selected at random\n----------\nMotivation -1\nLast trained stat -10\n(random) Get Bad Practice status\n----------\nGet Good Practice ○ status"
+		],
+		"無茶は厳禁！": [
+			"Energy +10\nMotivation -1\nLast trained stat -10\n2 random stats -10\n(random) Get Bad Practice status",
+			"One of these will be selected at random\n----------\nMotivation -1\nLast trained stat -10\n2 random stats -10\nGet Bad Practice status\n----------\nEnergy +10\nGet Good Practice ○ status"
+		],
+		"追加の自主トレ": [
+			"Energy -5\nLast trained stat +5\nYayoi Akikawa bond +5",
+			"Energy +5"
+		],
+		"夏合宿（2年目）にて": [
+			"Power +10",
+			"Guts +10"
+		],
+		"初詣": [
+			"Energy +30",
+			"All stats +5",
+			"Skill points +35"
+		],
+		"愉快ッ！密着取材！": [
+			"Stamina +10\nEtsuko Otonashi bond +5",
+			"Guts +10\nEtsuko Otonashi bond +5"
+		],
+		"トレーナー並の知識": [
+			"Power +10\nEtsuko Otonashi bond +5",
+			"Speed +10\nEtsuko Otonashi bond +5"
+		],
+		"上々の面構えッ！": [
+			"Energy -10\nPower +20\nGuts +20\nハヤテ一文字 hint +1",
+			"Energy +30\nStamina +20\n好転一息 hint +1"
+		],
+		"あんし～ん笹針師、参☆上": [
+			"One of these will be selected at random\n----------\nAll stats +20\n----------\nEnergy -20\nAll stats -15\nMotivation -1\nGet Insomnia status",
+			"One of these will be selected at random\n----------\nObtain コーナー回復○ skill\nObtain 直線回復 skill\n----------\nMotivation -1\nEnergy -20",
+			"One of these will be selected at random\n----------\nMaximum Energy +12\nEnergy +40\n----------\nMotivation -1\nEnergy -20\nGet Bad Practice status",
+			"One of these will be selected at random\n----------\nEnergy +20\nMotivation +1\nGet Charming ○ status\n----------\nEnergy -10/-20\nMotivation -1\n(random) Get Bad Practice status",
+			"Energy +10"
+		]
+	}
+}

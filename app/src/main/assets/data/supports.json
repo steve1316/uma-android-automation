@@ -1,0 +1,1288 @@
+{
+	"Agnes Digital": {
+		"ウマ娘ちゃん欠乏症": [
+			"Energy +5\nSpeed +5\nAgnes Digital bond +5",
+			"Speed +5\nPower +5\nAgnes Digital bond +5"
+		],
+		"エモのためなら雨の中でも": [
+			"雨の日○ hint +1\nAgnes Digital bond +5",
+			"道悪○ hint +1\nAgnes Digital bond +5"
+		],
+		"幸福のヲタライフ": [
+			"Power +10"
+		],
+		"ウマ娘ちゃんへの愛は永遠です！": [
+			"Speed +5\nPower +10\n追込駆け引き hint +1"
+		]
+	},
+	"Agnes Tachyon": {
+		"要検証・睡眠時間と作業能率": [
+			"Power +5\nIntelligence +5\nAgnes Tachyon bond +5",
+			"Intelligence +10"
+		],
+		"要検証・他者の介在による偶発性": [
+			"差しのコツ○ hint +1\nAgnes Tachyon bond +5",
+			"Intelligence +10\nAgnes Tachyon bond +5"
+		],
+		"Report『特化鍛錬による可能性』": [
+			"Intelligence +5\nSkill points +15"
+		],
+		"Report『未定（休憩も大事）』": [
+			"Intelligence +10\nSkill points +15\n逃げけん制 hint +1"
+		]
+	},
+	"Air Groove": {
+		"俊敏にして剛腕": [
+			"Power +15\nAir Groove bond +5",
+			"Speed +10\nStamina +5\nAir Groove bond +5"
+		],
+		"峻厳にして優渥": [
+			"臨機応変 hint +1\nAir Groove bond +5",
+			"Energy +10\nIntelligence +10"
+		],
+		"凛と胡蝶蘭": [
+			"Power +5\nGuts +5"
+		],
+		"樫に咲け": [
+			"Energy -20\nPower +5\nGuts +5\n直線加速 hint +1\nAir Groove bond +5"
+		]
+	},
+	"Air Shakur": {
+		"#要検証": [
+			"Energy +10\nGuts +5\nAir Shakur bond +5",
+			"Energy -10\nStamina +5\nGuts +10\nAir Shakur bond +5"
+		],
+		"#絶対欲しい": [
+			"ペースキープ hint +1\nAir Shakur bond +5",
+			"Maximum Energy +4\nGuts +5\nAir Shakur bond +5"
+		],
+		"ノイズは不要": [
+			"Stamina +5\nIntelligence +5"
+		],
+		"リアリストの情熱": [
+			"Stamina +5\nIntelligence +5\nSkill points +5"
+		],
+		"オレが最強": [
+			"Stamina +5\nIntelligence +10\n勝利への執念 hint +1"
+		]
+	},
+	"Aoi Kiryuin": {
+		"お疲れ様です！": [
+			"Intelligence +3\nAoi Kiryuin bond +5"
+		],
+		"トレーナー心得『指導は常に改良せよ』": [
+			"Energy +10\nSkill points +15\nAoi Kiryuin bond +5",
+			"Speed +5\nIntelligence +5\nAoi Kiryuin bond +5"
+		],
+		"趣味を探して": [
+			"Energy +20\nSkill points +15\nMotivation +1\nAoi Kiryuin bond +5\nCan start dating",
+			"Motivation -1\nおひとり様○ hint +1\nAoi Kiryuin bond -5\nEvent chain ended"
+		],
+		"身をもって学ぶべし！": [
+			"Energy +25\nSkill points +30\nMotivation +2\nAoi Kiryuin bond +5"
+		],
+		"公園での遊び方": [
+			"Energy +25\nIntelligence +5\nAoi Kiryuin bond +5\n(random) Motivation +1",
+			"One of these will be selected at random\n----------\nSkill points +15\nAoi Kiryuin bond +5\n----------\nSpeed +5\nSkill points +45\nMotivation +1\nAoi Kiryuin bond +5"
+		],
+		"暴走トレーニング": [
+			"Energy +20\nSkill points +30\nMotivation +1\nAoi Kiryuin bond +5"
+		],
+		"尊重という幸福": [
+			"Power +10\nSkill points +45\nMotivation +1\nAoi Kiryuin bond +5"
+		],
+		"夢を追い続ける限り": [
+			"One of these will be selected at random\n----------\nStamina +5\nSkill points +15\nAoi Kiryuin bond +5\n逃げけん制 hint +1\n----------\nStamina +5\nPower +5\nGuts +5\nSkill points +45\n逃げけん制 hint +3\nAoi Kiryuin bond +5"
+		]
+	},
+	"Bamboo Memory": {
+		"ライバル、打倒っス！": [
+			"Guts +10\nBamboo Memory bond +5",
+			"Maximum Energy +4\nEnergy -5\nBamboo Memory bond +5"
+		],
+		"トラブル、上等っス！": [
+			"Stamina +5\nGuts +5\nBamboo Memory bond +5",
+			"Energy -10\n根幹距離○ hint +5\nBamboo Memory bond +5"
+		],
+		"目指すは得点王っス！": [
+			"Energy -10\nStamina +3\nPower +3\nGuts +3\n対抗意識○ hint+1"
+		],
+		"誰だろうと風紀は絶対っス！": [
+			"One of these will be selected at random\n----------\nMaximum Energy +4\nEnergy -10\nStamina +10\nPower +10\nGuts +5\n末脚 hint +1\nBamboo Memory bond +5\n----------\nEnergy -20\nStamina +10\nPower +10\nGuts +5\nBamboo Memory bond +5\n----------\nEnergy -20\nStamina +10\nGuts +10\nObtain 空回り skill",
+			"Energy -10\nMotivation +1\nStamina +5\nPower +5\nBamboo Memory bond +5",
+			"Energy +30\n差しためらい hint +1"
+		],
+		"いつか強敵と呼べる日のために！っス！": [
+			"One of these will be selected at random\n----------\nMaximum Energy +4\nStamina +10\nPower +15\n昇り龍 hint +3\nBamboo Memory bond +5\n----------\nEnergy -15\nStamina +10\nPower +15\n外差し準備 hint +3"
+		]
+	},
+	"Biko Pegasus": {
+		"ヒーローの苦悩": [
+			"Energy +15\nBiko Pegasus bond +5",
+			"Energy +5\nPower +5\nBiko Pegasus bond +5"
+		],
+		"必殺技を手に入れろ！": [
+			"短距離直線○ hint +1\nBiko Pegasus bond +5",
+			"Energy +30\nBiko Pegasus bond +5"
+		],
+		"熱い誓い！ アタシはヒーローになる！": [
+			"Speed +5\nGuts +5"
+		],
+		"猛特訓！ 現れたキャロットマン！？": [
+			"Speed +5\nGuts +5"
+		],
+		"決戦！ 栄光の勝利をこの手に！": [
+			"Speed +5\nPower +5\nGuts +5\nプランX hint +1"
+		]
+	},
+	"Biwa Hayahide": {
+		"脱・無難論": [
+			"Energy -10\n内弁慶 hint +1\nBiwa Hayahide bond +5",
+			"Energy +10\nStamina +10\nBiwa Hayahide bond +5"
+		],
+		"ぎりぎり様相論": [
+			"Power +15\nBiwa Hayahide bond +5",
+			"Speed +10\nSkill points +15\nBiwa Hayahide bond +5"
+		],
+		"世話焼きお姉ちゃん": [
+			"Energy -10",
+			"Power +15"
+		],
+		"トレーニングは理論的に": [
+			"One of these will be selected at random\n----------\nEnergy -20\nPower +5\n追い上げ hint +1\n----------\nEnergy -10\nStamina +5\nPower +15\nBiwa Hayahide bond +5\n追い上げ hint +3"
+		]
+	},
+	"Daitaku Helios": {
+		"太陽とエンカウント☆": [
+			"Power +10\nDaitaku Helios bond +5",
+			"Get Rising Star status\nDaitaku Helios bond +5"
+		],
+		"笑顔フォーエバー": [
+			"Speed +5\nPower +10\nDaitaku Helios bond +5",
+			"伏兵○ hint +1\nDaitaku Helios bond +5"
+		],
+
+        "#bff #Party!": [
+            "Power +10\nDaitaku Helios bond +5",
+            "Speed +10\nDaitaku Helios bond +5"
+        ],
+        "#lol #Party! #2nd": [
+            "Speed +10\nPower +10\n直滑降 hint +3\nDaitaku Helios bond +5",
+            "Energy +20\n展開窺い hint +1\nDaitaku Helios bond +5"
+        ]
+	},
+	"Daiwa Scarlet": {
+		"明日は私が勝つんだから！": [
+			"Intelligence +10\nDaiwa Scarlet bond +5",
+			"Motivation +1\nSkill points +15\nDaiwa Scarlet bond +5"
+		],
+		"このくらい平気なんだから！": [
+			"スタミナキープ hint +1\nDaiwa Scarlet bond +5",
+			"Energy +20\nMotivation +1\nDaiwa Scarlet bond +5"
+		],
+		"相手が誰でも負けないんだから！": [
+			"Energy +15\nIntelligence +5\nDaiwa Scarlet bond +5"
+		],
+		"清掃だって負けないんだから！": [
+			"Intelligence +10\nまき直し hint +1"
+		]
+	},
+	"Eishin Flash": {
+		"想定外への対応": [
+			"Guts +10\nEishin Flash bond +5",
+			"徹底マーク○ hint +1\nEishin Flash bond +5"
+		],
+		"想定外のお昼": [
+			"Energy +15\nEishin Flash bond +5",
+			"Speed +5\nGuts +5\nEishin Flash bond +5"
+		],
+		"良き管理者たるもの": [
+			"Maximum Energy +4\nEnergy +10\nMotivation +1"
+		],
+		"良き友人たるもの": [
+			"Energy +20\n(random)末脚 hint +1"
+		]
+	},
+	"El Condor Pasa": {
+		"シークレット・ノート": [
+			"Power +10\nEl Condor Pasa bond +5",
+			"晴れの日○ hint +1\nEl Condor Pasa bond +5"
+		],
+		"メラメラ・ファイアー！": [
+			"Stamina +10\nEl Condor Pasa bond +5",
+			"Energy -10\nPower +20\nEl Condor Pasa bond +5"
+		],
+		"世界級の……！？": [
+			"Power +5\nGuts +5"
+		],
+		"ダシが重要！！": [
+			"Energy +30\nEl Condor Pasa bond +5",
+			"スタミナキープ hint +1\nEl Condor Pasa bond +5"
+		],
+		"ルチャドーラ・エル！！": [
+			"Power +10\nキラーチューン hint +1"
+		]
+	},
+	"Fine Motion": {
+		"ときめきシューズ": [
+			"Speed +5\nSkill points +10\nFine Motion bond +5",
+			"Energy -10\nStamina +5\nSkill points +20\nFine Motion bond +5"
+		],
+		"思い出クローバー": [
+			"コーナー巧者○ hint +1\nFine Motion bond +5",
+			"Guts +15\nFine Motion bond +5"
+		],
+		"素敵な♪練習日和": [
+			"Intelligence +5\nSkill points +20\nFine Motion bond +5",
+			"Speed +10\nStamina +5",
+			"Get Good Practice ○ status\nFine Motion bond +5"
+		],
+		"素敵な♪ライブ日和": [
+			"Energy +10",
+			"Skill points +10"
+		],
+		"素敵な♪レース日和": [
+			"Energy -10\nGuts +5\nIntelligence +5/+10\nSkill points +15\nスピードスター hint +1/+3 or 抜け出し準備 hint +1"
+		]
+	},
+	"Fuji Kiseki": {
+		"スライハンド": [
+			"Intelligence +5\nSkill points +15\nFuji Kiseki bond +5",
+			"Power +5\nSkill points +15\nFuji Kiseki bond +5"
+		],
+		"ミスディレクション": [
+			"抜け出し準備 hint +1\nFuji Kiseki bond +5",
+			"Skill points +30\nFuji Kiseki bond +5"
+		],
+		"アブラカダブラ": [
+			"Intelligence +10"
+		],
+		"アウトオブディスワールド": [
+			"Intelligence +10\nSkill points +15\n追込焦り hint +1"
+		]
+	},
+	"Gold City": {
+		"08:36/朝寝坊、やばっ": [
+			"Motivation -1\nSkill points +45\nGold City bond +5",
+			"Energy +10\nIntelligence +5\nGold City bond +5"
+		],
+		"13:12/昼休み、気合い入れなきゃ": [
+			"Skill points +30\nGold City bond +5",
+			"小休憩 hint +1\nGold City bond +5"
+		],
+		"Pride": [
+			"Energy +20"
+		],
+		"Struggle": [
+			"Energy +10\nStamina +10"
+		],
+		"One Step": [
+			"Stamina +10\n慧眼 hint +1"
+		]
+	},
+	"Gold Ship": {
+		"冒険家ゴールドシップ": [
+			"Stamina +15\nGold Ship bond +5",
+			"Guts +10\nSkill points +15\nGold Ship bond +5"
+		],
+		"甦れ！ゴルシ印のソース焼きそば！": [
+			"Motivation +1\nStamina +5",
+			"阪神レース場○ hint +1\nGold Ship bond +5"
+		],
+		"熱血ッ！エアバスケッ！": [
+			"Energy -10\nStamina +25"
+		],
+		"リスペクトシャケッ！": [
+			"Energy -10\nGuts +25"
+		],
+		"強敵と書いて『とも』と読むッ！": [
+			"Stamina +10\n曲線のソムリエ hint +1"
+		],
+		"ゴルシ様、城を建てる": [
+			"Maximum Energy +4\nGold Ship bond +5",
+			"Speed +10\nGold Ship bond +5"
+		],
+		"ゴルシ様、ダンジョンを探す": [
+			"Energy -15\nSpeed +5\nStamina +5\n長距離直線○ hint +1"
+		],
+		"ゴルシ様、配下をそろえる": [
+			"One of these will be selected at random\n----------\nEnergy -10\nSpeed +5\nStamina +5\n内弁慶 hint +3\nGold Ship bond +5\n----------\nEnergy -10\nSpeed +10\nStamina +10\n内的体験 hint +3\nGold Ship bond +5",
+			"Energy +10\nおひとり様○ hint +1"
+		]
+	},
+	"Grass Wonder": {
+		"文殿、思ひ煩ふ": [
+			"Intelligence +10\nGrass Wonder bond +5",
+			"Guts +5\nIntelligence +5\nGrass Wonder bond +5"
+		],
+		"昼つ方、打ち語らふ": [
+			"先行駆け引き hint +1\nGrass Wonder bond +5",
+			"徹底マーク○ hint +1\nGrass Wonder bond +5"
+		],
+		"密やかなる熱情": [
+			"Energy +10\nIntelligence +5\nSkill points +15\nGrass Wonder bond +5"
+		],
+		"ひととき、うらうらに": [
+			"Energy +15\nGrass Wonder bond +5",
+			"One of these will be selected at random\n----------\nEnergy -10\nPower +5\nGuts +5\nIntelligence +5\nGrass Wonder bond +5\n----------\nPower +5\nGuts +5\nIntelligence +10\nGrass Wonder bond +5"
+		],
+		"秘すれば、花なり": [
+			"Energy -10\nSpeed +5\nGuts +5\nIntelligence +5\n上昇気流 hint +1\nGrass Wonder bond +5",
+			"Energy -10\nSpeed +5\nGuts +10\nIntelligence +5\n豪脚 hint +3\nGrass Wonder bond +5"
+		]
+	},
+	"Haru Urara": {
+		"うららん☆テスト勉強": [
+			"Energy +10\nHaru Urara bond +5\nIntelligence +5",
+			"Motivation +1\nIntelligence +5"
+		],
+		"うららん☆ふくへーダッシュ！": [
+			"伏兵○ hint +1\nHaru Urara bond +5",
+			"Motivation +1\nEnergy +10\nHaru Urara bond +5"
+		],
+		"ライスちゃんと頑張る！": [
+			"Energy +10"
+		],
+		"キングちゃんと頑張る！": [
+			"Motivation +1\nHaru Urara bond +5\nEnergy +10"
+		],
+		"みんなの応援で頑張る": [
+			"Energy +15\nHaru Urara bond +5\nどこ吹く風 hint +1"
+		]
+	},
+	"Hishi Akebono": {
+		"どーんと☆召し上がれ♪": [
+			"Energy +10\nHishi Akebono bond +5",
+			"Energy -5\nPower +15\nHishi Akebono bond +5"
+		],
+		"どーんと☆お任せあれ♪": [
+			"Stamina +10\nHishi Akebono bond +5",
+			"Energy -15\nスプリントギア hint +2\nHishi Akebono bond +5"
+		],
+		"そのままの自分でボーノボーノ♪": [
+			"Maximum Energy +4\nGuts +5\nHishi Akebono bond +5"
+		],
+		"はっけよーい……ボーノ☆": [
+			"Energy +30\nGuts +5\nHishi Akebono bond +5\n(random) Get Overweight status",
+			"Stamina +5\nPower +5\nHishi Akebono bond +5"
+		],
+		"あなたにボーノ、あたしもボーノ☆": [
+			"Stamina +5\nGuts +10\nシックスセンス hint +3 or 危険回避 hint +3"
+		]
+	},
+	"Hishi Amazon": {
+		"ヒシアマ姐さん奮闘記～問題児編～": [
+			"Energy +10\nIntelligence +5\nHishi Amazon bond +5",
+			"Energy -10\nSpeed +10\nGuts +5\nHishi Amazon bond +5"
+		],
+		"ヒシアマ姐さん奮闘記～追い込み編～": [
+			"追込ためらい hint +1\nHishi Amazon bond +5",
+			"Power +5\nSkill points +15\nHishi Amazon bond +5"
+		],
+		"アタシはアタシらしく": [
+			"Speed +5\nPower +5\nHishi Amazon bond +5"
+		],
+		"姉御流の解決法": [
+			"Speed +10\n仕掛け抜群 hint +1"
+		]
+	},
+	"Ikuno Dictus": {
+		"イクノ式万全メソッド": [
+			"Intelligence +10\nIkuno Dictus bond +5",
+			"Skill points +30\nIkuno Dictus bond +5"
+		],
+		"イクノ式マネジメント論": [
+			"Stamina +20\nIkuno Dictus bond +5",
+			"トリック（後）hint +1\nIkuno Dictus bond +5"
+		],
+		"イクノ式友情メソッド": [
+			"Intelligence +10\nSkill points +20"
+		],
+		"イクノ式サポートメソッド": [
+			"Intelligence +15\n逃げ駆け引き hint +3\nIkuno Dictus bond +5",
+			"Intelligence +15\n追込駆け引き hint +3\nIkuno Dictus bond +5"
+		]
+	},
+	"Ines Fujin": {
+		"鬼ごっこ、なの！": [
+			"Energy +10\nSpeed +5\nInes Fujin bond +5",
+			"急ぎ足 hint +1\nInes Fujin bond +5"
+		],
+		"あと10分、なの！": [
+			"Guts +15\nInes Fujin bond +5",
+			"Intelligence +15\nInes Fujin bond +5"
+		],
+		"お姉ちゃんの瞬発力": [
+			"Energy -10\nSpeed +5\nStamina +5\nGuts +10"
+		],
+		"ハピハピなる前進": [
+			"Energy -10\nGuts +10\nSkill points +30\nInes Fujin bond +5"
+		],
+		"目指せ、きらめく瞬間！": [
+			"One of these will be selected at random\nEnergy -10\nGuts +10\nじゃじゃウマ娘 hint +1 or 勢い任せ hint +1\nEnergy -10\nGuts +20\nIntelligence +5\nじゃじゃウマ娘 hint +3"
+		]
+	},
+	"Kawakami Princess": {
+		"プリンセス、殴る！": [
+			"Guts +10\nKawakami Princess bond +5",
+			"Motivation +1\nKawakami Princess bond +5"
+		],
+		"プリンセス、逃走！": [
+			"Energy +10\nKawakami Princess bond +5",
+			"食い下がり hint +1\nKawakami Princess bond +5"
+		],
+		"つつましく！豪快に！": [
+			"Motivation +1\nSpeed +5\nKawakami Princess bond +5",
+			"Skill points +10\n束縛 hint +1\nKawakami Princess bond +5"
+		],
+		"プリンセスパワー☆フルマックス！": [
+			"Speed +5\nGuts +5"
+		],
+		"ぶちかませ！お姫様ロード！": [
+			"Speed +15\nGuts +15\n注目の踊り子 hint +1\nKawakami Princess bond +5",
+			"Energy +25\nSkill points +25"
+		]
+	},
+	"King Halo": {
+		"付き合う権利をあげる！": [
+			"Energy -20\nSpeed +10\nPower +10\nIntelligence +5\nKing Halo bond +5",
+			"Motivation -1\nGuts +25\nKing Halo bond +5"
+		],
+		"助言する権利をあげる！": [
+			"Guts +10\nIntelligence +5\nKing Halo bond +5",
+			"末脚 hint +1\nKing Halo bond +5"
+		],
+		"一流の指導": [
+			"Speed +10"
+		],
+		"一流の相談相手": [
+			"Speed +15\nSkill points +15"
+		],
+		"魅惑の招待状": [
+			"Power +10\nKing Halo bond +5",
+			"Guts +10\nKing Halo bond +5"
+		],
+		"舞踏家のプライド": [
+			"Energy -5\nStamina +10\nPower +5\nSkill points +5\nKing Halo bond +5",
+			"Energy +15\nSkill points +5\nKing Halo bond +5"
+		],
+		"舞踏会の綺羅星": [
+			"One of these will be selected at random\n----------\nEnergy -10\nPower +25\n電撃の煌めき hint +3\n----------\nEnergy -10\nPower +20\n詰め寄り hint +3"
+		]
+	},
+	"Kitasan Black": {
+		"あぁ、故郷": [
+			"Speed +5\nPower +10\nKitasan Black bond +5",
+			"Get Good Practice ○ status\nKitasan Black bond +5"
+		],
+		"あぁ、友情": [
+			"Motivation +1\nPower +5\nKitasan Black bond +5",
+			"Energy +10\nKitasan Black bond +5"
+		],
+		"輝き追いかけて": [
+			"Motivation +1\nSpeed +2\nPower +2\nIntelligence +2\nKitasan Black bond +5"
+		],
+		"情けは人のためならず": [
+			"Energy +10\nMotivation +1\nKitasan Black bond +5",
+			"Speed +5/+10\n直線巧者 hint +1/+3\nKitasan Black bond +5"
+		],
+		"2人で行くこの花道": [
+			"One of these will be selected at random\n----------\nSpeed +5\nPower +5\nKitasan Black bond +5\n弧線のプロフェッサー hint +1\n----------\nSpeed +10\nPower +10\nKitasan Black bond +5\n弧線のプロフェッサー hint +3"
+		]
+	},
+	"Manhattan Cafe": {
+		"夜の独走": [
+			"Stamina +10\nManhattan Cafe bond +5",
+			"Energy +10\nStamina +5\nManhattan Cafe bond +5"
+		],
+		"静けさを嗜む": [
+			"Stamina +5\nSkill points +15\nManhattan Cafe bond +5",
+			"非根幹距離○ hint +1\nManhattan Cafe bond +5"
+		],
+		"雨のお誘い": [
+			"Energy +15\nSkill points +15"
+		],
+		"大雨のお誘い": [
+			"Stamina +15\n読解力 hint +1\nManhattan Cafe bond +5"
+		]
+	},
+	"Maruzensky": {
+		"可愛い後輩ちゃんのためだもの": [
+			"先駆け hint +1",
+			"Energy +5\nSpeed +10"
+		],
+		"マブいドライブだっちゅ～の": [
+			"Motivation +1\nSpeed +5",
+			"Motivation +1\nIntelligence +5"
+		]
+	},
+	"Marvelous Sunday": {
+		"マーベラスにするために☆": [
+			"Energy +10\nMotivation +1\nMarvelous Sunday bond +5",
+			"阪神レース場○ hint +1\nMarvelous Sunday bond +5"
+		],
+		"問答無用のマーベラス☆": [
+			"Energy +10\nSpeed +5\n(random) Marvelous Sunday bond +5",
+			"Motivation +1\nSpeed +5\nMarvelous Sunday bond +5"
+		],
+		"世界マーベラス計画☆": [
+			"Guts +5\nIntelligence +5"
+		],
+		"とってもすごいよマーベラス☆": [
+			"Guts +15\nIntelligence +15"
+		]
+	},
+	"Matikane Tannhauser": {
+		"これも普通の努力です！": [
+			"Speed +10\nMatikane Tannhauser bond +5",
+			"Power +10\nMatikane Tannhauser bond +5"
+		],
+		"これも普通のハプニング！？": [
+			"Stamina +5\nGuts +10\nMatikane Tannhauser bond +5",
+			"逃げけん制 hint +1\nMatikane Tannhauser bond +5"
+		],
+		"求む、個性！": [
+			"Motivation +1\nMatikane Tannhauser bond +5",
+			"Energy +10/+30\nMatikane Tannhauser bond +5"
+		],
+		"目指せ、いたずらっ子！": [
+			"Power +5\nSkill points +10\nMatikane Tannhauser bond +5"
+		],
+		"個性的な走り方": [
+			"One of these will be selected at random\n----------\nPower +10\nSkill points +15\nMatikane Tannhauser bond +5\nどこ吹く風 hint +3\n----------\nPower +5\nSkill points +10\nMatikane Tannhauser bond +5\nウマ込み冷静 hint +3"
+		]
+	},
+	"Matikanefukukitaru": {
+		"全力スピリチュアル": [
+			"Intelligence +5\nSkill points +15\nMatikanefukukitaru bond +5",
+			"Energy -10\nSpeed +5\nStamina +5\nPower +5\nMatikanefukukitaru bond +5"
+		],
+		"信仰心と親切心が交わる時ーー": [
+			"Skill points +30\nMatikanefukukitaru bond +5",
+			"Energy +20\nMatikanefukukitaru bond +5"
+		],
+		"お助けください、こっくり様！": [
+			"Energy +5\nMotivation +1\nSkill points +15\nMatikanefukukitaru bond +5"
+		],
+		"お導きとお友だち": [
+			"Skill points +45\nMatikanefukukitaru bond +5",
+			"(random) Energy -20\n(random) Energy +10\n右回り○ hint +1/+3\nMatikanefukukitaru bond +5\n(random) Motivation +1"
+		]
+	},
+	"Mayano Top Gun": {
+		"マヤノ的おやつ会議！": [
+			"Stamina +5\nGuts +5\nMayano Top Gun bond +5",
+			"Stamina +10\nMayano Top Gun bond +5"
+		],
+		"マヤノ的ファッション会議！": [
+			"直線巧者 hint +1\nMayano Top Gun bond +5",
+			"Stamina +10\nMayano Top Gun bond +5"
+		],
+		"まだまだタキシング中？": [
+			"Skill points +30\nMayano Top Gun bond +5"
+		],
+		"トレンドへテイクオフ♪": [
+			"Stamina +10\nSkill points +15\n集中力 hint +1\nMayano Top Gun bond +5"
+		]
+	},
+	"Meishodoto": {
+		"私……改革ですっ": [
+			"Energy +10\nMotivation +1\nMeishodoto bond +5",
+			"Guts +15\nMeishodoto bond +5"
+		],
+		"にんじん……買ってくださいっ": [
+			"Energy +10\nIntelligence +5\nMeishodoto bond +5",
+			"先行コーナー○ hint +1\nMeishodoto bond +5"
+		],
+		"私の、運勢……": [
+			"Energy +10\nGuts +5\nMeishodoto bond +5",
+			"Maximum Energy +4\nMotivation +1\n(random) Guts +5\n(random) Intelligence +5\nMeishodoto bond +5\n(random) Energy -10"
+		],
+		"私の、欲しいもの……": [
+			"Energy +10\nMotivation +1\nSkill points +15\n抜け出し準備 hint +1"
+		]
+	},
+	"Mejiro Dober": {
+		"喜んでくれるかな……": [
+			"Skill points +45\nMejiro Dober bond +5",
+			"負けん気 hint +1\nMejiro Dober bond +5"
+		],
+		"やってみてもいい": [
+			"Energy +15\nMejiro Dober bond +5",
+			"Motivation +1\nSkill points +15\nMejiro Dober bond +5"
+		],
+		"褒められたって": [
+			"Energy +10\nGuts +5"
+		],
+		"見られてたって": [
+			"Energy +5/+20\nStamina +5/+15\n差し切り体勢 hint +1"
+		],
+		"踏み出す、一歩": [
+			"Energy -10\nSkill points +15~45\nMejiro Dober bond +5",
+			"Guts +5\nIntelligence +5\nMejiro Dober bond +5"
+		],
+		"高め合い、二歩": [
+			"Guts +3\nIntelligence +3\nSkill points +5"
+		],
+		"三歩進み、二歩下がって、一歩": [
+			"Energy -10\nGuts +5\nIntelligence +5\n大局観 hint +1"
+		]
+	},
+	"Mejiro McQueen": {
+		"体重を保つ為": [
+			"Energy -10\nStamina +15\nMejiro McQueen bond +5",
+			"Maximum Energy +4\nStamina +5\nMejiro McQueen bond +5"
+		],
+		"高みに至る為": [
+			"Stamina +5\nGuts +5\nMejiro McQueen bond +5",
+			"先駆け hint +1\nMejiro McQueen bond +5"
+		],
+		"“期待”は力": [
+			"Stamina +10"
+		],
+		"“期待”は好意": [
+			"Motivation +1\nStamina +10"
+		],
+		"“期待”に応える": [
+			"One of these will be selected at random\n----------\nEnergy -10\nStamina +10\nクールダウンhint +3\n----------\nEnergy -10\n深呼吸hint +1"
+		]
+	},
+	"Mejiro Palmer": {
+		"逃げられない選択？": [
+			"Energy -15\nGuts +20\nMejiro Palmer bond +5",
+			"Power +5\nSkill points +15\nMejiro Palmer bond +5"
+		],
+		"ポジティブな逃げ": [
+			"Guts +15\nMejiro Palmer bond +5",
+			"道悪○ hint +1\nMejiro Palmer bond +5"
+		],
+		"振り逃げランナウェイ": [
+			"Energy -15\nStamina +10\nGuts +10\nMejiro Palmer bond +5",
+			"Energy -15\nGuts +10\nIntelligence +10\nMejiro Palmer bond +5"
+		],
+		"ラブ逃げエスケープ": [
+			"Energy +10\nGuts +5\nIntelligence +5\nMejiro Palmer bond +5",
+			"Energy +10\n逃げのコツ○ hint +1\nMejiro Palmer bond +5"
+		],
+		"ポジティブ逃げネバギバ！": [
+			"Energy -20\nStamina +5\nGuts +5\n先陣の心得 hint +3 or リードキープ hint +1/+3\nMejiro Palmer bond +5",
+			"Energy +10\n一匹狼 hint +1"
+		]
+	},
+	"Mejiro Ryan": {
+		"あくまで薦められただけ": [
+			"ペースキープ hint +1\nMejiro Ryan bond +5",
+			"Energy +30\nMejiro Ryan bond +5"
+		],
+		"筋肉と共に明日へ！": [
+			"Energy -10\nPower +15\nMejiro Ryan bond +5",
+			"Maximum Energy +4\nPower +5\nMejiro Ryan bond +5"
+		],
+		"かっこいい理由": [
+			"Power +5\nSkill points +15\nMejiro Ryan bond +5"
+		],
+		"応援を受け入れる気持ち": [
+			"Power +15\n垂れウマ回避 hint +1\nMejiro Ryan bond +5"
+		]
+	},
+	"Mihono Bourbon": {
+		"他人に危害を及ぼしてはならない": [
+			"Energy -10\nStamina +5\nPower +15\nMihono Bourbon bond +5",
+			"Energy +10\nIntelligence +5\nMihono Bourbon bond +5"
+		],
+		"命令は守らなければならない": [
+			"集中力 hint +1\nMihono Bourbon bond +5",
+			"Speed +10\nSkill points +15\nMihono Bourbon bond +5"
+		],
+		"サイボーグではありません": [
+			"Guts +10\nSkill points +15\nMihono Bourbon bond +5",
+			"Energy -10\nコーナー回復○ hint +1\n(random) Mihono Bourbon bond -5\nEvent chain ended"
+		],
+		"新たな価値観のインストール": [
+			"Energy −10\nPower +5\nGuts +5\n逃げ直線○ hint +1\nMihono Bourbon bond +5"
+		]
+	},
+	"Narita Taishin": {
+		"別に、ほっといて": [
+			"Stamina +5\nSkill points +15\nNarita Taishin bond +5",
+			"Power +5\nSkill points +15\nNarita Taishin bond +5"
+		],
+		"別に、邪魔しないで": [
+			"追い上げ hint +1\nNarita Taishin bond +5",
+			"Skill points +30\nNarita Taishin bond +5"
+		],
+		"夜にこっそり……？": [
+			"Speed +5\nStamina +5"
+		],
+		"エンジョイミュージカル！": [
+			"Speed +5\nStamina +5\nPower +5\nお見通し hint +1"
+		]
+	},
+	"Nice Nature": {
+		"（ニャンとも）ガラじゃない": [
+			"Energy +20\nNice Nature bond +5",
+			"Energy +10\nIntelligence +5\nNice Nature bond +5"
+		],
+		"（美味しい）おせっかい": [
+			"ペースアップ hint +1\nNice Nature bond +5",
+			"Motivation +1\nMaximum Energy +4"
+		],
+		"（頑張り上手の）ほどほど上手": [
+			"Stamina +5\nGuts +5"
+		],
+		"見えてる結果（でも！）": [
+			"Stamina +5\nGuts +10\n別腹タンク hint +1"
+		],
+		"背、追いかけて": [
+			"Energy +5\nIntelligence +3\nNice Nature bond +5",
+			"Nice Nature bond +20"
+		],
+		"背、追い風を受けて": [
+			"Energy +10\nIntelligence +5\n伏兵○ hint +3\nNice Nature bond +5"
+		]
+	},
+	"Nishino Flower": {
+		"きれいに咲こうねっ♪": [
+			"Intelligence +15\nNishino Flower bond +5",
+			"Speed +10\nPower +5\nNishino Flower bond +5"
+		],
+		"温もり愛情弁当": [
+			"Get Charming ○ status\nNishino Flower bond +5",
+			"Energy +20\nNishino Flower bond +5"
+		],
+		"休んでほしくて……！": [
+			"Motivation +1\nSpeed +3\nPower +3\nIntelligence +3"
+		],
+		"ありがとうを言いたくて……！": [
+			"Power +5\n直線巧者 hint +1\nNishino Flower bond +5",
+			"Intelligence +5\n直線加速 hint +1\nNishino Flower bond +5"
+		],
+		"私にできること": [
+			"Maximum Energy +4\nSkill points +10"
+		],
+		"あこがれの……": [
+			"Energy -10\nIntelligence +20\nNishino Flower bond +5",
+			"Intelligence +5\nSkill points +15"
+		],
+		"たいせつなのは！": [
+			"Speed +5\nIntelligence +10\nハヤテ一文字 hint +1/+3 or 直線巧者 hint +1"
+		]
+	},
+	"Oguri Cap": {
+		"何と答えれば……": [
+			"Energy +5\nPower +5",
+			"Energy -10\nGuts +15"
+		],
+		"人混みは大変だ……": [
+			"Power +5\nSkill points +15",
+			"中山レース場○ hint +1"
+		],
+		"ぬいぐるみか……": [
+			"Maximum Energy +4\nPower +5"
+		],
+		"本当に応えるべきは……": [
+			"Power +5\nSkill points +10\nスタミナキープ hint +1\nOguri Cap bond +5",
+			"Stamina +5\nSkill points +10\n外差し準備 hint +1\nOguri Cap bond +5"
+		],
+		"私が語りたいことは……": [
+			"One of these will be selected at random\n----------\nPower +10\nGuts +5\nSkill points +10\nOguri Cap bond +5\n豪脚 hint +1\n----------\nPower +15\nGuts +10\nSkill points +15\nOguri Cap bond +5\n豪脚 hint +1",
+			"Energy +30"
+		]
+	},
+	"Rice Shower": {
+		"お花屋さんでの1ページ": [
+			"Motivation +1\nRice Shower bond +5",
+			"Stamina +10\nRice Shower bond +5"
+		],
+		"曇りの日の1ページ": [
+			"Speed +5\nGuts +5\nRice Shower bond +5",
+			"良バ場○ hint +1\nRice Shower bond +5"
+		],
+		"風の強い日の1ページ": [
+			"Guts +10\nRice Shower bond +5"
+		],
+		"友達と頑張った日の1ページ": [
+			"Stamina +10\nRice Shower bond +5"
+		],
+		"2人で頑張った日の1ページ": [
+			"Energy -10\n火事場のバ鹿力 hint +1 or 別腹タンク hint +1\nRice Shower bond +5"
+		]
+	},
+	"Sakura Bakushin O": {
+		"優等生の一石二鳥！！": [
+			"Speed +15\nSakura Bakushin O bond +5",
+			"Speed +5\nPower +10\nSakura Bakushin O bond +5"
+		],
+		"走りだすほどの！！": [
+			"詰め寄り hint +1",
+			"Energy -10\nSpeed +10\nPower +5\nSakura Bakushin O bond +5"
+		],
+		"バクシンの料理！！": [
+			"Speed +10"
+		],
+		"バクシンの気持ち！！": [
+			"Speed +5\nPower +5"
+		],
+		"バクシンの大成功！！": [
+			"Speed +10\nPower +5\nスプリントターボ hint +1"
+		]
+	},
+	"Sakura Chiyono O": {
+		"今日の格言！": [
+			"Energy -10\nPower +20\nSakura Chiyono O bond +5",
+			"Energy +5\nSkill points +10\nSakura Chiyono O bond +5"
+		],
+		"いつか咲く、その日まで……": [
+			"Energy +5\nStamina +5\nSakura Chiyono O bond +5",
+			"春ウマ娘○ hint +1\nSakura Chiyono O bond +5"
+		],
+		"花咲く、一歩！": [
+			"Skill points +15"
+		],
+		"花咲く、希望！": [
+			"One of these will be selected at random\n----------\nStamina +15\nHeal a negative status effect\nSakura Chiyono O bond +5\n----------\nEnergy -10\nGuts +15\nSakura Chiyono O bond +5",
+			"Energy +10\nMotivation +1\nSakura Chiyono O bond +5"
+		],
+		"花咲く、いつか！": [
+			"One of these will be selected at random\n----------\nEnergy -15\nStamina +20\nSkill points +10\nスピードスター hint +3\nSakura Chiyono O bond +5\n----------\nEnergy -15\nStamina +10\nSkill points +5\n抜け出し準備 hint +3\nSakura Chiyono O bond +5",
+			"Speed +5\nStamina +10\nPower +5\nSkill points +30\nSakura Chiyono O bond +5"
+		]
+	},
+	"Satono Diamond": {
+		"新しいもの、大好きです！": [
+			"Guts +10\nSatono Diamond bond +5",
+			"Energy -10\nStamina +20\nSatono Diamond bond +5"
+		],
+		"難しいこと、大好きです！": [
+			"Stamina +5\nGuts +10\nSatono Diamond bond +5",
+			"逃げためらい hint +1\nSatono Diamond bond +5"
+		],
+		"『望まれた』ウマ娘": [
+			"Energy +10\nStamina +2\nGuts +2\nIntelligence +2"
+		],
+		"ダイヤのこだわり": [
+			"Intelligence +10\nSatono Diamond bond +5",
+			"One of these will be selected at random\n----------\nEnergy +15\nStamina +10\nSatono Diamond bond +5\n----------\nMotivation -1\nGuts +20"
+		],
+		"あなたにだけは絶対に": [
+			"Energy -20\nStamina +30\n鋼の意志 hint +1\nSatono Diamond bond +5",
+			"Energy +5\nGuts +5\n鋼の意志 hint +1\nSatono Diamond bond +5"
+		]
+	},
+	"Seeking the Pearl": {
+		"全力でシンキング！": [
+			"Intelligence +20\nSeeking the Pearl bond +5",
+			"Energy -10\nウマ好み hint +3\nSeeking the Pearl bond +5"
+		],
+		"全力でパッション！": [
+			"Energy +10\nMotivation +1",
+			"Power +5\nGuts +5\nSeeking the Pearl bond +5"
+		],
+		"言葉はノンノン♪ ボディで語るの！": [
+			"Motivation +1\nラッキーセブン hint +1\nSeeking the Pearl bond +5",
+			"Power +10\nGuts +10\nSeeking the Pearl bond +5",
+			"Energy +30"
+		],
+		"諦めないで！ 可能性は無限大！": [
+			"Power +5\nGuts +5\nギアシフト hint +1"
+		]
+	},
+	"Seiun Sky": {
+		"ゆる募、助言者": [
+			"Intelligence +15\nSeiun Sky bond +5",
+			"リードキープ hint +1\nSeiun Sky bond +5"
+		],
+		"ゆる募、ネコの捕まえ方": [
+			"Energy +10\nIntelligence +5\nSeiun Sky bond +5",
+			"Energy -10\nSpeed +15\nStamina +5\nSeiun Sky bond +5"
+		],
+		"ご利用は戦略的に☆": [
+			"Energy +10\nIntelligence +5\nSeiun Sky bond +5",
+			"Skill points +30\n二の矢 hint +1\nSeiun Sky bond -5\nEvent chain ended"
+		],
+		"トラップにご注意": [
+			"Speed +5\nStamina +5"
+		],
+		"すべては勝つために": [
+			"Energy +10\nMotivation +1\nSpeed +5\nStamina +5\nIntelligence +5\nSkill points +5\n脱出術 hint +1/+3 or 急ぎ足 hint +1"
+		],
+		"いきなりマーダーミステリー！ その1": [
+			"Intelligence +5\nSkill points +10\nSeiun Sky bond +5",
+			"Energy +10\nSeiun Sky bond +5"
+		],
+		"いきなりマーダーミステリー！ その2": [
+			"Intelligence +5\n先行駆け引き hint +1\nSeiun Sky bond +5",
+			"Energy +5\nSkill points +10\nSeiun Sky bond +5"
+		],
+		"いきなりマーダーミステリー！ その3": [
+			"Intelligence +5/+10\n先陣の心得 hint +1/+3\nSeiun Sky bond +5",
+			"Energy +10\nStamina +10\nSkill points +15"
+		]
+	},
+	"Shinko Windy": {
+		"ガブッと、撲滅！": [
+			"Speed +3\nMotivation +1\nShinko Windy bond +5",
+			"Energy +10\nSkill points +5\nShinko Windy bond +5"
+		],
+		"ガブッと、突撃！": [
+			"Skill points +15\nShinko Windy bond +5",
+			"Speed +3\n負けん気 hint +1\nShinko Windy bond +5"
+		],
+		"ココ掘れ、ウインディ！": [
+			"Speed +10\nShinko Windy bond +5",
+			"Energy -5\nSkill points +30\nShinko Windy bond +5"
+		],
+		"ゲートよ、開け！": [
+			"One of these will be selected at random\n----------\nSpeed +10\nSkill points +15\nギアシフト hint +3\nShinko Windy bond +5\n----------\nSpeed +5\nSkill points +10\nShinko Windy bond +5"
+		]
+	},
+	"Silence Suzuka": {
+		"どこまでも": [
+			"Speed +10\nStamina +5\nSilence Suzuka bond +5",
+			"Speed +15\nSilence Suzuka bond +5"
+		],
+		"どうすれば": [
+			"Speed +5\nStamina +5\nIntelligence +5\nSilence Suzuka bond +5",
+			"One of these will be selected at random\n----------\nSpeed +15\nSilence Suzuka bond +5\n----------\n左回り○ hint +1\nSilence Suzuka bond +5"
+		],
+		"手紙→？": [
+			"Speed +10"
+		],
+		"手紙→皆の気持ち→？": [
+			"Speed +10\nPower +10"
+		],
+		"手紙→皆の気持ち→ちゃんと待っててね": [
+			"Speed +10\n逃亡者 hint +1"
+		]
+	},
+	"Smart Falcon": {
+		"ライブはコーレスが命☆": [
+			"Stamina +5\nGuts +10\nSmart Falcon bond +5",
+			"Intelligence +15\nSmart Falcon bond +5"
+		],
+		"かわいかったら見に来てね☆": [
+			"Energy -10\nPower +10\n押し切り準備 hint +1\nSmart Falcon bond +5",
+			"Energy +10\nIntelligence +5\nSmart Falcon bond +5"
+		],
+		"常に心にステージを☆": [
+			"Intelligence +10\nSmart Falcon bond +5",
+			"Energy +25\n集中力 hint +1\nSmart Falcon bond +5\nEvent chain ended"
+		],
+		"いつでもどこでも輝くよ☆": [
+			"Speed +5\nPower +5"
+		],
+		"これが私のウマドル道☆": [
+			"Maximum Energy +4\nStamina +5\nPower +5\nIntelligence +5\nポジションセンス hint +1",
+			"Maximum Energy +4\nStamina +5\nPower +5\nIntelligence +5\n注目の踊り子 hint +3"
+		]
+	},
+	"Special Week": {
+		"あれもこれもで、悩んじゃいます！": [
+			"Energy +10\nMotivation +1\nSpecial Week bond +5",
+			"Energy -10\nStamina +15\nSkill points +15\nSpecial Week bond +5"
+		],
+		"曲がり角には、気をつけます！": [
+			"別腹タンク hint +1\nSpecial Week bond +5",
+			"Guts +15\nSpecial Week bond +5"
+		],
+		"蹄鉄で、ステップを！": [
+			"Speed +5\nStamina +5"
+		],
+		"想いは、ジェットコースター！": [
+			"Energy -10\nSpeed +5\nStamina +5\nGuts +10\nSpecial Week bond +5",
+			"Energy +20\nIntelligence +10\nSpecial Week bond +5\nEvent chain ended"
+		],
+		"私たちの、ビクトリースタンド！": [
+			"Energy -10\nSpeed +5\nStamina +5\nGuts +5\n全身全霊 hint +1 or 末脚 hint +1\nSpecial Week bond +5"
+		],
+		"いつかは憧れのウマ娘に！": [
+			"Energy +10\nSpeed +5"
+		],
+		"少しでも近づけるように": [
+			"Energy -10\nSpeed +15\nSpecial Week bond +5",
+			"Energy -10\nSkill points +20\nSpecial Week bond +5",
+			"Energy -10\nふり絞り hint +1\nSpecial Week bond +5"
+		],
+		"憧れのカタチ": [
+			"One of these will be selected at random\n----------\nEnergy +10\nSpeed +5\n栄養補給 hint +1/+3\n----------\nEnergy +10\nSpeed +10\nSkill points +10\n食いしん坊 hint +3"
+		]
+	},
+	"Super Creek": {
+		"お手伝いもお任せ♪": [
+			"Energy +15\nSuper Creek bond +5",
+			"Stamina +10\nSuper Creek bond +5"
+		],
+		"お気遣いもお任せ♪": [
+			"深呼吸 hint +1\nSuper Creek bond +5",
+			"Energy +10\nStamina +5\nSuper Creek bond +5"
+		],
+		"できたてはごろり、たっぷりと": [
+			"Energy +10\nStamina +5"
+		],
+		"煮込んでとろり、優しい味に": [
+			"Stamina +5\nPower +5"
+		],
+		"おかわりどうぞ、いいこたち！": [
+			"Stamina +10\nPower +5\n円弧のマエストロ hint +1"
+		]
+	},
+	"Sweep Tosho": {
+		"ミラクル☆エスケープ": [
+			"Energy +10\nSpeed +5\nSweep Tosho bond +5",
+			"Energy -10\nSpeed +20\nSweep Tosho bond +5"
+		],
+		"ワンダフル☆ミステイク！": [
+			"One of these will be selected at random\n----------\nEnergy -15\nSkill points +40\n----------\nEnergy -20\nSkill points +40\nSweep Tosho bond +5",
+			"Get Charming ○ status\nSweep Tosho bond +5"
+		],
+		"とっておきのお友だち？": [
+			"Speed +5\nSkill points +10\nラッキーセブン hint +1\nSweep Tosho bond +5",
+			"Motivation -1\nおひとり様○ hint +5"
+		],
+		"イタズラは計画的に": [
+			"Speed +10\nSkill points +20\n冷静 hint +1\nSweep Tosho bond +5",
+			"Motivation -1\n一匹狼 hint +1"
+		]
+	},
+	"Symboli Rudolf": {
+		"\"皇帝\"の激励": [
+			"Speed +10",
+			"Energy -10\nSkill points +30"
+		],
+		"生徒会長の思い": [
+			"雨の日○ hint +1",
+			"Stamina +15"
+		]
+	},
+	"TM Opera O": {
+		"有限の時を越えて": [
+			"Energy +10\nSkill points +15",
+			"非根幹距離○ hint +1"
+		],
+		"勝者へ至るエチュード": [
+			"Motivation -1\nSpeed +5\nSkill points +30",
+			"Power +5\nSkill points +15"
+		]
+	},
+	"Taiki Shuttle": {
+		"イエス！ レッツ・ハグ☆": [
+			"Speed +10",
+			"Speed +5\nPower +5"
+		],
+		"オゥ！トゥナイト・パーティー☆": [
+			"Energy -10\nSpeed +5\nPower +10",
+			"抜け出し準備 hint +1"
+		]
+	},
+	"Tamamo Cross": {
+		"負けられん戦い！": [
+			"ウマ込み冷静 hint +1\nTamamo Cross bond +5",
+			"Stamina +5\nIntelligence +5\nTamamo Cross bond +5"
+		],
+		"タマモ先輩の学園案内": [
+			"Intelligence +10\nTamamo Cross bond +5",
+			"Stamina +5\nGuts +5\nTamamo Cross bond +5"
+		],
+		"牛・豚・鶏・カレー！": [
+			"Stamina +5\nPower +5"
+		],
+		"なけなしのレイトショー": [
+			"Stamina +5\nPower +5\nGuts +5"
+		],
+		"貧しさは友だ！": [
+			"Stamina +5\nPower +10\n迅速果断 hint +1"
+		]
+	},
+	"Tazuna Hayakawa": {
+		"お疲れ様です♪": [
+			"(random) Motivation +1\nSpeed +3\nTazuna Hayakawa bond +5"
+		],
+		"選んだ生き方": [
+			"Energy +10\nMotivation +1\nTazuna Hayakawa bond +5",
+			"Motivation +1\nIntelligence +5\nTazuna Hayakawa bond +5"
+		],
+		"情熱のふたり": [
+			"Energy +10\nIntelligence +5\nMotivation +1\nTazuna Hayakawa bond +5\nCan start dating",
+			"Motivation -1\nTazuna Hayakawa bond -5\n展開窺い hint +1\nEvent chain ended"
+		],
+		"牛乳ときどきリンゴ": [
+			"Energy +35\nSpeed +5\nMotivation +1\nTazuna Hayakawa bond +5"
+		],
+		"驚異の逃げ脚？": [
+			"Energy +35\nTazuna Hayakawa bond +5\nHeal a negative status effect"
+		],
+		"キネマの思ひ出": [
+			"Energy +35\nStamina +5\nMotivation +1\nTazuna Hayakawa bond +5",
+			"Stamina +10\nGuts +10\nMotivation +1\nTazuna Hayakawa bond +5"
+		],
+		"ため息と絆創膏": [
+			"Energy +50\nIntelligence +5\nMotivation +1\nTazuna Hayakawa bond +5\nHeal a negative status effect"
+		],
+		"ひと休みサプライズ": [
+			"Energy +50\nSkill points +30\nMotivation +2\nTazuna Hayakawa bond +5\n集中力 hint +1\nコンセントレーション hint +1"
+		]
+	},
+	"Tokai Teio": {
+		"ボクの武器": [
+			"Motivation +1\nGuts +10\nTokai Teio bond +5",
+			"先行直線○ hint +1\nTokai Teio bond +5"
+		],
+		"ボクのやり方": [
+			"Motivation +1\nSkill points +15\nTokai Teio bond +5",
+			"Guts +15\nTokai Teio bond +5"
+		],
+		"幕開けの予感": [
+			"Energy +10\nSpeed +5"
+		],
+		"一時の幕間": [
+			"Energy +10\nSpeed +5\nIntelligence +5"
+		],
+		" 伝説のひと幕": [
+			"Energy +10\nSpeed +5\n一陣の風 hint +1\nTokai Teio bond +5"
+		],
+		"ライバルと2ショット": [
+			"Power +10\nTokai Teio bond +5"
+		],
+		"ゴシップ狂想曲": [
+			"Energy +10\nMotivation +1\nTokai Teio bond +5",
+			"Energy -10\nPower +15\nSkill points +20\nTokai Teio bond +5\nEvent chain ended"
+		],
+		"灯火は未来へ輝く": [
+			"Stamina +7\nPower +7\n火事場のバ鹿力 hint +1\nTokai Teio bond +5"
+		]
+	},
+	"Twin Turbo": {
+		"思い込んだら一直線！": [
+			"Motivation -1\nSpeed +20",
+			"Energy -10\nPower +20"
+		],
+		"燃えてきた！！": [
+			"Energy +15\nTwin Turbo bond +5",
+			"先駆け hint +1\nTwin Turbo bond +5"
+		],
+		"怖くないもん！": [
+			"One of these will be selected at random\n----------\nSpeed +10\nTwin Turbo bond +5\n----------\nEnergy -10\nSpeed +10\nEvent chain ended",
+			"Energy +20\nEvent chain ended"
+		],
+		"捕まらないもん！": [
+			"One of these will be selected at random\n----------\nSpeed +15\n(random) 先頭プライド hint +1/+3\n----------\nEnergy -10\nSpeed +10\n(random) 先頭プライド hint +1/+3\nEvent chain ended",
+			"Energy +25\nEvent chain ended"
+		],
+		"ターボは強いんだもん！": [
+			"One of these will be selected at random\n----------\nEnergy -10\nSpeed +25\n先手必勝 hint +1/+3\n先駆け hint +1/+3\n----------\nEnergy -10\nSpeed +5\n先手必勝 hint +1/+3\n先手必勝 hint +1/+3",
+			"Energy +15\n展開窺い hint +1"
+		]
+	},
+	"Vodka": {
+		"憧れのセリフ": [
+			"Power +10\nVodka bond +5",
+			"Power +5\nSkill points +15\nVodka bond +5"
+		],
+		"大通りの強敵": [
+			"垂れウマ回避 hint +1\nVodka bond +5",
+			"Power +5\nSkill points +15\nVodka bond +5"
+		],
+		"従うのは、自分の心": [
+			"Power +5\nSkill points +15"
+		],
+		"夕日に誓った煌めき": [
+			"Power +5\nSkill points +15"
+		],
+		"記録に残せよ？": [
+			"Power +5\nSkill points +30\n好転一息 hint +1"
+		]
+	},
+	"Winning Ticket": {
+		"全・力・競・走！！": [
+			"差しコーナー○ hint +1\nWinning Ticket bond +5",
+			"Skill points +30\nWinning Ticket bond +5"
+		],
+		"全・力・筋・肉！！": [
+			"Stamina +5\nSkill points +15\nWinning Ticket bond +5",
+			"Motivation +1\nSkill points +15\nWinning Ticket bond +5"
+		],
+		"ユーザーネーム『W&T』": [
+			"Guts +10"
+		],
+		"後日、全員筋肉痛！": [
+			"Stamina +5\nGuts +5"
+		],
+		"We are BNW！！": [
+			"Guts +10\n乗り換え上手 hint +1"
+		],
+		"密着！情熱ダービー特集ッ": [
+			"Stamina +5\nPower +5"
+		],
+		"特訓！ライバルだからッ": [
+			"Energy -10\nStamina +5\nPower +5"
+		],
+		"挑戦！夢は叶えるものッ": [
+			"Energy -30\nStamina +5\nPower +5\n全身全霊 hint +2"
+		]
+	},
+	"Yaeno Muteki": {
+		"剛毅朴訥、仁に近し": [
+			"Speed +10",
+			"Motivation +1\nPower +5"
+		],
+		"嗚呼、守りたい……！": [
+			"Stamina +10\nPower +10",
+			"中距離コーナー○ hint +1"
+		],
+		"電脳奥義炸裂！ヤエノ出稽古修行": [
+			"Speed +5\nPower +5\nSkill points +10"
+		],
+		"理の食VS暴の食": [
+			"Energy +10\nSkill points +10\nYaeno Muteki bond +5",
+			"Energy +10\nIntelligence +10\nSkill points +10\n遊びはおしまいっ！hint +3\nEvent chain ended"
+		],
+		"ヤエノムテキ恋歌地獄変": [
+			"Energy -10\nSpeed +5\n(random) Stamina +5\n(random) Power +10\nアガッてきた！hint +1/+3"
+		]
+	},
+	"Yukino Bijin": {
+		"イカすライブのために": [
+			"Guts +10\nYukino Bijin bond +5",
+			"Energy -10\nGuts +15\nYukino Bijin bond +5"
+		],
+		"\"シチースポット\"を目指して": [
+			"Energy -10\nMotivation +1\nGuts +10\nYukino Bijin bond +5",
+			"コーナー加速○ hint +1\nYukino Bijin bond +5"
+		],
+		"オーダートレーニング！": [
+			"Motivation +1\nPower +5\nYukino Bijin bond +5"
+		],
+		"ナチュラル・シチーガール": [
+			"Motivation +1\nIntelligence +25"
+		],
+		"思い出ほわほわ、わんこそば": [
+			"Motivation +1\nYukino Bijin bond +5",
+			"Maximum Energy +4\nYukino Bijin bond +5"
+		],
+		"学級委員長のすンげぇ特訓": [
+			"Motivation +1\nPower +5\nYukino Bijin bond +5",
+			"Power +3\nGuts +3\nIntelligence +3\nYukino Bijin bond +5"
+		],
+		"あたし、勝ちたいンです！": [
+			"Motivation +1\nノンストップガール hint +1\nYukino Bijin bond +5",
+			"Power +3\nGuts +3\nIntelligence +3\nノンストップガール hint +1\nYukino Bijin bond +5"
+		]
+	},
+	"Zenno Rob Roy": {
+		"託された物語": [
+			"Stamina +10\nIntelligence +10\nZenno Rob Roy bond +5",
+			"中距離直線○ hint +1\nZenno Rob Roy bond +5"
+		],
+		"読書家あるある": [
+			"Speed +5\nIntelligence +5\nZenno Rob Roy bond +5",
+			"Energy +10\nPower +5\nZenno Rob Roy bond +5"
+		],
+		"読書少女と魔法少女？": [
+			"Stamina +5\nIntelligence +5\nZenno Rob Roy bond +5",
+			"Energy +20\nPower +10\nZenno Rob Roy bond +5\nEvent chain ended"
+		],
+		"いつか、『物語』の主役に": [
+			"Stamina +10\nIntelligence +10\n鋭い眼光 hint +1"
+		]
+	}
+}

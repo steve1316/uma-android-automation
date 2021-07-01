@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+    <ImageButton
+        android:id="@+id/bot_actions_overlay_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="2dp"
+        android:layout_marginVertical="2dp"
+        android:minWidth="0sp"
+        android:minHeight="0sp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_baseline_play_circle_outline_24"
+        tools:ignore="ContentDescription" />
+
+</LinearLayout>

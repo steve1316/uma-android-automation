@@ -1,0 +1,3 @@
+include ':opencv'
+include ':app'
+rootProject.name = "UmaAndroidAutomation"
