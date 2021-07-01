@@ -194,7 +194,6 @@ class BotService : Service() {
 		MessageLog.saveLogToFile(myContext)
 		
 		Log.d(TAG, "Bot Service for $appName is now stopped.")
-		Toast.makeText(myContext, "Bot Service for $appName is now stopped.", Toast.LENGTH_SHORT).show()
 		isRunning = false
 		
 		// Update the app's notification with the status.
