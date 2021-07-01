@@ -5,6 +5,9 @@ import android.util.Log
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MessageLog
+import com.steve1316.uma_android_automation.utils.MyAccessibilityService
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.TimeUnit
 
 /**
@@ -14,6 +17,7 @@ class Game(private val myContext: Context) {
 	private val TAG: String = "[${MainActivity.loggerTag}]Game"
 	
 	private val imageUtils: ImageUtils = ImageUtils(myContext, this)
+	private val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
 	
 	private val startTime: Long = System.currentTimeMillis()
@@ -65,6 +69,17 @@ class Game(private val myContext: Context) {
 			} else {
 				MessageLog.messageLog.add(printTime() + " " + message)
 			}
+		}
+	}
+	
+	/**
+	 * Wait the specified seconds to account for ping or loading.
+	 *
+	 * @param seconds Number of seconds to pause execution.
+	 */
+	fun wait(seconds: Double) {
+		runBlocking {
+			delay((seconds * 1000).toLong())
 		}
 	}
 	

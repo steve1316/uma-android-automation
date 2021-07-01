@@ -24,6 +24,7 @@ import com.steve1316.uma_android_automation.data.SkillData
 import com.steve1316.uma_android_automation.data.SupportData
 import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
+import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import java.io.StringReader
 
 class HomeFragment : Fragment() {
@@ -114,7 +115,7 @@ class HomeFragment : Fragment() {
 	 * @return True if the application has overlay permission and has enabled the Accessibility Service for it. Otherwise, return False.
 	 */
 	private fun startReadyCheck(): Boolean {
-		if (!checkForOverlayPermission()) {
+		if (!checkForOverlayPermission() || !checkForAccessibilityPermission()) {
 			return false
 		}
 		
@@ -163,6 +164,42 @@ class HomeFragment : Fragment() {
 		
 		Log.d(TAG, "Application has permission to draw overlay.")
 		return true
+	}
+	
+	/**
+	 * Checks if the Accessibility Service for this application is enabled. If not, it will direct the user to enable it.
+	 *
+	 * Source is from https://stackoverflow.com/questions/18094982/detect-if-my-accessibility-service-is-enabled/18095283#18095283
+	 *
+	 * @return True if it is enabled. False otherwise.
+	 */
+	private fun checkForAccessibilityPermission(): Boolean {
+		val prefString = Settings.Secure.getString(myContext.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+		
+		if (prefString != null && prefString.isNotEmpty()) {
+			// Check the string of enabled accessibility services to see if this application's accessibility service is there.
+			val enabled = prefString.contains(myContext.packageName.toString() + "/" + MyAccessibilityService::class.java.name)
+			
+			if (enabled) {
+				Log.d(TAG, "This application's Accessibility Service is currently turned on.")
+				return true
+			}
+		}
+		
+		// Moves the user to the Accessibility Settings if the service is not detected.
+		AlertDialog.Builder(myContext).apply {
+			setTitle(R.string.accessibility_disabled)
+			setMessage(R.string.accessibility_disabled_message)
+			setPositiveButton(R.string.go_to_settings) { _, _ ->
+				Log.d(TAG, "Accessibility Service is not detected. Moving user to Accessibility Settings.")
+				val accessibilitySettingsIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+				myContext.startActivity(accessibilitySettingsIntent)
+			}
+			setNegativeButton(android.R.string.cancel, null)
+			show()
+		}
+		
+		return false
 	}
 	
 	/**
