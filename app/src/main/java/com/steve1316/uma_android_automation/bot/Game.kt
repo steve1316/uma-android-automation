@@ -44,15 +44,15 @@ class Game(private val myContext: Context) {
 	 * Print the specified message to debug console and then saves the message to the log.
 	 *
 	 * @param message Message to be saved.
-	 * @param MESSAGE_TAG TAG to distinguish between messages for where they came from. Defaults to Game's TAG.
+	 * @param tag Distinguishes between messages for where they came from. Defaults to Game's TAG.
 	 * @param isError Flag to determine whether to display log message in console as debug or error.
 	 * @param isOption Flag to determine whether to append a newline right after the time in the string.
 	 */
-	fun printToLog(message: String, MESSAGE_TAG: String = TAG, isError: Boolean = false, isOption: Boolean = false) {
+	fun printToLog(message: String, tag: String = TAG, isError: Boolean = false, isOption: Boolean = false) {
 		if (!isError) {
-			Log.d(MESSAGE_TAG, message)
+			Log.d(tag, message)
 		} else {
-			Log.e(MESSAGE_TAG, message)
+			Log.e(tag, message)
 		}
 		
 		// Remove the newline prefix if needed and place it where it should be.

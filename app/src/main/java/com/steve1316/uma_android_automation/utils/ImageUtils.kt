@@ -174,7 +174,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		return if (templateBitmap != null) {
 			Pair(sourceBitmap, templateBitmap)
 		} else {
-			game.printToLog("[ERROR] One or more of the Bitmaps are null.", MESSAGE_TAG = TAG, isError = true)
+			game.printToLog("[ERROR] One or more of the Bitmaps are null.", tag = TAG, isError = true)
 			
 			Pair(sourceBitmap, templateBitmap)
 		}
@@ -202,7 +202,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
 						if (!suppressError) {
-							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", MESSAGE_TAG = TAG)
+							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", tag = TAG)
 						}
 						
 						return null
@@ -211,7 +211,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					Log.d(TAG, "Failed to find the ${templateName.uppercase()} button. Trying again...")
 					game.wait(1.0)
 				} else {
-					game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", MESSAGE_TAG = TAG)
+					game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
 					return matchLocation
 				}
 			}
@@ -245,7 +245,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					
 					game.wait(1.0)
 				} else {
-					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", MESSAGE_TAG = TAG)
+					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", tag = TAG)
 					return true
 				}
 			} else {
@@ -254,7 +254,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		if (!suppressError) {
-			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", MESSAGE_TAG = TAG)
+			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = TAG)
 		}
 		
 		return false
@@ -270,7 +270,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return True if the specified image vanished from the screen. False otherwise.
 	 */
 	fun waitVanish(templateName: String, timeout: Int = 5, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Boolean {
-		game.printToLog("[INFO] Now waiting for $templateName to vanish from the screen...", MESSAGE_TAG = TAG)
+		game.printToLog("[INFO] Now waiting for $templateName to vanish from the screen...", tag = TAG)
 		
 		var remaining = timeout
 		if (findImage(templateName, tries = 1, region = region, suppressError = suppressError) == null) {
@@ -332,7 +332,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
 			Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
 			
-			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", MESSAGE_TAG = TAG)
+			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", tag = TAG)
 			
 			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
 			tessBaseAPI.setImage(resultBitmap)
@@ -345,7 +345,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Finally, detect text on the cropped region.
 				result = tessBaseAPI.utF8Text
 			} catch (e: Exception) {
-				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
+				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
 			}
 			
 			tessBaseAPI.clear()
@@ -371,7 +371,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
 			Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
 			
-			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", MESSAGE_TAG = TAG)
+			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", tag = TAG)
 			
 			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
 			tessBaseAPI.setImage(resultBitmap)
@@ -384,7 +384,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Finally, detect text on the cropped region.
 				result = tessBaseAPI.utF8Text
 			} catch (e: Exception) {
-				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
+				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
 			}
 			
 			tessBaseAPI.clear()
@@ -407,19 +407,19 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			// If the folder was not able to be created for some reason, log the error and stop the MediaProjection Service.
 			if (!successfullyCreated) {
-				game.printToLog("[ERROR] Failed to create the /files/tesseract/tessdata/ folder.", MESSAGE_TAG = TAG, isError = true)
+				game.printToLog("[ERROR] Failed to create the /files/tesseract/tessdata/ folder.", tag = TAG, isError = true)
 			} else {
-				game.printToLog("[INFO] Successfully created /files/tesseract/tessdata/ folder.", MESSAGE_TAG = TAG)
+				game.printToLog("[INFO] Successfully created /files/tesseract/tessdata/ folder.", tag = TAG)
 			}
 		} else {
-			game.printToLog("[INFO] /files/tesseract/tessdata/ folder already exists.", MESSAGE_TAG = TAG)
+			game.printToLog("[INFO] /files/tesseract/tessdata/ folder already exists.", tag = TAG)
 		}
 		
 		// If the jpn.traineddata is not in the application folder, copy it there from assets.
 		val trainedDataPath = File(tempDirectory, "jpn.traineddata")
 		if (!trainedDataPath.exists()) {
 			try {
-				game.printToLog("[INFO] Starting Tesseract initialization.", MESSAGE_TAG = TAG)
+				game.printToLog("[INFO] Starting Tesseract initialization.", tag = TAG)
 				val input = myContext.assets.open("jpn.traineddata")
 				
 				val output = FileOutputStream("$tempDirectory/jpn.traineddata")
@@ -433,9 +433,9 @@ class ImageUtils(context: Context, private val game: Game) {
 				input.close()
 				output.flush()
 				output.close()
-				game.printToLog("[INFO] Finished Tesseract initialization.", MESSAGE_TAG = TAG)
+				game.printToLog("[INFO] Finished Tesseract initialization.", tag = TAG)
 			} catch (e: IOException) {
-				game.printToLog("[ERROR] IO EXCEPTION: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
+				game.printToLog("[ERROR] IO EXCEPTION: ${e.stackTraceToString()}", tag = TAG, isError = true)
 			}
 		}
 	}
