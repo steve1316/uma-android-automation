@@ -80,4 +80,7 @@ dependencies {
 
     // Klaxon to parse JSON data files.
     implementation 'com.beust:klaxon:5.5'
+
+    // Google's Firebase Machine Learning OCR for Text Detection.
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.3'
 }

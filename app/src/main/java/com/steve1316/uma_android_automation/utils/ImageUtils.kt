@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
 import com.googlecode.tesseract.android.TessBaseAPI
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
@@ -25,12 +27,14 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val TAG: String = "[${MainActivity.loggerTag}]ImageUtils"
 	private var myContext = context
 	
+	// Initialize Google's ML OCR.
+	private val textRecognizer = TextRecognition.getClient()
+	
 	private val matchMethod: Int = Imgproc.TM_CCOEFF_NORMED
 	
 	private val tessBaseAPI: TessBaseAPI
 	
-	private var firstTimeCheck: Boolean = true
-	private var sourceBitmap: Bitmap? = null
+	private var count = 0
 	
 	companion object {
 		private var matchFilePath: String = ""
