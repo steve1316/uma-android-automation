@@ -3,6 +3,7 @@ package com.steve1316.uma_android_automation.bot
 import android.content.Context
 import android.util.Log
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
@@ -17,9 +18,14 @@ import java.util.concurrent.TimeUnit
 class Game(private val myContext: Context) {
 	private val TAG: String = "[${MainActivity.loggerTag}]Game"
 	
-	private val imageUtils: ImageUtils = ImageUtils(myContext, this)
-	private val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
+	private var debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "debugMode")
+	
+	val imageUtils: ImageUtils = ImageUtils(myContext, this)
+	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
+	private val navigation: Navigation = Navigation(this)
 	private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
+	
+	val maximumPercentage: Int = 30
 	
 	private val startTime: Long = System.currentTimeMillis()
 	
@@ -117,6 +123,8 @@ class Game(private val myContext: Context) {
 	 */
 	fun start(): Boolean {
 		val startTime: Long = System.currentTimeMillis()
+		
+		navigation.start()
 		
 		val endTime: Long = System.currentTimeMillis()
 		Log.d(TAG, "Total Runtime: ${endTime - startTime}ms")
