@@ -54,6 +54,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		// Initialize Tesseract with the jpn.traineddata model.
 		initTesseract()
 		tessBaseAPI = TessBaseAPI()
+		
+		// Start up Tesseract.
+		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
+		game.printToLog("[INFO] JPN Training file loaded.\n", tag = TAG)
 	}
 	
 	/**
@@ -147,14 +151,16 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return A Pair of source and template Bitmaps.
 	 */
 	private fun getBitmaps(templateName: String, templateFolderName: String): Pair<Bitmap?, Bitmap?> {
-		// Keep the same source Bitmap on repeated tries to reduce processing time.
-		if (firstTimeCheck) {
-			// Keep swiping a little bit up and down to trigger a new image for ImageReader to grab.
-			while (sourceBitmap == null) {
-				sourceBitmap = MediaProjectionService.takeScreenshotNow()
-			}
+		var sourceBitmap: Bitmap? = null
+		
+		while (sourceBitmap == null) {
+			sourceBitmap = MediaProjectionService.takeScreenshotNow()
 			
-			firstTimeCheck = false
+			if (sourceBitmap == null) {
+				game.gestureUtils.swipe(500f, 1000f, 500f, 900f, 100L)
+				game.gestureUtils.swipe(500f, 900f, 500f, 1000f, 100L)
+				game.wait(0.5)
+			}
 		}
 		
 		var templateBitmap: Bitmap?
@@ -303,10 +309,6 @@ class ImageUtils(context: Context, private val game: Game) {
 			val newY: Int = max(0, matchLocation.y.toInt() + 116)
 			var croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
 			
-			// Start up Tesseract.
-			tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
-			game.printToLog("[INFO] JPN Training file loaded.\n", MESSAGE_TAG = TAG)
-			
 			// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 			croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
 				Log.d(TAG, "Shifting the region over by 70 pixels!")
@@ -346,7 +348,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
 			}
 			
-			tessBaseAPI.end()
+			tessBaseAPI.clear()
 			
 			return result
 		} else {
@@ -354,10 +356,6 @@ class ImageUtils(context: Context, private val game: Game) {
 
 			// Crop the source screenshot to the custom region.
 			val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap!!, region[0], region[1], region[2], region[3])
-			
-			// Start up Tesseract.
-			tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
-			game.printToLog("[INFO] JPN Training file loaded.\n", MESSAGE_TAG = TAG)
 			
 			// Make the cropped screenshot grayscale.
 			val cvImage = Mat()
@@ -389,7 +387,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
 			}
 			
-			tessBaseAPI.end()
+			tessBaseAPI.clear()
 			
 			return result
 		}
