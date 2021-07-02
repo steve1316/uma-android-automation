@@ -14,7 +14,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
-import android.widget.Toast
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 import com.steve1316.uma_android_automation.bot.Game
@@ -108,7 +107,6 @@ class BotService : Service() {
 						// Update both the Notification and the overlay button to reflect the current bot status.
 						if (!isRunning) {
 							Log.d(TAG, "Service for $appName is now running.")
-							Toast.makeText(myContext, "Service for $appName is now running.", Toast.LENGTH_SHORT).show()
 							isRunning = true
 							overlayButton.setImageResource(R.drawable.ic_baseline_stop_circle_24)
 							
