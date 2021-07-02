@@ -191,9 +191,9 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @param tries Number of tries before failing. Defaults to 3.
 	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
 	 * @param suppressError Whether or not to suppress saving error messages to the log. Defaults to false.
-	 * @return Point object containing the location of the match or null if not found.
+	 * @return Pair object consisting of the Point object containing the location of the match and the source screenshot.
 	 */
-	fun findImage(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Point? {
+	fun findImage(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Pair<Point?, Bitmap?> {
 		val folderName = "images"
 		var numberOfTries = tries
 		
@@ -209,19 +209,19 @@ class ImageUtils(context: Context, private val game: Game) {
 							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", tag = TAG)
 						}
 						
-						return null
+						return Pair(null, null)
 					}
 					
 					Log.d(TAG, "Failed to find the ${templateName.uppercase()} button. Trying again...")
 					game.wait(1.0)
 				} else {
 					game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
-					return matchLocation
+					return Pair(matchLocation, sourceBitmap)
 				}
 			}
 		}
 		
-		return null
+		return Pair(null, null)
 	}
 	
 	/**
@@ -277,10 +277,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		game.printToLog("[INFO] Now waiting for $templateName to vanish from the screen...", tag = TAG)
 		
 		var remaining = timeout
-		if (findImage(templateName, tries = 1, region = region, suppressError = suppressError) == null) {
+		if (findImage(templateName, tries = 1, region = region, suppressError = suppressError).first == null) {
 			return true
 		} else {
-			while (findImage(templateName, tries = 1, region = region, suppressError = suppressError) == null) {
+			while (findImage(templateName, tries = 1, region = region, suppressError = suppressError).first == null) {
 				game.wait(1.0)
 				remaining -= 1
 				if (remaining <= 0) {
