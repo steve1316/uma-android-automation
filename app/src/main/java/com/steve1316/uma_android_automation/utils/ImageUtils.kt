@@ -398,6 +398,45 @@ class ImageUtils(context: Context, private val game: Game) {
 	}
 	
 	/**
+	 * Find the success percentage chance on the currently selected stat.
+	 *
+	 * @return Integer representing the percentage.
+	 */
+	fun findStatPercentage(): Int {
+		// Crop the source screenshot to hold the success percentage only.
+		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection")
+		val croppedBitmap = Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
+		
+		val cvImage = Mat()
+		Utils.bitmapToMat(croppedBitmap, cvImage)
+		count++
+		Imgcodecs.imwrite("$matchFilePath/TEST${count}.png", cvImage)
+		
+		// Create a InputImage object for Google's ML OCR.
+		val inputImage = InputImage.fromBitmap(croppedBitmap, 0)
+		
+		// Start the asynchronous operation of text detection.
+		var result = 0
+		textRecognizer.process(inputImage).addOnSuccessListener {
+			if (it.textBlocks.size != 0) {
+				for (block in it.textBlocks) {
+					try {
+						result = block.text.replace("%", "").replace("+", "").trim().toInt()
+					} catch (e: NumberFormatException) {
+					}
+				}
+			}
+		}.addOnFailureListener {
+			game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
+		}
+		
+		// Wait 0.5 seconds for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
+		game.wait(0.5)
+		
+		return result
+	}
+	
+	/**
 	 * Initialize Tesseract for future OCR operations. Make sure to put your .traineddata inside the root of the /assets/ folder.
 	 */
 	private fun initTesseract() {
