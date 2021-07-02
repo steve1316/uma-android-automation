@@ -129,13 +129,13 @@ class BotService : Service() {
 									
 									performCleanUp()
 								} catch (e: Exception) {
-									game.printToLog("$appName encountered an Exception: $e", MESSAGE_TAG = TAG, isError = true)
+									game.printToLog("$appName encountered an Exception: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
 									
 									val newIntent = Intent("CUSTOM_INTENT")
 									if (e.toString() == "java.lang.InterruptedException") {
 										newIntent.putExtra("EXCEPTION", "Bot stopped successfully.")
 									} else {
-										newIntent.putExtra("EXCEPTION", e.toString())
+										newIntent.putExtra("EXCEPTION", "Encountered an Exception: $e.\nTap me to see more details.")
 									}
 									
 									// Send a Broadcast with information on whether the bot stopped successfully or not.
