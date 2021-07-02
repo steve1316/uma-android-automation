@@ -15,6 +15,7 @@ import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.lang.Integer.max
 
 
 /**
@@ -223,7 +224,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return True if the current location is at the specified location. False otherwise.
 	 */
 	fun confirmLocation(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Boolean {
-		val folderName = "headers"
+		val folderName = "images"
 		var numberOfTries = tries
 		while (numberOfTries > 0) {
 			val (sourceBitmap, templateBitmap) = getBitmaps(templateName + "_header", folderName)
@@ -284,69 +285,114 @@ class ImageUtils(context: Context, private val game: Game) {
 	/**
 	 * Perform OCR text detection using Tesseract along with some image manipulation via thresholding to make the cropped screenshot black and white using OpenCV.
 	 *
+	 * @param increment Increments the threshold by this value. Defaults to 0.0.
+	 * @param isEvent Controls cropping behavior based on whether the screen has a training event on it or not. Defaults to true.
+	 * @param region Region of (x, y, width, height) to start cropping. Only works if isEvent is false. Defaults to (0, 0, 0, 0) which would be fullscreen.
 	 * @return The detected String in the cropped region.
 	 */
-	fun findText(increment: Double): String {
-		val (sourceBitmap, templateBitmap) = getBitmaps("shift", "images")
-		
-		// Acquire the location of the energy text image.
-		val (_, energyTemplateBitmap) = getBitmaps("energy", "images")
-		match(sourceBitmap!!, energyTemplateBitmap!!)
-		
-		// Get the dimensions of the status bar for the Android device.
-		val id = myContext.resources.getIdentifier("status_bar_height", "dimen", "android")
-		val statusBarHeight: Int = myContext.resources.getDimensionPixelSize(id)
-		
-		// Now crop the image to hold only the event name. Normalize the source heights of all possible screen devices by making sure calculations are always in reference to the height of the
-		// status bar on my device, 73 pixels.
-		val croppedBitmap: Bitmap = if (statusBarHeight != 73) {
-			Bitmap.createBitmap(sourceBitmap, matchLocation.x.toInt() - 135, matchLocation.y.toInt() + 112 + (73 - statusBarHeight), 645, 65)
-		} else {
-			Bitmap.createBitmap(sourceBitmap, matchLocation.x.toInt() - 135, matchLocation.y.toInt() + 112, 645, 65)
-		}
-		
+	fun findText(increment: Double = 0.0, isEvent: Boolean = true, region: IntArray = intArrayOf(0, 0, 0, 0)): String {
+		if (isEvent) {
+			val (sourceBitmap, templateBitmap) = getBitmaps("shift", "images")
+			
+			// Acquire the location of the energy text image.
+			val (_, energyTemplateBitmap) = getBitmaps("energy", "images")
+			match(sourceBitmap!!, energyTemplateBitmap!!)
+			
+			// Acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
+			val newX: Int = max(0, matchLocation.x.toInt() - 125)
+			val newY: Int = max(0, matchLocation.y.toInt() + 116)
+			var croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
+			
+			// Start up Tesseract.
+			tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
+			game.printToLog("[INFO] JPN Training file loaded.\n", MESSAGE_TAG = TAG)
+			
+			// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
+			croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
+				Log.d(TAG, "Shifting the region over by 70 pixels!")
+				Bitmap.createBitmap(sourceBitmap, newX + 70, newY, 645 - 70, 65)
+			} else {
+				Log.d(TAG, "Do not need to shift.")
+				croppedBitmap
+			}
+			
+			// Make the cropped screenshot grayscale.
+			val cvImage = Mat()
+			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+			
+			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
+			Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
+			
+			// Thresh the grayscale cropped image to make black and white.
+			val bwImage = Mat()
+			val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
+			Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
+			
+			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", MESSAGE_TAG = TAG)
+			
+			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
+			tessBaseAPI.setImage(resultBitmap)
+			
+			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
+			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+			
+			var result = "empty!"
+			try {
+				// Finally, detect text on the cropped region.
+				result = tessBaseAPI.utF8Text
+			} catch (e: Exception) {
 				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
-		// Start up Tesseract.
-		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
-		game.printToLog("[INFO] JPN Training file loaded.\n", MESSAGE_TAG = TAG)
-		
-		var cvImage = Imgcodecs.imread("${matchFilePath}/source.png", Imgcodecs.IMREAD_GRAYSCALE)
-		
-		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
-		cvImage = if (match(croppedBitmap, templateBitmap!!)) {
-			cvImage.submat(435, 500, 165 + 70, 810)
+			}
+			
+			tessBaseAPI.end()
+			
+			return result
 		} else {
-			cvImage.submat(435, 500, 165, 810)
-		}
-		
-		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-		Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
-		
-		// Thresh the grayscale cropped image to make black and white.
-		val bwImage = Mat()
-		val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
-		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-		Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
-		
-		game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", MESSAGE_TAG = TAG)
-		
-		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
-		tessBaseAPI.setImage(resultBitmap)
-		
-		// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
-		tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
-		
-		var result = "empty!"
-		try {
-			// Finally, detect text on the cropped region.
-			result = tessBaseAPI.utF8Text
-		} catch (e: Exception) {
+			val (sourceBitmap, _) = getBitmaps("shift", "images")
+
+			// Crop the source screenshot to the custom region.
+			val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap!!, region[0], region[1], region[2], region[3])
+			
+			// Start up Tesseract.
+			tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
+			game.printToLog("[INFO] JPN Training file loaded.\n", MESSAGE_TAG = TAG)
+			
+			// Make the cropped screenshot grayscale.
+			val cvImage = Mat()
+			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+			
+			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
+			Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
+			
+			// Thresh the grayscale cropped image to make black and white.
+			val bwImage = Mat()
+			val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
+			Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
+			
+			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", MESSAGE_TAG = TAG)
+			
+			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
+			tessBaseAPI.setImage(resultBitmap)
+			
+			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
+			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+			
+			var result = "empty!"
+			try {
+				// Finally, detect text on the cropped region.
+				result = tessBaseAPI.utF8Text
+			} catch (e: Exception) {
 				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", MESSAGE_TAG = TAG, isError = true)
+			}
+			
+			tessBaseAPI.end()
+			
+			return result
 		}
-		
-		tessBaseAPI.end()
-		
-		return result
 	}
 	
 	/**
