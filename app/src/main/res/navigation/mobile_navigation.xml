@@ -17,4 +17,14 @@
         android:label="@string/menu_settings"
         tools:layout="@layout/fragment_settings" />
 
+    <fragment
+        android:id="@+id/nav_training"
+        android:name="com.steve1316.uma_android_automation.ui.settings.TrainingFragment"
+        android:label="Training Settings" />
+
+    <fragment
+        android:id="@+id/nav_ocr"
+        android:name="com.steve1316.uma_android_automation.ui.settings.OCRFragment"
+        android:label="OCR Settings" />
+
 </navigation>

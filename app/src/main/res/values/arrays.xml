@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="trainings">
+        <item>Speed Training</item>
+        <item>Stamina Training</item>
+        <item>Power Training</item>
+        <item>Guts Training</item>
+        <item>Intelligence Training</item>
+    </string-array>
 
+    <string-array name="stats">
+        <item>Speed</item>
+        <item>Stamina</item>
+        <item>Power</item>
+        <item>Guts</item>
+        <item>Intelligence</item>
+    </string-array>
 </resources>

@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory
-        app:summary="Options marked with * are required"
-        app:title="Placeholder">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="Options">
 
+        <Preference
+            app:fragment="com.steve1316.uma_android_automation.ui.settings.TrainingFragment"
+            app:key="trainingOptions"
+            app:summary="Customize which stats to prioritise and setting maximum failure percentage."
+            app:title="Customize Training" />
+
+        <Preference
+            app:key="ocrOptions"
+            app:summary="Customize which stats to prioritise and setting maximum failure percentage."
+            app:title="Customize OCR Optimization" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Misc Options">
+
+        <CheckBoxPreference
+            app:key="debugMode"
+            app:summary="Allows debugging messages to be shown in the log to reveal diagnostic information and potential errors."
+            app:title="Enable Debug Mode" />
+
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="hideComparisonResults"
+            app:summary="Hides the log messages regarding the string comparison process."
+            app:title="Hide String Comparison Results" />
     </PreferenceCategory>
 
 </PreferenceScreen>

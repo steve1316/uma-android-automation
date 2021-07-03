@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import androidx.core.content.edit
+import androidx.navigation.fragment.findNavController
+import androidx.preference.CheckBoxPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
@@ -54,13 +58,27 @@ class SettingsFragment : PreferenceFragmentCompat() {
 	
 	// This listener is triggered whenever the user changes a Preference setting in the Settings Page.
 	private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-		
-//		if (key != null) {
-//			// Note that is no need to handle the Preference that allows multiple selection here as it is already handled in its own function.
-//			when (key) {
-//
-//			}
-//		}
+		if (key != null) {
+			// Note that is no need to handle the Preference that allows multiple selection here as it is already handled in its own function.
+			when (key) {
+				"debugMode" -> {
+					val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
+					
+					sharedPreferences.edit {
+						putBoolean("debugMode", debugModePreference.isChecked)
+						commit()
+					}
+				}
+				"hideComparisonResults" -> {
+					val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
+					
+					sharedPreferences.edit {
+						putBoolean("hideComparisonResults", hideComparisonResultsPreference.isChecked)
+						commit()
+					}
+				}
+			}
+		}
 	}
 	
 	override fun onResume() {
@@ -83,8 +101,27 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		// Get the SharedPreferences.
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
-		// Now set the following values from the shared preferences.
+		// Grab the saved preferences from the previous time the user used the app.
+		val debugMode = sharedPreferences.getBoolean("debugMode", false)
+		val hideComparisonResults = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
-		Log.d(TAG, "Preferences created successfully.")
+		// Get references to the Preference components.
+		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
+		val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
+		
+		// Now set the following values from the shared preferences.
+		debugModePreference.isChecked = debugMode
+		hideComparisonResultsPreference.isChecked = hideComparisonResults
+		
+		// Solution courtesy of https://stackoverflow.com/a/63368599
+		// In short, Fragments via the mobile_navigation.xml are children of NavHostFragment, not MainActivity's supportFragmentManager.
+		// This is why using the method described in official Google docs via OnPreferenceStartFragmentCallback and using the supportFragmentManager is not correct for this instance.
+		findPreference<Preference>("trainingOptions")?.setOnPreferenceClickListener {
+			// Navigate to the TrainingFragment.
+			findNavController().navigate(R.id.nav_training)
+			true
+		}
+		
+		Log.d(TAG, "Main Preferences created successfully.")
 	}
 }
