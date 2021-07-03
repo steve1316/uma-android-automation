@@ -23,7 +23,7 @@ class Game(private val myContext: Context) {
 	val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val navigation: Navigation = Navigation(this)
-	private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
+	// private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
 	
 	val maximumPercentage: Int = 30
 	

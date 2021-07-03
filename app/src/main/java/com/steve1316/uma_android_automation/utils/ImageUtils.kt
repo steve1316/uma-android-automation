@@ -35,7 +35,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val tesseractLanguages = arrayListOf("jpn")
 	private val tessBaseAPI: TessBaseAPI
 	
-	private var count = 0
+	private val debugMode: Boolean = false
 	
 	companion object {
 		private var matchFilePath: String = ""
@@ -194,13 +194,12 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @param suppressError Whether or not to suppress saving error messages to the log. Defaults to false.
 	 * @return Pair object consisting of the Point object containing the location of the match and the source screenshot.
 	 */
-	fun findImage(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Pair<Point?, Bitmap?> {
+	fun findImage(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Pair<Point?, Bitmap> {
 		val folderName = "images"
 		var numberOfTries = tries
+		var (sourceBitmap, templateBitmap) = getBitmaps(templateName, folderName)
 		
 		while (numberOfTries > 0) {
-			val (sourceBitmap, templateBitmap) = getBitmaps(templateName, folderName)
-			
 			if (sourceBitmap != null && templateBitmap != null) {
 				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, region)
 				if (!resultFlag) {
@@ -210,19 +209,29 @@ class ImageUtils(context: Context, private val game: Game) {
 							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", tag = TAG)
 						}
 						
-						return Pair(null, null)
+						return Pair(null, sourceBitmap)
 					}
 					
-					Log.d(TAG, "Failed to find the ${templateName.uppercase()} button. Trying again...")
+					if (debugMode) {
+						Log.d(TAG, "Failed to find the ${templateName.uppercase()} button. Trying again...")
+					}
+					
 					game.wait(1.0)
 				} else {
-					game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
+					if (debugMode) {
+						game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
+					}
+					
 					return Pair(matchLocation, sourceBitmap)
 				}
 			}
+			
+			val tempResult = getBitmaps(templateName, folderName)
+			sourceBitmap = tempResult.first
+			templateBitmap = tempResult.second
 		}
 		
-		return Pair(null, null)
+		return Pair(null, sourceBitmap!!)
 	}
 	
 	/**
@@ -358,7 +367,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			return result
 		} else {
 			val (sourceBitmap, _) = getBitmaps("shift", "images")
-
+			
 			// Crop the source screenshot to the custom region.
 			val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap!!, region[0], region[1], region[2], region[3])
 			

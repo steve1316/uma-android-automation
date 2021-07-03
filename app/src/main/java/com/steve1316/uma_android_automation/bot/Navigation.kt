@@ -11,7 +11,7 @@ class Navigation(val game: Game) {
 	 * @return True if the chibi Tazuna icon at the top right corner of the screen was found. Otherwise false.
 	 */
 	private fun checkMainScreen(): Boolean {
-		return game.imageUtils.findImage("tazuna").first != null
+		return game.imageUtils.findImage("tazuna", tries = 1).first != null
 	}
 	
 	/**
