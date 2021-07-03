@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="Training Options">
+
+        <MultiSelectListPreference
+            android:entries="@array/trainings"
+            android:entryValues="@array/trainings"
+            app:key="trainingBlacklist"
+            app:summary="Select Training(s) to blacklist from being selected in order to narrow the focus of overall Training.\n\nNone Selected"
+            app:title="Training Blacklist" />
+
+        <Preference
+            app:key="statPrioritisation"
+            app:summary="Select Stat(s) to prioritise in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nFollowing Default Prioritisation Order:\n1. Speed\n2. Stamina\n3. Power\n4. Guts\n5. Intelligence"
+            app:title="Prioritise Training Certain Stats" />
+
+        <SeekBarPreference
+            android:defaultValue="15"
+            android:max="99"
+            app:key="maximumFailureChance"
+            app:min="1"
+            app:showSeekBarValue="true"
+            app:summary="Set the maximum failure chance that Training is allowed to have before recovering energy. Default is at 15%."
+            app:title="Set Maximum Failure Chance" />
+
+    </PreferenceCategory>
+</PreferenceScreen>
