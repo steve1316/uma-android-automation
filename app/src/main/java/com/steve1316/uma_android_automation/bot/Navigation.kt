@@ -25,53 +25,56 @@ class Navigation(val game: Game) {
 		
 		game.printToLog("\n[INFO] Checking for success percentages and total stat increases for training selection.", tag = TAG)
 		
-		val resultMap = mutableMapOf<String, Map<String, Int>>()
+		val resultMap: MutableMap<String, Map<String, Int>> = mutableMapOf()
 		
 		// Acquire the position of the speed stat text.
-		val speedStatTextLocation = game.imageUtils.findImage("speed_stat").first!!
-		
-		// Perform a percentage check of Speed training to see if the bot has enough energy to do training. As a result, Speed training will be the one selected for the rest of the algorithm.
-		if (!game.imageUtils.confirmLocation("speed_training", tries = 1)) {
-			game.gestureUtils.tap(speedStatTextLocation.x + 19, speedStatTextLocation.y + 319, "images", "stat")
-		}
-		
-		val speedSuccessPercentage = game.imageUtils.findStatPercentage()
-		
-		if (speedSuccessPercentage < game.maximumPercentage) {
-			game.printToLog("[INFO] Percentage within acceptable range. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
-			
-			// Save the results to the map.
-			resultMap["speed"] = mapOf(
-				"success" to speedSuccessPercentage,
-				"totalStatGained" to 0
-			)
-			
-			// Iterate through every stat after Speed.
-			arrayListOf("stamina", "power", "guts", "intelligence").forEach { stat ->
-				when (stat.lowercase()) {
-					"stamina" -> {
-						game.gestureUtils.tap(speedStatTextLocation.x + 212, speedStatTextLocation.y + 319, "images", "stat")
-					}
-					"power" -> {
-						game.gestureUtils.tap(speedStatTextLocation.x + 402, speedStatTextLocation.y + 319, "images", "stat")
-					}
-					"guts" -> {
-						game.gestureUtils.tap(speedStatTextLocation.x + 591, speedStatTextLocation.y + 319, "images", "stat")
-					}
-					"intelligence" -> {
-						game.gestureUtils.tap(speedStatTextLocation.x + 779, speedStatTextLocation.y + 319, "images", "stat")
-					}
-				}
-				
-				resultMap[stat] = mapOf(
-					"success" to game.imageUtils.findStatPercentage(),
-					"totalStatGained" to 0
-				)
+		val (speedStatTextLocation, _) = game.imageUtils.findImage("speed_stat")
+		if (speedStatTextLocation != null) {
+			// Perform a percentage check of Speed training to see if the bot has enough energy to do training. As a result, Speed training will be the one selected for the rest of the algorithm.
+			if (!game.imageUtils.confirmLocation("speed_training", tries = 1)) {
+				game.gestureUtils.tap(speedStatTextLocation.x + 19, speedStatTextLocation.y + 319, "images", "stat")
 			}
 			
-			game.printToLog("[INFO] $resultMap", tag = TAG)
+			val speedSuccessPercentage: Int = game.imageUtils.findStatPercentage()
+			val overallStatsGained: Int = game.imageUtils.findStatIncreases("speed")
 			
-			game.wait(0.5)
+			if (speedSuccessPercentage < game.maximumPercentage) {
+				game.printToLog("[INFO] Percentage within acceptable range. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
+				
+				// Save the results to the map.
+				resultMap["speed"] = mapOf(
+					"success" to speedSuccessPercentage,
+					"totalStatGained" to overallStatsGained
+				)
+				
+				// Iterate through every stat after Speed.
+				arrayListOf("stamina", "power", "guts", "intelligence").forEach { stat ->
+					when (stat.lowercase()) {
+						"stamina" -> {
+							game.gestureUtils.tap(speedStatTextLocation.x + 212, speedStatTextLocation.y + 319, "images", "stat")
+						}
+						"power" -> {
+							game.gestureUtils.tap(speedStatTextLocation.x + 402, speedStatTextLocation.y + 319, "images", "stat")
+						}
+						"guts" -> {
+							game.gestureUtils.tap(speedStatTextLocation.x + 591, speedStatTextLocation.y + 319, "images", "stat")
+							game.wait(2.0)
+						}
+						"intelligence" -> {
+							game.gestureUtils.tap(speedStatTextLocation.x + 779, speedStatTextLocation.y + 319, "images", "stat")
+						}
+					}
+					
+					game.wait(0.5)
+					
+					resultMap[stat] = mapOf(
+						"success" to game.imageUtils.findStatPercentage(),
+						"totalStatGained" to game.imageUtils.findStatIncreases(stat)
+					)
+				}
+				
+				game.wait(0.5)
+			}
 		}
 		
 		return resultMap
@@ -90,6 +93,10 @@ class Navigation(val game: Game) {
 			
 			if (statAndPercentages.isEmpty()) {
 				game.printToLog("[INFO] Maximum percentage of success exceeded. Recovering energy...", tag = TAG)
+			} else {
+				statAndPercentages.keys.forEach { stat ->
+					game.printToLog("[INFO] $stat: ${statAndPercentages[stat]?.get("totalStatGained")} for ${statAndPercentages[stat]?.get("success")}%")
+				}
 			}
 		}
 	}

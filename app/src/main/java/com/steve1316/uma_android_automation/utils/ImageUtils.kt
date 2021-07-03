@@ -405,12 +405,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun findStatPercentage(): Int {
 		// Crop the source screenshot to hold the success percentage only.
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection")
-		val croppedBitmap = Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
-		
-		val cvImage = Mat()
-		Utils.bitmapToMat(croppedBitmap, cvImage)
-		count++
-		Imgcodecs.imwrite("$matchFilePath/TEST${count}.png", cvImage)
+		val croppedBitmap = Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
 		
 		// Create a InputImage object for Google's ML OCR.
 		val inputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -421,7 +416,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			if (it.textBlocks.size != 0) {
 				for (block in it.textBlocks) {
 					try {
-						result = block.text.replace("%", "").replace("+", "").trim().toInt()
+						result = block.text.replace("%", "").trim().toInt()
 					} catch (e: NumberFormatException) {
 					}
 				}
@@ -430,8 +425,113 @@ class ImageUtils(context: Context, private val game: Game) {
 			game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
 		}
 		
-		// Wait 0.5 seconds for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
-		game.wait(0.5)
+		// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
+		game.wait(0.1)
+		
+		return result
+	}
+	
+	fun findStatIncreases(currentStat: String): Int {
+		val test = mutableListOf<Int>()
+		
+		val (speedStatTextLocation, sourceBitmap) = findImage("speed_stat")
+		
+		val statsToCheck = when (currentStat) {
+			"speed" -> {
+				arrayListOf("speed", "power")
+			}
+			"stamina" -> {
+				arrayListOf("stamina", "guts")
+			}
+			"power" -> {
+				arrayListOf("stamina", "power")
+			}
+			"guts" -> {
+				arrayListOf("speed", "power", "guts")
+			}
+			"intelligence" -> {
+				arrayListOf("speed", "intelligence")
+			}
+			else -> {
+				arrayListOf("speed", "stamina", "power", "guts", "intelligence")
+			}
+		}
+		
+		var tries = 2
+		while (tries > 0) {
+			statsToCheck.forEach { stat ->
+				val xOffset: Int = when (stat) {
+					"speed" -> {
+						-65
+					}
+					"stamina" -> {
+						107
+					}
+					"power" -> {
+						271
+					}
+					"guts" -> {
+						443
+					}
+					"intelligence" -> {
+						615
+					}
+					else -> {
+						0
+					}
+				}
+				
+				// Crop the region.
+				val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + xOffset, speedStatTextLocation.y.toInt() - 92, 130, 65)
+				
+				// Make the cropped screenshot grayscale.
+				val cvImage = Mat()
+				Utils.bitmapToMat(croppedBitmap, cvImage)
+				Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+				
+				// Blur the cropped region.
+				Imgproc.medianBlur(cvImage, cvImage, 3)
+				
+				// Threshold the cropped region.
+				Imgproc.threshold(cvImage, cvImage, 110.0 + (5 * tries), 200.0, Imgproc.THRESH_BINARY)
+				Utils.matToBitmap(cvImage, croppedBitmap)
+				
+				// Create a InputImage object for Google's ML OCR.
+				val inputImage = InputImage.fromBitmap(croppedBitmap, 0)
+				
+				// Count up all of the total stat gains for this training selection.
+				textRecognizer.process(inputImage).addOnSuccessListener {
+					if (it.textBlocks.size != 0) {
+						for (block in it.textBlocks) {
+							try {
+								// Regex to eliminate characters.
+								val reg = Regex("[a-zA-Z]+")
+								val regexResult = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
+								
+								Log.d(TAG, "Detected: ${block.text}")
+								Log.d(TAG, "Regex applied: $regexResult")
+								
+								test.add(regexResult.toInt())
+							} catch (e: NumberFormatException) {
+							}
+						}
+					}
+				}.addOnFailureListener {
+					game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
+				}
+				
+				// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
+				game.wait(0.1)
+			}
+			
+			tries -= 1
+		}
+		
+		// An attempt at normalizing the result to account for inaccuracies.
+		var result = test.sum() / 2
+		if (test.size != 0) {
+			result += test.maxOrNull()?.div(2)!!
+		}
 		
 		return result
 	}
