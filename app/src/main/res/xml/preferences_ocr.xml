@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="Tesseract OCR Optimization">
+
+        <SeekBarPreference
+            android:defaultValue="230"
+            android:max="255"
+            app:key="threshold"
+            app:min="200"
+            app:showSeekBarValue="true"
+            app:summary="Converts each pixel's value greater than this to black and less than to white. Recommended to increase this in increments of 5 when Tesseract fails for better accuracy. Default is 230."
+            app:title="Adjust Threshold for Image Processing" />
+
+        <CheckBoxPreference
+            app:key="enableAutomaticRetry"
+            app:summary="[Experimental Feature]\nEnables automatic retrying of OCR by incrementing threshold value by 5 whenever it fails until it succeeds or it hits the max of 255.\n\nIncreases processing time by several seconds with worst case scenario being ~10 seconds at threshold value of 200."
+            app:title="Enable Automatic Retry" />
+
+        <SeekBarPreference
+            android:defaultValue="80"
+            android:max="100"
+            app:key="confidence"
+            app:min="10"
+            app:showSeekBarValue="true"
+            app:summary="Set the minimum confidence percentage required for OCR to succeed and display the result. Default is 80%."
+            app:title="Adjust Minimum Confidence" />
+    </PreferenceCategory>
+</PreferenceScreen>
