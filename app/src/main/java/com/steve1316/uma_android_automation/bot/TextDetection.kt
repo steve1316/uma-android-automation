@@ -208,7 +208,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		return tempReward
 	}
 	
-	fun start() {
+	fun start(): ArrayList<String> {
 		if (minimumConfidence > 1.0) {
 			minimumConfidence = 0.8
 		}
@@ -216,9 +216,8 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
 		val enableIncrementalThreshold = SettingsFragment.getBooleanSharedPreference(myContext, "enableIncrementalThreshold")
 		var increment = 0.0
-		var flag = false
 		
-		while (!flag) {
+		while (true) {
 			// Perform Tesseract OCR detection.
 			if ((255.0 - threshold - increment) > 0.0) {
 				result = imageUtils.findText(increment)
@@ -248,20 +247,20 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 					}
 				}
 				
-				if (enableIncrementalThreshold) {
+				if (enableIncrementalThreshold && !hideResults) {
 					game.printToLog("\n[RESULT] Threshold incremented by $increment")
 				}
 				
-				// Now construct and display the Notification containing the results from OCR, whether it was successful or not.
-				// flag =
-				if (!flag && enableIncrementalThreshold) {
+				if (confidence < minimumConfidence && enableIncrementalThreshold) {
 					increment += 5.0
-				} else {
+				} else if (confidence >= minimumConfidence) {
 					break
 				}
-			} else {
+			} else if (enableIncrementalThreshold) {
 				increment += 5.0
 			}
 		}
+		
+		return eventOptionRewards
 	}
 }
