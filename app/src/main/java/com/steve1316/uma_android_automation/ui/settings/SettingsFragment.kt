@@ -28,7 +28,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		 */
 		fun getStringSharedPreference(context: Context, key: String): String {
 			val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-			return sharedPreferences.getString(key, "")!!
+			return sharedPreferences.getString(key, "not found")!!
 		}
 		
 		/**
