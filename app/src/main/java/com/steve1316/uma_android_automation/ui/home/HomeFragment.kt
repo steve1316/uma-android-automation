@@ -64,7 +64,7 @@ class HomeFragment : Fragment() {
 		
 		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
-		val character = sharedPreferences.getString("character", "None Selected. Please select one in the Settings")
+		val character = sharedPreferences.getString("character", "Please select one in the Settings")
 		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)

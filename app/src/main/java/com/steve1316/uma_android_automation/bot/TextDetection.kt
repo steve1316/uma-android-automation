@@ -1,9 +1,9 @@
 package com.steve1316.uma_android_automation.bot
 
 import android.content.Context
+import android.util.Log
+import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.data.CharacterData
-import com.steve1316.uma_android_automation.data.SkillData
-import com.steve1316.uma_android_automation.data.StatusData
 import com.steve1316.uma_android_automation.data.SupportData
 import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.ImageUtils
@@ -11,16 +11,14 @@ import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 
 class TextDetection(private val myContext: Context, private val game: Game, private val imageUtils: ImageUtils) {
+	private val TAG: String = "[${MainActivity.loggerTag}]TextDetection"
+	
 	private var result = ""
 	private var confidence = 0.0
 	private var category = ""
 	private var eventTitle = ""
 	private var supportCardTitle = ""
 	private var eventOptionRewards: ArrayList<String> = arrayListOf()
-	private var eventOptionSkills: ArrayList<String> = arrayListOf()
-	private var eventOptionsSkillsNumbers: ArrayList<Int> = arrayListOf()
-	private var eventOptionStatus: ArrayList<String> = arrayListOf()
-	private var eventOptionsStatusNumbers: ArrayList<Int> = arrayListOf()
 	
 	private val character = SettingsFragment.getStringSharedPreference(myContext, "character")
 	private val supportCards: List<String> = SettingsFragment.getStringSharedPreference(myContext, "supportList").split("|")
@@ -34,25 +32,28 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	 * Fix incorrect characters determined by OCR by replacing them with their Japanese equivalents.
 	 */
 	private fun fixIncorrectCharacters() {
-		game.printToLog("\n[TEXT-DETECTION] Now attempting to fix incorrect characters in: $result")
+		game.printToLog("\n[TEXT-DETECTION] Now attempting to fix incorrect characters in: $result", tag = TAG)
 		
 		if (result.last() == '/') {
 			result = result.replace("/", "！")
 		}
 		
 		result = result.replace("(", "（").replace(")", "）")
-		game.printToLog("[TEXT-DETECTION] Finished attempting to fix incorrect characters: $result")
+		game.printToLog("[TEXT-DETECTION] Finished attempting to fix incorrect characters: $result", tag = TAG)
 	}
 	
 	/**
 	 * Attempt to find the most similar string from data compared to the string returned by OCR.
 	 */
 	private fun findMostSimilarString() {
-		if (!hideResults) {
-			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result\n")
+		if (!hideComparisonResults) {
+			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result\n", tag = TAG)
 		} else {
-			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result")
+			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result", tag = TAG)
 		}
+		
+		// Remove any detected whitespaces.
+		result = result.replace(" ", "")
 		
 		// Use the Jaro Winkler algorithm to compare similarities the OCR detected string and the rest of the strings inside the data classes.
 		val service = StringSimilarityServiceImpl(JaroWinklerStrategy())
@@ -60,8 +61,8 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		// Attempt to find the most similar string inside the data classes starting with the Character-specific events.
 		CharacterData.characters[character]?.forEach { (eventName, eventOptions) ->
 			val score = service.score(result, eventName)
-			if (!hideResults) {
-				game.printToLog("[CHARA] $character \"${result}\" vs. \"${eventName}\" confidence: $score")
+			if (!hideComparisonResults) {
+				game.printToLog("[CHARA] $character \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
 			}
 			
 			if (score >= confidence) {
@@ -75,8 +76,8 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		// Now move on to the Character-shared events.
 		CharacterData.characters["Shared"]?.forEach { (eventName, eventOptions) ->
 			val score = service.score(result, eventName)
-			if (!hideResults) {
-				game.printToLog("[CHARA-SHARED] \"${result}\" vs. \"${eventName}\" confidence: $score")
+			if (!hideComparisonResults) {
+				game.printToLog("[CHARA-SHARED] \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
 			}
 			
 			if (score >= confidence) {
@@ -92,8 +93,8 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 			supportCards.forEach { supportCardName ->
 				SupportData.supports[supportCardName]?.forEach { (eventName, eventOptions) ->
 					val score = service.score(result, eventName)
-					if (!hideResults) {
-						game.printToLog("[SUPPORT] $supportCardName \"${result}\" vs. \"${eventName}\" confidence: $score")
+					if (!hideComparisonResults) {
+						game.printToLog("[SUPPORT] $supportCardName \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
 					}
 					
 					if (score >= confidence) {
@@ -109,8 +110,8 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 			SupportData.supports.forEach { (supportName, support) ->
 				support.forEach { (eventName, eventOptions) ->
 					val score = service.score(result, eventName)
-					if (!hideResults) {
-						game.printToLog("[SUPPORT] $supportName \"${result}\" vs. \"${eventName}\" confidence: $score")
+					if (!hideComparisonResults) {
+						game.printToLog("[SUPPORT] $supportName \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
 					}
 					
 					if (score >= confidence) {
@@ -124,10 +125,10 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 			}
 		}
 		
-		if (!hideResults) {
-			game.printToLog("\n[TEXT-DETECTION] Finished process to find similar string.")
+		if (!hideComparisonResults) {
+			game.printToLog("\n[TEXT-DETECTION] Finished process to find similar string.", tag = TAG)
 		} else {
-			game.printToLog("[TEXT-DETECTION] Finished process to find similar string.")
+			game.printToLog("[TEXT-DETECTION] Finished process to find similar string.", tag = TAG)
 		}
 	}
 	
@@ -155,18 +156,30 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 				
 				when (category) {
 					"character" -> {
-						game.printToLog("\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence")
+						if (!hideComparisonResults) {
+							game.printToLog("\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence", tag = TAG)
+						} else {
+							Log.d(TAG, "\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence")
+						}
 					}
 					"character-shared" -> {
-						game.printToLog("\n[RESULT] Character $character Shared Event Name = $eventTitle with confidence = $confidence")
+						if (!hideComparisonResults) {
+							game.printToLog("\n[RESULT] Character $character Shared Event Name = $eventTitle with confidence = $confidence", tag = TAG)
+						} else {
+							Log.d(TAG, "\n[RESULT] Character $character Shared Event Name = $eventTitle with confidence = $confidence")
+						}
 					}
 					"support" -> {
-						game.printToLog("\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence")
+						if (!hideComparisonResults) {
+							game.printToLog("\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence", tag = TAG)
+						} else {
+							Log.d(TAG, "\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence")
+						}
 					}
 				}
 				
-				if (enableIncrementalThreshold && !hideResults) {
-					game.printToLog("\n[RESULT] Threshold incremented by $increment")
+				if (enableIncrementalThreshold && !hideComparisonResults) {
+					game.printToLog("\n[RESULT] Threshold incremented by $increment", tag = TAG)
 				}
 				
 				if (confidence < minimumConfidence && enableIncrementalThreshold) {

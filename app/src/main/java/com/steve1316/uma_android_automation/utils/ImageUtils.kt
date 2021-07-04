@@ -396,7 +396,9 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return True if the specified image vanished from the screen. False otherwise.
 	 */
 	fun waitVanish(templateName: String, timeout: Int = 5, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Boolean {
-		game.printToLog("[INFO] Now waiting for $templateName to vanish from the screen...", tag = TAG)
+		if (debugMode) {
+			game.printToLog("[DEBUG] Now waiting for $templateName to vanish from the screen...", tag = TAG)
+		}
 		
 		var remaining = timeout
 		if (findImage(templateName, tries = 1, region = region, suppressError = suppressError).first == null) {
@@ -552,7 +554,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		game.wait(0.1)
 		
 		if (debugMode) {
-			game.printToLog("[DEBUG] Detected $result%.")
+			game.printToLog("[DEBUG] Failure chance detected to be at $result%.")
+		} else {
+			Log.d(TAG, "Failure chance detected to be at $result%.")
 		}
 		
 		return result
