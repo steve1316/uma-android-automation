@@ -94,12 +94,13 @@ class Game(val myContext: Context) {
 	 * Find and tap the specified image.
 	 *
 	 * @param imageName Name of the button image file in the /assets/images/ folder.
-	 * @param tries Number of tries to find the specified button.
+	 * @param tries Number of tries to find the specified button. Defaults to 2.
 	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
-	 * @param suppressError Whether or not to suppress saving error messages to the log in failing to find the button.
+	 * @param taps Specify the number of taps on the specified image. Defaults to 1.
+	 * @param suppressError Whether or not to suppress saving error messages to the log in failing to find the button. Defaults to false.
 	 * @return True if the button was found and clicked. False otherwise.
 	 */
-	fun findAndTapImage(imageName: String, tries: Int = 2, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Boolean {
+	fun findAndTapImage(imageName: String, tries: Int = 2, region: IntArray = intArrayOf(0, 0, 0, 0), taps: Int = 1, suppressError: Boolean = false): Boolean {
 		if (debugMode) {
 			printToLog("[DEBUG] Now attempting to find and click the \"$imageName\" button.")
 		}
@@ -107,7 +108,7 @@ class Game(val myContext: Context) {
 		val tempLocation: Point? = imageUtils.findImage(imageName, tries = tries, region = region, suppressError = suppressError).first
 		
 		return if (tempLocation != null) {
-			gestureUtils.tap(tempLocation.x, tempLocation.y, "images", imageName)
+			gestureUtils.tap(tempLocation.x, tempLocation.y, "images", imageName, taps = taps)
 			wait(1.0)
 			true
 		} else {
