@@ -210,8 +210,13 @@ class Navigation(val game: Game) {
 				
 				if (trainingMap.isEmpty()) {
 					game.printToLog("[INFO] Maximum percentage of success exceeded. Recovering energy...", tag = TAG)
+					game.findAndTapImage("back")
 					
-					recoverEnergy()
+					if (checkMainScreen()) {
+						recoverEnergy()
+					} else {
+						throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
+					}
 				} else {
 					// Generate weights for the stats based on what settings the user set.
 					createWeights()
