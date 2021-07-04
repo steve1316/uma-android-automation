@@ -14,6 +14,11 @@ class Navigation(val game: Game) {
 	private val statPrioritisation: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritisation").split("|")
 	private var previouslySelectedTraining = ""
 	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Functions to check what screen the bot is at.
+	
 	/**
 	 * Checks if the bot is at the Main screen or the screen with available options to undertake.
 	 *
@@ -61,6 +66,10 @@ class Navigation(val game: Game) {
 //		return game.imageUtils.findImage("end", tries = 1).first != null
 //	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Functions to execute Training by determining failure percentages, overall stat gains and stat weights.
+	
 	/**
 	 * Find the success percentages and stat gain for each training and assign them to the MutableMap object to be shared across the whole class.
 	 */
@@ -79,7 +88,7 @@ class Navigation(val game: Game) {
 			val overallStatsGained: Int = game.imageUtils.findTotalStatGains("speed")
 			
 			if (speedFailureChance < game.maximumFailureChance) {
-				game.printToLog("[INFO] Percentage within acceptable range. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
+				game.printToLog("[INFO] $speedFailureChance% within acceptable range. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
 				
 				// Save the results to the map if Speed training is not blacklisted.
 				if (!blacklist.contains("Speed")) {
@@ -143,6 +152,7 @@ class Navigation(val game: Game) {
 				val failureChance: Int = trainingMap[statName]?.get("failureChance")!!
 				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
 				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
+					Log.d(TAG, "$statName already did training so applying penalty for repeating.")
 					250
 				} else {
 					0
@@ -155,6 +165,10 @@ class Navigation(val game: Game) {
 			}
 		}
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Helper Functions
 	
 	/**
 	 * Attempt to recover energy.
@@ -172,6 +186,9 @@ class Navigation(val game: Game) {
 		}
 	}
 	
+	/**
+	 * Prints the training map object for informational purposes.
+	 */
 	private fun printMap() {
 		trainingMap.keys.forEach { stat ->
 			game.printToLog(
