@@ -25,7 +25,7 @@ class OCRFragment : PreferenceFragmentCompat() {
 		
 		// Grab the saved preferences from the previous time the user used the app.
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
-		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", false)
+		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
 		val confidence: Int = sharedPreferences.getInt("confidence", 80)
 		
 		// Get references to the Preference components.

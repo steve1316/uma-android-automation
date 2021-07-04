@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.beust.klaxon.JsonReader
@@ -25,7 +24,6 @@ import com.steve1316.uma_android_automation.R
 import com.steve1316.uma_android_automation.data.CharacterData
 import com.steve1316.uma_android_automation.data.SkillData
 import com.steve1316.uma_android_automation.data.SupportData
-import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
@@ -64,35 +62,25 @@ class HomeFragment : Fragment() {
 			}
 		}
 		
-		val debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "debugMode")
-		val hideComparisonResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideComparisonResults")
-		val trainingBlacklist: Set<String> = SettingsFragment.getStringSetSharedPreference(myContext, "trainingBlacklist")
-		var maximumFailureChance: Int = SettingsFragment.getIntSharedPreference(myContext, "maximumFailureChance")
-		var statPrioritisation: List<String> = SettingsFragment.getStringSharedPreference(myContext,"statPrioritisation").split("|")
-		val threshold: Int = SettingsFragment.getIntSharedPreference(myContext, "threshold")
-		val enableAutomaticRetry: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "enableAutomaticRetry")
-		var confidence: Int = SettingsFragment.getIntSharedPreference(myContext, "confidence")
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		
+		val character = sharedPreferences.getString("character", "None Selected. Please select one in the Settings")
+		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
+		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", false)
+		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
+		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
+		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
+		var statPrioritisation: List<String> = sharedPreferences.getString("statPrioritisation", "")!!.split("|")
+		val threshold: Int = sharedPreferences.getInt("threshold", 230)
+		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
+		val confidence: Int = sharedPreferences.getInt("confidence", 80)
 		var defaultCheck = false
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Set default values if this is the user's first time.
-		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-		if (maximumFailureChance == 230) {
-			sharedPreferences.edit {
-				putInt("maximumFailureChance", 15)
-				commit()
-			}
-			
-			maximumFailureChance = 15
-		}
-		
-		if (statPrioritisation.isEmpty() || statPrioritisation[0] == "not found") {
-			sharedPreferences.edit {
-				putString("statPrioritisation", "Speed|Stamina|Power|Guts|Intelligence")
-				commit()
-			}
-			
+		if (statPrioritisation.isEmpty() || statPrioritisation[0] == "") {
 			statPrioritisation = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 			defaultCheck = true
 		}
@@ -107,15 +95,6 @@ class HomeFragment : Fragment() {
 		statPrioritisation.forEach { stat ->
 			statPrioritisationString += "$count. $stat "
 			count++
-		}
-		
-		if (confidence == 230) {
-			sharedPreferences.edit {
-				putInt("confidence", 80)
-				commit()
-			}
-			
-			confidence = 80
 		}
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
