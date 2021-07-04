@@ -17,7 +17,6 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	private var eventTitle = ""
 	private var supportCardTitle = ""
 	private var eventOptionRewards: ArrayList<String> = arrayListOf()
-	private var eventOptionNumber = 1
 	private var eventOptionSkills: ArrayList<String> = arrayListOf()
 	private var eventOptionsSkillsNumbers: ArrayList<Int> = arrayListOf()
 	private var eventOptionStatus: ArrayList<String> = arrayListOf()
@@ -28,6 +27,8 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	private var hideResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideResults")
 	private var selectAllSupportCards: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllSupportCards")
 	private var minimumConfidence = SettingsFragment.getIntSharedPreference(myContext, "confidence").toDouble() / 100.0
+	private val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
+	private val enableIncrementalThreshold = SettingsFragment.getBooleanSharedPreference(myContext, "enableIncrementalThreshold")
 	
 	/**
 	 * Fix incorrect characters determined by OCR by replacing them with their Japanese equivalents.
@@ -160,61 +161,11 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		}
 	}
 	
-	/**
-	 * Format the reward string if necessary with the contents of the skill and status translations.
-	 */
-	private fun formatResultForSkillsAndStatus(reward: String, isSingleOption: Boolean = false): String {
-		var tempReward = reward
-		
-		// If there are multiple statuses/skills in the same string, the while loops will make sure that they are all accounted for.
-		if (isSingleOption) {
-			if (eventOptionStatus.size != 0 && eventOptionSkills.size != 0 && eventOptionsStatusNumbers[0] == eventOptionNumber) {
-				tempReward += "\n"
-			}
-			
-			while (eventOptionStatus.size != 0 && eventOptionsStatusNumbers[0] == eventOptionNumber) {
-				val tempStatus = eventOptionStatus[0].split(";")
-				eventOptionStatus.removeAt(0)
-				eventOptionsStatusNumbers.removeAt(0)
-				tempReward += "\n${tempStatus[0]} status: \"${tempStatus[1]}\""
-			}
-			
-			while (eventOptionSkills.size != 0 && eventOptionsSkillsNumbers[0] == eventOptionNumber) {
-				val tempSkill = eventOptionSkills[0].split(";")
-				eventOptionSkills.removeAt(0)
-				eventOptionsSkillsNumbers.removeAt(0)
-				tempReward += "\n${tempSkill[0]} / ${tempSkill[1]}: \"${tempSkill[2]}\""
-			}
-		} else {
-			if (eventOptionStatus.size != 0 && eventOptionSkills.size != 0 && eventOptionsStatusNumbers[0] == eventOptionNumber) {
-				tempReward += "\n"
-			}
-			
-			while (eventOptionStatus.size != 0 && eventOptionsStatusNumbers[0] == eventOptionNumber) {
-				val tempStatus = eventOptionStatus[0].split(";")
-				eventOptionStatus.removeAt(0)
-				eventOptionsStatusNumbers.removeAt(0)
-				tempReward += "\n${tempStatus[0]} status: \"${tempStatus[1]}\""
-			}
-			
-			while (eventOptionSkills.size != 0 && eventOptionsSkillsNumbers[0] == eventOptionNumber) {
-				val tempSkill = eventOptionSkills[0].split(";")
-				eventOptionSkills.removeAt(0)
-				eventOptionsSkillsNumbers.removeAt(0)
-				tempReward += "\n${tempSkill[0]} / ${tempSkill[1]}: \"${tempSkill[2]}\""
-			}
-		}
-		
-		return tempReward
-	}
-	
 	fun start(): ArrayList<String> {
 		if (minimumConfidence > 1.0) {
 			minimumConfidence = 0.8
 		}
 		
-		val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
-		val enableIncrementalThreshold = SettingsFragment.getBooleanSharedPreference(myContext, "enableIncrementalThreshold")
 		var increment = 0.0
 		
 		while (true) {
