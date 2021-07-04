@@ -100,7 +100,7 @@ class NotificationUtils {
 		fun updateNotification(context: Context, isRunning: Boolean) {
 			val contentTitle = context.getString(R.string.app_name)
 			
-			var contentText = "Bot process is currently inactive"
+			var contentText = "Bot process is inactive"
 			if (isRunning) {
 				contentText = "Bot process is running"
 			}
