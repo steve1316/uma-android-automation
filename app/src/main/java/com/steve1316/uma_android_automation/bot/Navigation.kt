@@ -166,6 +166,13 @@ class Navigation(val game: Game) {
 		}
 	}
 	
+	private fun printMap() {
+		trainingMap.keys.forEach { stat ->
+			game.printToLog(
+				"[INFO] Estimated Stat Gain of $stat: ${trainingMap[stat]?.get("totalStatGained")} for ${trainingMap[stat]?.get("failureChance")}% with a weight of ${trainingMap[stat]?.get("weight")}")
+		}
+	}
+	
 	fun start() {
 		while (true) {
 		// If the bot is at the Main screen, that means Training and other options are available.
