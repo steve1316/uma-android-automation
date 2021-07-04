@@ -334,25 +334,35 @@ class Navigation(val game: Game) {
 			true
 		}
 	}
-			game.wait(1.0)
-			
-			// Now interact with the screen to confirm the choice.
-			game.gestureUtils.swipe(500f, 1000f, 500f, 900f, 100L)
-			game.wait(0.5)
-			
+	
+	private fun runRaceManually(): Boolean {
+		game.printToLog("[RACE] Race must be locked. Proceeding to running it manually.", tag = TAG)
+		
+		// Start the race manually and wait for the game to load.
+		game.findAndTapImage("race_manual")
+		game.wait(5.0)
+		
+		// After the game loaded in the race, press the confirm button.
+		game.findAndTapImage("race_confirm")
+		
+		// Now press the skip button 4 times.
+		game.findAndTapImage("race_skip_manual")
+		game.wait(1.0)
+		game.findAndTapImage("race_skip_manual")
+		game.wait(3.0)
+		game.findAndTapImage("race_skip_manual")
+		game.wait(1.0)
+		game.findAndTapImage("race_skip_manual")
+		game.wait(5.0)
+		
+		// Automatically retry if failed the race.
+		return if (game.findAndTapImage("race_retry", tries = 1, suppressError = true)) {
+			game.wait(3.0)
+			raceRetries--
+			false
+		} else {
 			game.findAndTapImage("race_confirm_result")
-			game.gestureUtils.swipe(500f, 1000f, 500f, 900f, 100L)
-			game.wait(0.5)
-			
-			// TODO: Handle the case where the bot failed to get a good enough position and needs to retry the race.
-			
-			game.findAndTapImage("race_end")
-			
-			// Now finalize the result by tapping on this button 2 times to complete a Training Goal for the Character.
-			game.findAndTapImage("race_confirm_result")
-			game.findAndTapImage("race_confirm_result")
-			
-			game.printToLog("[MANDATORY-RACE] Process to complete a mandatory race completed.", tag = TAG)
+			true
 		}
 	}
 	
