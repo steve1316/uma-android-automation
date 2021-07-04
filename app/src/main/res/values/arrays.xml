@@ -15,4 +15,109 @@
         <item>Guts</item>
         <item>Intelligence</item>
     </string-array>
+
+    <string-array name="character_list">
+        <item>Agnes Tachyon</item>
+        <item>Air Groove</item>
+        <item>Biwa Hayahide</item>
+        <item>Curren Chan</item>
+        <item>Daiwa Scarlet</item>
+        <item>El Condor Pasa</item>
+        <item>Gold Ship</item>
+        <item>Grass Wonder</item>
+        <item>Haru Urara</item>
+        <item>Hishi Amazon</item>
+        <item>King Halo</item>
+        <item>Maruzensky</item>
+        <item>Matikanefukukitaru</item>
+        <item>Mayano Top Gun</item>
+        <item>Mejiro McQueen</item>
+        <item>Mejiro Ryan</item>
+        <item>Mihono Bourbon</item>
+        <item>Narita Brian</item>
+        <item>Narita Taishin</item>
+        <item>Nice Nature</item>
+        <item>Oguri Cap</item>
+        <item>Rice Shower</item>
+        <item>Sakura Bakushin O</item>
+        <item>Seiun Sky</item>
+        <item>Silence Suzuka</item>
+        <item>Smart Falcon</item>
+        <item>Special Week</item>
+        <item>Super Creek</item>
+        <item>Symboli Rudolf</item>
+        <item>TM Opera O</item>
+        <item>Taiki Shuttle</item>
+        <item>Tokai Teio</item>
+        <item>Vodka</item>
+        <item>Winning Ticket</item>
+    </string-array>
+
+    <string-array name="support_list">
+        <item>Agnes Digital</item>
+        <item>Agnes Tachyon</item>
+        <item>Air Groove</item>
+        <item>Air Shakur</item>
+        <item>Aoi Kiryuin</item>
+        <item>Bamboo Memory</item>
+        <item>Biko Pegasus</item>
+        <item>Biwa Hayahide</item>
+        <item>Daitaku Helios</item>
+        <item>Daiwa Scarlet</item>
+        <item>Eishin Flash</item>
+        <item>El Condor Pasa</item>
+        <item>Fine Motion</item>
+        <item>Fuji Kiseki</item>
+        <item>Gold City</item>
+        <item>Gold Ship</item>
+        <item>Grass Wonder</item>
+        <item>Haru Urara</item>
+        <item>Hishi Akebono</item>
+        <item>Hishi Amazon</item>
+        <item>Ikuno Dictus</item>
+        <item>Ines Fujin</item>
+        <item>Kawakami Princess</item>
+        <item>King Halo</item>
+        <item>Kitasan Black</item>
+        <item>Manhattan Cafe</item>
+        <item>Maruzensky</item>
+        <item>Marvelous Sunday</item>
+        <item>Matikane Tannhauser</item>
+        <item>Matikanefukukitaru</item>
+        <item>Mayano Top Gun</item>
+        <item>Meishodoto</item>
+        <item>Mejiro Dober</item>
+        <item>Mejiro McQueen</item>
+        <item>Mejiro Palmer</item>
+        <item>Mejiro Ryan</item>
+        <item>Mihono Bourbon</item>
+        <item>Narita Taishin</item>
+        <item>Nice Nature</item>
+        <item>Nishino Flower</item>
+        <item>Oguri Cap</item>
+        <item>Rice Shower</item>
+        <item>Sakura Bakushin O</item>
+        <item>Sakura Chiyono O</item>
+        <item>Satono Diamond</item>
+        <item>Seeking the Pearl</item>
+        <item>Seiun Sky</item>
+        <item>Shinko Windy</item>
+        <item>Silence Suzuka</item>
+        <item>Smart Falcon</item>
+        <item>Special Week</item>
+        <item>Super Creek</item>
+        <item>Sweep Tosho</item>
+        <item>Symboli Rudolf</item>
+        <item>TM Opera O</item>
+        <item>Taiki Shuttle</item>
+        <item>Tamamo Cross</item>
+        <item>Tazuna Hayakawa</item>
+        <item>Tokai Teio</item>
+        <item>Twin Turbo</item>
+        <item>Vodka</item>
+        <item>Winning Ticket</item>
+        <item>Yaeno Muteki</item>
+        <item>Yukino Bijin</item>
+        <item>Zenno Rob Roy</item>
+    </string-array>
 </resources>

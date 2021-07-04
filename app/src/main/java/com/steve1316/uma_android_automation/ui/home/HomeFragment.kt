@@ -127,10 +127,20 @@ class HomeFragment : Fragment() {
 			trainingBlacklist.joinToString(", ")
 		}
 		
+		val supportCardListString: String = if (selectAllSupportCards) {
+			"All Support Cards Selected"
+		} else if (supportList.isEmpty() || supportList[0] == "") {
+			"None Selected"
+		} else {
+			supportList.toString()
+		}
+		
 		// Update the TextView here based on the information of the SharedPreferences.
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
-		settingsStatusTextView.text = "Training Blacklist: $trainingBlacklistString\n" +
+		settingsStatusTextView.text = "Character Selected: $character\n" +
+				"Support(s) Selected: $supportCardListString\n\n" +
+				"Training Blacklist: $trainingBlacklistString\n" +
 				"$statPrioritisationString\n" +
 				"Maximum Failure Chance Allowed: $maximumFailureChance%\n" +
 				"OCR Threshold: $threshold\n" +
@@ -144,6 +154,9 @@ class HomeFragment : Fragment() {
 			constructDataClasses()
 			firstRun = false
 		}
+		
+		// Force the user to go through the Settings in order to set this required setting.
+		startButton.isEnabled = (character != "None Selected. Please select one in the Settings")
 		
 		return homeFragmentView
 	}

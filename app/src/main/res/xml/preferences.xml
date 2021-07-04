@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="Options">
+    <PreferenceCategory app:title="Options" app:summary="Options marked with * are have a required setting">
 
         <Preference
             app:fragment="com.steve1316.uma_android_automation.ui.settings.TrainingFragment"
             app:key="trainingOptions"
             app:summary="Customize which stats to prioritise and setting maximum failure percentage."
-            app:title="Customize Training" />
+            app:title="Training" />
 
         <Preference
+            app:fragment="com.steve1316.uma_android_automation.ui.settings.TrainingEventFragment"
+            app:key="trainingEventOptions"
+            app:summary="Choose which Character/Support Cards to detect for the Training Event."
+            app:title="Training Event*" />
+
+        <Preference
+            app:fragment="com.steve1316.uma_android_automation.ui.settings.OCRFragment"
             app:key="ocrOptions"
-            app:summary="Customize which stats to prioritise and setting maximum failure percentage."
-            app:title="Customize OCR Optimization" />
+            app:summary="Customize OCR-related settings like the accuracy and required confidence."
+            app:title="Tesseract OCR Optimization" />
 
     </PreferenceCategory>
 
