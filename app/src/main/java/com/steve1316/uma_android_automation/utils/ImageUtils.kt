@@ -523,8 +523,7 @@ class ImageUtils(context: Context, private val game: Game) {
 								val reg = Regex("[a-zA-Z]+")
 								val regexResult: String = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
 								
-								Log.d(TAG, "Detected: ${block.text}")
-								Log.d(TAG, "Regex applied: $regexResult")
+								Log.d(TAG, "Detected: $regexResult")
 								
 								test.add(regexResult.toInt())
 							} catch (e: NumberFormatException) {

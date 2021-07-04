@@ -100,6 +100,9 @@ class TrainingFragment : PreferenceFragmentCompat() {
 		preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
 	}
 	
+	/**
+	 * Update the summaries of the Preference components on this page.
+	 */
 	private fun updateSummaries() {
 		val trainingBlacklistPreference = findPreference<MultiSelectListPreference>("trainingBlacklist")!!
 		trainingBlacklistPreference.summary = if (trainingBlacklistPreference.values.size != 0) {
