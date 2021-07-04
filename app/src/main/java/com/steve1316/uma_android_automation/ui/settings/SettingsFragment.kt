@@ -32,6 +32,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		}
 		
 		/**
+		 * Get a Set<String> value from the SharedPreferences using the provided key.
+		 *
+		 * @param context The context for the application.
+		 * @param key The name of the preference to retrieve.
+		 * @return The value that is associated with the key.
+		 */
+		fun getStringSetSharedPreference(context: Context, key: String): Set<String> {
+			val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+			return sharedPreferences.getStringSet(key, setOf())!!
+		}
+		
+		/**
 		 * Get a Int value from the SharedPreferences using the provided key.
 		 *
 		 * @param context The context for the application.
