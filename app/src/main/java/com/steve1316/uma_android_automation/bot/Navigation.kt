@@ -4,6 +4,7 @@ import android.util.Log
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.BotService
+import org.opencv.core.Point
 
 class Navigation(val game: Game) {
 	private val TAG: String = "[${MainActivity.loggerTag}]Navigation"
@@ -249,16 +250,25 @@ class Navigation(val game: Game) {
 			}
 		}
 		
-		// Acquire the max weight from the event rewards and the chosen option.
+		// Select the best option that aligns with the stat prioritization made in the Training options.
 		var max: Int? = selectionWeight.maxOrNull()
-		var optionSelected = 0
 		if (max == null) {
 			max = 0
+			optionSelected = 0
 		} else {
 			optionSelected = selectionWeight.indexOf(max)
 		}
 		
-		Log.d(TAG, "Selecting option ${eventRewards[optionSelected]} with a weight of $max")
+		game.printToLog("Selecting Event option \"${eventRewards[optionSelected]}\" with a selection weight of $max.", tag = TAG)
+		
+		val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
+		val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
+			trainingOptionLocations[optionSelected]
+		} else {
+			game.imageUtils.findImage("training_event_active").first!!
+		}
+		
+		game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
