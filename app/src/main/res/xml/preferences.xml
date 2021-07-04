@@ -5,7 +5,7 @@
         <Preference
             app:fragment="com.steve1316.uma_android_automation.ui.settings.TrainingFragment"
             app:key="trainingOptions"
-            app:summary="Customize which stats to prioritise and setting maximum failure percentage."
+            app:summary="Customize which stats to prioritize and setting maximum failure percentage."
             app:title="Training" />
 
         <Preference

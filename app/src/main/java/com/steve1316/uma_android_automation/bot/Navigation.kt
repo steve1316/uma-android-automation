@@ -11,7 +11,7 @@ class Navigation(val game: Game) {
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
-	private val statPrioritisation: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritisation").split("|")
+	private val statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
 	private var previouslySelectedTraining = ""
 	
 	private val textDetection: TextDetection = TextDetection(game.myContext, game, game.imageUtils)
@@ -148,7 +148,7 @@ class Navigation(val game: Game) {
 	 */
 	private fun createWeights() {
 		var count = 5
-		statPrioritisation.forEach { statName ->
+		statPrioritization.forEach { statName ->
 			if (trainingMap.containsKey(statName)) {
 				val failureChance: Int = trainingMap[statName]?.get("failureChance")!!
 				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
@@ -212,10 +212,10 @@ class Navigation(val game: Game) {
 		val regex = Regex("[a-zA-Z]+")
 		
 		if (eventRewards.isNotEmpty() && eventRewards[0] != "") {
-			// Select the best option that aligns with the stat prioritisation made in the Training options.
+			// Select the best option that aligns with the stat prioritization made in the Training options.
 			var optionSelected = 0
 			
-			// Sum up the stat gains with additional weight applied to stats that are prioritised.
+			// Sum up the stat gains with additional weight applied to stats that are prioritized.
 			eventRewards.forEach { reward ->
 				val formattedReward: List<String> = reward.split("\n")
 				
@@ -223,7 +223,7 @@ class Navigation(val game: Game) {
 					var statCheck = false
 					val formattedLine: String = regex.replace(line, "").replace("+", "").replace("(", "").replace(")", "").trim()
 					
-					statPrioritisation.forEach { stat ->
+					statPrioritization.forEach { stat ->
 						if (formattedLine.contains(stat)) {
 							selectionWeight[optionSelected] += try {
 								statCheck = true

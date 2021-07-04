@@ -111,20 +111,20 @@ class TrainingFragment : PreferenceFragmentCompat() {
 			"Select Training(s) to blacklist from being selected in order to narrow the focus of overall Training.\n\nNone Selected"
 		}
 		
-		val statPrioritisationPreference = findPreference<Preference>("statPrioritisation")!!
-		val statPrioritisation: List<String> = sharedPreferences.getString("statPrioritisation", "")!!.split("|")
-		statPrioritisationPreference.summary = if (statPrioritisation.isNotEmpty() && statPrioritisation[0] != "") {
-			var summaryBody = "Select Stat(s) to prioritise in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nOrder of Stat Prioritisation:"
+		val statPrioritizationPreference = findPreference<Preference>("statPrioritization")!!
+		val statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
+		statPrioritizationPreference.summary = if (statPrioritization.isNotEmpty() && statPrioritization[0] != "") {
+			var summaryBody = "Select Stat(s) to prioritize in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nOrder of Stat Prioritisation:"
 			
 			var count = 1
-			statPrioritisation.forEach { stat ->
+			statPrioritization.forEach { stat ->
 				summaryBody += "\n$count. $stat"
 				count++
 			}
 			
 			summaryBody
 		} else {
-			"Select Stat(s) to prioritise in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nFollowing Default Prioritisation Order:\n1. " +
+			"Select Stat(s) to prioritize in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nFollowing Default Prioritisation Order:\n1. " +
 					"Speed\n2. Stamina\n3. Power\n4. Guts\n5. Intelligence"
 		}
 	}
@@ -134,9 +134,9 @@ class TrainingFragment : PreferenceFragmentCompat() {
 	 * This also serves the purpose of populating the Preference with previously selected values from SharedPreferences.
 	 */
 	private fun createMultiSelectAlertDialog() {
-		val multiplePreference = findPreference<Preference>("statPrioritisation")!!
-		val key = "statPrioritisation"
-		val savedOptions: List<String> = sharedPreferences.getString("statPrioritisation", "")!!.split("|")
+		val multiplePreference = findPreference<Preference>("statPrioritization")!!
+		val key = "statPrioritization"
+		val savedOptions: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
 		val selectedOptions: List<String> = sharedPreferences.getString("selectedOptions", "")!!.split("|")
 		
 		// Update the Preference's summary to reflect the order of options selected if the user did it before.

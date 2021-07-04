@@ -23,7 +23,6 @@ class Game(val myContext: Context) {
 	val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val navigation: Navigation = Navigation(this)
-	// private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
 	
 	val maximumFailureChance: Int = SettingsFragment.getIntSharedPreference(myContext, "maximumFailureChance")
 	

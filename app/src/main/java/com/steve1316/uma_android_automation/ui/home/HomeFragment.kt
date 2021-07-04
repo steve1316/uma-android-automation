@@ -71,7 +71,7 @@ class HomeFragment : Fragment() {
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
 		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
 		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
-		var statPrioritisation: List<String> = sharedPreferences.getString("statPrioritisation", "")!!.split("|")
+		var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
 		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
 		val confidence: Int = sharedPreferences.getInt("confidence", 80)
@@ -80,20 +80,20 @@ class HomeFragment : Fragment() {
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Set default values if this is the user's first time.
-		if (statPrioritisation.isEmpty() || statPrioritisation[0] == "") {
-			statPrioritisation = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
+			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 			defaultCheck = true
 		}
 		
 		// Construct the Stat Prioritisation string.
 		var count = 1
-		var statPrioritisationString: String = if (defaultCheck) {
-			"Using Default Stat Prioritisation: "
+		var statPrioritizationString: String = if (defaultCheck) {
+			"Using Default Stat Prioritization:"
 		} else {
-			"Stat Prioritisation: "
+			"Stat Prioritization:"
 		}
-		statPrioritisation.forEach { stat ->
-			statPrioritisationString += "$count. $stat "
+		statPrioritization.forEach { stat ->
+			statPrioritizationString += "\n$count. $stat "
 			count++
 		}
 		
@@ -120,8 +120,8 @@ class HomeFragment : Fragment() {
 		settingsStatusTextView.text = "Character Selected: $character\n" +
 				"Support(s) Selected: $supportCardListString\n\n" +
 				"Training Blacklist: $trainingBlacklistString\n" +
-				"$statPrioritisationString\n" +
-				"Maximum Failure Chance Allowed: $maximumFailureChance%\n" +
+				"$statPrioritizationString\n" +
+				"\nMaximum Failure Chance Allowed: $maximumFailureChance%\n" +
 				"OCR Threshold: $threshold\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetry\n" +
 				"Minimum OCR Confidence: $confidence\n" +
