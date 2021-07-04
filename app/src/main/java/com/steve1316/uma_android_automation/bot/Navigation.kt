@@ -266,9 +266,19 @@ class Navigation(val game: Game) {
 				optionSelected = selectionWeight.indexOf(max)
 			}
 			
-		game.printToLog(
-			"[TRAINING-EVENT] For this Training Event consisting of $eventRewards, the bot will select the option \"${eventRewards[optionSelected]}\" with a selection weight of $max.", tag = TAG)
-		
+			// Format the string to display each option's rewards.
+			var eventRewardsString = ""
+			var optionNumber = 1
+			eventRewards.forEach { reward ->
+				eventRewardsString += "Option $optionNumber: \"$reward\"\n"
+				optionNumber += 1
+			}
+			
+			val resultString = "[TRAINING-EVENT] For this Training Event consisting of:\n$eventRewardsString\nThe bot will select Option ${optionSelected + 1}: \"${eventRewards[optionSelected]}\" " +
+					"with a selection weight of $max."
+			
+			game.printToLog(resultString, tag = TAG)
+			
 			val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
 			val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
 				trainingOptionLocations[optionSelected]
