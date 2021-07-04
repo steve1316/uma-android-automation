@@ -110,29 +110,31 @@ class Navigation(val game: Game) {
 				
 				// Iterate through every training after Speed training that is not blacklisted.
 				whitelistedTrainings.forEach { training ->
-					when (training) {
-						"Stamina" -> {
-							game.gestureUtils.tap(speedStatTextLocation.x + 212, speedStatTextLocation.y + 319, "images", "training_option_circular")
+					if (training != "Speed") {
+						when (training) {
+							"Stamina" -> {
+								game.gestureUtils.tap(speedStatTextLocation.x + 212, speedStatTextLocation.y + 319, "images", "training_option_circular")
+							}
+							"Power" -> {
+								game.gestureUtils.tap(speedStatTextLocation.x + 402, speedStatTextLocation.y + 319, "images", "training_option_circular")
+							}
+							"Guts" -> {
+								game.gestureUtils.tap(speedStatTextLocation.x + 591, speedStatTextLocation.y + 319, "images", "training_option_circular")
+								game.wait(1.0)
+							}
+							"Intelligence" -> {
+								game.gestureUtils.tap(speedStatTextLocation.x + 779, speedStatTextLocation.y + 319, "images", "training_option_circular")
+							}
 						}
-						"Power" -> {
-							game.gestureUtils.tap(speedStatTextLocation.x + 402, speedStatTextLocation.y + 319, "images", "training_option_circular")
-						}
-						"Guts" -> {
-							game.gestureUtils.tap(speedStatTextLocation.x + 591, speedStatTextLocation.y + 319, "images", "training_option_circular")
-							game.wait(1.0)
-						}
-						"Intelligence" -> {
-							game.gestureUtils.tap(speedStatTextLocation.x + 779, speedStatTextLocation.y + 319, "images", "training_option_circular")
-						}
+						
+						game.wait(0.5)
+						
+						trainingMap[training] = mutableMapOf(
+							"failureChance" to game.imageUtils.findTrainingFailureChance(),
+							"totalStatGained" to game.imageUtils.findTotalStatGains(training),
+							"weight" to 0
+						)
 					}
-					
-					game.wait(0.5)
-					
-					trainingMap[training] = mutableMapOf(
-						"failureChance" to game.imageUtils.findTrainingFailureChance(),
-						"totalStatGained" to game.imageUtils.findTotalStatGains(training),
-						"weight" to 0
-					)
 				}
 				
 				game.wait(0.5)
