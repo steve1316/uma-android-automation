@@ -425,9 +425,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		textRecognizer.process(inputImage).addOnSuccessListener {
 			if (it.textBlocks.size != 0) {
 				for (block in it.textBlocks) {
-					try {
-						result = block.text.replace("%", "").trim().toInt()
+					result = try {
+						block.text.replace("%", "").trim().toInt()
 					} catch (e: NumberFormatException) {
+						0
 					}
 				}
 			}
@@ -438,13 +439,17 @@ class ImageUtils(context: Context, private val game: Game) {
 		// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
 		game.wait(0.1)
 		
+		if (debugMode) {
+			game.printToLog("[DEBUG] Detected $result%.")
+		}
+		
 		return result
 	}
 	
 	fun findTotalStatGains(currentStat: String): Int {
 		val test = mutableListOf<Int>()
 		
-		val (speedStatTextLocation, sourceBitmap) = findImage("speed_stat")
+		val (speedStatTextLocation, sourceBitmap) = findImage("stat_speed")
 		
 		val statsToCheck: ArrayList<String> = when (currentStat) {
 			"speed" -> {
