@@ -16,6 +16,7 @@ class Navigation(val game: Game) {
 	
 	private var previouslySelectedTraining = ""
 	private var inheritancesDone = 0
+	private var raceRetries = 3
 	
 	private val textDetection: TextDetection = TextDetection(game.myContext, game, game.imageUtils)
 	
@@ -300,23 +301,40 @@ class Navigation(val game: Game) {
 	 * Handles and completes the mandatory race event.
 	 */
 	private fun handleMandatoryRaceEvent() {
-		game.printToLog("\n[MANDATORY-RACE] Encountered a mandatory race. Proceeding to complete it now...", tag = TAG)
+		game.printToLog("\n[RACE] Encountered a mandatory race. Proceeding to complete it now...", tag = TAG)
 		
 		// Navigate the bot to the Race Selection screen.
 		game.findAndTapImage("race_select")
 		
-		// The confirmation button will show up twice.
+		// Confirm the race selection and then confirm it again.
 		game.findAndTapImage("race_confirm")
 		game.findAndTapImage("race_confirm")
+		game.wait(3.0)
 		
-		game.wait(1.0)
+		// The bot will arrive at the Race Setup screen where you can skip the race, run it manually, and/or change strategies.
+		var successCheck = false
+		while (!successCheck && raceRetries > 0) {
+			if (game.findAndTapImage("race_skip")) {
+				successCheck = if (!game.imageUtils.waitVanish("race_skip", timeout = 3, suppressError = true)) {
+					runRaceManually()
+				} else {
+					skipRace()
+				}
+			}
+		}
 		
-		if (game.imageUtils.findImage("race_skip", tries = 1).first != null) {
-			// Skip the race.
-			game.findAndTapImage("race_skip")
-			
-			// TODO: Handle the case where the user has not run this particular race yet so the skip button will be locked. The bot will need to manually run the race.
-			
+		Log.d(TAG, "Race has finished.")
+		
+		// Skip the screen that shows the accumulation of new fans and then confirm the end of the race.
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 3)
+		game.findAndTapImage("race_end")
+		
+		// Now finalize the result by tapping on this button to complete a Training Goal for the Character.
+		game.findAndTapImage("race_confirm_result")
+		
+		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
+	}
+	
 	private fun skipRace(): Boolean {
 		game.printToLog("[RACE] Successfully skipped race.", tag = TAG)
 		
