@@ -412,7 +412,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 *
 	 * @return Integer representing the percentage.
 	 */
-	fun findStatPercentage(): Int {
+	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection")
 		val croppedBitmap = Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
@@ -441,7 +441,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		return result
 	}
 	
-	fun findStatIncreases(currentStat: String): Int {
+	fun findTotalStatGains(currentStat: String): Int {
 		val test = mutableListOf<Int>()
 		
 		val (speedStatTextLocation, sourceBitmap) = findImage("speed_stat")

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Main driver for bot activity and navigation.
  */
-class Game(private val myContext: Context) {
+class Game(val myContext: Context) {
 	private val TAG: String = "[${MainActivity.loggerTag}]Game"
 	
 	private var debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "debugMode")
@@ -25,7 +25,7 @@ class Game(private val myContext: Context) {
 	private val navigation: Navigation = Navigation(this)
 	// private val textDetection: TextDetection = TextDetection(myContext, this, imageUtils)
 	
-	val maximumPercentage: Int = 30
+	val maximumFailureChance: Int = SettingsFragment.getIntSharedPreference(myContext, "maximumFailureChance")
 	
 	private val startTime: Long = System.currentTimeMillis()
 	
