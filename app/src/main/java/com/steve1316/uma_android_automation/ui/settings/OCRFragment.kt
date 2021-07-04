@@ -24,9 +24,9 @@ class OCRFragment : PreferenceFragmentCompat() {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
 		// Grab the saved preferences from the previous time the user used the app.
-		val threshold = sharedPreferences.getInt("threshold", 230)
-		val enableAutomaticRetry = sharedPreferences.getBoolean("enableAutomaticRetry", false)
-		val confidence = sharedPreferences.getInt("confidence", 80)
+		val threshold: Int = sharedPreferences.getInt("threshold", 230)
+		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", false)
+		val confidence: Int = sharedPreferences.getInt("confidence", 80)
 		
 		// Get references to the Preference components.
 		val thresholdPreference = findPreference<SeekBarPreference>("threshold")!!

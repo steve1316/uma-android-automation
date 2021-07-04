@@ -415,10 +415,10 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection")
-		val croppedBitmap = Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
+		val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
 		
 		// Create a InputImage object for Google's ML OCR.
-		val inputImage = InputImage.fromBitmap(croppedBitmap, 0)
+		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
 		
 		// Start the asynchronous operation of text detection.
 		var result = 0
@@ -446,7 +446,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		val (speedStatTextLocation, sourceBitmap) = findImage("speed_stat")
 		
-		val statsToCheck = when (currentStat) {
+		val statsToCheck: ArrayList<String> = when (currentStat) {
 			"speed" -> {
 				arrayListOf("speed", "power")
 			}
@@ -507,7 +507,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				Utils.matToBitmap(cvImage, croppedBitmap)
 				
 				// Create a InputImage object for Google's ML OCR.
-				val inputImage = InputImage.fromBitmap(croppedBitmap, 0)
+				val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
 				
 				// Count up all of the total stat gains for this training selection.
 				textRecognizer.process(inputImage).addOnSuccessListener {
@@ -516,7 +516,7 @@ class ImageUtils(context: Context, private val game: Game) {
 							try {
 								// Regex to eliminate characters.
 								val reg = Regex("[a-zA-Z]+")
-								val regexResult = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
+								val regexResult: String = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
 								
 								Log.d(TAG, "Detected: ${block.text}")
 								Log.d(TAG, "Regex applied: $regexResult")
@@ -538,7 +538,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		// An attempt at normalizing the result to account for inaccuracies.
-		var result = test.sum() / 2
+		var result: Int = test.sum() / 2
 		if (test.size != 0) {
 			result += test.maxOrNull()?.div(2)!!
 		}

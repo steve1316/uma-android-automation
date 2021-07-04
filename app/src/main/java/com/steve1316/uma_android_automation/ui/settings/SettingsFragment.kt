@@ -114,8 +114,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
 		// Grab the saved preferences from the previous time the user used the app.
-		val debugMode = sharedPreferences.getBoolean("debugMode", false)
-		val hideComparisonResults = sharedPreferences.getBoolean("hideComparisonResults", true)
+		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Get references to the Preference components.
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
