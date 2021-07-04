@@ -181,32 +181,54 @@ class Navigation(val game: Game) {
 	
 	fun start() {
 		while (true) {
-		// If the bot is at the Main screen, that means Training and other options are available.
-		if (checkMainScreen()) {
-			game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
-			
-			// Enter the Training screen.
-			game.findAndTapImage("training")
-			
-			// Acquire the percentages and stat gains for each training.
-			findStatsAndPercentages()
-			
-			if (trainingMap.isEmpty()) {
-				game.printToLog("[INFO] Maximum percentage of success exceeded. Recovering energy...", tag = TAG)
+			if (checkMainScreen()) {
+				// If the bot is at the Main screen, that means Training and other options are available.
+				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
 				
-				recoverEnergy()
-			} else {
-				trainingMap.keys.forEach { stat ->
-					game.printToLog("[INFO] $stat: ${trainingMap[stat]?.get("totalStatGained")} for ${trainingMap[stat]?.get("failure")}%")
+				// Enter the Training screen.
+				game.findAndTapImage("training_option")
+				
+				// Acquire the percentages and stat gains for each training.
+				findStatsAndPercentages()
+				
+				if (trainingMap.isEmpty()) {
+					game.printToLog("[INFO] Maximum percentage of success exceeded. Recovering energy...", tag = TAG)
+					
+					recoverEnergy()
+				} else {
+					// Generate weights for the stats based on what settings the user set.
+					createWeights()
+					
+					// Now select the training option with the highest weight. TODO: Might need more revision.
+					var trainingSelected = ""
+					var maxWeight = 0
+					
+					trainingMap.forEach { (statName, map) ->
+						val weight = map["weight"]!!
+						if ((maxWeight == 0 && trainingSelected == "") || weight > maxWeight) {
+							maxWeight = weight
+							trainingSelected = statName
+							previouslySelectedTraining = statName
+						}
+					}
+					
+					if (trainingSelected != "") {
+						game.findAndTapImage("training_${trainingSelected.lowercase()}", taps = 3)
+						printMap()
+					}
+					
+					// Now reset the Training map.
+					trainingMap.clear()
 				}
-			}
-		} else if (checkTrainingScreen()) {
-			// Generate weights for the stats based on what settings the user set.
-			createWeights()
+			} else if (checkTrainingScreen()) {
+				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
+				printMap()
 			} else if (!BotService.isRunning) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
 			}
+			
+			game.wait(1.0)
 		}
 	}
 }
