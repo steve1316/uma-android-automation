@@ -149,6 +149,8 @@ class Navigation(val game: Game) {
 	 * Generate the weights for each training using the settings set in the app.
 	 */
 	private fun createWeights() {
+		game.printToLog("\n[TRAINING] Now starting process to assign weights to each prioritised stat.", tag = TAG)
+		
 		var count = 5
 		statPrioritization.forEach { statName ->
 			if (trainingMap.containsKey(statName)) {
@@ -167,6 +169,8 @@ class Navigation(val game: Game) {
 				count--
 			}
 		}
+		
+		game.printToLog("[TRAINING] Process to assign weights to each prioritised stat completed.", tag = TAG)
 	}
 	
 	/**
@@ -214,13 +218,13 @@ class Navigation(val game: Game) {
 		val regex = Regex("[a-zA-Z]+")
 		var optionSelected = 0
 		
-		// Initialize the List.
-		val selectionWeight = mutableListOf<Int>()
-		for (i in 1..(eventRewards.size)) {
-			selectionWeight.add(0)
-		}
-		
 		if (eventRewards.isNotEmpty() && eventRewards[0] != "") {
+			// Initialize the List.
+			val selectionWeight = mutableListOf<Int>()
+			for (i in 1..(eventRewards.size)) {
+				selectionWeight.add(0)
+			}
+			
 			// Sum up the stat gains with additional weight applied to stats that are prioritized.
 			eventRewards.forEach { reward ->
 				val formattedReward: List<String> = reward.split("\n")
@@ -252,28 +256,30 @@ class Navigation(val game: Game) {
 				
 				optionSelected++
 			}
-		}
-		
-		// Select the best option that aligns with the stat prioritization made in the Training options.
-		var max: Int? = selectionWeight.maxOrNull()
-		if (max == null) {
-			max = 0
-			optionSelected = 0
-		} else {
-			optionSelected = selectionWeight.indexOf(max)
-		}
-		
+			
+			// Select the best option that aligns with the stat prioritization made in the Training options.
+			var max: Int? = selectionWeight.maxOrNull()
+			if (max == null) {
+				max = 0
+				optionSelected = 0
+			} else {
+				optionSelected = selectionWeight.indexOf(max)
+			}
+			
 		game.printToLog(
 			"[TRAINING-EVENT] For this Training Event consisting of $eventRewards, the bot will select the option \"${eventRewards[optionSelected]}\" with a selection weight of $max.", tag = TAG)
 		
-		val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
-		val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
-			trainingOptionLocations[optionSelected]
-		} else {
-			game.imageUtils.findImage("training_event_active").first!!
+			val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
+			val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
+				trainingOptionLocations[optionSelected]
+			} else {
+				game.imageUtils.findImage("training_event_active").first!!
+			}
+			
+			game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
 		}
 		
-		game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
+		game.printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.", tag = TAG)
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,7 +390,6 @@ class Navigation(val game: Game) {
 				findStatsAndPercentages()
 				
 				if (trainingMap.isEmpty()) {
-					game.printToLog("[INFO] Maximum percentage of success exceeded. Recovering energy...", tag = TAG)
 					game.findAndTapImage("back")
 					
 					if (checkMainScreen()) {
@@ -415,8 +420,6 @@ class Navigation(val game: Game) {
 			
 			// Handle the case where the bot took too long to do anything and the AFK check came up.
 			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
-			
-			game.wait(1.0)
 		}
 	}
 }
