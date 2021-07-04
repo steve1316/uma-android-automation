@@ -33,7 +33,7 @@ class Navigation(val game: Game) {
 	 *
 	 * @return True if the bot is at the Training Event screen. Otherwise false.
 	 */
-	private fun checkTrainingScreen(): Boolean {
+	private fun checkTrainingEventScreen(): Boolean {
 		return game.imageUtils.findImage("training_event_active", tries = 1).first != null
 	}
 
@@ -249,7 +249,7 @@ class Navigation(val game: Game) {
 					// Now select the training option with the highest weight. TODO: Might need more revision.
 					executeTraining()
 				}
-			} else if (checkTrainingScreen()) {
+			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
 				printMap()
 			} else if (!BotService.isRunning) {
