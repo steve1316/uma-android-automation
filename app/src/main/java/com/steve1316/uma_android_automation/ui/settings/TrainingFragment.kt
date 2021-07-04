@@ -64,8 +64,13 @@ class TrainingFragment : PreferenceFragmentCompat() {
 				"trainingBlacklist" -> {
 					val trainingBlacklistPreference = findPreference<MultiSelectListPreference>("trainingBlacklist")!!
 					
+					val result: MutableSet<String> = mutableSetOf()
+					trainingBlacklistPreference.values.forEach { training ->
+						result.add(training.replace("Training", "").trim())
+					}
+					
 					sharedPreferences.edit {
-						putStringSet("trainingBlacklist", trainingBlacklistPreference.values)
+						putStringSet("trainingBlacklist", result)
 						commit()
 					}
 				}
