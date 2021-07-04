@@ -25,11 +25,12 @@ class Navigation(val game: Game) {
 	
 	/**
 	 * Checks if the bot is at the Main screen or the screen with available options to undertake.
+	 * This will also make sure that the Main screen does not contain the option to select a race.
 	 *
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	private fun checkMainScreen(): Boolean {
-		return game.imageUtils.findImage("tazuna", tries = 1).first != null
+		return game.imageUtils.findImage("tazuna", tries = 1).first != null && game.imageUtils.findImage("race_select").first == null
 	}
 	
 	/**
@@ -40,26 +41,15 @@ class Navigation(val game: Game) {
 	private fun checkTrainingEventScreen(): Boolean {
 		return game.imageUtils.findImage("training_event_active", tries = 1).first != null
 	}
-
-//	private fun checkPreRaceScreen(): Boolean {
-//		return game.imageUtils.findImage("race_select", tries = 1).first != null
-//	}
-//
-//	private fun checkPickRaceScreen(): Boolean {
-//		return game.imageUtils.findImage("race_confirm", tries = 1).first != null
-//	}
-//
-//	private fun checkSetupRaceScreen(): Boolean {
-//		return game.imageUtils.findImage("race_skip", tries = 1).first != null
-//	}
-//
-//	private fun checkEndRaceScreen(): Boolean {
-//		return game.imageUtils.findImage("race_end", tries = 1).first != null
-//	}
-//
-//	private fun checkPostRaceScreen(): Boolean {
-//		return game.imageUtils.findImage("race_confirm_result", tries = 1).first != null
-//	}
+	
+	/**
+	 * Checks if the bot is at the Main screen with a mandatory race needing to be completed.
+	 *
+	 * @return True if the bot is at the Main screen with a mandatory race. Otherwise false.
+	 */
+	private fun checkPreRaceScreen(): Boolean {
+		return game.imageUtils.findImage("race_select", tries = 1).first != null
+	}
 
 //	/**
 //	 * Checks if the bot is at the Ending screen detailing the overall results of the run.
@@ -275,6 +265,51 @@ class Navigation(val game: Game) {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Functions to handle Race Events.
+	
+	/**
+	 * Handles and completes the mandatory race event.
+	 */
+	private fun handleMandatoryRaceEvent() {
+		game.printToLog("\n[INFO] Encountered a mandatory race. Proceeding to complete it now...", tag = TAG)
+		
+		// Navigate the bot to the Race Selection screen.
+		game.findAndTapImage("race_select")
+		
+		// The confirmation button will show up twice.
+		game.findAndTapImage("race_confirm")
+		game.findAndTapImage("race_confirm")
+		
+		game.wait(1.0)
+		
+		if (game.imageUtils.findImage("race_skip", tries = 1).first != null) {
+			// Skip the race.
+			game.findAndTapImage("race_skip")
+			
+			// TODO: Handle the case where the user has not run this particular race yet so the skip button will be locked. The bot will need to manually run the race.
+			
+			game.wait(1.0)
+			
+			// Now interact with the screen to confirm the choice.
+			game.gestureUtils.swipe(500f, 1000f, 500f, 900f, 100L)
+			game.wait(0.5)
+			
+			game.findAndTapImage("race_confirm_result")
+			game.gestureUtils.swipe(500f, 1000f, 500f, 900f, 100L)
+			game.wait(0.5)
+			
+			// TODO: Handle the case where the bot failed to get a good enough position and needs to retry the race.
+			
+			game.findAndTapImage("race_end")
+			
+			// Now finalize the result by tapping on this button 2 times to complete a Training Goal for the Character.
+			game.findAndTapImage("race_confirm_result")
+			game.findAndTapImage("race_confirm_result")
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Helper Functions
 	
 	/**
@@ -355,6 +390,9 @@ class Navigation(val game: Game) {
 			} else if (handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
 				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = TAG)
+			} else if (checkPreRaceScreen()) {
+				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
+				handleMandatoryRaceEvent()
 			} else if (!BotService.isRunning) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
