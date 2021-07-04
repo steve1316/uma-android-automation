@@ -188,7 +188,6 @@ class Navigation(val game: Game) {
 		if (trainingSelected != "") {
 			printMap()
 			game.findAndTapImage("training_${trainingSelected.lowercase()}", taps = 3)
-			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
 		}
 		
 		// Now reset the Training map.
@@ -327,6 +326,9 @@ class Navigation(val game: Game) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
 			}
+			
+			// Handle the case where the bot took too long to do anything and the AFK check came up.
+			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
 			
 			game.wait(1.0)
 		}
