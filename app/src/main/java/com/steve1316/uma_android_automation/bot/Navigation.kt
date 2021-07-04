@@ -13,7 +13,9 @@ class Navigation(val game: Game) {
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
 	private val statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
+	
 	private var previouslySelectedTraining = ""
+	private var inheritancesDone = 0
 	
 	private val textDetection: TextDetection = TextDetection(game.myContext, game, game.imageUtils)
 	
@@ -276,6 +278,24 @@ class Navigation(val game: Game) {
 	// Helper Functions
 	
 	/**
+	 * Handles the Inheritance event if detected on the screen.
+	 *
+	 * @return True if the Inheritance event happened and was accepted. Otherwise false.
+	 */
+	private fun handleInheritanceEvent(): Boolean {
+		return if (inheritancesDone < 2) {
+			if (game.findAndTapImage("inheritance", tries = 1, suppressError = true)) {
+				inheritancesDone++
+				true
+			} else {
+				false
+			}
+		} else {
+			false
+		}
+	}
+	
+	/**
 	 * Attempt to recover energy.
 	 *
 	 * @return True if the bot successfully recovered energy. Otherwise false.
@@ -332,6 +352,9 @@ class Navigation(val game: Game) {
 			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
 				handleTrainingEvent()
+			} else if (handleInheritanceEvent()) {
+				// If the bot is at the Inheritance screen, then accept the inheritance.
+				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = TAG)
 			} else if (!BotService.isRunning) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
