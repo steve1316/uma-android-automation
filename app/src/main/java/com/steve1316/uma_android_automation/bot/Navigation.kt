@@ -14,6 +14,7 @@ class Navigation(val game: Game) {
 	private val statPrioritisation: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritisation").split("|")
 	private var previouslySelectedTraining = ""
 	
+	private val textDetection: TextDetection = TextDetection(game.myContext, game, game.imageUtils)
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +192,74 @@ class Navigation(val game: Game) {
 		// Now reset the Training map.
 		trainingMap.clear()
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Functions to handle Training Events with the help of the TextDetection class.
+	
+	/**
+	 * Start text detection to determine what Training Event it is and the event rewards for each option.
+	 * It will then select the best option according to the user's preferences.
+	 */
+	private fun handleTrainingEvent() {
+		val eventRewards: ArrayList<String> = textDetection.start()
+		
+		val selectionWeight = mutableListOf<Int>()
+		for (i in 1..(eventRewards.size)) {
+			selectionWeight.add(0)
+		}
+		
+		val regex = Regex("[a-zA-Z]+")
+		
+		if (eventRewards.isNotEmpty() && eventRewards[0] != "") {
+			// Select the best option that aligns with the stat prioritisation made in the Training options.
+			var optionSelected = 0
+			
+			// Sum up the stat gains with additional weight applied to stats that are prioritised.
+			eventRewards.forEach { reward ->
+				val formattedReward: List<String> = reward.split("\n")
+				
+				formattedReward.forEach { line ->
+					var statCheck = false
+					val formattedLine: String = regex.replace(line, "").replace("+", "").replace("(", "").replace(")", "").trim()
+					
+					statPrioritisation.forEach { stat ->
+						if (formattedLine.contains(stat)) {
+							selectionWeight[optionSelected] += try {
+								statCheck = true
+								formattedLine.toInt() * 2
+							} catch (e: NumberFormatException) {
+								statCheck = false
+								0
+							}
+						}
+					}
+					
+					if (!statCheck) {
+						selectionWeight[optionSelected] += try {
+							formattedLine.toInt()
+						} catch (e: NumberFormatException) {
+							0
+						}
+					}
+				}
+				
+				optionSelected++
+			}
+		}
+		
+		// Acquire the max weight from the event rewards and the chosen option.
+		var max: Int? = selectionWeight.maxOrNull()
+		var optionSelected = 0
+		if (max == null) {
+			max = 0
+		} else {
+			optionSelected = selectionWeight.indexOf(max)
+		}
+		
+		Log.d(TAG, "Selecting option ${eventRewards[optionSelected]} with a weight of $max")
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Helper Functions
@@ -251,7 +320,7 @@ class Navigation(val game: Game) {
 				}
 			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
-				printMap()
+				handleTrainingEvent()
 			} else if (!BotService.isRunning) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
