@@ -137,16 +137,22 @@ class Navigation(val game: Game) {
 	 * Generate the weights for each training using the settings set in the app.
 	 */
 	private fun createWeights() {
-		// Grab the preference settings.
-		val statPrioritisation: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritisation").split("|")
-		
 		var count = 5
 		statPrioritisation.forEach { statName ->
-			val weight = 10 * count
-			Log.d(TAG, "Assigning a weight of $weight to $statName")
-			
-			trainingMap[statName]?.set("weight", weight)
-			count--
+			if (trainingMap.containsKey(statName)) {
+				val failureChance: Int = trainingMap[statName]?.get("failureChance")!!
+				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
+				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
+					250
+				} else {
+					0
+				}
+				
+				val weight: Int = (100 * count) + (10 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
+				
+				trainingMap[statName]?.set("weight", weight)
+				count--
+			}
 		}
 	}
 	
