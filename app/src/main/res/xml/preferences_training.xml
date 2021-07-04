@@ -12,7 +12,7 @@
 
         <Preference
             app:key="statPrioritisation"
-            app:summary="Select Stat(s) to prioritise in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nFollowing Default Prioritisation Order:\n1. Speed\n2. Stamina\n3. Power\n4. Guts\n5. Intelligence"
+            app:summary="Select Stat(s) to focus in order with descending priority. Will affect training event option selection.\n\nFollowing Default Prioritisation Order:\n1. Speed\n2. Stamina\n3. Power\n4. Guts\n5. Intelligence"
             app:title="Prioritise Training Certain Stats" />
 
         <SeekBarPreference
