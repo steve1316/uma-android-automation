@@ -166,6 +166,31 @@ class Navigation(val game: Game) {
 		}
 	}
 	
+	/**
+	 * Execute the training with the highest stat weight.
+	 */
+	private fun executeTraining() {
+		var trainingSelected = ""
+		var maxWeight = 0
+		
+		trainingMap.forEach { (statName, map) ->
+			val weight = map["weight"]!!
+			if ((maxWeight == 0 && trainingSelected == "") || weight > maxWeight) {
+				maxWeight = weight
+				trainingSelected = statName
+				previouslySelectedTraining = statName
+			}
+		}
+		
+		if (trainingSelected != "") {
+			printMap()
+			game.findAndTapImage("training_${trainingSelected.lowercase()}", taps = 3)
+			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
+		}
+		
+		// Now reset the Training map.
+		trainingMap.clear()
+	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Helper Functions
@@ -222,25 +247,7 @@ class Navigation(val game: Game) {
 					createWeights()
 					
 					// Now select the training option with the highest weight. TODO: Might need more revision.
-					var trainingSelected = ""
-					var maxWeight = 0
-					
-					trainingMap.forEach { (statName, map) ->
-						val weight = map["weight"]!!
-						if ((maxWeight == 0 && trainingSelected == "") || weight > maxWeight) {
-							maxWeight = weight
-							trainingSelected = statName
-							previouslySelectedTraining = statName
-						}
-					}
-					
-					if (trainingSelected != "") {
-						game.findAndTapImage("training_${trainingSelected.lowercase()}", taps = 3)
-						printMap()
-					}
-					
-					// Now reset the Training map.
-					trainingMap.clear()
+					executeTraining()
 				}
 			} else if (checkTrainingScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
