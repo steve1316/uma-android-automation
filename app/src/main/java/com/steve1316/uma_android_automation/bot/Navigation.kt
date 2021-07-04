@@ -30,7 +30,7 @@ class Navigation(val game: Game) {
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	private fun checkMainScreen(): Boolean {
-		return game.imageUtils.findImage("tazuna", tries = 1).first != null && game.imageUtils.findImage("race_select", suppressError = true).first == null
+		return game.imageUtils.findImage("tazuna", tries = 1).first != null && game.imageUtils.findImage("race_select", tries = 1, suppressError = true).first == null
 	}
 	
 	/**
