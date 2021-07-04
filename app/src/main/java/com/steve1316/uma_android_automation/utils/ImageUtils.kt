@@ -35,11 +35,12 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val tesseractLanguages = arrayListOf("jpn")
 	private val tessBaseAPI: TessBaseAPI
 	
-	private val debugMode: Boolean = false
+	private val debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(context, "debugMode")
 	
 	companion object {
 		private var matchFilePath: String = ""
 		private lateinit var matchLocation: Point
+		private var matchLocations: ArrayList<Point> = arrayListOf()
 		
 		/**
 		 * Saves the file path to the saved match image file for debugging purposes.
@@ -147,6 +148,88 @@ class ImageUtils(context: Context, private val game: Game) {
 			return false
 		}
 	}
+	
+	/**
+	 * Search through the whole source screenshot for all matches to the template image.
+	 *
+	 * @param sourceBitmap Bitmap from the /files/temp/ folder.
+	 * @param templateBitmap Bitmap from the assets folder.
+	 * @return ArrayList of Point objects that represents the matches found on the source screenshot.
+	 */
+	private fun matchAll(sourceBitmap: Bitmap, templateBitmap: Bitmap): ArrayList<Point> {
+		// Create the Mats of both source and template images.
+		val sourceMat = Mat()
+		val templateMat = Mat()
+		Utils.bitmapToMat(sourceBitmap, sourceMat)
+		Utils.bitmapToMat(templateBitmap, templateMat)
+		
+		// Make the Mats grayscale for the source and the template.
+		Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
+		Imgproc.cvtColor(templateMat, templateMat, Imgproc.COLOR_BGR2GRAY)
+		
+		// Create the result matrix.
+		val resultColumns: Int = sourceMat.cols() - templateMat.cols() + 1
+		val resultRows: Int = sourceMat.rows() - templateMat.rows() + 1
+		val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
+		
+		if (debugMode) {
+			game.printToLog("[DEBUG] Now beginning search for all matches...", tag = TAG)
+		}
+		
+		// Loop until all matches are found.
+		while (true) {
+			// Now perform the matching and localize the result.
+			Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
+			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
+			
+			if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= 0.2) {
+				val tempMatchLocation: Point = mmr.minLoc
+				
+				if (debugMode) {
+					game.printToLog("[DEBUG] Match found with similarity <= 0.2 at Point $tempMatchLocation with minVal = ${mmr.minVal}.", tag = TAG)
+				}
+				
+				// Draw a rectangle around the match and then save it to the specified file.
+				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(255.0, 255.0, 255.0), 5)
+				Imgcodecs.imwrite("$matchFilePath/matchAll.png", sourceMat)
+				
+				// Center the location coordinates and then save it to the arrayList.
+				tempMatchLocation.x += (templateMat.cols() / 2)
+				tempMatchLocation.y += (templateMat.rows() / 2)
+				
+				if (!matchLocations.contains(tempMatchLocation)) {
+					matchLocations.add(tempMatchLocation)
+				} else {
+					break
+				}
+			} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= 0.8) {
+				val tempMatchLocation: Point = mmr.maxLoc
+				
+				if (debugMode) {
+					game.printToLog("[DEBUG] Match found with similarity >= 0.8 at Point $tempMatchLocation with maxVal = ${mmr.maxVal}.", tag = TAG)
+				}
+				
+				// Draw a rectangle around the match and then save it to the specified file.
+				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(255.0, 255.0, 255.0), 5)
+				Imgcodecs.imwrite("$matchFilePath/matchAll.png", sourceMat)
+				
+				// Center the location coordinates and then save it to the arrayList.
+				tempMatchLocation.x += (templateMat.cols() / 2)
+				tempMatchLocation.y += (templateMat.rows() / 2)
+				
+				if (!matchLocations.contains(tempMatchLocation)) {
+					matchLocations.add(tempMatchLocation)
+				} else {
+					break
+				}
+			} else {
+				break
+			}
+		}
+		
+		return matchLocations
+	}
+	
 	
 	/**
 	 * Open the source and template image files and return Bitmaps for them.
@@ -272,6 +355,35 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		return false
+	}
+	
+	/**
+	 * Finds all occurrences of the specified image in the images folder.
+	 *
+	 * @param templateName File name of the template image.
+	 * @return An ArrayList of Point objects containing all the occurrences of the specified image or null if not found.
+	 */
+	fun findAll(templateName: String): ArrayList<Point> {
+		val folderName = "images"
+		
+		val (sourceBitmap, templateBitmap) = getBitmaps(templateName, folderName)
+		
+		// Clear the ArrayList first before attempting to find all matches.
+		matchLocations.clear()
+		
+		if (sourceBitmap != null && templateBitmap != null) {
+			matchAll(sourceBitmap, templateBitmap)
+		}
+		
+		// Sort the match locations by ascending x and y coordinates.
+		matchLocations.sortBy { it.x }
+		matchLocations.sortBy { it.y }
+		
+		if (debugMode) {
+			game.printToLog("[DEBUG] Found match locations for $templateName: $matchLocations.", tag = TAG)
+		}
+		
+		return matchLocations
 	}
 	
 	/**
