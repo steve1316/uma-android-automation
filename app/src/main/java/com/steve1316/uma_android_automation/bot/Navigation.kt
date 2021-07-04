@@ -176,6 +176,7 @@ class Navigation(val game: Game) {
 		var trainingSelected = ""
 		var maxWeight = 0
 		
+		// Grab the training with the maximum weight.
 		trainingMap.forEach { (statName, map) ->
 			val weight = map["weight"]!!
 			if ((maxWeight == 0 && trainingSelected == "") || weight > maxWeight) {
@@ -200,22 +201,21 @@ class Navigation(val game: Game) {
 	
 	/**
 	 * Start text detection to determine what Training Event it is and the event rewards for each option.
-	 * It will then select the best option according to the user's preferences.
+	 * It will then select the best option according to the user's preferences. By default, it will choose the first option.
 	 */
 	private fun handleTrainingEvent() {
 		val eventRewards: ArrayList<String> = textDetection.start()
 		
+		val regex = Regex("[a-zA-Z]+")
+		var optionSelected = 0
+		
+		// Initialize the List.
 		val selectionWeight = mutableListOf<Int>()
 		for (i in 1..(eventRewards.size)) {
 			selectionWeight.add(0)
 		}
 		
-		val regex = Regex("[a-zA-Z]+")
-		
 		if (eventRewards.isNotEmpty() && eventRewards[0] != "") {
-			// Select the best option that aligns with the stat prioritization made in the Training options.
-			var optionSelected = 0
-			
 			// Sum up the stat gains with additional weight applied to stats that are prioritized.
 			eventRewards.forEach { reward ->
 				val formattedReward: List<String> = reward.split("\n")
