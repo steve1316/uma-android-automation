@@ -50,15 +50,15 @@ class Navigation(val game: Game) {
 	private fun checkPreRaceScreen(): Boolean {
 		return game.imageUtils.findImage("race_select", tries = 1).first != null
 	}
-
-//	/**
-//	 * Checks if the bot is at the Ending screen detailing the overall results of the run.
-//	 *
-//	 * @return True if the bot is at the Ending screen. Otherwise false.
-//	 */
-//	private fun checkEndScreen(): Boolean {
-//		return game.imageUtils.findImage("end", tries = 1).first != null
-//	}
+	
+	/**
+	 * Checks if the bot is at the Ending screen detailing the overall results of the run.
+	 *
+	 * @return True if the bot is at the Ending screen. Otherwise false.
+	 */
+	private fun checkEndScreen(): Boolean {
+		return game.imageUtils.findImage("end", tries = 1).first != null
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,7 +417,7 @@ class Navigation(val game: Game) {
 			} else if (checkPreRaceScreen()) {
 				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
 				handleMandatoryRaceEvent()
-			} else if (!BotService.isRunning) {
+			} else if (!BotService.isRunning || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
 			}
