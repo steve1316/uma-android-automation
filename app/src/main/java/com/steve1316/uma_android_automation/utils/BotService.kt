@@ -144,7 +144,6 @@ class BotService : Service() {
 							}
 						} else {
 							thread.interrupt()
-							performCleanUp()
 						}
 						
 						// Returning true here freezes the animation of the click on the button.

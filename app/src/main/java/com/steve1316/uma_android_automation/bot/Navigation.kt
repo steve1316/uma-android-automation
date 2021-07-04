@@ -139,6 +139,7 @@ class Navigation(val game: Game) {
 	}
 	
 	fun start() {
+		while (true) {
 		// If the bot is at the Main screen, that means Training and other options are available.
 		if (checkMainScreen()) {
 			game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
@@ -161,6 +162,10 @@ class Navigation(val game: Game) {
 		} else if (checkTrainingScreen()) {
 			// Generate weights for the stats based on what settings the user set.
 			createWeights()
+			} else if (!BotService.isRunning) {
+				// Stop when the bot has reached the screen where it details the overall result of the run.
+				break
+			}
 		}
 	}
 }
