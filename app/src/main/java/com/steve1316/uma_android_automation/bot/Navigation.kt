@@ -317,6 +317,23 @@ class Navigation(val game: Game) {
 			
 			// TODO: Handle the case where the user has not run this particular race yet so the skip button will be locked. The bot will need to manually run the race.
 			
+	private fun skipRace(): Boolean {
+		game.printToLog("[RACE] Successfully skipped race.", tag = TAG)
+		
+		// Tap multiple times to skip to the screen where it shows the final positions of all of the participants.
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 3)
+		game.wait(1.0)
+		
+		// Automatically retry if failed the race.
+		return if (game.findAndTapImage("race_retry", tries = 1, suppressError = true)) {
+			game.wait(3.0)
+			raceRetries--
+			false
+		} else {
+			game.findAndTapImage("race_confirm_result")
+			true
+		}
+	}
 			game.wait(1.0)
 			
 			// Now interact with the screen to confirm the choice.
