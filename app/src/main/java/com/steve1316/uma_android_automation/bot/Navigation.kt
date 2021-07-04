@@ -12,7 +12,7 @@ class Navigation(val game: Game) {
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
-	private val statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
+	private var statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
 	
 	private var previouslySelectedTraining = ""
 	private var inheritancesDone = 0
@@ -419,6 +419,11 @@ class Navigation(val game: Game) {
 	}
 	
 	fun start() {
+		// Set default values for Stat Prioritization if its empty.
+		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
+			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+		}
+		
 		while (true) {
 			if (checkMainScreen()) {
 				// If the bot is at the Main screen, that means Training and other options are available.
