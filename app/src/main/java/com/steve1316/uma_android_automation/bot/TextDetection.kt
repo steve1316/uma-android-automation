@@ -22,7 +22,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	
 	private val character = SettingsFragment.getStringSharedPreference(myContext, "character")
 	private val supportCards: List<String> = SettingsFragment.getStringSharedPreference(myContext, "supportList").split("|")
-	private var hideResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideResults")
+	private var hideComparisonResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideComparisonResults")
 	private var selectAllSupportCards: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllSupportCards")
 	private var minimumConfidence = SettingsFragment.getIntSharedPreference(myContext, "confidence").toDouble() / 100.0
 	private val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
@@ -137,6 +137,14 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 			minimumConfidence = 0.8
 		}
 		
+		// Reset to default values.
+		result = ""
+		confidence = 0.0
+		category = ""
+		eventTitle = ""
+		supportCardTitle = ""
+		eventOptionRewards.clear()
+		
 		var increment = 0.0
 		
 		while (true) {
@@ -184,7 +192,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 				
 				if (confidence < minimumConfidence && enableIncrementalThreshold) {
 					increment += 5.0
-				} else if (confidence >= minimumConfidence) {
+				} else if (confidence >= minimumConfidence || confidence == 0.0) {
 					break
 				}
 			} else if (enableIncrementalThreshold) {
