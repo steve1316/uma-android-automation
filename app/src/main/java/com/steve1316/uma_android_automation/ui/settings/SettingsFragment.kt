@@ -133,6 +133,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 			findNavController().navigate(R.id.nav_training)
 			true
 		}
+		findPreference<Preference>("ocrOptions")?.setOnPreferenceClickListener {
+			// Navigate to the OCRFragment.
+			findNavController().navigate(R.id.nav_ocr)
+			true
+		}
 		
 		Log.d(TAG, "Main Preferences created successfully.")
 	}
