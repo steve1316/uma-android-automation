@@ -34,14 +34,14 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	 * Fix incorrect characters determined by OCR by replacing them with their Japanese equivalents.
 	 */
 	private fun fixIncorrectCharacters() {
-		game.printToLog("\n[INFO] Now attempting to fix incorrect characters in: $result")
+		game.printToLog("\n[TEXT-DETECTION] Now attempting to fix incorrect characters in: $result")
 		
 		if (result.last() == '/') {
 			result = result.replace("/", "！")
 		}
 		
 		result = result.replace("(", "（").replace(")", "）")
-		game.printToLog("[INFO] Finished attempting to fix incorrect characters: $result")
+		game.printToLog("[TEXT-DETECTION] Finished attempting to fix incorrect characters: $result")
 	}
 	
 	/**
@@ -49,9 +49,9 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	 */
 	private fun findMostSimilarString() {
 		if (!hideResults) {
-			game.printToLog("\n[INFO] Now starting process to find most similar string to: $result\n")
+			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result\n")
 		} else {
-			game.printToLog("\n[INFO] Now starting process to find most similar string to: $result")
+			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result")
 		}
 		
 		// Use the Jaro Winkler algorithm to compare similarities the OCR detected string and the rest of the strings inside the data classes.
@@ -125,39 +125,9 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		}
 		
 		if (!hideResults) {
-			game.printToLog("\n[INFO] Finished process to find similar string.")
+			game.printToLog("\n[TEXT-DETECTION] Finished process to find similar string.")
 		} else {
-			game.printToLog("[INFO] Finished process to find similar string.")
-		}
-	}
-	
-	/**
-	 * Attempt to find matches for skills and statuses from data inside the event option rewards.
-	 */
-	private fun checkForSkillsAndStatus() {
-		// Clear the following of its contents in case automatic retry was turned on.
-		eventOptionStatus.clear()
-		eventOptionsStatusNumbers.clear()
-		eventOptionSkills.clear()
-		eventOptionsSkillsNumbers.clear()
-		
-		var optionNumber = 1
-		eventOptionRewards.forEach { line ->
-			StatusData.status.forEach { status ->
-				if (status.key in line) {
-					eventOptionStatus.add("${status.key};${status.value}")
-					eventOptionsStatusNumbers.add(optionNumber)
-				}
-			}
-			
-			SkillData.skills.forEach { skill ->
-				if (skill.key in line) {
-					eventOptionSkills.add("${skill.key};${skill.value["englishName"]};${skill.value["englishDescription"]}")
-					eventOptionsSkillsNumbers.add(optionNumber)
-				}
-			}
-			
-			optionNumber += 1
+			game.printToLog("[TEXT-DETECTION] Finished process to find similar string.")
 		}
 	}
 	
@@ -182,9 +152,6 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 				
 				// Now attempt to find the most similar string compared to the one from OCR.
 				findMostSimilarString()
-				
-				// Insert english translations and descriptions for any skills and statuses detected in the event rewards.
-				checkForSkillsAndStatus()
 				
 				when (category) {
 					"character" -> {

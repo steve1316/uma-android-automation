@@ -30,7 +30,7 @@ class Navigation(val game: Game) {
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	private fun checkMainScreen(): Boolean {
-		return game.imageUtils.findImage("tazuna", tries = 1).first != null && game.imageUtils.findImage("race_select").first == null
+		return game.imageUtils.findImage("tazuna", tries = 1).first != null && game.imageUtils.findImage("race_select", suppressError = true).first == null
 	}
 	
 	/**
@@ -68,7 +68,7 @@ class Navigation(val game: Game) {
 	 * Find the success percentages and stat gain for each training and assign them to the MutableMap object to be shared across the whole class.
 	 */
 	private fun findStatsAndPercentages() {
-		game.printToLog("\n[INFO] Checking for success percentages and total stat increases for training selection.", tag = TAG)
+		game.printToLog("\n[TRAINING] Checking for success percentages and total stat increases for training selection.", tag = TAG)
 		
 		// Acquire the position of the speed stat text.
 		val (speedStatTextLocation, _) = game.imageUtils.findImage("stat_speed")
@@ -81,8 +81,9 @@ class Navigation(val game: Game) {
 			val speedFailureChance: Int = game.imageUtils.findTrainingFailureChance()
 			val overallStatsGained: Int = game.imageUtils.findTotalStatGains("speed")
 			
-			if (speedFailureChance < game.maximumFailureChance) {
-				game.printToLog("[INFO] $speedFailureChance% within acceptable range. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
+			if (speedFailureChance <= game.maximumFailureChance) {
+				game.printToLog(
+					"[TRAINING] $speedFailureChance% within acceptable range of ${game.maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
 				
 				// Save the results to the map if Speed training is not blacklisted.
 				if (!blacklist.contains("Speed")) {
@@ -122,17 +123,23 @@ class Navigation(val game: Game) {
 						
 						game.wait(0.5)
 						
+						val failureChance: Int = game.imageUtils.findTrainingFailureChance()
+						val totalStatGained: Int = game.imageUtils.findTotalStatGains(training)
+						
+						game.printToLog("[TRAINING] $training can gain ~$totalStatGained with $failureChance% to fail.", tag = TAG)
+						
 						trainingMap[training] = mutableMapOf(
-							"failureChance" to game.imageUtils.findTrainingFailureChance(),
-							"totalStatGained" to game.imageUtils.findTotalStatGains(training),
+							"failureChance" to failureChance,
+							"totalStatGained" to totalStatGained,
 							"weight" to 0
 						)
 					}
 				}
 				
-				game.wait(0.5)
+				game.printToLog("[TRAINING] Process to determine stat gains and failure percentages completed.", tag = TAG)
 			} else {
 				// Clear the Training map if the bot failed to have enough energy to conduct the training.
+				game.printToLog("[TRAINING] $speedFailureChance% is not within acceptable range of ${game.maximumFailureChance}%. Proceeding to recover energy.", tag = TAG)
 				trainingMap.clear()
 			}
 		}
@@ -166,6 +173,7 @@ class Navigation(val game: Game) {
 	 * Execute the training with the highest stat weight.
 	 */
 	private fun executeTraining() {
+		game.printToLog("\n[TRAINING] Now starting process to execute training.", tag = TAG)
 		var trainingSelected = ""
 		var maxWeight = 0
 		
@@ -186,6 +194,8 @@ class Navigation(val game: Game) {
 		
 		// Now reset the Training map.
 		trainingMap.clear()
+		
+		game.printToLog("[TRAINING] Process to execute training completed.", tag = TAG)
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,6 +207,8 @@ class Navigation(val game: Game) {
 	 * It will then select the best option according to the user's preferences. By default, it will choose the first option.
 	 */
 	private fun handleTrainingEvent() {
+		game.printToLog("\n[TRAINING-EVENT] Now starting process to handle detected Training Event.", tag = TAG)
+		
 		val eventRewards: ArrayList<String> = textDetection.start()
 		
 		val regex = Regex("[a-zA-Z]+")
@@ -251,7 +263,8 @@ class Navigation(val game: Game) {
 			optionSelected = selectionWeight.indexOf(max)
 		}
 		
-		game.printToLog("Selecting Event option \"${eventRewards[optionSelected]}\" with a selection weight of $max.", tag = TAG)
+		game.printToLog(
+			"[TRAINING-EVENT] For this Training Event consisting of $eventRewards, the bot will select the option \"${eventRewards[optionSelected]}\" with a selection weight of $max.", tag = TAG)
 		
 		val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
 		val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
@@ -271,7 +284,7 @@ class Navigation(val game: Game) {
 	 * Handles and completes the mandatory race event.
 	 */
 	private fun handleMandatoryRaceEvent() {
-		game.printToLog("\n[INFO] Encountered a mandatory race. Proceeding to complete it now...", tag = TAG)
+		game.printToLog("\n[MANDATORY-RACE] Encountered a mandatory race. Proceeding to complete it now...", tag = TAG)
 		
 		// Navigate the bot to the Race Selection screen.
 		game.findAndTapImage("race_select")
@@ -305,6 +318,8 @@ class Navigation(val game: Game) {
 			// Now finalize the result by tapping on this button 2 times to complete a Training Goal for the Character.
 			game.findAndTapImage("race_confirm_result")
 			game.findAndTapImage("race_confirm_result")
+			
+			game.printToLog("[MANDATORY-RACE] Process to complete a mandatory race completed.", tag = TAG)
 		}
 	}
 	
@@ -338,10 +353,10 @@ class Navigation(val game: Game) {
 	private fun recoverEnergy(): Boolean {
 		return if (game.findAndTapImage("recover_energy")) {
 			game.findAndTapImage("ok", tries = 1, suppressError = true)
-			game.printToLog("[INFO] Successfully recovered energy.")
+			game.printToLog("\n[ENERGY] Successfully recovered energy.")
 			true
 		} else {
-			game.printToLog("[WARNING] Failed to recover energy.")
+			game.printToLog("\n[ENERGY] Failed to recover energy.")
 			false
 		}
 	}
