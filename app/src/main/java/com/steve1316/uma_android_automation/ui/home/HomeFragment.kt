@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Bundle
@@ -15,13 +16,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import com.beust.klaxon.JsonReader
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 import com.steve1316.uma_android_automation.data.CharacterData
 import com.steve1316.uma_android_automation.data.SkillData
 import com.steve1316.uma_android_automation.data.SupportData
+import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
@@ -60,8 +64,80 @@ class HomeFragment : Fragment() {
 			}
 		}
 		
+		val debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "debugMode")
+		val hideComparisonResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideComparisonResults")
+		val trainingBlacklist: Set<String> = SettingsFragment.getStringSetSharedPreference(myContext, "trainingBlacklist")
+		var maximumFailureChance: Int = SettingsFragment.getIntSharedPreference(myContext, "maximumFailureChance")
+		var statPrioritisation: List<String> = SettingsFragment.getStringSharedPreference(myContext,"statPrioritisation").split("|")
+		val threshold: Int = SettingsFragment.getIntSharedPreference(myContext, "threshold")
+		val enableAutomaticRetry: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "enableAutomaticRetry")
+		var confidence: Int = SettingsFragment.getIntSharedPreference(myContext, "confidence")
+		var defaultCheck = false
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Set default values if this is the user's first time.
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		if (maximumFailureChance == 230) {
+			sharedPreferences.edit {
+				putInt("maximumFailureChance", 15)
+				commit()
+			}
+			
+			maximumFailureChance = 15
+		}
+		
+		if (statPrioritisation.isEmpty() || statPrioritisation[0] == "not found") {
+			sharedPreferences.edit {
+				putString("statPrioritisation", "Speed|Stamina|Power|Guts|Intelligence")
+				commit()
+			}
+			
+			statPrioritisation = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+			defaultCheck = true
+		}
+		
+		// Construct the Stat Prioritisation string.
+		var count = 1
+		var statPrioritisationString: String = if (defaultCheck) {
+			"Using Default Stat Prioritisation: "
+		} else {
+			"Stat Prioritisation: "
+		}
+		statPrioritisation.forEach { stat ->
+			statPrioritisationString += "$count. $stat "
+			count++
+		}
+		
+		if (confidence == 230) {
+			sharedPreferences.edit {
+				putInt("confidence", 80)
+				commit()
+			}
+			
+			confidence = 80
+		}
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
+			"No Trainings blacklisted"
+		} else {
+			trainingBlacklist.joinToString(", ")
+		}
+		
 		// Update the TextView here based on the information of the SharedPreferences.
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
+		settingsStatusTextView.setTextColor(Color.WHITE)
+		settingsStatusTextView.text = "Training Blacklist: $trainingBlacklistString\n" +
+				"$statPrioritisationString\n" +
+				"Maximum Failure Chance Allowed: $maximumFailureChance%\n" +
+				"OCR Threshold: $threshold\n" +
+				"Enable Automatic OCR retry: $enableAutomaticRetry\n" +
+				"Minimum OCR Confidence: $confidence\n" +
+				"Debug Mode: $debugMode\n" +
+				"Hide String Comparison Results: $hideComparisonResults"
 		
 		// Now construct the data files if this is the first time.
 		if (firstRun) {
