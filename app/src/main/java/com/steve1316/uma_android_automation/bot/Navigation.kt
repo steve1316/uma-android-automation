@@ -526,7 +526,7 @@ class Navigation(val game: Game) {
 			} else if (checkMainScreen()) {
 				// If the bot is at the Main screen, that means Training and other options are available.
 				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
-
+				
 				if (checkInjury()) {
 					// If the bot detected a injury, then rest.
 					game.printToLog("\n[INFO] Detected a injury. Resting now.", tag = TAG)
@@ -535,13 +535,13 @@ class Navigation(val game: Game) {
 				} else if (!recoverMood()) {
 					// Enter the Training screen.
 					game.findAndTapImage("training_option")
-
+					
 					// Acquire the percentages and stat gains for each training.
 					findStatsAndPercentages()
-
+					
 					if (trainingMap.isEmpty()) {
 						game.findAndTapImage("back")
-
+						
 						if (checkMainScreen()) {
 							recoverEnergy()
 						} else {
