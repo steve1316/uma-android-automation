@@ -179,7 +179,7 @@ class Navigation(val game: Game) {
 					0
 				}
 				
-				val weight: Int = (100 * count) + (10 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
+				val weight: Int = (50 * count) + (10 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
 				
 				trainingMap[statName]?.set("weight", weight)
 				count--
