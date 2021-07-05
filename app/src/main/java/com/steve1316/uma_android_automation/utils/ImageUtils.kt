@@ -289,14 +289,14 @@ class ImageUtils(context: Context, private val game: Game) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
 						if (!suppressError) {
-							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", tag = TAG)
+							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} image.", tag = TAG)
 						}
 						
 						return Pair(null, sourceBitmap)
 					}
 					
 					if (debugMode) {
-						Log.d(TAG, "Failed to find the ${templateName.uppercase()} button. Trying again...")
+						Log.d(TAG, "Failed to find the ${templateName.uppercase()} image. Trying again...")
 					}
 					
 					game.wait(1.0)

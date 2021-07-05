@@ -194,6 +194,7 @@ class Navigation(val game: Game) {
 		
 		if (trainingSelected != "") {
 			printMap()
+			game.printToLog("[TRAINING] Executing the $trainingSelected Training.", tag = TAG)
 			game.findAndTapImage("training_${trainingSelected.lowercase()}", taps = 3)
 		}
 		
@@ -275,8 +276,13 @@ class Navigation(val game: Game) {
 				optionNumber += 1
 			}
 			
-			val resultString = "[TRAINING-EVENT] For this Training Event consisting of:\n$eventRewardsString\nThe bot will select Option ${optionSelected + 1}: \"${eventRewards[optionSelected]}\" " +
-					"with a selection weight of $max."
+			val minimumConfidence = SettingsFragment.getIntSharedPreference(game.myContext, "confidence").toDouble() / 100.0
+			val resultString = if (confidence >= minimumConfidence) {
+				"[TRAINING-EVENT] For this Training Event consisting of:\n$eventRewardsString\nThe bot will select Option ${optionSelected + 1}: \"${eventRewards[optionSelected]}\" with a " +
+						"selection weight of $max."
+			} else {
+				"[TRAINING-EVENT] Since the confidence was less than the set minimum, first option will be selected."
+			}
 			
 			game.printToLog(resultString, tag = TAG)
 			
@@ -335,6 +341,11 @@ class Navigation(val game: Game) {
 		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
 	}
 	
+	/**
+	 * Handles skipping the race.
+	 *
+	 * @return True if the race was completed successfully. False if the race needs to be retried.
+	 */
 	private fun skipRace(): Boolean {
 		game.printToLog("[RACE] Successfully skipped race.", tag = TAG)
 		
@@ -353,6 +364,11 @@ class Navigation(val game: Game) {
 		}
 	}
 	
+	/**
+	 * Handles running the race manually.
+	 *
+	 * @return True if the race was completed successfully. False if the race needs to be retried.
+	 */
 	private fun runRaceManually(): Boolean {
 		game.printToLog("[RACE] Race must be locked. Proceeding to running it manually.", tag = TAG)
 		
@@ -432,7 +448,8 @@ class Navigation(val game: Game) {
 	private fun printMap() {
 		trainingMap.keys.forEach { stat ->
 			game.printToLog(
-				"[INFO] Estimated Stat Gain of $stat: ${trainingMap[stat]?.get("totalStatGained")} for ${trainingMap[stat]?.get("failureChance")}% with a weight of ${trainingMap[stat]?.get("weight")}")
+				"[INFO] Estimated Total Stat Gain of $stat Training: ${trainingMap[stat]?.get("totalStatGained")} for ${trainingMap[stat]?.get("failureChance")}% with a weight of " +
+						"${trainingMap[stat]?.get("weight")}")
 		}
 	}
 	
