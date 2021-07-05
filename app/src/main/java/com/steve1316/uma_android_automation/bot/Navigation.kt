@@ -446,13 +446,24 @@ class Navigation(val game: Game) {
 	 * @return True if the bot successfully recovered energy. Otherwise false.
 	 */
 	private fun recoverEnergy(): Boolean {
-		return if (game.findAndTapImage("recover_energy", tries = 1)) {
-			game.findAndTapImage("ok", tries = 1, suppressError = true)
-			game.printToLog("\n[ENERGY] Successfully recovered energy.")
-			true
-		} else if (game.findAndTapImage("recover_energy_summer", tries = 1)) {
-			game.findAndTapImage("ok", tries = 1, suppressError = true)
-			game.printToLog("\n[ENERGY] Successfully recovered energy for the Summer.")
+		return when {
+			game.findAndTapImage("recover_energy", tries = 1) -> {
+				game.findAndTapImage("ok", suppressError = true)
+				game.printToLog("\n[ENERGY] Successfully recovered energy.")
+				true
+			}
+			game.findAndTapImage("recover_energy_summer", tries = 1) -> {
+				game.findAndTapImage("ok", suppressError = true)
+				game.printToLog("\n[ENERGY] Successfully recovered energy for the Summer.")
+				true
+			}
+			else -> {
+				game.printToLog("\n[ENERGY] Failed to recover energy.")
+				false
+			}
+		}
+	}
+	
 	/**
 	 * Attempt to recover mood to always maintain at least Above Normal mood.
 	 *
