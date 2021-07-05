@@ -230,7 +230,7 @@ class Navigation(val game: Game) {
 	private fun handleTrainingEvent() {
 		game.printToLog("\n[TRAINING-EVENT] Now starting process to handle detected Training Event.", tag = TAG)
 		
-		val eventRewards: ArrayList<String> = textDetection.start()
+		val (eventRewards, confidence) = textDetection.start()
 		
 		val regex = Regex("[a-zA-Z]+")
 		var optionSelected = 0
@@ -300,16 +300,19 @@ class Navigation(val game: Game) {
 			}
 			
 			game.printToLog(resultString, tag = TAG)
-			
-			val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
-			val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
-				trainingOptionLocations[optionSelected]
-			} else {
-				game.imageUtils.findImage("training_event_active").first!!
-			}
-			
-			game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
+		} else {
+			game.printToLog("[TRAINING-EVENT] First option will be selected since OCR failed to detect anything.", tag = TAG)
+			optionSelected = 0
 		}
+		
+		val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
+		val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
+			trainingOptionLocations[optionSelected]
+		} else {
+			game.imageUtils.findImage("training_event_active").first!!
+		}
+		
+		game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
 		
 		game.printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.", tag = TAG)
 	}
