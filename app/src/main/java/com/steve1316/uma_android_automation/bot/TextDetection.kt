@@ -132,7 +132,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		}
 	}
 	
-	fun start(): ArrayList<String> {
+	fun start(): Pair<ArrayList<String>, Double> {
 		if (minimumConfidence > 1.0) {
 			minimumConfidence = 0.8
 		}
@@ -194,12 +194,16 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 					increment += 5.0
 				} else if (confidence >= minimumConfidence || confidence == 0.0) {
 					break
+				} else {
+					break
 				}
 			} else if (enableIncrementalThreshold) {
 				increment += 5.0
+			} else {
+				break
 			}
 		}
 		
-		return eventOptionRewards
+		return Pair(eventOptionRewards, confidence)
 	}
 }
