@@ -513,34 +513,43 @@ class Navigation(val game: Game) {
 		}
 		
 		while (true) {
-			if (checkMainScreen()) {
-				// If the bot is at the Main screen, that means Training and other options are available.
-				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
-				
-				// Enter the Training screen.
-				game.findAndTapImage("training_option")
-				
-				// Acquire the percentages and stat gains for each training.
-				findStatsAndPercentages()
-				
-				if (trainingMap.isEmpty()) {
-					game.findAndTapImage("back")
-					
-					if (checkMainScreen()) {
-						recoverEnergy()
-					} else {
-						throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
-					}
-				} else {
-					// Generate weights for the stats based on what settings the user set.
-					createWeights()
-					
-					// Now select the training option with the highest weight. TODO: Might need more revision.
-					executeTraining()
-				}
-			} else if (checkTrainingEventScreen()) {
+			if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
 				handleTrainingEvent()
+			} else if (checkMainScreen()) {
+				// If the bot is at the Main screen, that means Training and other options are available.
+				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
+
+				if (checkInjury()) {
+					// If the bot detected a injury, then rest.
+					game.printToLog("\n[INFO] Detected a injury. Resting now.", tag = TAG)
+					game.findAndTapImage("ok")
+					game.wait(3.0)
+				} else if (!recoverMood()) {
+					// Enter the Training screen.
+					game.findAndTapImage("training_option")
+
+					// Acquire the percentages and stat gains for each training.
+					findStatsAndPercentages()
+
+					if (trainingMap.isEmpty()) {
+						game.findAndTapImage("back")
+
+						if (checkMainScreen()) {
+							recoverEnergy()
+						} else {
+							throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
+						}
+					} else {
+						// Generate weights for the stats based on what settings the user set.
+						createWeights()
+
+						// Now select the training option with the highest weight. TODO: Might need more revision.
+						executeTraining()
+
+						firstTrainingCheck = false
+					}
+				}
 			} else if (handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
 				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = TAG)
@@ -551,7 +560,7 @@ class Navigation(val game: Game) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
 			}
-			
+
 			// Handle the case where the bot took too long to do anything and the AFK check came up.
 			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
 		}
