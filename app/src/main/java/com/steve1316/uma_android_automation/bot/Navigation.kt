@@ -61,6 +61,19 @@ class Navigation(val game: Game) {
 		return game.imageUtils.findImage("end", tries = 1).first != null
 	}
 	
+	/**
+	 * Checks if the bot has a injury.
+	 *
+	 * @return True if the bot has a injury. Otherwise false.
+	 */
+	private fun checkInjury(): Boolean {
+		return if (game.findAndTapImage("recover_injury", tries = 1, suppressError = true)) {
+			game.imageUtils.confirmLocation("recover_injury", tries = 1, suppressError = true)
+		} else {
+			false
+		}
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Functions to execute Training by determining failure percentages, overall stat gains and stat weights.
