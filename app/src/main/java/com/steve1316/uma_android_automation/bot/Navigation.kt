@@ -340,7 +340,7 @@ class Navigation(val game: Game) {
 		var successCheck = false
 		while (!successCheck && raceRetries > 0) {
 			if (game.findAndTapImage("race_skip")) {
-				successCheck = if (!game.imageUtils.waitVanish("race_skip", timeout = 3, suppressError = true)) {
+				successCheck = if (!game.imageUtils.waitVanish("race_skip", timeout = 5, suppressError = true)) {
 					runRaceManually()
 				} else {
 					skipRace()
@@ -351,13 +351,13 @@ class Navigation(val game: Game) {
 		Log.d(TAG, "Race has finished.")
 		
 		// Skip the screen that shows the accumulation of new fans and then confirm the end of the race.
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 3)
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 5)
 		game.findAndTapImage("race_end")
 		
 		// Now finalize the result by tapping on this button to complete a Training Goal for the Character.
 		game.wait(5.0)
 		game.findAndTapImage("race_confirm_result")
-		game.wait(1.0)
+		game.wait(5.0)
 		game.findAndTapImage("race_confirm_result")
 		
 		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
