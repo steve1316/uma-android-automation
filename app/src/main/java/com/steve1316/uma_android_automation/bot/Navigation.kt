@@ -14,7 +14,6 @@ class Navigation(val game: Game) {
 	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
 	private var statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
 	
-	private var craneGameCheck = false
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
 	private var inheritancesDone = 0
@@ -491,12 +490,6 @@ class Navigation(val game: Game) {
 				game.printToLog("[MOOD] Current mood is not good. Recovering mood now.", tag = TAG)
 				game.findAndTapImage("recover_mood")
 				game.findAndTapImage("ok")
-				
-				// Check if recovering mood caused the Crane Game Event occurred.
-				if (game.imageUtils.findImage("crane_game", tries = 1, suppressError = true).first != null) {
-					craneGameCheck = true
-				}
-				
 				true
 			} else {
 				game.printToLog("[MOOD] Current mood is good enough. Moving on.", tag = TAG)
@@ -555,10 +548,10 @@ class Navigation(val game: Game) {
 					} else {
 						// Generate weights for the stats based on what settings the user set.
 						createWeights()
-
-						// Now select the training option with the highest weight. TODO: Might need more revision.
+						
+						// Now select the training option with the highest weight.
 						executeTraining()
-
+						
 						firstTrainingCheck = false
 					}
 				}
@@ -568,11 +561,16 @@ class Navigation(val game: Game) {
 			} else if (checkPreRaceScreen()) {
 				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
 				handleMandatoryRaceEvent()
-			} else if (!BotService.isRunning || craneGameCheck || checkEndScreen()) {
+			} else if (game.imageUtils.findImage("crane_game", tries = 1, suppressError = true).first != null) {
+				// Stop when the bot has reached the Crane Game Event.
+				game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
+				break
+			} else if (!BotService.isRunning || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
+				game.printToLog("\n[END] Bot has reached the end of the run.", tag = TAG)
 				break
 			}
-
+			
 			// Handle the case where the bot took too long to do anything and the AFK check came up.
 			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
 		}
