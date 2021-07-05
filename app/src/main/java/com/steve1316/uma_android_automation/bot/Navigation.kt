@@ -305,13 +305,15 @@ class Navigation(val game: Game) {
 		}
 		
 		val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
-		val selectedLocation = if (trainingOptionLocations.isNotEmpty()) {
+		val selectedLocation: Point? = if (trainingOptionLocations.isNotEmpty()) {
 			trainingOptionLocations[optionSelected]
 		} else {
-			game.imageUtils.findImage("training_event_active").first!!
+			game.imageUtils.findImage("training_event_active").first
 		}
 		
-		game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
+		if (selectedLocation != null) {
+			game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
+		}
 		
 		game.printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.", tag = TAG)
 	}
