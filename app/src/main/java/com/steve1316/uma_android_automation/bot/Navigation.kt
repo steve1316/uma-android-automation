@@ -14,6 +14,8 @@ class Navigation(val game: Game) {
 	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
 	private var statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
 	
+	private var craneGameCheck = false
+	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
 	private var inheritancesDone = 0
 	private var raceRetries = 3
@@ -448,11 +450,46 @@ class Navigation(val game: Game) {
 		} else if (game.findAndTapImage("recover_energy_summer", tries = 1)) {
 			game.findAndTapImage("ok", tries = 1, suppressError = true)
 			game.printToLog("\n[ENERGY] Successfully recovered energy for the Summer.")
-			true
-		} else {
-			game.printToLog("\n[ENERGY] Failed to recover energy.")
-			false
+	/**
+	 * Attempt to recover mood to always maintain at least Above Normal mood.
+	 *
+	 * @return True if the bot successfully recovered mood. Otherwise false.
+	 */
+	private fun recoverMood(): Boolean {
+		if (!firstTrainingCheck) {
+			game.printToLog("\n[MOOD] Detecting current mood.", tag = TAG)
+			
+			// Detect what Mood the bot is at.
+			val currentMood: String = when {
+				game.imageUtils.findImage("mood_above_normal", tries = 1, suppressError = true).first != null -> {
+					"Above Normal"
+				}
+				game.imageUtils.findImage("mood_great", tries = 1, suppressError = true).first != null -> {
+					"Great"
+				}
+				else -> {
+					"Bad"
+				}
+			}
+			
+			return if (currentMood == "Bad") {
+				game.printToLog("[MOOD] Current mood is not good. Recovering mood now.", tag = TAG)
+				game.findAndTapImage("recover_mood")
+				game.findAndTapImage("ok")
+				
+				// Check if recovering mood caused the Crane Game Event occurred.
+				if (game.imageUtils.findImage("crane_game", tries = 1, suppressError = true).first != null) {
+					craneGameCheck = true
+				}
+				
+				true
+			} else {
+				game.printToLog("[MOOD] Current mood is good enough. Moving on.", tag = TAG)
+				false
+			}
 		}
+		
+		return false
 	}
 	
 	/**
@@ -507,7 +544,7 @@ class Navigation(val game: Game) {
 			} else if (checkPreRaceScreen()) {
 				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
 				handleMandatoryRaceEvent()
-			} else if (!BotService.isRunning || checkEndScreen()) {
+			} else if (!BotService.isRunning || craneGameCheck || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				break
 			}
