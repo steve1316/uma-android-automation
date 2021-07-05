@@ -333,7 +333,7 @@ class Navigation(val game: Game) {
 		// Confirm the race selection and then confirm it again.
 		game.findAndTapImage("race_confirm")
 		game.findAndTapImage("race_confirm")
-		game.wait(3.0)
+		game.wait(8.0)
 		
 		// The bot will arrive at the Race Setup screen where you can skip the race, run it manually, and/or change strategies.
 		var successCheck = false
@@ -354,6 +354,9 @@ class Navigation(val game: Game) {
 		game.findAndTapImage("race_end")
 		
 		// Now finalize the result by tapping on this button to complete a Training Goal for the Character.
+		game.wait(5.0)
+		game.findAndTapImage("race_confirm_result")
+		game.wait(1.0)
 		game.findAndTapImage("race_confirm_result")
 		
 		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
@@ -368,8 +371,8 @@ class Navigation(val game: Game) {
 		game.printToLog("[RACE] Successfully skipped race.", tag = TAG)
 		
 		// Tap multiple times to skip to the screen where it shows the final positions of all of the participants.
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 3)
-		game.wait(1.0)
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 5)
+		game.wait(2.0)
 		
 		// Automatically retry if failed the race.
 		return if (game.findAndTapImage("race_retry", tries = 1, suppressError = true)) {
@@ -392,23 +395,21 @@ class Navigation(val game: Game) {
 		
 		// Start the race manually and wait for the game to load.
 		game.findAndTapImage("race_manual")
-		game.wait(5.0)
+		game.wait(8.0)
 		
 		// After the game loaded in the race, press the confirm button.
 		game.findAndTapImage("race_confirm")
 		
 		// Now press the skip button 4 times.
 		game.findAndTapImage("race_skip_manual")
-		game.wait(1.0)
 		game.findAndTapImage("race_skip_manual")
-		game.wait(3.0)
+		game.wait(2.0)
 		game.findAndTapImage("race_skip_manual")
-		game.wait(1.0)
 		game.findAndTapImage("race_skip_manual")
-		game.wait(5.0)
+		game.wait(8.0)
 		
 		// Automatically retry if failed the race.
-		return if (game.findAndTapImage("race_retry", tries = 1, suppressError = true)) {
+		return if (game.findAndTapImage("race_retry", tries = 1)) {
 			game.wait(3.0)
 			raceRetries--
 			false
