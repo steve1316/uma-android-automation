@@ -353,6 +353,12 @@ class Navigation(val game: Game) {
 		if (checkRaceRepeatWarning()) {
 			game.findAndTapImage("ok")
 		}
+		
+		// Make sure to select the only the first race.
+		game.findAndTapImage("race_mandatory_selection")
+		
+		afkCheck()
+		
 		// Confirm the race selection and then confirm it again.
 		game.findAndTapImage("race_confirm")
 		game.findAndTapImage("race_confirm")
@@ -391,6 +397,7 @@ class Navigation(val game: Game) {
 			game.findAndTapImage("ok")
 		}
 		
+		afkCheck()
 		
 		// Now determine the best extra race with the following parameters: highest fans and double star prediction.
 		// First find the fans of only the extra races on the screen that match the double star prediction. Read only 3 extra races.
@@ -619,6 +626,13 @@ class Navigation(val game: Game) {
 		}
 	}
 	
+	/**
+	 * Handle the case where the bot took too long to do anything and the AFK check came up.
+	 */
+	private fun afkCheck() {
+		game.findAndTapImage("afk_check", tries = 1, suppressError = true)
+	}
+	
 	fun start() {
 		// Set default values for Stat Prioritization if its empty.
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
@@ -682,8 +696,7 @@ class Navigation(val game: Game) {
 				break
 			}
 			
-			// Handle the case where the bot took too long to do anything and the AFK check came up.
-			game.findAndTapImage("afk_check", tries = 1, suppressError = true)
+			afkCheck()
 		}
 	}
 }
