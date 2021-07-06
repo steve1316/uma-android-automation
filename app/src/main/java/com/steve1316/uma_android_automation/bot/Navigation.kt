@@ -496,7 +496,9 @@ class Navigation(val game: Game) {
 		game.printToLog("[RACE] Successfully skipped race.", tag = TAG)
 		
 		// Tap multiple times to skip to the screen where it shows the final positions of all of the participants.
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 5)
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok")
+		game.wait(1.0)
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok")
 		game.wait(2.0)
 		
 		// Automatically retry if failed the race.
