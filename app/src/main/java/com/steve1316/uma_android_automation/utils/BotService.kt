@@ -132,6 +132,7 @@ class BotService : Service() {
 										game.printToLog("\n$appName stopped successfully.", tag = TAG)
 										newIntent.putExtra("EXCEPTION", "$appName stopped successfully.")
 									} else {
+										MediaProjectionService.takeScreenshotNow(isException = true)
 										game.printToLog("$appName encountered an Exception: ${e.stackTraceToString()}", tag = TAG, isError = true)
 										newIntent.putExtra("EXCEPTION", "Encountered an Exception: $e.\nTap me to see more details.")
 									}

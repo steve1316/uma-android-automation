@@ -64,9 +64,10 @@ class MediaProjectionService : Service() {
 		/**
 		 * Tell the ImageReader to grab the latest acquired screenshot and process it into a Bitmap.
 		 *
+		 * @param isException Saves the screenshot as part of Exception logging or not. Defaults to false.
 		 * @return Bitmap of the latest acquired screenshot.
 		 */
-		fun takeScreenshotNow(): Bitmap? {
+		fun takeScreenshotNow(isException: Boolean = false): Bitmap? {
 			var sourceBitmap: Bitmap? = null
 			
 			val image: Image? = imageReader.acquireLatestImage()
@@ -84,7 +85,11 @@ class MediaProjectionService : Service() {
 				
 				// Now write the Bitmap to the specified file inside the /files/temp/ folder.
 				SCREENSHOT_NUM++
-				val fos = FileOutputStream("$tempDirectory/source.png")
+				val fos = if (isException) {
+					FileOutputStream("$tempDirectory/exception.png")
+				} else {
+					FileOutputStream("$tempDirectory/source.png")
+				}
 				sourceBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
 				
 				// Perform cleanup by closing streams and freeing up memory.
