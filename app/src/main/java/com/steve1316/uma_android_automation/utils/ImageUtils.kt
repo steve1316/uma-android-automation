@@ -667,6 +667,66 @@ class ImageUtils(context: Context, private val game: Game) {
 	}
 	
 	/**
+	 * Determine the amount of fans that the extra race will give only if it matches the double star prediction.
+	 *
+	 * @param extraRaceLocation Point object of the extra race's location.
+	 * @param sourceBitmap Bitmap of the source screenshot.
+	 * @param doubleStarPredictionBitmap Bitmap of the double star prediction template image.
+	 * @return Number of fans to be gained from the extra race or -1 if not found.
+	 */
+	fun determineExtraRaceFans(extraRaceLocation: Point, sourceBitmap: Bitmap, doubleStarPredictionBitmap: Bitmap): Int {
+		// Crop the source screenshot to show only the fan amount and the predictions.
+		val croppedBitmap = Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 106, 524, 96)
+		
+		// Determine if the extra race has double star prediction.
+		var predictionCheck = false
+		if (match(croppedBitmap, doubleStarPredictionBitmap)) {
+			predictionCheck = true
+		}
+		
+		return if (predictionCheck) {
+			// Crop the source screenshot to show only the fans.
+			val croppedBitmap2 = Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 98, 30)
+			
+			// Make the cropped screenshot grayscale.
+			val cvImage = Mat()
+			Utils.bitmapToMat(croppedBitmap2, cvImage)
+			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+			
+			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
+			Imgcodecs.imwrite("$matchFilePath/extra-race.png", cvImage)
+			
+			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/extra-race.png")
+			tessBaseAPI.setImage(resultBitmap)
+			
+			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
+			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+			
+			var result = "empty!"
+			try {
+				// Finally, detect text on the cropped region.
+				result = tessBaseAPI.utF8Text
+			} catch (e: Exception) {
+				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
+			}
+			
+			tessBaseAPI.clear()
+			
+			// Format the string to be converted to an integer.
+			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "").trim()
+			
+			try {
+				Log.d(TAG, "Converting $result to integer")
+				result.toInt()
+			} catch (e: NumberFormatException) {
+				-1
+			}
+		} else {
+			return -1
+		}
+	}
+	
+	/**
 	 * Initialize Tesseract for future OCR operations. Make sure to put your .traineddata inside the root of the /assets/ folder.
 	 */
 	private fun initTesseract() {

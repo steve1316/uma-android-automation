@@ -54,6 +54,24 @@ class Navigation(val game: Game) {
 	}
 	
 	/**
+	 * Checks if the bot encountered the popup that says there are not enough fans.
+	 *
+	 * @return True if the bot detected this popup. Otherwise false.
+	 */
+	private fun checkNotEnoughFans(): Boolean {
+		return game.imageUtils.findImage("race_not_enough_fans", tries = 1).first != null
+	}
+	
+	/**
+	 * Checks if the bot encountered the popup that warns about repeatedly doing races 3+ times.
+	 *
+	 * @return True if the bot detected this popup. Otherwise false.
+	 */
+	private fun checkRaceRepeatWarning(): Boolean {
+		return game.imageUtils.findImage("race_repeat_warning", tries = 1).first != null
+	}
+	
+	/**
 	 * Checks if the bot is at the Ending screen detailing the overall results of the run.
 	 *
 	 * @return True if the bot is at the Ending screen. Otherwise false.
@@ -331,6 +349,10 @@ class Navigation(val game: Game) {
 		// Navigate the bot to the Race Selection screen.
 		game.findAndTapImage("race_select")
 		
+		// Check for the popup warning against repeatedly doing 3+ runs.
+		if (checkRaceRepeatWarning()) {
+			game.findAndTapImage("ok")
+		}
 		// Confirm the race selection and then confirm it again.
 		game.findAndTapImage("race_confirm")
 		game.findAndTapImage("race_confirm")
@@ -348,19 +370,103 @@ class Navigation(val game: Game) {
 			}
 		}
 		
+		finishRace()
+		
+		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
+	}
+	
+	/**
+	 * Handles and completes an extra race.
+	 */
+	private fun handleExtraRace() {
+		game.printToLog("\n[EXTRA-RACE] Starting process to complete a extra race now.", tag = TAG)
+		
+		val listOfFans = mutableListOf<Int>()
+		
+		// Confirm the popup.
+		game.findAndTapImage("race_manual")
+		
+		// Check for the popup warning against repeatedly doing 3+ runs.
+		if (checkRaceRepeatWarning()) {
+			game.findAndTapImage("ok")
+		}
+		
+		
+		// Now determine the best extra race with the following parameters: highest fans and double star prediction.
+		// First find the fans of only the extra races on the screen that match the double star prediction. Read only 3 extra races.
+		var count = 0
+		val extraRaceLocation = mutableListOf<Point>()
+		val (sourceBitmap, templateBitmap) = game.imageUtils.getBitmaps("race_extra_double_prediction", "images")
+		while (count < 3) {
+			extraRaceLocation.add(game.imageUtils.findImage("race_extra_selection").first!!)
+			
+			val fans = game.imageUtils.determineExtraRaceFans(extraRaceLocation[count], sourceBitmap!!, templateBitmap!!)
+			listOfFans.add(fans)
+			
+			// Move to the next extra race.
+			if (count != 2) {
+				game.gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "images", "race_extra_selection")
+			}
+			
+			count++
+		}
+		
+		// Next determine the maximum fans and select the extra race.
+		val maxFans: Int? = listOfFans.maxOrNull()
+		if (maxFans != null) {
+			// Get the index of the maximum fans.
+			val index = listOfFans.indexOf(maxFans)
+			
+			game.printToLog("[EXTRA-RACE] Selecting the #${index + 1} Extra Race.", tag = TAG)
+			
+			// Select the extra race that matches the double star prediction and the most fan gain.
+			game.gestureUtils.tap(extraRaceLocation[index].x - 100, extraRaceLocation[index].y, "images", "race_extra_selection")
+		} else {
+			// If no maximum is determined, select the very first extra race.
+			game.printToLog("[EXTRA-RACE] Selecting the first Extra Race by default.", tag = TAG)
+			game.gestureUtils.tap(extraRaceLocation[0].x - 100, extraRaceLocation[0].y, "images", "race_extra_selection")
+		}
+		
+		// Now that the extra race is selected, confirm the race and run it.
+		game.findAndTapImage("race_confirm")
+		game.findAndTapImage("race_confirm")
+		game.wait(5.0)
+		
+		var successCheck = false
+		while (!successCheck && raceRetries > 0) {
+			if (game.findAndTapImage("race_skip")) {
+				successCheck = if (!game.imageUtils.waitVanish("race_skip", timeout = 5, suppressError = true)) {
+					runRaceManually()
+				} else {
+					skipRace()
+				}
+			}
+		}
+		
+		finishRace(isExtra = true)
+		
+		game.printToLog("[RACE] Process to complete a extra race completed.", tag = TAG)
+	}
+	
+	/**
+	 * Finishes up a race by finalizing the results.
+	 *
+	 * @param isExtra Flag to indicate whether the current race is an extra or mandatory to determine whether to press additional buttons.
+	 */
+	private fun finishRace(isExtra: Boolean = false) {
 		Log.d(TAG, "Race has finished.")
 		
 		// Skip the screen that shows the accumulation of new fans and then confirm the end of the race.
 		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 5)
 		game.findAndTapImage("race_end")
 		
-		// Now finalize the result by tapping on this button to complete a Training Goal for the Character.
-		game.wait(5.0)
-		game.findAndTapImage("race_confirm_result")
-		game.wait(5.0)
-		game.findAndTapImage("race_confirm_result")
-		
-		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
+		if (!isExtra) {
+			// Now finalize the result by tapping on this button to complete a Training Goal for the Character.
+			game.wait(5.0)
+			game.findAndTapImage("race_confirm_result")
+			game.wait(5.0)
+			game.findAndTapImage("race_confirm_result")
+		}
 	}
 	
 	/**
@@ -520,7 +626,10 @@ class Navigation(val game: Game) {
 		}
 		
 		while (true) {
-			if (checkTrainingEventScreen()) {
+			if (checkNotEnoughFans()) {
+				// If the bot detected the popup that says there are not enough fans, run an extra race.
+				handleExtraRace()
+			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
 				handleTrainingEvent()
 			} else if (checkMainScreen()) {
