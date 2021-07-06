@@ -238,7 +238,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @param templateFolderName Name of the subfolder in /assets/ that the template image is in.
 	 * @return A Pair of source and template Bitmaps.
 	 */
-	private fun getBitmaps(templateName: String, templateFolderName: String): Pair<Bitmap?, Bitmap?> {
+	fun getBitmaps(templateName: String, templateFolderName: String): Pair<Bitmap?, Bitmap?> {
 		var sourceBitmap: Bitmap? = null
 		
 		while (sourceBitmap == null) {
