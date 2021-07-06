@@ -275,26 +275,36 @@ class Navigation(val game: Game) {
 				val formattedReward: List<String> = reward.split("\n")
 				
 				formattedReward.forEach { line ->
-					var statCheck = false
 					val formattedLine: String = regex.replace(line, "").replace("+", "").replace("(", "").replace(")", "").trim()
 					
-					statPrioritization.forEach { stat ->
-						if (formattedLine.contains(stat)) {
+					var statCheck = false
+					if (!line.contains("Skill")) {
+						// Apply inflated weights to the prioritized stats.
+						statPrioritization.forEach { stat ->
+							if (line.contains(stat)) {
+								selectionWeight[optionSelected] += try {
+									statCheck = true
+									formattedLine.toInt() * 4
+								} catch (e: NumberFormatException) {
+									statCheck = false
+									0
+								}
+							}
+						}
+						
+						// Apply normal weights to the rest of the stats.
+						if (!statCheck) {
 							selectionWeight[optionSelected] += try {
-								statCheck = true
 								formattedLine.toInt() * 2
 							} catch (e: NumberFormatException) {
-								statCheck = false
 								0
 							}
 						}
-					}
-					
-					if (!statCheck) {
+					} else if (line.contains("Energy")) {
 						selectionWeight[optionSelected] += try {
 							formattedLine.toInt()
 						} catch (e: NumberFormatException) {
-							0
+							10
 						}
 					}
 				}
