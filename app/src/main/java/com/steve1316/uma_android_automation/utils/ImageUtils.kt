@@ -27,6 +27,9 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val TAG: String = "[${MainActivity.loggerTag}]ImageUtils"
 	private var myContext = context
 	
+	private val displayWidth: Int = MediaProjectionService.displayWidth
+	private val displayHeight: Int = MediaProjectionService.displayHeight
+	
 	// Initialize Google's ML OCR.
 	private val textRecognizer = TextRecognition.getClient()
 	
@@ -528,7 +531,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
-		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection")
+		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection", region = intArrayOf(0, displayHeight - (displayHeight / 3), displayWidth, displayHeight / 3))
 		val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
 		
 		// Create a InputImage object for Google's ML OCR.
@@ -565,7 +568,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun findTotalStatGains(currentStat: String): Int {
 		val test = mutableListOf<Int>()
 		
-		val (speedStatTextLocation, sourceBitmap) = findImage("stat_speed")
+		val (speedStatTextLocation, sourceBitmap) = findImage("stat_speed", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
 		
 		val statsToCheck: ArrayList<String> = when (currentStat) {
 			"speed" -> {
