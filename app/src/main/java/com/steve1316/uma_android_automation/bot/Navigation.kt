@@ -485,7 +485,10 @@ class Navigation(val game: Game) {
 		Log.d(TAG, "Race has finished.")
 		
 		// Skip the screen that shows the accumulation of new fans and then confirm the end of the race.
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 5)
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 1)
+		game.wait(1.0)
+		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 1)
+		game.wait(1.0)
 		game.findAndTapImage("race_end", region = regionBottomThreeThird)
 		
 		if (!isExtra) {
@@ -507,9 +510,9 @@ class Navigation(val game: Game) {
 		
 		// Tap multiple times to skip to the screen where it shows the final positions of all of the participants.
 		game.gestureUtils.tap(500.0, 500.0, "images", "ok")
-		game.wait(1.0)
+		game.wait(3.0)
 		game.gestureUtils.tap(500.0, 500.0, "images", "ok")
-		game.wait(2.0)
+		game.wait(3.0)
 		
 		// Automatically retry if failed the race.
 		return if (game.findAndTapImage("race_retry", tries = 1, region = regionBottomHalf, suppressError = true)) {
@@ -720,6 +723,8 @@ class Navigation(val game: Game) {
 			}
 			
 			afkCheck()
+			
+			game.findAndTapImage("back", region = regionBottomThreeThird)
 		}
 	}
 }
