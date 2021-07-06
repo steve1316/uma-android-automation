@@ -594,7 +594,7 @@ class Navigation(val game: Game) {
 				}
 			}
 			
-			return if (currentMood == "Bad") {
+			return if (currentMood == "Bad" && game.imageUtils.findImage("recover_energy_summer", tries = 1, suppressError = true).first == null) {
 				game.printToLog("[MOOD] Current mood is not good. Recovering mood now.", tag = TAG)
 				game.findAndTapImage("recover_mood")
 				game.findAndTapImage("ok")
