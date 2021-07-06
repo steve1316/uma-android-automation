@@ -411,7 +411,7 @@ class Navigation(val game: Game) {
 		val listOfFans = mutableListOf<Int>()
 		
 		// Confirm the popup.
-		game.findAndTapImage("race_manual", region = regionMiddleTwoThird)
+		game.findAndTapImage("race_manual", region = regionBottomHalf)
 		
 		// Check for the popup warning against repeatedly doing 3+ runs.
 		if (checkRaceRepeatWarning()) {
