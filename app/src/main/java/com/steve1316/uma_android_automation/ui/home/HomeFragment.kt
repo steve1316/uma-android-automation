@@ -64,17 +64,26 @@ class HomeFragment : Fragment() {
 		
 		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
+		// Main Settings page
+		val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
+		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
+		
+		// Training Settings page
+		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
+		var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
+		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
+		
+		// Training Event Settings page
 		val character = sharedPreferences.getString("character", "Please select one in the Settings")
 		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", false)
-		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
-		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
-		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
-		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
-		var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
+		
+		// OCR Optimization Settings page
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
 		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
 		val confidence: Int = sharedPreferences.getInt("confidence", 80)
+		
 		var defaultCheck = false
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +127,8 @@ class HomeFragment : Fragment() {
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
 		settingsStatusTextView.text = "Character Selected: $character\n" +
-				"Support(s) Selected: $supportCardListString\n\n" +
+				"Support(s) Selected: $supportCardListString\n" +
+				"Focus on Farming Fans: $enableFarmingFans\n\n" +
 				"Training Blacklist: $trainingBlacklistString\n" +
 				"$statPrioritizationString\n" +
 				"\nMaximum Failure Chance Allowed: $maximumFailureChance%\n" +

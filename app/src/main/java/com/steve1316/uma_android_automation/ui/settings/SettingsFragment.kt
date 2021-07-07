@@ -73,6 +73,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		if (key != null) {
 			// Note that is no need to handle the Preference that allows multiple selection here as it is already handled in its own function.
 			when (key) {
+				"enableFarmingFans" -> {
+					val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
+					
+					sharedPreferences.edit {
+						putBoolean("enableFarmingFans", enableFarmingFansPreference.isChecked)
+						commit()
+					}
+				}
 				"debugMode" -> {
 					val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 					

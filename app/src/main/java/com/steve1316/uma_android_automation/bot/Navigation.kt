@@ -74,6 +74,20 @@ class Navigation(val game: Game) {
 	}
 	
 	/**
+	 * Checks if the day number is odd to be eligible to run an extra race.
+	 *
+	 * @return True if the day number is odd. Otherwise false.
+	 */
+	private fun checkExtraRaceAvailability(): Boolean {
+		val dayNumber = game.imageUtils.determineDayForExtraRace()
+		
+		return enableFarmingFans && dayNumber % 2 != 0 && dayNumber < 7 &&
+				game.imageUtils.findImage("race_select_extra_locked", tries = 1, region = regionBottomThreeThird).first == null &&
+				game.imageUtils.findImage("race_select_extra_locked_uma_finals", tries = 1, region = regionBottomThreeThird).first == null
+		
+	}
+	
+	/**
 	 * Checks if the bot encountered the popup that warns about repeatedly doing races 3+ times.
 	 *
 	 * @return True if the bot detected this popup. Otherwise false.
@@ -682,28 +696,33 @@ class Navigation(val game: Game) {
 					game.findAndTapImage("ok", region = regionMiddleTwoThird)
 					game.wait(3.0)
 				} else if (!recoverMood()) {
-					// Enter the Training screen.
-					game.findAndTapImage("training_option", region = regionBottomThreeThird)
-					
-					// Acquire the percentages and stat gains for each training.
-					findStatsAndPercentages()
-					
-					if (trainingMap.isEmpty()) {
-						game.findAndTapImage("back", region = regionBottomThreeThird)
+					if (!checkExtraRaceAvailability()) {
+						// Enter the Training screen.
+						game.findAndTapImage("training_option", region = regionBottomThreeThird)
 						
-						if (checkMainScreen()) {
-							recoverEnergy()
+						// Acquire the percentages and stat gains for each training.
+						findStatsAndPercentages()
+						
+						if (trainingMap.isEmpty()) {
+							game.findAndTapImage("back", region = regionBottomThreeThird)
+							
+							if (checkMainScreen()) {
+								recoverEnergy()
+							} else {
+								throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
+							}
 						} else {
-							throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
+							// Generate weights for the stats based on what settings the user set.
+							createWeights()
+							
+							// Now select the training option with the highest weight.
+							executeTraining()
+							
+							firstTrainingCheck = false
 						}
 					} else {
-						// Generate weights for the stats based on what settings the user set.
-						createWeights()
-						
-						// Now select the training option with the highest weight.
-						executeTraining()
-						
-						firstTrainingCheck = false
+						// Run an extra race instead of Training for purposes of farming fans.
+						handleExtraRace(noPopup = true)
 					}
 				}
 			} else if (handleInheritanceEvent()) {

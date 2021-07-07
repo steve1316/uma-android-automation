@@ -670,6 +670,44 @@ class ImageUtils(context: Context, private val game: Game) {
 	}
 	
 	/**
+	 * Determines the day number to see if today is eligible for doing an extra race.
+	 *
+	 * @return Number of the day.
+	 */
+	fun determineDayForExtraRace(): Int {
+		var result = -1
+		val (energyTextLocation, sourceBitmap) = findImage("energy")
+		
+		if (energyTextLocation != null) {
+			// Crop the source screenshot to only contain the day number.
+			val croppedBitmap = Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+			
+			// Create a InputImage object for Google's ML OCR.
+			val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
+			
+			// Count up all of the total stat gains for this training selection.
+			textRecognizer.process(inputImage).addOnSuccessListener {
+				if (it.textBlocks.size != 0) {
+					for (block in it.textBlocks) {
+						try {
+							Log.d(TAG, "Detected Number for Extra Race: ${block.text}")
+							result = block.text.toInt()
+						} catch (e: NumberFormatException) {
+						}
+					}
+				}
+			}.addOnFailureListener {
+				game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
+			}
+			
+			// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
+			game.wait(0.1)
+		}
+		
+		return result
+	}
+	
+	/**
 	 * Determine the amount of fans that the extra race will give only if it matches the double star prediction.
 	 *
 	 * @param extraRaceLocation Point object of the extra race's location.
