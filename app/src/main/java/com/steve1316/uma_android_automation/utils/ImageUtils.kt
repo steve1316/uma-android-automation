@@ -301,8 +301,6 @@ class ImageUtils(context: Context, private val game: Game) {
 					if (debugMode) {
 						Log.d(TAG, "Failed to find the ${templateName.uppercase()} image. Trying again...")
 					}
-					
-					game.wait(1.0)
 				} else {
 					if (debugMode) {
 						game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
@@ -342,8 +340,6 @@ class ImageUtils(context: Context, private val game: Game) {
 					if (numberOfTries <= 0) {
 						break
 					}
-					
-					game.wait(1.0)
 				} else {
 					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", tag = TAG)
 					return true
@@ -754,7 +750,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			tessBaseAPI.clear()
 			
 			// Format the string to be converted to an integer.
-			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "").trim()
+			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "").replace("(", "").trim()
 			
 			try {
 				Log.d(TAG, "Converting $result to integer")

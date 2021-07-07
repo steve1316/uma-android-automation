@@ -108,10 +108,10 @@ class Game(val myContext: Context) {
 		
 		return if (tempLocation != null) {
 			gestureUtils.tap(tempLocation.x, tempLocation.y, "images", imageName, taps = taps)
-			wait(1.0)
+			wait(0.5)
 			true
 		} else {
-			wait(1.0)
+			wait(0.5)
 			false
 		}
 	}
