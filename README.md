@@ -28,8 +28,8 @@ Any usage of this tool is at your own risk. No one will be responsible for anyth
 3. Now go back to the Home page after you have finished customizing the settings. The settings you have selected will be shown to you in the text box below the ```Start``` button.
 4. Now tap on the ```Start``` button. If this is the first time, it will ask you to give the application ```Overlay``` permission and starting up the ```Accessibility``` service.
 5. Once it is enabled, tapping on the ```Start``` button again will display an overlay button that you can move around the screen.
-6. Navigate yourself to the training event and press the overlay button to start. A Notification will notify you of whether the OCR was successful and will display its results.
-7. Whenever you want to stop, just press ```STOP PROCESS``` on the Notification in your Notification Drawer or tap the overlay button again.
+6. Navigate yourself to the screen that shows available options like Rest, Train, Buy Skills, Races, etc.
+7. Press the overlay button to start the automation process.
 
 # Technologies Used
 1. [jpn.traineddata from UmaUmaCruise by @amate](https://github.com/amate/UmaUmaCruise)
