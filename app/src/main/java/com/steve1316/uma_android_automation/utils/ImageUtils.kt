@@ -689,7 +689,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (it.textBlocks.size != 0) {
 					for (block in it.textBlocks) {
 						try {
-							Log.d(TAG, "Detected Number for Extra Race: ${block.text}")
+							Log.d(TAG, "Detected Day Number for Extra Race: ${block.text}")
 							result = block.text.toInt()
 						} catch (e: NumberFormatException) {
 						}
@@ -765,6 +765,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				-1
 			}
 		} else {
+			Log.d(TAG, "This race has no double prediction.")
 			return -1
 		}
 	}
