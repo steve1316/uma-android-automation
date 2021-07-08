@@ -726,7 +726,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return if (predictionCheck) {
 			// Crop the source screenshot to show only the fans.
-			val croppedBitmap2 = Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 98, 30)
+			val croppedBitmap2 = Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 150, 30)
 			
 			// Make the cropped screenshot grayscale.
 			val cvImage = Mat()
@@ -753,7 +753,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			tessBaseAPI.clear()
 			
 			// Format the string to be converted to an integer.
-			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "").replace("(", "").trim()
+			Log.d(TAG, "Detected number of fans before formatting: $result")
+			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "")
+				.replace("(", "")
+				.replace("人", "").trim()
 			
 			try {
 				Log.d(TAG, "Converting $result to integer")
