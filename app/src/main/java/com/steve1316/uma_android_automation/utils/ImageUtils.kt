@@ -659,7 +659,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		// An attempt at normalizing the result to account for inaccuracies.
 		var result: Int = test.sum() / 2
 		if (test.size != 0) {
-			result += test.maxOrNull()?.div(2)!!
+			val resultMax = test.maxOrNull()
+			if (resultMax != null) {
+				result += resultMax / 2
+			}
 		}
 		
 		return result
