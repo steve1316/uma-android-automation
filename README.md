@@ -15,7 +15,7 @@ Any usage of this tool is at your own risk. No one will be responsible for anyth
 - [x] Able to complete a run from start/midway to its completion.
 - [x] Settings to customize preferences and stat prioritization for Training Events.
 - [x] Handles races, both via skipping and running the race manually.
-- [ ] Runs extra races to farm fans.
+- [x] Runs extra races to farm fans when enabled in the settings.
 
 # Instructions
 1. Download the .apk file from the ```Releases``` section on the right and install it on your Android device. If you want to build the .apk yourself, do the following:
