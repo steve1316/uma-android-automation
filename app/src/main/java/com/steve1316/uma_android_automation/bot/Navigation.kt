@@ -14,6 +14,7 @@ class Navigation(val game: Game) {
 	private val displayHeight: Int = MediaProjectionService.displayHeight
 	
 	// Define template matching regions of the screen.
+	private val regionTopHalf: IntArray = intArrayOf(0, 0, displayWidth, displayHeight / 2)
 	private val regionBottomHalf: IntArray = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2)
 	private val regionTopOneThird: IntArray = intArrayOf(0, 0, displayWidth, displayHeight / 3)
 	private val regionMiddleTwoThird: IntArray = intArrayOf(0, displayHeight / 3, displayWidth, displayHeight / 3)
@@ -29,6 +30,7 @@ class Navigation(val game: Game) {
 	private var previouslySelectedTraining = ""
 	private var inheritancesDone = 0
 	private var raceRetries = 3
+	private var raceRepeatWarningCheck = false
 	
 	private val textDetection: TextDetection = TextDetection(game.myContext, game, game.imageUtils)
 	
@@ -43,7 +45,7 @@ class Navigation(val game: Game) {
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	private fun checkMainScreen(): Boolean {
-		return game.imageUtils.findImage("tazuna", tries = 1, region = regionTopOneThird).first != null
+		return game.imageUtils.findImage("tazuna", tries = 1, region = regionTopHalf).first != null
 				&& game.imageUtils.findImage("race_select_mandatory", tries = 1, region = regionBottomThreeThird, suppressError = true).first == null
 	}
 	
@@ -81,20 +83,9 @@ class Navigation(val game: Game) {
 	 */
 	private fun checkExtraRaceAvailability(): Boolean {
 		val dayNumber = game.imageUtils.determineDayForExtraRace()
-		
-		return enableFarmingFans && dayNumber % 2 != 0 && dayNumber < 7 &&
-				game.imageUtils.findImage("race_select_extra_locked", tries = 1, region = regionBottomThreeThird).first == null &&
-				game.imageUtils.findImage("race_select_extra_locked_uma_finals", tries = 1, region = regionBottomThreeThird).first == null
-		
-	}
-	
-	/**
-	 * Checks if the bot encountered the popup that warns about repeatedly doing races 3+ times.
-	 *
-	 * @return True if the bot detected this popup. Otherwise false.
-	 */
-	private fun checkRaceRepeatWarning(): Boolean {
-		return game.imageUtils.findImage("race_repeat_warning", tries = 1, region = regionMiddleTwoThird).first != null
+		return enableFarmingFans && dayNumber % 2 != 0 && dayNumber < 7 && !raceRepeatWarningCheck &&
+				game.imageUtils.findImage("race_select_extra_locked_uma_finals", tries = 1, region = regionBottomHalf).first == null &&
+				game.imageUtils.findImage("race_select_extra_locked", tries = 1, region = regionBottomHalf).first == null
 	}
 	
 	/**
@@ -124,10 +115,44 @@ class Navigation(val game: Game) {
 	// Functions to execute Training by determining failure percentages, overall stat gains and stat weights.
 	
 	/**
+	 * The entry point for handling Training.
+	 */
+	private fun handleTraining() {
+		game.printToLog("\n[TRAINING] Starting Training process...", tag = TAG)
+		
+		// Enter the Training screen.
+		game.findAndTapImage("training_option", region = regionBottomThreeThird)
+		
+		// Acquire the percentages and stat gains for each training.
+		findStatsAndPercentages()
+		
+		if (trainingMap.isEmpty()) {
+			game.findAndTapImage("back", region = regionBottomThreeThird)
+			
+			if (checkMainScreen()) {
+				recoverEnergy()
+			} else {
+				throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
+			}
+		} else {
+			// Generate weights for the stats based on what settings the user set.
+			createWeights()
+			
+			// Now select the training option with the highest weight.
+			executeTraining()
+			
+			firstTrainingCheck = false
+		}
+		
+		raceRepeatWarningCheck = false
+		game.printToLog("\n[TRAINING] Training process completed.", tag = TAG)
+	}
+	
+	/**
 	 * Find the success percentages and stat gain for each training and assign them to the MutableMap object to be shared across the whole class.
 	 */
 	private fun findStatsAndPercentages() {
-		game.printToLog("\n[TRAINING] Checking for success percentages and total stat increases for training selection.", tag = TAG)
+		game.printToLog("[TRAINING] Checking for success percentages and total stat increases for training selection.", tag = TAG)
 		
 		// Acquire the position of the speed stat text.
 		val (speedStatTextLocation, _) = game.imageUtils.findImage("stat_speed", region = regionBottomThreeThird)
@@ -208,7 +233,7 @@ class Navigation(val game: Game) {
 	 * Generate the weights for each training using the settings set in the app.
 	 */
 	private fun createWeights() {
-		game.printToLog("\n[TRAINING] Now starting process to assign weights to each prioritised stat.", tag = TAG)
+		game.printToLog("[TRAINING] Now starting process to assign weights to each prioritised stat.", tag = TAG)
 		
 		var count = 5
 		statPrioritization.forEach { statName ->
@@ -236,7 +261,7 @@ class Navigation(val game: Game) {
 	 * Execute the training with the highest stat weight.
 	 */
 	private fun executeTraining() {
-		game.printToLog("\n[TRAINING] Now starting process to execute training.", tag = TAG)
+		game.printToLog("[TRAINING] Now starting process to execute training.", tag = TAG)
 		var trainingSelected = ""
 		var maxWeight = 0
 		
@@ -271,7 +296,7 @@ class Navigation(val game: Game) {
 	 * It will then select the best option according to the user's preferences. By default, it will choose the first option.
 	 */
 	private fun handleTrainingEvent() {
-		game.printToLog("\n[TRAINING-EVENT] Now starting process to handle detected Training Event.", tag = TAG)
+		game.printToLog("\n[TRAINING-EVENT] Starting Training Event process...", tag = TAG)
 		
 		val (eventRewards, confidence) = textDetection.start()
 		
@@ -377,213 +402,227 @@ class Navigation(val game: Game) {
 	// Functions to handle Race Events.
 	
 	/**
-	 * Handles and completes the mandatory race event.
+	 * The entry point for handling mandatory or extra races.
+	 *
+	 * @return True if the mandatory/extra race was completed successfully. Otherwise false.
 	 */
-	private fun handleMandatoryRaceEvent() {
-		game.printToLog("\n[RACE] Encountered a mandatory race. Proceeding to complete it now...", tag = TAG)
+	private fun handleRaceEvents(): Boolean {
+		game.printToLog("\n[RACE] Starting Racing process...", tag = TAG)
 		
-		// Navigate the bot to the Race Selection screen.
-		game.findAndTapImage("race_select_mandatory", tries = 5, region = regionBottomThreeThird)
-		
-		// Check for the popup warning against repeatedly doing 3+ runs.
-		if (checkRaceRepeatWarning()) {
-			game.findAndTapImage("ok", tries = 5, region = regionMiddleTwoThird)
+		// First, check if there is a mandatory or a extra race available. If so, head into the Race Selection screen.
+		if (game.findAndTapImage("race_select_mandatory", region = regionBottomHalf)) {
+			game.printToLog("\n[RACE] Detected mandatory race.", tag = TAG)
+			
+			// There is a mandatory race. Now confirm the selection and the resultant popup and then wait for the game to load.
+			game.wait(3.0)
+			game.findAndTapImage("race_confirm", region = regionBottomHalf)
+			game.findAndTapImage("race_confirm", region = regionBottomHalf)
+			game.wait(8.0)
+			
+			// Skip the race if possible, otherwise run it manually.
+			if (game.imageUtils.findImage("race_skip_locked", region = regionBottomHalf, suppressError = true).first == null) {
+				skipRace()
+			} else {
+				manualRace()
+			}
+			
+			finishRace()
+			game.printToLog("[RACE] Racing process for Mandatory Race is completed.", tag = TAG)
+			return true
+		} else if (game.findAndTapImage("race_select_extra", region = regionBottomHalf)) {
+			game.printToLog("\n[RACE] Detected extra race eligibility.", tag = TAG)
+			
+			// If there is a popup warning about repeating races 3+ times, stop the process and do something else other than racing.
+			if (game.imageUtils.findImage("race_repeat_warning", tries = 5).first != null) {
+				raceRepeatWarningCheck = true
+				game.printToLog("\n[RACE] Closing popup of repeat warning and setting flag to prevent racing for now.", tag = TAG)
+				game.findAndTapImage("cancel", region = regionBottomHalf)
+				return false
+			}
+			
+			// There is a extra race.
+			// Swipe up the list to get to the top and then select the first option.
+			val statusLocation = game.imageUtils.findImage("status").first!!
+			game.gestureUtils.swipe(statusLocation.x.toFloat(), statusLocation.y.toFloat() + 300, statusLocation.x.toFloat(), statusLocation.y.toFloat() + 888)
+			game.wait(0.5)
+			game.gestureUtils.tap(statusLocation.x, statusLocation.y + 325, "images", "ok")
+			
+			
+			// Now determine the best extra race with the following parameters: highest fans and double star prediction.
+			// First find the fans of only the extra races on the screen that match the double star prediction. Read only 3 extra races.
+			var count = 0
+			val listOfFans = mutableListOf<Int>()
+			val extraRaceLocation = mutableListOf<Point>()
+			val (sourceBitmap, templateBitmap) = game.imageUtils.getBitmaps("race_extra_double_prediction", "images")
+			while (count < 3) {
+				// Save the location of the selected extra race.
+				extraRaceLocation.add(game.imageUtils.findImage("race_extra_selection", region = regionBottomHalf).first!!)
+				
+				// Determine its fan gain and save it.
+				val fans = game.imageUtils.determineExtraRaceFans(extraRaceLocation[count], sourceBitmap!!, templateBitmap!!)
+				listOfFans.add(fans)
+				
+				// Select the next extra race.
+				if (count != 2) {
+					game.gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "images", "race_extra_selection")
+					game.wait(0.5)
+				}
+				
+				count++
+			}
+			
+			game.printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}, Extra 3. ${listOfFans[2]}", tag = TAG)
+			
+			// Next determine the maximum fans and select the extra race.
+			val maxFans: Int? = listOfFans.maxOrNull()
+			if (maxFans != null) {
+				if (maxFans == -1) {
+					Log.d(TAG, "Max fans was -1 so returning false...")
+					return false
+				}
+				
+				// Get the index of the maximum fans.
+				val index = listOfFans.indexOf(maxFans)
+				
+				game.printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.", tag = TAG)
+				
+				// Select the extra race that matches the double star prediction and the most fan gain.
+				game.gestureUtils.tap(extraRaceLocation[index].x - 100, extraRaceLocation[index].y, "images", "race_extra_selection")
+			} else {
+				// If no maximum is determined, select the very first extra race.
+				game.printToLog("[RACE] Selecting the first Extra Race by default.", tag = TAG)
+				game.gestureUtils.tap(extraRaceLocation[0].x - 100, extraRaceLocation[0].y, "images", "race_extra_selection")
+			}
+			
+			// Confirm the selection and the resultant popup and then wait for the game to load.
+			game.findAndTapImage("race_confirm", region = regionBottomHalf)
+			game.findAndTapImage("race_confirm", region = regionBottomHalf)
+			afkCheck()
+			game.wait(8.0)
+			
+			// Skip the race if possible, otherwise run it manually.
+			if (game.imageUtils.findImage("race_skip_locked", region = regionBottomHalf).first == null) {
+				skipRace()
+			} else {
+				manualRace()
+			}
+			
+			finishRace(isExtra = true)
+			game.printToLog("[RACE] Racing process for Extra Race is completed.", tag = TAG)
+			return true
 		}
 		
-		// Make sure to select the only the first race.
-		game.findAndTapImage("race_mandatory_selection", tries = 5, region = regionMiddleTwoThird)
-		
-		afkCheck()
-		
-		startRace()
+		return false
+	}
+
+	/**
+	 * The entry point for handling standalone races if the user started the bot on the Racing screen.
+	 */
+	private fun handleStandaloneRace() {
+		game.printToLog("[RACE] Starting Standalone Racing process...", tag = TAG)
+
+		// Skip the race if possible, otherwise run it manually.
+		if (game.imageUtils.findImage("race_skip_locked", region = regionBottomHalf, suppressError = true).first == null) {
+			skipRace()
+		} else {
+			manualRace()
+		}
 		
 		finishRace()
-		
-		game.printToLog("[RACE] Process to complete a mandatory race completed.", tag = TAG)
+		game.printToLog("[RACE] Racing process for Standalone Race is completed.", tag = TAG)
 	}
 	
 	/**
-	 * Handles and completes an extra race.
+	 * Skips the current race to get to the results screen.
 	 */
-	private fun handleExtraRace(noPopup: Boolean = false) {
-		game.printToLog("\n[EXTRA-RACE] Starting process to complete a extra race now.", tag = TAG)
-		
-		val listOfFans = mutableListOf<Int>()
-		
-		// If there is a popup prompting the bot to run an extra race to get the required amount of fans, confirm it. Otherwise open up the Race Selection screen normally.
-		if (!noPopup) {
-			game.findAndTapImage("race_manual", tries = 5, region = regionBottomHalf)
-		} else {
-			game.findAndTapImage("race_select_extra", tries = 5, region = regionBottomThreeThird)
-		}
-		
-		// Check for the popup warning against repeatedly doing 3+ runs.
-		if (checkRaceRepeatWarning()) {
-			game.findAndTapImage("ok", tries = 5, region = regionMiddleTwoThird)
-		}
-		
-		afkCheck()
-		
-		// Now determine the best extra race with the following parameters: highest fans and double star prediction.
-		// First find the fans of only the extra races on the screen that match the double star prediction. Read only 3 extra races.
-		var count = 0
-		val extraRaceLocation = mutableListOf<Point>()
-		val (sourceBitmap, templateBitmap) = game.imageUtils.getBitmaps("race_extra_double_prediction", "images")
-		while (count < 3) {
-			extraRaceLocation.add(game.imageUtils.findImage("race_extra_selection", region = regionMiddleTwoThird).first!!)
+	private fun skipRace() {
+		while (raceRetries > 0) {
+			game.printToLog("[RACE] Skipping race...", tag = TAG)
 			
-			val fans = game.imageUtils.determineExtraRaceFans(extraRaceLocation[count], sourceBitmap!!, templateBitmap!!)
-			listOfFans.add(fans)
+			// Press the skip button and then wait for your result of the race to show.
+			game.findAndTapImage("race_skip", tries = 10, region = regionBottomHalf)
+			game.wait(5.0)
 			
-			// Move to the next extra race.
-			if (count != 2) {
-				game.gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "images", "race_extra_selection")
-			}
+			// Now tap on the screen to get to the next screen.
+			game.gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			game.wait(5.0)
 			
-			count++
-		}
-		
-		game.printToLog("[EXTRA-RACE] Number of fans detected are: 1. ${listOfFans[0]}, 2. ${listOfFans[1]}, 3. ${listOfFans[2]}", tag = TAG)
-		
-		// Next determine the maximum fans and select the extra race.
-		val maxFans: Int? = listOfFans.maxOrNull()
-		if (maxFans != null) {
-			// Get the index of the maximum fans.
-			val index = listOfFans.indexOf(maxFans)
-			
-			game.printToLog("[EXTRA-RACE] Selecting the #${index + 1} Extra Race.", tag = TAG)
-			
-			// Select the extra race that matches the double star prediction and the most fan gain.
-			game.gestureUtils.tap(extraRaceLocation[index].x - 100, extraRaceLocation[index].y, "images", "race_extra_selection")
-		} else {
-			// If no maximum is determined, select the very first extra race.
-			game.printToLog("[EXTRA-RACE] Selecting the first Extra Race by default.", tag = TAG)
-			game.gestureUtils.tap(extraRaceLocation[0].x - 100, extraRaceLocation[0].y, "images", "race_extra_selection")
-		}
-		
-		afkCheck()
-		
-		startRace()
-		
-		finishRace(isExtra = true)
-		
-		game.printToLog("[RACE] Process to complete a extra race completed.", tag = TAG)
-	}
-	
-	private fun startRace() {
-		afkCheck()
-		
-		// Now that the extra race is selected, confirm the race and run it.
-		game.findAndTapImage("race_confirm", tries = 5, region = regionBottomHalf)
-		game.wait(1.0)
-		game.findAndTapImage("race_confirm", tries = 5, region = regionBottomHalf)
-		game.wait(8.0)
-		
-		var successCheck = false
-		while (!successCheck && raceRetries > 0) {
-			successCheck = if (game.imageUtils.findImage("race_skip_locked", tries = 3, region = regionBottomThreeThird).first != null) {
-				runRaceManually()
+			// Check if the race needed to be retried.
+			if (game.findAndTapImage("race_retry", region = regionBottomHalf)) {
+				game.printToLog("[RACE] Skipped race failed. Attempting to retry...", tag = TAG)
+				game.wait(5.0)
+				raceRetries--
 			} else {
-				skipRace()
+				break
 			}
 		}
 	}
 	
 	/**
-	 * Finishes up a race by finalizing the results.
-	 *
-	 * @param isExtra Flag to indicate whether the current race is an extra or mandatory to determine whether to press additional buttons.
+	 * Manually runs the current race to get to the results screen.
+	 */
+	private fun manualRace() {
+		while (raceRetries > 0) {
+			game.printToLog("[RACE] Skipping manual race...", tag = TAG)
+			
+			// Press the manual button.
+			game.findAndTapImage("race_manual", tries = 10, region = regionBottomHalf)
+			game.wait(5.0)
+			
+			// Now press the confirm button to get past the list of participants.
+			game.findAndTapImage("race_confirm", tries = 5, region = regionBottomHalf)
+			game.wait(1.0)
+			
+			// Now skip to the end of the race.
+			game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomHalf)
+			game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomHalf)
+			game.wait(2.0)
+			game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomHalf)
+			game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomHalf)
+			game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomHalf)
+			game.wait(5.0)
+			
+			// Check if the race needed to be retried.
+			if (game.findAndTapImage("race_retry", region = regionBottomHalf)) {
+				game.printToLog("[RACE] Manual race failed. Attempting to retry...", tag = TAG)
+				game.wait(5.0)
+				raceRetries--
+			} else {
+				break
+			}
+		}
+	}
+	
+	/**
+	 * Finishes up and confirms the results of the race and its success.
 	 */
 	private fun finishRace(isExtra: Boolean = false) {
-		Log.d(TAG, "Race has finished.")
+		// Bot will be at the screen where it shows the final positions of all participants.
+		// Press the confirm button and wait to see the triangle of fans.
+		game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomHalf)
+		game.wait(5.0)
 		
-		// Skip the screen that shows the accumulation of new fans and then confirm the end of the race.
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 1)
-		game.wait(1.0)
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok", taps = 1)
-		
-		if (game.findAndTapImage("race_accept_trophy", tries = 3, suppressError = true, region = regionBottomHalf)) {
-			game.wait(1.0)
-		}
-		
+		// Now press the end button to finish the race.
 		game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
 		
 		if (!isExtra) {
-			Log.d(TAG, "Closing out the Mandatory Race.")
+			// Wait until the popup showing the completion of a Training Goal appears and confirm it.
+			game.wait(8.0)
+			game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomHalf)
+			game.wait(5.0)
 			
-			// Now finalize the result by tapping on this button to complete a Training Goal for the Character.
-			game.wait(5.0)
-			game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomHalf)
-			game.wait(5.0)
-			game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomHalf)
-			game.wait(5.0)
-			game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomHalf)
-		} else {
-			Log.d(TAG, "Closing out the Extra Race.")
-			game.wait(5.0)
+			// Now confirm the completion of a Training Goal popup.
 			game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
-		}
-	}
-	
-	/**
-	 * Handles skipping the race.
-	 *
-	 * @return True if the race was completed successfully. False if the race needs to be retried.
-	 */
-	private fun skipRace(): Boolean {
-		game.findAndTapImage("race_skip", tries = 5, region = regionBottomThreeThird)
-		game.wait(1.0)
-		
-		game.printToLog("[RACE] Successfully skipped race.", tag = TAG)
-		
-		// Tap multiple times to skip to the screen where it shows the final positions of all of the participants.
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok")
-		game.wait(3.0)
-		game.gestureUtils.tap(500.0, 500.0, "images", "ok")
-		game.wait(3.0)
-		
-		// Automatically retry if failed the race.
-		return if (game.findAndTapImage("race_retry", tries = 5, region = regionBottomHalf, suppressError = true)) {
 			game.wait(3.0)
-			raceRetries--
-			false
 		} else {
-			game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomThreeThird)
-			true
-		}
-	}
-	
-	/**
-	 * Handles running the race manually.
-	 *
-	 * @return True if the race was completed successfully. False if the race needs to be retried.
-	 */
-	private fun runRaceManually(): Boolean {
-		game.printToLog("[RACE] Race must be locked. Proceeding to running it manually.", tag = TAG)
-		
-		// Start the race manually and wait for the game to load.
-		game.findAndTapImage("race_manual", tries = 5, region = regionBottomThreeThird)
-		game.wait(5.0)
-		
-		// After the game loaded in the race, press the confirm button.
-		game.findAndTapImage("race_confirm", tries = 5, region = regionBottomThreeThird)
-		
-		// Now press the skip button 4 times.
-		game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomThreeThird)
-		game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomThreeThird)
-		game.wait(2.0)
-		game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomThreeThird)
-		game.findAndTapImage("race_skip_manual", tries = 5, region = regionBottomThreeThird)
-		game.wait(5.0)
-		
-		// Automatically retry if failed the race.
-		return if (game.findAndTapImage("race_retry", tries = 5, region = regionBottomHalf)) {
 			game.wait(3.0)
-			raceRetries--
-			false
-		} else {
-			game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomThreeThird)
-			true
+
+			if (game.findAndTapImage("race_confirm_result", tries = 5, region = regionBottomHalf)) {
+				// Now confirm the completion of a Training Goal popup.
+				game.wait(5.0)
+				game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
+				game.wait(3.0)
+			}
 		}
 	}
 	
@@ -619,11 +658,13 @@ class Navigation(val game: Game) {
 			game.findAndTapImage("recover_energy", tries = 1, regionBottomThreeThird) -> {
 				game.findAndTapImage("ok", suppressError = true)
 				game.printToLog("\n[ENERGY] Successfully recovered energy.")
+				raceRepeatWarningCheck = false
 				true
 			}
 			game.findAndTapImage("recover_energy_summer", tries = 1, regionBottomThreeThird) -> {
 				game.findAndTapImage("ok", suppressError = true)
 				game.printToLog("\n[ENERGY] Successfully recovered energy for the Summer.")
+				raceRepeatWarningCheck = false
 				true
 			}
 			else -> {
@@ -655,10 +696,18 @@ class Navigation(val game: Game) {
 				}
 			}
 			
+			// Only recover mood if its below Above Normal mood.
 			return if (currentMood == "Bad" && game.imageUtils.findImage("recover_energy_summer", tries = 1, region = regionMiddleTwoThird, suppressError = true).first == null) {
 				game.printToLog("[MOOD] Current mood is not good. Recovering mood now.", tag = TAG)
-				game.findAndTapImage("recover_mood", region = regionBottomThreeThird)
+				if (!game.findAndTapImage("recover_mood", region = regionBottomThreeThird)) {
+					game.findAndTapImage("recover_energy_summer", region = regionBottomThreeThird)
+				}
+				
 				game.findAndTapImage("ok", region = regionMiddleTwoThird)
+				
+				// Wait for a while to see if the crane game appeared.
+				game.wait(8.0)
+				raceRepeatWarningCheck = false
 				true
 			} else {
 				game.printToLog("[MOOD] Current mood is good enough. Moving on.", tag = TAG)
@@ -695,10 +744,11 @@ class Navigation(val game: Game) {
 		
 		while (true) {
 			if (checkNotEnoughFans()) {
-				// If the bot detected the popup that says there are not enough fans, run an extra race.
-				handleExtraRace()
+				Log.d(TAG, "Canceling popup of not enough fans")
+				game.findAndTapImage("cancel", region = regionBottomHalf)
 			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
+				Log.d(TAG, "Detected Training Event")
 				handleTrainingEvent()
 			} else if (checkMainScreen()) {
 				// If the bot is at the Main screen, that means Training and other options are available.
@@ -709,46 +759,29 @@ class Navigation(val game: Game) {
 					game.printToLog("\n[INFO] Detected a injury. Resting now.", tag = TAG)
 					game.findAndTapImage("ok", region = regionMiddleTwoThird)
 					game.wait(3.0)
-				} else if (!recoverMood()) {
-					if (!checkExtraRaceAvailability()) {
-						// Enter the Training screen.
-						game.findAndTapImage("training_option", region = regionBottomThreeThird)
-						
-						// Acquire the percentages and stat gains for each training.
-						findStatsAndPercentages()
-						
-						if (trainingMap.isEmpty()) {
-							game.findAndTapImage("back", region = regionBottomThreeThird)
-							
-							if (checkMainScreen()) {
-								recoverEnergy()
-							} else {
-								throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
-							}
-						} else {
-							// Generate weights for the stats based on what settings the user set.
-							createWeights()
-							
-							// Now select the training option with the highest weight.
-							executeTraining()
-							
-							firstTrainingCheck = false
-						}
-					} else {
-						// Run an extra race instead of Training for purposes of farming fans.
-						handleExtraRace(noPopup = true)
+				} else if (recoverMood()) {
+					Log.d(TAG, "Mood recovered")
+					if (game.imageUtils.findImage("crane_game", tries = 1, region = regionBottomHalf).first != null) {
+						// Stop when the bot has reached the Crane Game Event.
+						game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
+						break
 					}
+				} else if (!checkExtraRaceAvailability()) {
+					Log.d(TAG, "Training due to not extra race day.")
+					handleTraining()
+				} else {
+					Log.d(TAG, "Racing by default")
+					handleRaceEvents()
 				}
 			} else if (handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
 				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = TAG)
 			} else if (checkPreRaceScreen()) {
 				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
-				handleMandatoryRaceEvent()
-			} else if (game.imageUtils.findImage("crane_game", tries = 1, region = regionBottomHalf, suppressError = true).first != null) {
-				// Stop when the bot has reached the Crane Game Event.
-				game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
-				break
+				handleRaceEvents()
+			} else if (game.imageUtils.findImage("race_change_strategy", tries = 1, region = regionBottomHalf).first != null) {
+				// If the bot is already at the Racing screen, then complete this standalone race.
+				handleStandaloneRace()
 			} else if (!BotService.isRunning || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				game.printToLog("\n[END] Bot has reached the end of the run.", tag = TAG)
@@ -757,7 +790,14 @@ class Navigation(val game: Game) {
 			
 			afkCheck()
 			
-			game.findAndTapImage("back", region = regionBottomThreeThird)
+			game.findAndTapImage("cancel", tries = 1, region = regionBottomHalf)
+			
+			if (game.findAndTapImage("race_confirm_result", tries = 1, region = regionBottomHalf)) {
+				// Now confirm the completion of a Training Goal popup.
+				game.wait(5.0)
+				game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
+				game.wait(3.0)
+			}
 		}
 	}
 }
