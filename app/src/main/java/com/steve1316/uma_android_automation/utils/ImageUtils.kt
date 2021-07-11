@@ -301,6 +301,8 @@ class ImageUtils(context: Context, private val game: Game) {
 					if (debugMode) {
 						Log.d(TAG, "Failed to find the ${templateName.uppercase()} image. Trying again...")
 					}
+					
+					game.wait(0.1)
 				} else {
 					if (debugMode) {
 						game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
@@ -340,6 +342,8 @@ class ImageUtils(context: Context, private val game: Game) {
 					if (numberOfTries <= 0) {
 						break
 					}
+					
+					game.wait(0.1)
 				} else {
 					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", tag = TAG)
 					return true
