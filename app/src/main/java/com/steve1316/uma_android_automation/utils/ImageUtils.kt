@@ -291,7 +291,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (!resultFlag) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
-						if (!suppressError) {
+						if (!suppressError && debugMode) {
 							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} image.", tag = TAG)
 						}
 						
