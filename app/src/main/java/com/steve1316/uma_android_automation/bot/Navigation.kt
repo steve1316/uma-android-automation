@@ -817,10 +817,10 @@ class Navigation(val game: Game) {
 				break
 			}
 			
+			// Various miscellaneous checks
 			afkCheck()
-			
 			game.findAndTapImage("cancel", tries = 1, region = regionBottomHalf)
-			
+			game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
 			if (game.findAndTapImage("race_confirm_result", tries = 1, region = regionBottomHalf)) {
 				// Now confirm the completion of a Training Goal popup.
 				game.wait(5.0)
