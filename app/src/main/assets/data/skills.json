@@ -7,22 +7,22 @@
 	"アクセルX": {
 		"id": 10081,
 		"englishName": "Accelerator X",
-		"englishDescription": "Increase speed and power slightly when close: the lead in last 200m"
+		"englishDescription": "Increase speed and power lightly when close to the lead in last 200m"
 	},
 	"レッドエース": {
 		"id": 10091,
 		"englishName": "Red Ace",
-		"englishDescription": "Be in the lead during the 2nd half of the race: gain slightly more power: help you stay in 1st place"
+		"englishDescription": "Be in the lead during the 2nd half of the race to gain slightly more power to help you stay in 1st place"
 	},
 	"精神一到": {
 		"id": 10111,
-		"englishName": "Desire: win",
-		"englishDescription": "Lightly increase speed when passing in the back in Final Leg straight"
+		"englishName": "Desire to win",
+		"englishDescription": "Lightly increase speed when passing in the back in Final Leg straight."
 	},
 	"熱血☆アミーゴ": {
 		"id": 10141,
 		"englishName": "Hot Blooded ☆ Amigo",
-		"englishDescription": "Slightly easier: keep advantage if you have enough strength in the Final Leg straight"
+		"englishDescription": "Slightly easier to keep advantage if you have enough strength in the Final Leg straight"
 	},
 	"エンプレス・プライド": {
 		"id": 10181,
@@ -32,12 +32,12 @@
 	"勝利のキッス☆": {
 		"id": 10241,
 		"englishName": "Victory Kiss ☆",
-		"englishDescription": "Slightly easier: break away when competing in the last corner"
+		"englishDescription": "Slightly easier to break away when competing in the last corner"
 	},
 	"燃えろ筋肉！": {
 		"id": 10271,
 		"englishName": "Burning Muscles!",
-		"englishDescription": "Gain a slight increase in acceleration as you attempt: gain positions during the last corner of the race"
+		"englishDescription": "Gain a slight increase in acceleration as you attempt to gain positions during the last corner of the race"
 	},
 	"introduction：My body": {
 		"id": 10321,
@@ -47,62 +47,67 @@
 	"全力Vサインッ！": {
 		"id": 10351,
 		"englishName": "Full Power for V",
-		"englishDescription": "On the final straight your desire not: lose, increases your speed slightly"
+		"englishDescription": "On the final straight your desire not to lose, increases your speed lightly"
 	},
 	"学級委員長+速さ＝バクシン": {
 		"id": 10411,
 		"englishName": "Class President + Speed = Bakushin",
-		"englishDescription": "While fighting for the lead during the second part of the race, slightly increase your speed through displaying your Bakushin power"
+		"englishDescription": "While fighting for the lead during the second part of the race, lightly increase your speed through displaying your Bakushin power"
 	},
 	"クリアハート": {
 		"id": 10451,
 		"englishName": "Clear Heart",
-		"englishDescription": "Be in a good position during the middle stage of the race: slightly recover your endurance"
+		"englishDescription": "Be in a good position during the middle stage of the race to lightly recover your endurance"
 	},
 	"ワクワクよーいドン": {
 		"id": 10521,
 		"englishName": "Ready, Steady, Go!",
-		"englishDescription": "Being at the back during the last corner, slightly restores your endurance when you see another horse girl"
+		"englishDescription": "Being at the back during the last corner, lightly restores your endurance when you see another horse girl"
 	},
 	"来てください来てください！": {
 		"id": 10561,
 		"englishName": "Come, Come!",
-		"englishDescription": "If during the last leg of the race your way: the front of the field is blocked, your power of divination will make it slightly easier: spot an opening"
+		"englishDescription": "If during the last leg of the race your way to the front of the field is blocked, your power of divination will make it lightly easier to spot an opening"
 	},
 	"アタシもたまには、ね？": {
 		"id": 10601,
 		"englishName": "You know, sometimes even I can…",
-		"englishDescription": "When you're in 3rd place at the end of the race and about: lose, you gain a little bit more fighting spirit and slightly increase your speed"
+		"englishDescription": "When you're in 3rd place at the end of the race and about to lose, you gain a little bit more fighting spirit and lightly increase your speed"
 	},
 	"Call me KING": {
 		"id": 10611,
 		"englishName": "Call me KING",
-		"englishDescription": "If you can get calm and composed through the race, you will be able: showcase your ability and increase your speed for the last 200m"
+		"englishDescription": "If you can get calm and composed through the race, you will be able to showcase your ability and increase your speed for the last 200m"
 	},
 	"シューティングスター": {
 		"id": 100011,
 		"englishName": "Shooting Star",
-		"englishDescription": "Overtake the opponent in front of you during the last leg of the race: gain momentum and increase your speed"
+		"englishDescription": "Overtake the opponent in front of you during the last leg of the race to gain momentum and increase your speed"
 	},
 	"先頭の景色は譲らない…！": {
 		"id": 100021,
 		"englishName": "I'm not giving up the lead…!",
-		"englishDescription": "Be in the lead with a gap behind you at the last straight: increase your speed even more through your legs"
+		"englishDescription": "Be in the lead with a gap behind you at the last straight to increase your speed even more through your legs"
 	},
 	"究極テイオーステップ": {
 		"id": 100031,
 		"englishName": "Ultimate Teio Step",
-		"englishDescription": "Close down the leader on the final straight: greatly increase your speed even further through your brilliant leg work"
+		"englishDescription": "Close down the leader on the final straight to greatly increase your speed even further through your brilliant leg work"
 	},
 	"紅焔ギア/LP1211-M": {
 		"id": 100041,
 		"englishName": "Red Flame Gear/LP1211-M",
-		"englishDescription": "Be close: the leader at the final corner: increase your acceleration by changing gears"
+		"englishDescription": "Be close to the leader at the final corner to increase your acceleration by changing gears"
+	},
+	"煌星のヴォードヴィル": {
+		"id": 100051,
+		"englishName": "Glittering Star Vaudeville",
+		"englishDescription": "If you're in front at the final straight and manage to break out a little, increase speed greatly"
 	},
 	"勝利の鼓動": {
 		"id": 100061,
 		"englishName": "The Beat of Victory",
-		"englishDescription": "Be close: the lead during the last 200m: make it easier: break through and find a way through the field"
+		"englishDescription": "Be close to the lead during the last 200m to make it easier to break through and find a way through the field"
 	},
 	"不沈艦、抜錨ォッ！": {
 		"id": 100071,
@@ -112,7 +117,7 @@
 	"カッティング×DRIVE！": {
 		"id": 100081,
 		"englishName": "Cutting × DRIVE!",
-		"englishDescription": "Increase speed and power when close: the lead in last 200m"
+		"englishDescription": "Increase speed and power when close to the lead in last 200m"
 	},
 	"ブリリアント・レッドエース": {
 		"id": 100091,
@@ -122,7 +127,7 @@
 	"ヴィクトリーショット！": {
 		"id": 100101,
 		"englishName": "Victory Shot!",
-		"englishDescription": "Be in a good position at the last corner: gain momentum and increase your acceleration"
+		"englishDescription": "Be in a good position at the last corner to gain momentum and increase your acceleration"
 	},
 	"精神一到何事か成らざらん": {
 		"id": 100111,
@@ -137,17 +142,17 @@
 	"貴顕の使命を果たすべく": {
 		"id": 100131,
 		"englishName": "Fulfilling your noble duty",
-		"englishDescription": "Be close: the lead in the final corner: gain speed as you resolve yourself: not be overtaken"
+		"englishDescription": "Be close to the lead in the final corner to gain speed as you resolve yourself to not be overtaken"
 	},
 	"プランチャ☆ガナドール": {
 		"id": 100141,
 		"englishName": "Plancha ☆ Ganador",
-		"englishDescription": "Easier: keep a good position in last straight with spare energy"
+		"englishDescription": "Easier to keep a good position in last straight with spare energy"
 	},
 	"ヴィットーリアに捧ぐ舞踏": {
 		"id": 100151,
 		"englishName": "Dance for Vittoria",
-		"englishDescription": "Fight for the lead at the last corner: increase your speed through your kingly radiance"
+		"englishDescription": "Fight for the lead at the last corner to increase your speed through your kingly radiance"
 	},
 	"Shadow Break": {
 		"id": 100161,
@@ -157,7 +162,7 @@
 	"汝、皇帝の神威を見よ": {
 		"id": 100171,
 		"englishName": "Thou, witness the heavenly might of the Emperor",
-		"englishDescription": "During the last leg of the race make three overtakes: strongly increase your speed on the final straight"
+		"englishDescription": "During the last leg of the race make three overtakes to strongly increase your speed on the final straight"
 	},
 	"ブレイズ・オブ・プライド": {
 		"id": 100181,
@@ -177,22 +182,22 @@
 	"ひらめき☆ランディング": {
 		"id": 100241,
 		"englishName": "Inspiration ☆ Landing",
-		"englishDescription": "After a struggle for the lead on the last corner, it becomes easier: break away during the final straight"
+		"englishDescription": "After a struggle for the lead on the last corner, it becomes easier to break away during the final straight"
 	},
 	"G00 1st.F∞;": {
 		"id": 100261,
 		"englishName": "G00 1st.F∞;",
-		"englishDescription": "Lead by yourself without letting up until the final straight: increase your speed"
+		"englishDescription": "Lead by yourself without letting up until the final straight to increase your speed"
 	},
 	"レッツ・アナボリック！": {
 		"id": 100271,
 		"englishName": "Let's anabolic!",
-		"englishDescription": "Increase acceleration as you attempt: overtake in last corner"
+		"englishDescription": "Increase acceleration as you attempt to overtake in last corner"
 	},
 	"ブルーローズチェイサー": {
 		"id": 100301,
 		"englishName": "Blue Rose Chaser",
-		"englishDescription": "Break away on the last straight: steel your will and increase your speed"
+		"englishDescription": "Break away on the last straight to steel your will and increase your speed"
 	},
 	"U=ma2": {
 		"id": 100321,
@@ -201,7 +206,7 @@
 	},
 	"勝利のチケットを、君にッ！": {
 		"id": 100351,
-		"englishName": "The ticket: victory, for you!",
+		"englishName": "The ticket to victory, for you!",
 		"englishDescription": "Your speed increases on the last straight when competing for the lead"
 	},
 	"#LookatCurren": {
@@ -217,7 +222,7 @@
 	"ピュリティオブハート": {
 		"id": 100451,
 		"englishName": "Purity of Heart",
-		"englishDescription": "Be in good position in Middle Leg: recover endurance"
+		"englishDescription": "Be in good position in Middle Leg to recover endurance"
 	},
 	"キラキラ☆STARDOM": {
 		"id": 100461,
@@ -242,7 +247,7 @@
 	"きっとその先へ…！": {
 		"id": 100601,
 		"englishName": "Surely, beyond...!",
-		"englishDescription": "When you're in 3rd place at the end of the race and about: lose, your speed increases"
+		"englishDescription": "When you're in 3rd place at the end of the race and about to lose, your speed increases"
 	},
 	"Pride of KING": {
 		"id": 100611,
@@ -251,8 +256,8 @@
 	},
 	"絶対は、ボクだ": {
 		"id": 110031,
-		"englishName": "It's going: be me",
-		"englishDescription": "Increase speed in the last straight when chasing someone close: the lead"
+		"englishName": "It's going to be me",
+		"englishDescription": "Increase speed in the last straight when chasing someone close to the lead"
 	},
 	"ゲインヒール・スペリアー": {
 		"id": 110111,
@@ -677,7 +682,7 @@
 	"引っ込み思案": {
 		"id": 200283,
 		"englishName": "Introverted",
-		"englishDescription": "Harder at showing off your ability when at least 6 other girls share your strategy"
+		"englishDescription": "Harder at showing off your ability when at least 6 other girls share your strateg"
 	},
 	"徹底マーク◎": {
 		"id": 200291,
@@ -787,22 +792,22 @@
 	"坂苦手": {
 		"id": 200391,
 		"englishName": "Hill Dislike",
-		"englishDescription": "Become slightly more tired during uphills"
+		"englishDescription": "Become lightly more tired during uphills"
 	},
 	"バ群嫌い": {
 		"id": 200401,
 		"englishName": "Crowd Hater",
-		"englishDescription": "Endurance decreases slightly when surrounded"
+		"englishDescription": "Endurance decreases lightly when surrounded"
 	},
 	"あきらめ癖": {
 		"id": 200411,
 		"englishName": "Resignation",
-		"englishDescription": "Tends: give up at the final straight line"
+		"englishDescription": "Tends to give up at the final straight line"
 	},
 	"手抜き癖": {
 		"id": 200421,
 		"englishName": "Negligence",
-		"englishDescription": "Tends: get off-guard when leading at the remaining 200m"
+		"englishDescription": "Tends to get off-guard when leading at the remaining 200m"
 	},
 	"コンセントレーション": {
 		"id": 200431,
@@ -817,7 +822,7 @@
 	"ゲート難": {
 		"id": 200433,
 		"englishName": "Gate Trouble",
-		"englishDescription": "Worse at starts, slightly increases delay of Late Starts"
+		"englishDescription": "Worse at starts, lightly increases delay of Late Starts"
 	},
 	"鋼の意志": {
 		"id": 200441,
@@ -937,22 +942,22 @@
 	"余裕綽々": {
 		"id": 200561,
 		"englishName": "Calm and Composed",
-		"englishDescription": "Leader・Harder: tire out during the Opening Leg"
+		"englishDescription": "Leader・Harder to tire out during the Opening Leg"
 	},
 	"スタミナキープ": {
 		"id": 200562,
 		"englishName": "Stamina Keep",
-		"englishDescription": "Leader・Slightly harder: tire out during the Opening Leg"
+		"englishDescription": "Leader・Slightly harder to tire out during the Opening Leg"
 	},
 	"レースプランナー": {
 		"id": 200571,
 		"englishName": "Race Planner",
-		"englishDescription": "Leader・Harder: tire during the Middle Leg"
+		"englishDescription": "Leader・Harder to tire during the Middle Leg"
 	},
 	"好位追走": {
 		"id": 200572,
 		"englishName": "Favorite Place",
-		"englishDescription": "Leader・Become slightly harder: tire during the Middle Leg"
+		"englishDescription": "Leader・Become slightly harder to tire during the Middle Leg"
 	},
 	"スピードスター": {
 		"id": 200581,
@@ -997,22 +1002,22 @@
 	"眠れる獅子": {
 		"id": 200621,
 		"englishName": "Sleeping Lion",
-		"englishDescription": "Chaser・Become harder: tire out during the Middle Leg"
+		"englishDescription": "Chaser・Become harder to tire out during the Middle Leg"
 	},
 	"後方待機": {
 		"id": 200622,
 		"englishName": "On Standby",
-		"englishDescription": "Chaser・Become slightly harder: tire out during the Middle Leg"
+		"englishDescription": "Chaser・Become slightly harder to tire out during the Middle Leg"
 	},
 	"疾風怒濤": {
 		"id": 200631,
 		"englishName": "Storm and Stress",
-		"englishDescription": "Chaser・Get ready: pass during the Final Leg and become better at positioning"
+		"englishDescription": "Chaser・Get ready to pass during the Final Leg and become better at positioning"
 	},
 	"仕掛け抜群": {
 		"id": 200632,
 		"englishName": "Master Trickster",
-		"englishDescription": "Chaser・Get ready: pass during the Final Leg and become slightly better at positioning"
+		"englishDescription": "Chaser・Get ready to pass during the Final Leg and become slightly better at positioning"
 	},
 	"迫る影": {
 		"id": 200641,
@@ -1037,7 +1042,7 @@
 	"様子見": {
 		"id": 200662,
 		"englishName": "Wait and See",
-		"englishDescription": "Short・Slightly harder: tire when in the back during the Middle Leg"
+		"englishDescription": "Short・Slightly harder to tire when in the back during the Middle Leg"
 	},
 	"電撃の煌めき": {
 		"id": 200671,
@@ -1062,12 +1067,12 @@
 	"慧眼": {
 		"id": 200691,
 		"englishName": "Wisdom Eye",
-		"englishDescription": "Mile・Become harder: tire when in the back of the pack during the Opening Leg"
+		"englishDescription": "Mile・Become harder to tire when in the back of the pack during the Opening Le"
 	},
 	"展開窺い": {
 		"id": 200692,
 		"englishName": "Progress Peek",
-		"englishDescription": "Mile・Become slightly harder: tire when in the back of the pack during the Opening Leg"
+		"englishDescription": "Mile・Become slightly harder to tire when in the back of the pack during the Opening Leg"
 	},
 	"豪脚": {
 		"id": 200701,
@@ -1082,22 +1087,22 @@
 	"切り開く者": {
 		"id": 200711,
 		"englishName": "The One Who Clears The Path",
-		"englishDescription": "Medium・Become harder: tire out when in the lead during the Middle Leg"
+		"englishDescription": "Medium・Become harder to tire out when in the lead during the Middle Leg"
 	},
 	"前途洋々": {
 		"id": 200712,
 		"englishName": "Bright Future",
-		"englishDescription": "Medium・Become slightly harder: tire out when in the lead during the Middle Leg"
+		"englishDescription": "Medium・Become slightly harder to tire out when in the lead during the Middle Leg"
 	},
 	"キラーチューン": {
 		"id": 200721,
 		"englishName": "Killer Tune",
-		"englishDescription": "Medium・Easier: take a good position in the Middle Leg if you're leading"
+		"englishDescription": "Medium・Easier to take a good position in the Middle Leg if you're leading"
 	},
 	"テンポアップ": {
 		"id": 200722,
 		"englishName": "Uptempo",
-		"englishDescription": "Medium・Slightly easier: take a good position during the Middle Leg if you're leading"
+		"englishDescription": "Medium・Slightly easier to take a good position during the Middle Leg if you're leading"
 	},
 	"勝利への執念": {
 		"id": 200731,
@@ -1112,12 +1117,12 @@
 	"クールダウン": {
 		"id": 200741,
 		"englishName": "Cooldown",
-		"englishDescription": "Long・Take a breath when entering straights and become harder: tire out"
+		"englishDescription": "Long・Take a breath when entering straights and become harder to tire out"
 	},
 	"深呼吸": {
 		"id": 200742,
 		"englishName": "Deep Breaths",
-		"englishDescription": "Long・Take a breath when entering straights and become slightly harder: tire out"
+		"englishDescription": "Long・Take a breath when entering straights and become slightly harder to tire out"
 	},
 	"内的体験": {
 		"id": 200751,
@@ -1132,7 +1137,7 @@
 	"火事場のバ鹿力": {
 		"id": 200761,
 		"englishName": "Fight or Flight",
-		"englishDescription": "Long・Recover the will: run after exhausting your strength"
+		"englishDescription": "Long・Recover the will to run after exhausting your strength"
 	},
 	"別腹タンク": {
 		"id": 200762,
@@ -1152,22 +1157,22 @@
 	"逃げ駆け引き": {
 		"id": 200791,
 		"englishName": "Frantic Runners",
-		"englishDescription": "When girls with <Strategy・Runner> become frantic, they take longer: calm down"
+		"englishDescription": "When girls with <Strategy・Runner> become frantic, they take longer to calm down"
 	},
 	"先行駆け引き": {
 		"id": 200801,
 		"englishName": "Frantic Leaders",
-		"englishDescription": "When girls with <Strategy・Leader> become frantic, they take longer: calm down"
+		"englishDescription": "When girls with <Strategy・Leader> become frantic, they take longer to calm down"
 	},
 	"差し駆け引き": {
 		"id": 200811,
 		"englishName": "Frantic Betweeners",
-		"englishDescription": "When girls with <Strategy・Betweener> become frantic, they take longer: calm down"
+		"englishDescription": "When girls with <Strategy・Betweener> become frantic, they take longer to calm down"
 	},
 	"追込駆け引き": {
 		"id": 200821,
 		"englishName": "Frantic Chasers",
-		"englishDescription": "When girls with <Strategy・Chaser> become frantic, they take longer: calm down"
+		"englishDescription": "When girls with <Strategy・Chaser> become frantic, they take longer to calm down"
 	},
 	"逃げけん制": {
 		"id": 200831,
@@ -1182,7 +1187,7 @@
 	"逃げためらい": {
 		"id": 200851,
 		"englishName": "Faltering Runners",
-		"englishDescription": "Instill hesitation and slows down girls with <Strategy・Runner> in the Final Leg"
+		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Runner> in the Final Leg"
 	},
 	"先行けん制": {
 		"id": 200861,
@@ -1197,7 +1202,7 @@
 	"先行ためらい": {
 		"id": 200881,
 		"englishName": "Faltering Leaders",
-		"englishDescription": "Instill hesitation and slows down girls with <Strategy・Leader> in the Final Leg"
+		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Leader> in the Final Leg"
 	},
 	"差しけん制": {
 		"id": 200891,
@@ -1212,7 +1217,7 @@
 	"差しためらい": {
 		"id": 200911,
 		"englishName": "Faltering Betweeners",
-		"englishDescription": "Instill hesitation and slows down girls with <Strategy・Betweener> in the Final Leg"
+		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Betweener> in the Final Leg"
 	},
 	"追込けん制": {
 		"id": 200921,
@@ -1227,7 +1232,7 @@
 	"追込ためらい": {
 		"id": 200941,
 		"englishName": "Faltering Chasers",
-		"englishDescription": "Instill hesitation and slows down girls with <Strategy・Chaser> in the Final Leg"
+		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Chaser> in the Final Leg"
 	},
 	"大井レース場◎": {
 		"id": 200951,
@@ -1267,12 +1272,12 @@
 	"圧倒的リード": {
 		"id": 200981,
 		"englishName": "Overwhelming Lead",
-		"englishDescription": "Short・Easier: keep the lead if you lead with big margin in the Middle Leg"
+		"englishDescription": "Short・Easier to keep the lead if you lead with big margin in the Middle Leg"
 	},
 	"大きなリード": {
 		"id": 200982,
 		"englishName": "Big Lead",
-		"englishDescription": "Short・Slightly easier: keep the lead if you lead with big margin in the Middle Leg"
+		"englishDescription": "Short・Slightly easier to keep the lead if you lead with big margin in the Middle Leg"
 	},
 	"プランX": {
 		"id": 200991,
@@ -1302,7 +1307,7 @@
 	"後方釘付": {
 		"id": 201012,
 		"englishName": "Final Nail",
-		"englishDescription": "Short・When in the front in Opening Leg, girls in the back become slightly weakened"
+		"englishDescription": "Short・When in the front in Opening Leg, girls in the back become lightly weakened"
 	},
 	"逃亡禁止令": {
 		"id": 201021,
@@ -1327,7 +1332,7 @@
 	"マイルコーナー◎": {
 		"id": 201041,
 		"englishName": "Mile Corner ◎",
-		"englishDescription": "Mile・Slightly increases speed on corners"
+		"englishDescription": "Mile・lightly ncreases speed on corners"
 	},
 	"マイルコーナー○": {
 		"id": 201042,
@@ -1357,12 +1362,12 @@
 	"姉御肌": {
 		"id": 201071,
 		"englishName": "Big Sister Disposition",
-		"englishDescription": "Mile・Passing becomes easier: succeed"
+		"englishDescription": "Mile・Passing becomes easier to succeed"
 	},
 	"負けん気": {
 		"id": 201072,
 		"englishName": "Rival Spirit",
-		"englishDescription": "Mile・Passing becomes slightly easier: succeed"
+		"englishDescription": "Mile・Passing becomes slightly easier to succeed"
 	},
 	"スピードグリード": {
 		"id": 201081,
@@ -1417,22 +1422,22 @@
 	"ライトニングステップ": {
 		"id": 201131,
 		"englishName": "Lightning Step",
-		"englishDescription": "Medium・Become harder: box in if behind in Middle Leg"
+		"englishDescription": "Medium・Become harder to box in if behind in Middle Leg"
 	},
 	"イナズマステップ": {
 		"id": 201132,
 		"englishName": "Inazuma Step",
-		"englishDescription": "Medium・Become slightly harder: box in if behind in Middle Leg"
+		"englishDescription": "Medium・Become lightly harder to box in if behind in Middle Leg"
 	},
 	"神業ステップ": {
 		"id": 201141,
 		"englishName": "Miracle Step",
-		"englishDescription": "Medium・Become harder: tire out from left-right movements"
+		"englishDescription": "Medium・Become harder to tire out from left-right movements"
 	},
 	"軽やかステップ": {
 		"id": 201142,
 		"englishName": "Light Step",
-		"englishDescription": "Medium・Become slightly harder: tire out from left-right movements"
+		"englishDescription": "Medium・Become slightly harder to tire out from left-right movements"
 	},
 	"独占力": {
 		"id": 201151,
@@ -1477,17 +1482,17 @@
 	"先陣の心得": {
 		"id": 201191,
 		"englishName": "Vanguard's Wisdom",
-		"englishDescription": "Long・Easier: keep the lead if you lead with big margin in the Middle Leg"
+		"englishDescription": "Long・Easier to keep the lead if you lead with big margin in the Middle Leg"
 	},
 	"リードキープ": {
 		"id": 201192,
 		"englishName": "Keep the Lead",
-		"englishDescription": "Long・Slightly easier: keep the lead if you lead with big margin in the Middle Leg"
+		"englishDescription": "Long・Slightly easier to keep the lead if you lead with big margin in the Middle Leg"
 	},
 	"パス上手": {
 		"id": 201202,
 		"englishName": "Pass Expert",
-		"englishDescription": "Long・Become slightly harder: tire when passing"
+		"englishDescription": "Long・Become slightly harder to tire when passing"
 	},
 	"怒涛の追い上げ": {
 		"id": 201211,
@@ -1542,27 +1547,27 @@
 	"シックスセンス": {
 		"id": 201261,
 		"englishName": "Sixth Sense",
-		"englishDescription": "Runner・Become harder: box in during Opening Leg"
+		"englishDescription": "Runner・Become harder to box in during Opening Leg"
 	},
 	"危険回避": {
 		"id": 201262,
 		"englishName": "Danger Avoidance",
-		"englishDescription": "Runner・Become a bit harder: surround in Opening Leg"
+		"englishDescription": "Runner・Become a bit harder to surround in Opening Leg"
 	},
 	"先頭プライド": {
 		"id": 201272,
 		"englishName": "Lead Pride",
-		"englishDescription": "Runner・Become slightly harder: pass in the Opening Leg"
+		"englishDescription": "Runner・Become slightly harder to pass in the Opening Leg"
 	},
 	"じゃじゃウマ娘": {
 		"id": 201281,
 		"englishName": "Wild Girl",
-		"englishDescription": "Runner・Become harder: tire out on uphills"
+		"englishDescription": "Runner・Become harder to tire out on uphills"
 	},
 	"勢い任せ": {
 		"id": 201282,
-		"englishName": "Leave it: vigour!",
-		"englishDescription": "Runner・Become slightly harder: tire out on uphills"
+		"englishName": "Leave it to vigour!",
+		"englishDescription": "Runner・Become slightly harder to tire out on uphills"
 	},
 	"再燃焼": {
 		"id": 201291,
@@ -1577,7 +1582,7 @@
 	"リスタート": {
 		"id": 201302,
 		"englishName": "Restart",
-		"englishDescription": "Runner・When failing: take the lead during the Opening Leg, girls in front will become flustered"
+		"englishDescription": "Runner・When failing to take the lead during the Opening Leg, girls in front will become flustered"
 	},
 	"先行直線◎": {
 		"id": 201311,
@@ -1672,12 +1677,12 @@
 	"努力家": {
 		"id": 201401,
 		"englishName": "Laborious",
-		"englishDescription": "Betweener・Passing becomes a bit easier: succeed"
+		"englishDescription": "Betweener・Passing becomes a bit easier to succeed"
 	},
 	"がんばり屋": {
 		"id": 201402,
 		"englishName": "Hard Worker",
-		"englishDescription": "Betweener・Passing becomes slightly easier: succeed"
+		"englishDescription": "Betweener・Passing becomes slightly easier to succeed"
 	},
 	"百万バリキ": {
 		"id": 201411,
@@ -1742,7 +1747,7 @@
 	"視界良好！異常なし！": {
 		"id": 201471,
 		"englishName": "Good Visibility! All Clear!",
-		"englishDescription": "Chaser・Grasp the situation when moving left-right, slightly widening field of vision"
+		"englishDescription": "Chaser・Grasp the situation when moving left-right, lightly widening field of vision"
 	},
 	"お見通し": {
 		"id": 201472,
@@ -1752,12 +1757,12 @@
 	"下校後のスペシャリスト": {
 		"id": 201481,
 		"englishName": "After School Specialist",
-		"englishDescription": "Chaser・Become harder: tire out on downhills"
+		"englishDescription": "Chaser・Become harder to tire out on downhills"
 	},
 	"下校の楽しみ": {
 		"id": 201482,
 		"englishName": "Winding Down",
-		"englishDescription": "Chaser・Become slightly harder: tire out on downhills"
+		"englishDescription": "Chaser・Become slightly harder to tire out on downhills"
 	},
 	"冷静沈着": {
 		"id": 201491,
@@ -1897,6 +1902,6 @@
 	"レコメンド": {
 		"id": 201672,
 		"englishName": "Recommendation",
-		"englishDescription": "Dirt・Slightly increase your speed during the middle leg when competing for position"
+		"englishDescription": "Dirt・slightly increase your speed during the middle leg when competing for position"
 	}
 }

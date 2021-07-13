@@ -403,6 +403,66 @@
 			"Speed +7\nPower +7\nGuts +7"
 		]
 	},
+	"Fuji Kiseki": {
+		"秀麗なる門番": [
+			"Speed +10",
+			"Power +10"
+		],
+		"愛した日々に悔いはない": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"What a wonderful stage!": [
+			"Stamina +20",
+			"Speed +10\nPower +10"
+		],
+		"人生最大の幸運とは": [
+			"Stamina +10",
+			"Power +10",
+			"Speed +10"
+		],
+		"舞台袖の一幕": [
+			"Guts +10",
+			"Stamina +10"
+		],
+		"my dear sister.": [
+			"Power +20",
+			"Intelligence +20"
+		],
+		"2大スター競演": [
+			"Guts +10\nSkill points +15",
+			"かく乱 hint +1"
+		],
+		"A Quiet Moment": [
+			"Guts +20\n(random) Get Good Practice ○ status",
+			"Stamina +20\n(random) Get Good Practice ○ status"
+		],
+		"君のためだけ": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"＠DREAM_MAKER": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"第一幕 スマイル": [
+			"Next objective will be Japanese Derby\nGuts +10",
+			"Next objective will be NHK Mile Cup\nPower +10"
+		],
+		"星を見上げて": [
+			"Speed +10",
+			"Power +10"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Gold Ship": {
 		"落としたものは？": [
 			"Energy -10\nPower +20",

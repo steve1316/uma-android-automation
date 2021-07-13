@@ -602,6 +602,23 @@
 			"Energy +10\nMotivation +1\nSkill points +15\n抜け出し準備 hint +1"
 		]
 	},
+	"Mejiro Ardan": {
+		"硝子の少女は学びたい": [
+			"Speed +10\nMejiro Ardan bond +5",
+			"Energy +10\nIntelligence +5\nMejiro Ardan bond +5"
+		],
+		"硝子の少女は遊びたい": [
+			"Speed +10\nIntelligence +10\nMejiro Ardan bond +5",
+			"先行ためらい hint +1\nMejiro Ardan bond +5"
+		],
+		"みんなで作る特製ドリンク": [
+			"Energy +10\nSpeed +5\nIntelligence +5\nSkill points +10",
+			"Motivation +1\nSpeed +10"
+		],
+		"立ちたい場所はただ1つ": [
+			"Energy +30\nMotivation +1"
+		]
+	},
 	"Mejiro Dober": {
 		"喜んでくれるかな……": [
 			"Skill points +45\nMejiro Dober bond +5",
@@ -683,6 +700,17 @@
 		],
 		"応援を受け入れる気持ち": [
 			"Power +15\n垂れウマ回避 hint +1\nMejiro Ryan bond +5"
+		],
+		"爽快！ウイニングショット！": [
+			"Energy +10\nMotivation +1",
+			"Intelligence +10\nSkill points +15\n先行のコツ○ hint +3"
+		],
+		"滾れホームランダービー！": [
+			"Power +10",
+			"Guts +5"
+		],
+		"不屈のバーニングハート！！": [
+			"Power +10\nGuts +5\n勝利への執念 hint +1"
 		]
 	},
 	"Mihono Bourbon": {
