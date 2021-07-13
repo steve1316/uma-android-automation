@@ -479,6 +479,8 @@ class Navigation(val game: Game) {
 			if (maxFans != null) {
 				if (maxFans == -1) {
 					Log.d(TAG, "Max fans was -1 so returning false...")
+					game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
+					game.wait(2.0)
 					return false
 				}
 				
@@ -792,7 +794,10 @@ class Navigation(val game: Game) {
 					handleTraining()
 				} else {
 					Log.d(TAG, "Racing by default")
-					handleRaceEvents()
+					if(!handleRaceEvents()) {
+						Log.d(TAG, "Racing by default failed due to not detecting any eligible extra races. Training instead...")
+						handleTraining()
+					}
 				}
 			} else if (handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
