@@ -597,6 +597,11 @@ class Navigation(val game: Game) {
 				game.wait(5.0)
 				raceRetries--
 			} else {
+				// Check if a Trophy was acquired.
+				if (game.findAndTapImage("race_accept_trophy", tries = 1, region = regionBottomHalf)) {
+					game.printToLog("[RACE] Closing popup to claim trophy...", tag = TAG)
+				}
+				
 				return true
 			}
 		}
