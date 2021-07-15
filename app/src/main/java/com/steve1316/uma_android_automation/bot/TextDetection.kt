@@ -167,6 +167,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		
 		var increment = 0.0
 		
+		val startTime: Long = System.currentTimeMillis()
 		while (true) {
 			// Perform Tesseract OCR detection.
 			if ((255.0 - threshold - increment) > 0.0) {
@@ -219,6 +220,9 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 				increment += 5.0
 			}
 		}
+		
+		val endTime: Long = System.currentTimeMillis()
+		Log.d(TAG, "Total Runtime for detecting Text: ${endTime - startTime}ms")
 		
 		return Pair(eventOptionRewards, confidence)
 	}
