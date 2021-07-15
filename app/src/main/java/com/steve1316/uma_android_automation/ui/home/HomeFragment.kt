@@ -71,6 +71,7 @@ class HomeFragment : Fragment() {
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
+		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
 		
 		// Training Settings page

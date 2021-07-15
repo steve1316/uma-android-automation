@@ -46,6 +46,11 @@
             app:title="Set Threshold for Skill Point Check" />
 
         <CheckBoxPreference
+            app:key="enablePopupCheck"
+            app:summary="Enables check for warning popups like lack of fans or lack of trophies gathered.\n\nStops the bot if detected for the user to deal with them manually to prevent potentially ending the run prematurely."
+            app:title="Enable Check for Warning Popups" />
+
+        <CheckBoxPreference
             app:key="debugMode"
             app:summary="Allows debugging messages to be shown in the log to reveal diagnostic information and potential errors."
             app:title="Enable Debug Mode" />

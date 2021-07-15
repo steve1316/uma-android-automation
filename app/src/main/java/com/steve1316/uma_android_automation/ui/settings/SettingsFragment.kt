@@ -140,6 +140,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
+		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Get references to the Preference components.
@@ -147,6 +148,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 		val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
 		val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
+		val enablePopupCheckPreference = findPreference<CheckBoxPreference>("enablePopupCheck")!!
 		val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
 		
 		// Now set the following values from the shared preferences.
@@ -154,6 +156,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		debugModePreference.isChecked = debugMode
 		enableSkillPointCheckPreference.isChecked = enableSkillPointCheck
 		skillPointCheckPreference.value = skillPointCheck
+		enablePopupCheckPreference.isChecked = enablePopupCheck
 		hideComparisonResultsPreference.isChecked = hideComparisonResults
 		
 		skillPointCheckPreference.isEnabled = enableSkillPointCheckPreference.isChecked
