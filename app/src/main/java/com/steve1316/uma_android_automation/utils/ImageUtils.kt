@@ -745,6 +745,45 @@ class ImageUtils(context: Context, private val game: Game) {
 	}
 	
 	/**
+	 * Determine the number of skill points.
+	 *
+	 * @return Number of skill points or -1 if not found.
+	 */
+	fun determineSkillPoints(): Int {
+		val (statSpeedLocation, sourceBitmap) = findImage("stat_speed")
+		
+		return if (statSpeedLocation != null) {
+			// 125, 1736 -> 901, 1764 for 137x70
+			val croppedBitmap = Bitmap.createBitmap(sourceBitmap, statSpeedLocation.x.toInt() + 776, statSpeedLocation.y.toInt() + 28, 137, 70)
+			
+			tessBaseAPI.setImage(croppedBitmap)
+			
+			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
+			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+			
+			var result = "empty!"
+			try {
+				// Finally, detect text on the cropped region.
+				result = tessBaseAPI.utF8Text
+			} catch (e: Exception) {
+				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
+			}
+			
+			tessBaseAPI.clear()
+			
+			try {
+				Log.d(TAG, "Converting $result to integer for skill points")
+				result.toInt()
+			} catch (e: NumberFormatException) {
+				-1
+			}
+		} else {
+			game.printToLog("[ERROR] Could not start the process of detecting skill points.", tag = TAG, isError = true)
+			-1
+		}
+	}
+	
+	/**
 	 * Initialize Tesseract for future OCR operations. Make sure to put your .traineddata inside the root of the /assets/ folder.
 	 */
 	private fun initTesseract() {

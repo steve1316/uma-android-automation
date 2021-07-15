@@ -79,6 +79,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 				}
 				"enableSkillPointCheck" -> {
 					val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
+					val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
+					skillPointCheckPreference.isEnabled = enableSkillPointCheckPreference.isChecked
 					
 					sharedPreferences.edit {
 						putBoolean("enableSkillPointCheck", enableSkillPointCheckPreference.isChecked)
@@ -153,6 +155,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		enableSkillPointCheckPreference.isChecked = enableSkillPointCheck
 		skillPointCheckPreference.value = skillPointCheck
 		hideComparisonResultsPreference.isChecked = hideComparisonResults
+		
+		skillPointCheckPreference.isEnabled = enableSkillPointCheckPreference.isChecked
 		
 		// Solution courtesy of https://stackoverflow.com/a/63368599
 		// In short, Fragments via the mobile_navigation.xml are children of NavHostFragment, not MainActivity's supportFragmentManager.

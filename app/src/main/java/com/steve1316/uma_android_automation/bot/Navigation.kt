@@ -25,6 +25,8 @@ class Navigation(val game: Game) {
 	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
 	private var statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
 	private val enableFarmingFans = SettingsFragment.getBooleanSharedPreference(game.myContext, "enableFarmingFans")
+	private val enableSkillPointCheck: Boolean = SettingsFragment.getBooleanSharedPreference(game.myContext, "enableSkillPointCheck")
+	private val skillPointCheck: Int = SettingsFragment.getIntSharedPreference(game.myContext, "skillPointCheck")
 	
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
@@ -769,6 +771,11 @@ class Navigation(val game: Game) {
 			if (checkMainScreen()) {
 				// If the bot is at the Main screen, that means Training and other options are available.
 				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
+				
+				if (enableSkillPointCheck && game.imageUtils.determineSkillPoints() >= skillPointCheck) {
+					game.printToLog("\n[END] Bot has acquired the set amount of skill points. Exiting now...", tag = TAG)
+					break
+				}
 				
 				if (checkInjury()) {
 					// If the bot detected a injury, then rest.
