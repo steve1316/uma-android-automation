@@ -41,5 +41,6 @@ Any usage of this tool is at your own risk. No one will be responsible for anyth
 2. [MediaProjection - Used to obtain full screenshots](https://developer.android.com/reference/android/media/projection/MediaProjection)
 3. [AccessibilityService - Used to dispatch gestures like tapping and scrolling](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService)
 4. [OpenCV Android 4.5.1 - Used to template match](https://opencv.org/releases/)
-5. [Tesseract4Android 2.1.1](https://github.com/adaptech-cz/Tesseract4Android)
-6. [string-similarity 1.0.0](https://github.com/rrice/java-string-similarity)
+5. [Tesseract4Android 2.1.1 - For performing OCR on the screen](https://github.com/adaptech-cz/Tesseract4Android)
+6. [string-similarity 1.0.0 - For comparing string similarities during text detection](https://github.com/rrice/java-string-similarity)
+7. [AppUpdater 2.7 - For automatically checking and notifying the user for new app updates](https://github.com/javiersantos/AppUpdater)
