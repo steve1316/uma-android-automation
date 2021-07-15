@@ -1,0 +1,13 @@
+<AppUpdater>
+  <update>
+    <latestVersion>1.1.1</latestVersion>
+    <latestVersionCode>4</latestVersionCode>
+    <url>https://github.com/steve1316/uma-android-automation/releases</url>
+    <releaseNotes>
+Changelog
+- Reduced idling time and made more optimizations to bot process.
+- Added support for Fuji Kiseki update.
+- Reduced bloat of message log if Debug Mode is not turned on.
+    </releaseNotes>
+  </update>
+</AppUpdater>
