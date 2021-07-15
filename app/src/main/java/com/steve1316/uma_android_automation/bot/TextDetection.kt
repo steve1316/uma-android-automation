@@ -20,10 +20,11 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	private var supportCardTitle = ""
 	private var eventOptionRewards: ArrayList<String> = arrayListOf()
 	
-	private val character = SettingsFragment.getStringSharedPreference(myContext, "character")
+	private var character = SettingsFragment.getStringSharedPreference(myContext, "character")
 	private val supportCards: List<String> = SettingsFragment.getStringSharedPreference(myContext, "supportList").split("|")
-	private var hideComparisonResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideComparisonResults")
-	private var selectAllSupportCards: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllSupportCards")
+	private val hideComparisonResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideComparisonResults")
+	private val selectAllCharacters: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllCharacters")
+	private val selectAllSupportCards: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllSupportCards")
 	private var minimumConfidence = SettingsFragment.getIntSharedPreference(myContext, "confidence").toDouble() / 100.0
 	private val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
 	private val enableIncrementalThreshold = SettingsFragment.getBooleanSharedPreference(myContext, "enableIncrementalThreshold")
@@ -59,17 +60,36 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 		val service = StringSimilarityServiceImpl(JaroWinklerStrategy())
 		
 		// Attempt to find the most similar string inside the data classes starting with the Character-specific events.
-		CharacterData.characters[character]?.forEach { (eventName, eventOptions) ->
-			val score = service.score(result, eventName)
-			if (!hideComparisonResults) {
-				game.printToLog("[CHARA] $character \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+		if (selectAllCharacters) {
+			CharacterData.characters.keys.forEach { characterKey ->
+				CharacterData.characters[characterKey]?.forEach { (eventName, eventOptions) ->
+					val score = service.score(result, eventName)
+					if (!hideComparisonResults) {
+						game.printToLog("[CHARA] $characterKey \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+					}
+					
+					if (score >= confidence) {
+						confidence = score
+						eventTitle = eventName
+						eventOptionRewards = eventOptions
+						category = "character"
+						character = characterKey
+					}
+				}
 			}
-			
-			if (score >= confidence) {
-				confidence = score
-				eventTitle = eventName
-				eventOptionRewards = eventOptions
-				category = "character"
+		} else {
+			CharacterData.characters[character]?.forEach { (eventName, eventOptions) ->
+				val score = service.score(result, eventName)
+				if (!hideComparisonResults) {
+					game.printToLog("[CHARA] $character \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+				}
+				
+				if (score >= confidence) {
+					confidence = score
+					eventTitle = eventName
+					eventOptionRewards = eventOptions
+					category = "character"
+				}
 			}
 		}
 		
