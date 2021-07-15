@@ -48,7 +48,7 @@
         <CheckBoxPreference
             app:key="enablePopupCheck"
             app:summary="Enables check for warning popups like lack of fans or lack of trophies gathered.\n\nStops the bot if detected for the user to deal with them manually to prevent potentially ending the run prematurely."
-            app:title="Enable Check for Warning Popups" />
+            app:title="Enable Check for Popups" />
 
         <CheckBoxPreference
             app:key="debugMode"
