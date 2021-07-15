@@ -80,7 +80,7 @@ class HomeFragment : Fragment() {
 		val character = sharedPreferences.getString("character", "Please select one in the Settings")!!
 		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
-		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", false)
+		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", true)
 		
 		// OCR Optimization Settings page
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)

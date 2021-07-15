@@ -101,7 +101,7 @@ class TrainingEventFragment : PreferenceFragmentCompat() {
 		// Grab the saved preferences from the previous time the user used the app.
 		val character = sharedPreferences.getString("character", "")
 		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
-		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", false)
+		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", true)
 		
 		// Get references to the Preference components.
 		val characterPicker: ListPreference = findPreference("characterPicker")!!
@@ -125,6 +125,7 @@ class TrainingEventFragment : PreferenceFragmentCompat() {
 		}
 		
 		characterPicker.isEnabled = !selectAllCharactersCheckBox.isChecked
+		multiplePreference.isEnabled = !selectAllSupportCardsCheckBox.isChecked
 		selectAllCharactersCheckBox.isChecked = selectAllCharacters
 		selectAllSupportCardsCheckBox.isChecked = selectAllSupportCards
 		
