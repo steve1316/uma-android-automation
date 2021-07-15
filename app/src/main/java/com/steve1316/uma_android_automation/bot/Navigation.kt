@@ -349,6 +349,10 @@ class Navigation(val game: Game) {
 						} catch (e: NumberFormatException) {
 							10
 						}
+					} else if (line.lowercase().contains("event chain ended")) {
+						selectionWeight[optionSelected] += -50
+					} else if (line.lowercase().contains("one of these will be selected at random")) {
+						selectionWeight[optionSelected] += 50
 					}
 				}
 				
