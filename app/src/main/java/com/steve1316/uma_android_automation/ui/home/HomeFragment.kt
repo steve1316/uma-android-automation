@@ -144,7 +144,7 @@ class HomeFragment : Fragment() {
 		}
 		
 		val skillPointString: String = if (enableSkillPointCheck) {
-			"Skill Point Check: Bot will stop upon detecting ${skillPointCheck} Skill Points"
+			"Skill Point Check: Stop upon $skillPointCheck Skill Points or more"
 		} else {
 			"Skill Point Check: Disabled"
 		}

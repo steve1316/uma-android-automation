@@ -766,14 +766,7 @@ class Navigation(val game: Game) {
 		}
 		
 		while (true) {
-			if (checkNotEnoughFans()) {
-				Log.d(TAG, "Canceling popup of not enough fans")
-				game.findAndTapImage("cancel", region = regionBottomHalf)
-			} else if (checkTrainingEventScreen()) {
-				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
-				Log.d(TAG, "Detected Training Event")
-				handleTrainingEvent()
-			} else if (checkMainScreen()) {
+			if (checkMainScreen()) {
 				// If the bot is at the Main screen, that means Training and other options are available.
 				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
 				
@@ -794,11 +787,18 @@ class Navigation(val game: Game) {
 					handleTraining()
 				} else {
 					Log.d(TAG, "Racing by default")
-					if(!handleRaceEvents()) {
+					if (!handleRaceEvents()) {
 						Log.d(TAG, "Racing by default failed due to not detecting any eligible extra races. Training instead...")
 						handleTraining()
 					}
 				}
+			} else if (checkNotEnoughFans()) {
+				Log.d(TAG, "Canceling popup of not enough fans")
+				game.findAndTapImage("cancel", region = regionBottomHalf)
+			} else if (checkTrainingEventScreen()) {
+				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
+				Log.d(TAG, "Detected Training Event")
+				handleTrainingEvent()
 			} else if (handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
 				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = TAG)
@@ -810,7 +810,7 @@ class Navigation(val game: Game) {
 				handleStandaloneRace()
 			} else if (!BotService.isRunning || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
-				game.printToLog("\n[END] Bot has reached the end of the run.", tag = TAG)
+				game.printToLog("\n[END] Bot has reached the end of the run. Exiting now...", tag = TAG)
 				break
 			} else if (raceRetries <= 0) {
 				game.printToLog("\n[END] Bot has run out of retry attempts for races. Exiting now...", tag = TAG)

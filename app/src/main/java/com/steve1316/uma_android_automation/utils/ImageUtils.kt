@@ -353,7 +353,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 		}
 		
-		if (!suppressError) {
+		if (!suppressError && debugMode) {
 			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = TAG)
 		}
 		
@@ -387,36 +387,6 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		return matchLocations
-	}
-	
-	/**
-	 * Waits for the specified image to vanish from the screen.
-	 *
-	 * @param templateName File name of the template image.
-	 * @param timeout Amount of time to wait before timing out. Default is 5 seconds.
-	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
-	 * @param suppressError Whether or not to suppress saving error messages to the log.
-	 * @return True if the specified image vanished from the screen. False otherwise.
-	 */
-	fun waitVanish(templateName: String, timeout: Int = 5, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Boolean {
-		if (debugMode) {
-			game.printToLog("[DEBUG] Now waiting for $templateName to vanish from the screen...", tag = TAG)
-		}
-		
-		var remaining = timeout
-		if (findImage(templateName, tries = 1, region = region, suppressError = suppressError).first == null) {
-			return true
-		} else {
-			while (findImage(templateName, tries = 1, region = region, suppressError = suppressError).first == null) {
-				game.wait(1.0)
-				remaining -= 1
-				if (remaining <= 0) {
-					return false
-				}
-			}
-			
-			return true
-		}
 	}
 	
 	/**
@@ -763,7 +733,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				.replace("人", "").trim()
 			
 			try {
-				Log.d(TAG, "Converting $result to integer")
+				Log.d(TAG, "Converting $result to integer for fans")
 				result.toInt()
 			} catch (e: NumberFormatException) {
 				-1
