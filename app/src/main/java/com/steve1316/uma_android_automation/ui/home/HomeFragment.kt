@@ -19,6 +19,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.beust.klaxon.JsonReader
+import com.github.javiersantos.appupdater.AppUpdater
+import com.github.javiersantos.appupdater.enums.UpdateFrom
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 import com.steve1316.uma_android_automation.data.CharacterData
@@ -178,6 +180,12 @@ class HomeFragment : Fragment() {
 			messageLogTextView.append("\n" + messageLog[index])
 			index += 1
 		}
+		
+		// Set up the app updater to check for the latest update from GitHub.
+		AppUpdater(myContext)
+			.setUpdateFrom(UpdateFrom.XML)
+			.setUpdateXML("https://raw.githubusercontent.com/steve1316/uma-android-automation/master/app/update.xml")
+			.start()
 	}
 	
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
