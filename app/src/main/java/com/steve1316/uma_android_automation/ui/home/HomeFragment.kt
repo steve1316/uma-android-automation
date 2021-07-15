@@ -156,7 +156,7 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Force the user to go through the Settings in order to set this required setting.
-		startButton.isEnabled = (characterString != "Please select one in the Settings" || characterString != "All Characters Selected")
+		startButton.isEnabled = (characterString != "Please select one in the Settings" || characterString == "All Characters Selected")
 		
 		return homeFragmentView
 	}
