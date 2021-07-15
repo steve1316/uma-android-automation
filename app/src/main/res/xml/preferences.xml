@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
-        app:summary="Options marked with * are have a required setting"
+        app:summary="Options marked with * are required"
         app:title="Options">
 
         <Preference
@@ -14,7 +14,7 @@
             app:fragment="com.steve1316.uma_android_automation.ui.settings.TrainingEventFragment"
             app:key="trainingEventOptions"
             app:summary="Choose which Character/Support Cards to detect for the Training Event."
-            app:title="Training Event*" />
+            app:title="Training Event *" />
 
         <Preference
             app:fragment="com.steve1316.uma_android_automation.ui.settings.OCRFragment"
@@ -30,6 +30,7 @@
             app:key="enableFarmingFans"
             app:summary="Enables prioritizing farming fans via conducting extra races instead of focusing on training."
             app:title="Enable Prioritizing Farming Fans" />
+
         <CheckBoxPreference
             app:key="debugMode"
             app:summary="Allows debugging messages to be shown in the log to reveal diagnostic information and potential errors."

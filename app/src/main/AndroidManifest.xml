@@ -10,7 +10,9 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!--Grants permission to read and write to external storage for Tesseract traineddata file.-->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <!--Grants permission to download and update the application's Firebase Machine Learning OCR.-->
@@ -23,7 +25,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppTheme"
-        tools:ignore="AllowBackup" >
+        tools:ignore="AllowBackup">
 
         <!--Users will first be directed to MainActivity and then to HomeFragment.-->
         <activity
@@ -40,9 +42,9 @@
         <!--The Accessibility Service that controls gestures on the screen.-->
         <service
             android:name=".utils.MyAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:foregroundServiceType="mediaProjection"
             android:label="@string/accessibility_service_label"
-            android:foregroundServiceType="mediaProjection">
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -57,8 +59,7 @@
             android:foregroundServiceType="mediaProjection" />
 
         <!--Bot Service that will automate the specified workflow.-->
-        <service
-            android:name="com.steve1316.uma_android_automation.utils.BotService" />
+        <service android:name="com.steve1316.uma_android_automation.utils.BotService" />
 
         <!--Receiver that will send the "STOP" Intent to MediaProjection Service when the action button on the Notification is tapped.-->
         <receiver
