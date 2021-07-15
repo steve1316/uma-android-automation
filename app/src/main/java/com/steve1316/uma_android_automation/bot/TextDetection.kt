@@ -27,7 +27,7 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	private val selectAllSupportCards: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllSupportCards")
 	private var minimumConfidence = SettingsFragment.getIntSharedPreference(myContext, "confidence").toDouble() / 100.0
 	private val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
-	private val enableIncrementalThreshold = SettingsFragment.getBooleanSharedPreference(myContext, "enableIncrementalThreshold")
+	private val enableAutomaticRetry = SettingsFragment.getBooleanSharedPreference(myContext, "enableAutomaticRetry")
 	
 	/**
 	 * Fix incorrect characters determined by OCR by replacing them with their Japanese equivalents.
@@ -206,21 +206,17 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 					}
 				}
 				
-				if (enableIncrementalThreshold && !hideComparisonResults) {
+				if (enableAutomaticRetry && !hideComparisonResults) {
 					game.printToLog("\n[RESULT] Threshold incremented by $increment", tag = TAG)
 				}
 				
-				if (confidence < minimumConfidence && enableIncrementalThreshold) {
+				if (confidence < minimumConfidence && enableAutomaticRetry) {
 					increment += 5.0
-				} else if (confidence >= minimumConfidence || confidence == 0.0) {
-					break
 				} else {
 					break
 				}
-			} else if (enableIncrementalThreshold) {
-				increment += 5.0
 			} else {
-				break
+				increment += 5.0
 			}
 		}
 		

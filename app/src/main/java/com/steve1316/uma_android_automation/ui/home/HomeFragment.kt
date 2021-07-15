@@ -76,7 +76,7 @@ class HomeFragment : Fragment() {
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
-		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
+		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Training Settings page
 		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
@@ -101,9 +101,14 @@ class HomeFragment : Fragment() {
 		// Set these values in SharedPreferences just in case these keys do not exist yet.
 		
 		sharedPreferences.edit {
+			putBoolean("hideComparisonResults", hideComparisonResults)
 			putBoolean("selectAllCharacters", selectAllCharacters)
 			putBoolean("selectAllSupportCards", selectAllSupportCards)
 			putBoolean("enableAutomaticRetry", enableAutomaticRetry)
+			putInt("skillPointCheck", skillPointCheck)
+			putInt("maximumFailureChance", maximumFailureChance)
+			putInt("threshold", threshold)
+			putInt("confidence", confidence)
 			commit()
 		}
 		
