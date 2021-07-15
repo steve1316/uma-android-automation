@@ -83,7 +83,7 @@ class NotificationUtils {
 				setContentTitle(contentTitle)
 				setContentText("Bot is ready to go")
 				setContentIntent(contentPendingIntent)
-				addAction(R.drawable.ic_baseline_stop_circle_24, context.getString(R.string.stop_process), stopPendingIntent)
+				addAction(R.drawable.stop_circle_filled, context.getString(R.string.stop_process), stopPendingIntent)
 				priority = NotificationManager.IMPORTANCE_HIGH
 				setCategory(Notification.CATEGORY_SERVICE)
 				setOngoing(true)
@@ -120,7 +120,7 @@ class NotificationUtils {
 				setContentTitle(contentTitle)
 				setContentText(contentText)
 				setContentIntent(contentPendingIntent)
-				addAction(R.drawable.ic_baseline_stop_circle_24, context.getString(R.string.accessibility_service_action), stopPendingIntent)
+				addAction(R.drawable.stop_circle_filled, context.getString(R.string.accessibility_service_action), stopPendingIntent)
 				priority = NotificationManager.IMPORTANCE_HIGH
 				setCategory(Notification.CATEGORY_SERVICE)
 				setOngoing(true)
