@@ -150,6 +150,18 @@ class HomeFragment : Fragment() {
 			"Skill Point Check: Disabled"
 		}
 		
+		val enableFarmingFansString: String = if (enableFarmingFans) {
+			"Enabled"
+		} else {
+			"Disabled"
+		}
+		
+		val enablePopupCheckString: String = if (enablePopupCheck) {
+			"Enabled"
+		} else {
+			"Disabled"
+		}
+		
 		val debugModeString: String = if (debugMode) {
 			"Enabled"
 		} else {
@@ -165,16 +177,21 @@ class HomeFragment : Fragment() {
 		// Update the TextView here based on the information of the SharedPreferences.
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
-		settingsStatusTextView.text = "Character Selected: $characterString\n" +
-				"Support(s) Selected: $supportCardListString\n" +
-				"Focus on Farming Fans: $enableFarmingFans\n\n" +
+		settingsStatusTextView.text = "---------- Training Event Options ----------\n" +
+				"Character Selected: $characterString\n" +
+				"Support(s) Selected: $supportCardListString\n\n" +
+				"---------- Training Options ----------\n" +
 				"Training Blacklist: $trainingBlacklistString\n" +
 				"$statPrioritizationString\n" +
-				"\nMaximum Failure Chance Allowed: $maximumFailureChance%\n" +
+				"Maximum Failure Chance Allowed: $maximumFailureChance%\n\n" +
+				"---------- Tesseract OCR Optimization ----------\n" +
 				"OCR Threshold: $threshold\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
-				"Minimum OCR Confidence: $confidence\n" +
+				"Minimum OCR Confidence: $confidence\n\n" +
+				"---------- Misc Options ----------\n" +
+				"Prioritize Farming Fans: $enableFarmingFansString\n" +
 				"${skillPointString}\n" +
+				"Popup Check: ${enablePopupCheckString}\n" +
 				"Debug Mode: $debugModeString\n" +
 				"Hide String Comparison Results: $hideComparisonResultsString"
 		
