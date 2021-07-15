@@ -16,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.beust.klaxon.JsonReader
@@ -64,6 +65,9 @@ class HomeFragment : Fragment() {
 			}
 		}
 		
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		
 		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
 		// Main Settings page
@@ -94,7 +98,19 @@ class HomeFragment : Fragment() {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Set these values in SharedPreferences just in case these keys do not exist yet.
+		
+		sharedPreferences.edit {
+			putBoolean("selectAllCharacters", selectAllCharacters)
+			putBoolean("selectAllSupportCards", selectAllSupportCards)
+			putBoolean("enableAutomaticRetry", enableAutomaticRetry)
+			commit()
+		}
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Set default values if this is the user's first time.
+		
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
 			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 			defaultCheck = true
@@ -174,7 +190,10 @@ class HomeFragment : Fragment() {
 			"Disabled"
 		}
 		
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Update the TextView here based on the information of the SharedPreferences.
+		
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
 		settingsStatusTextView.text = "---------- Training Event Options ----------\n" +
