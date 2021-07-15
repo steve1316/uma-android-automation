@@ -113,12 +113,7 @@ class HomeFragment : Fragment() {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
-			"No Trainings blacklisted"
-		} else {
-			trainingBlacklist.joinToString(", ")
-		}
+		// Now construct the strings to print them.
 		
 		val characterString: String = if (selectAllCharacters) {
 			"All Characters Selected"
@@ -136,11 +131,36 @@ class HomeFragment : Fragment() {
 			supportList.toString()
 		}
 		
+		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
+			"No Trainings blacklisted"
+		} else {
+			trainingBlacklist.joinToString(", ")
+		}
+		
+		val enableAutomaticRetryString: String = if (enableAutomaticRetry) {
+			"Enabled"
+		} else {
+			"Disabled"
+		}
+		
 		val skillPointString: String = if (enableSkillPointCheck) {
 			"Skill Point Check: Bot will stop upon detecting ${skillPointCheck} Skill Points"
 		} else {
 			"Skill Point Check: Disabled"
 		}
+		
+		val debugModeString: String = if (debugMode) {
+			"Enabled"
+		} else {
+			"Disabled"
+		}
+		
+		val hideComparisonResultsString: String = if (hideComparisonResults) {
+			"Enabled"
+		} else {
+			"Disabled"
+		}
+		
 		// Update the TextView here based on the information of the SharedPreferences.
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
@@ -151,10 +171,11 @@ class HomeFragment : Fragment() {
 				"$statPrioritizationString\n" +
 				"\nMaximum Failure Chance Allowed: $maximumFailureChance%\n" +
 				"OCR Threshold: $threshold\n" +
-				"Enable Automatic OCR retry: $enableAutomaticRetry\n" +
+				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
 				"Minimum OCR Confidence: $confidence\n" +
 				"${skillPointString}\n" +
-				"Hide String Comparison Results: $hideComparisonResults"
+				"Debug Mode: $debugModeString\n" +
+				"Hide String Comparison Results: $hideComparisonResultsString"
 		
 		// Now construct the data files if this is the first time.
 		if (firstRun) {
