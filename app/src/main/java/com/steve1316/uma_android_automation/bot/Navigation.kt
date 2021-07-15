@@ -822,7 +822,7 @@ class Navigation(val game: Game) {
 					game.wait(3.0)
 				} else if (recoverMood()) {
 					Log.d(TAG, "Mood recovered")
-					if (game.imageUtils.findImage("crane_game", tries = 1, region = regionBottomHalf).first != null) {
+					if (game.imageUtils.findImage("crane_game", tries = 5, region = regionBottomHalf).first != null) {
 						// Stop when the bot has reached the Crane Game Event.
 						game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
 						break
