@@ -187,22 +187,16 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 					"character" -> {
 						if (!hideComparisonResults) {
 							game.printToLog("\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence", tag = TAG)
-						} else {
-							Log.d(TAG, "\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence")
 						}
 					}
 					"character-shared" -> {
 						if (!hideComparisonResults) {
-							game.printToLog("\n[RESULT] Character $character Shared Event Name = $eventTitle with confidence = $confidence", tag = TAG)
-						} else {
-							Log.d(TAG, "\n[RESULT] Character $character Shared Event Name = $eventTitle with confidence = $confidence")
+							game.printToLog("\n[RESULT] Character Shared Event Name = $eventTitle with confidence = $confidence", tag = TAG)
 						}
 					}
 					"support" -> {
 						if (!hideComparisonResults) {
 							game.printToLog("\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence", tag = TAG)
-						} else {
-							Log.d(TAG, "\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence")
 						}
 					}
 				}
