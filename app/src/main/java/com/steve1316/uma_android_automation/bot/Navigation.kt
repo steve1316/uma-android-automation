@@ -387,7 +387,13 @@ class Navigation(val game: Game) {
 		
 		val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
 		val selectedLocation: Point? = if (trainingOptionLocations.isNotEmpty()) {
-			trainingOptionLocations[optionSelected]
+			// Account for the situation where it could go out of bounds if the detected event options is incorrect and gives too many results.
+			try {
+				trainingOptionLocations[optionSelected]
+			} catch (e: IndexOutOfBoundsException) {
+				// Default to the first option.
+				trainingOptionLocations[0]
+			}
 		} else {
 			game.imageUtils.findImage("training_event_active", tries = 5, region = regionMiddleTwoThird).first
 		}
