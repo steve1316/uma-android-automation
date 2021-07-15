@@ -245,12 +245,12 @@ class Navigation(val game: Game) {
 				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
 				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
 					Log.d(TAG, "$statName already did training so applying penalty for repeating.")
-					350
+					500
 				} else {
 					0
 				}
 				
-				val weight: Int = (50 * priority) + (10 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
+				val weight: Int = (25 * priority) + (20 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
 				
 				trainingMap[statName]?.set("weight", weight)
 				priority--
