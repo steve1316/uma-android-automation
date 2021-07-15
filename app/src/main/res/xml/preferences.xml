@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         app:summary="Options marked with * are required"
         app:title="Options">
@@ -30,6 +31,19 @@
             app:key="enableFarmingFans"
             app:summary="Enables prioritizing farming fans via conducting extra races instead of focusing on training."
             app:title="Enable Prioritizing Farming Fans" />
+
+        <CheckBoxPreference
+            app:key="enableSkillPointCheck"
+            app:summary="Enables check for a certain Skill Point threshold. If reached, the bot will stop so that you can spend the skill points."
+            app:title="Enable Skill Point Check" />
+
+        <SeekBarPreference
+            android:max="1500"
+            app:defaultValue="750"
+            app:key="skillPointCheck"
+            app:min="500"
+            app:showSeekBarValue="true"
+            app:title="Set Threshold for Skill Point Check" />
 
         <CheckBoxPreference
             app:key="debugMode"

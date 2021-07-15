@@ -69,6 +69,8 @@ class HomeFragment : Fragment() {
 		// Main Settings page
 		val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
+		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
 		
 		// Training Settings page
@@ -134,6 +136,11 @@ class HomeFragment : Fragment() {
 			supportList.toString()
 		}
 		
+		val skillPointString: String = if (enableSkillPointCheck) {
+			"Skill Point Check: Bot will stop upon detecting ${skillPointCheck} Skill Points"
+		} else {
+			"Skill Point Check: Disabled"
+		}
 		// Update the TextView here based on the information of the SharedPreferences.
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
@@ -146,7 +153,7 @@ class HomeFragment : Fragment() {
 				"OCR Threshold: $threshold\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetry\n" +
 				"Minimum OCR Confidence: $confidence\n" +
-				"Debug Mode: $debugMode\n" +
+				"${skillPointString}\n" +
 				"Hide String Comparison Results: $hideComparisonResults"
 		
 		// Now construct the data files if this is the first time.

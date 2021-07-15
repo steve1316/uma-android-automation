@@ -6,10 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.core.content.edit
 import androidx.navigation.fragment.findNavController
-import androidx.preference.CheckBoxPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
+import androidx.preference.*
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 
@@ -71,13 +68,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
 	// This listener is triggered whenever the user changes a Preference setting in the Settings Page.
 	private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
 		if (key != null) {
-			// Note that is no need to handle the Preference that allows multiple selection here as it is already handled in its own function.
 			when (key) {
 				"enableFarmingFans" -> {
 					val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
 					
 					sharedPreferences.edit {
 						putBoolean("enableFarmingFans", enableFarmingFansPreference.isChecked)
+						commit()
+					}
+				}
+				"enableSkillPointCheck" -> {
+					val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
+					
+					sharedPreferences.edit {
+						putBoolean("enableSkillPointCheck", enableSkillPointCheckPreference.isChecked)
+						commit()
+					}
+				}
+				"skillPointCheck" -> {
+					val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
+					
+					sharedPreferences.edit {
+						putInt("skillPointCheck", skillPointCheckPreference.value)
 						commit()
 					}
 				}
@@ -122,15 +134,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
 		// Grab the saved preferences from the previous time the user used the app.
+		val enableFarmingFans: Boolean = sharedPreferences.getBoolean("enableFarmingFans", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
+		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Get references to the Preference components.
+		val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
+		val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
+		val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
 		val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
 		
 		// Now set the following values from the shared preferences.
+		enableFarmingFansPreference.isChecked = enableFarmingFans
 		debugModePreference.isChecked = debugMode
+		enableSkillPointCheckPreference.isChecked = enableSkillPointCheck
+		skillPointCheckPreference.value = skillPointCheck
 		hideComparisonResultsPreference.isChecked = hideComparisonResults
 		
 		// Solution courtesy of https://stackoverflow.com/a/63368599
