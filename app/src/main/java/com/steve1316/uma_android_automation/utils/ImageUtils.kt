@@ -393,105 +393,62 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * Perform OCR text detection using Tesseract along with some image manipulation via thresholding to make the cropped screenshot black and white using OpenCV.
 	 *
 	 * @param increment Increments the threshold by this value. Defaults to 0.0.
-	 * @param isEvent Controls cropping behavior based on whether the screen has a training event on it or not. Defaults to true.
-	 * @param region Region of (x, y, width, height) to start cropping. Only works if isEvent is false. Defaults to (0, 0, 0, 0) which would be fullscreen.
 	 * @return The detected String in the cropped region.
 	 */
-	fun findText(increment: Double = 0.0, isEvent: Boolean = true, region: IntArray = intArrayOf(0, 0, 0, 0)): String {
-		if (isEvent) {
-			val (sourceBitmap, templateBitmap) = getBitmaps("shift", "images")
-			
-			// Acquire the location of the energy text image.
-			val (_, energyTemplateBitmap) = getBitmaps("energy", "images")
-			match(sourceBitmap!!, energyTemplateBitmap!!)
-			
-			// Acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
-			val newX: Int = max(0, matchLocation.x.toInt() - 125)
-			val newY: Int = max(0, matchLocation.y.toInt() + 116)
-			var croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
-			
-			// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
-			croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
-				Log.d(TAG, "Shifting the region over by 70 pixels!")
-				Bitmap.createBitmap(sourceBitmap, newX + 70, newY, 645 - 70, 65)
-			} else {
-				Log.d(TAG, "Do not need to shift.")
-				croppedBitmap
-			}
-			
-			// Make the cropped screenshot grayscale.
-			val cvImage = Mat()
-			Utils.bitmapToMat(croppedBitmap, cvImage)
-			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			
-			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-			Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
-			
-			// Thresh the grayscale cropped image to make black and white.
-			val bwImage = Mat()
-			val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
-			Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-			Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
-			
-			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", tag = TAG)
-			
-			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
-			tessBaseAPI.setImage(resultBitmap)
-			
-			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
-			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
-			
-			var result = "empty!"
-			try {
-				// Finally, detect text on the cropped region.
-				result = tessBaseAPI.utF8Text
-			} catch (e: Exception) {
-				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
-			}
-			
-			tessBaseAPI.clear()
-			
-			return result
+	fun findText(increment: Double = 0.0): String {
+		val (sourceBitmap, templateBitmap) = getBitmaps("shift", "images")
+		
+		// Acquire the location of the energy text image.
+		val (_, energyTemplateBitmap) = getBitmaps("energy", "images")
+		match(sourceBitmap!!, energyTemplateBitmap!!)
+		
+		// Acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
+		val newX: Int = max(0, matchLocation.x.toInt() - 125)
+		val newY: Int = max(0, matchLocation.y.toInt() + 116)
+		var croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
+		
+		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
+		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
+			Log.d(TAG, "Shifting the region over by 70 pixels!")
+			Bitmap.createBitmap(sourceBitmap, newX + 70, newY, 645 - 70, 65)
 		} else {
-			val (sourceBitmap, _) = getBitmaps("shift", "images")
-			
-			// Crop the source screenshot to the custom region.
-			val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap!!, region[0], region[1], region[2], region[3])
-			
-			// Make the cropped screenshot grayscale.
-			val cvImage = Mat()
-			Utils.bitmapToMat(croppedBitmap, cvImage)
-			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			
-			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-			Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
-			
-			// Thresh the grayscale cropped image to make black and white.
-			val bwImage = Mat()
-			val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
-			Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-			Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
-			
-			game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", tag = TAG)
-			
-			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
-			tessBaseAPI.setImage(resultBitmap)
-			
-			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
-			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
-			
-			var result = "empty!"
-			try {
-				// Finally, detect text on the cropped region.
-				result = tessBaseAPI.utF8Text
-			} catch (e: Exception) {
-				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
-			}
-			
-			tessBaseAPI.clear()
-			
-			return result
+			Log.d(TAG, "Do not need to shift.")
+			croppedBitmap
 		}
+		
+		// Make the cropped screenshot grayscale.
+		val cvImage = Mat()
+		Utils.bitmapToMat(croppedBitmap, cvImage)
+		Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+		
+		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
+		Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
+		
+		// Thresh the grayscale cropped image to make black and white.
+		val bwImage = Mat()
+		val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
+		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
+		Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
+		
+		game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", tag = TAG)
+		
+		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
+		tessBaseAPI.setImage(resultBitmap)
+		
+		// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
+		tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+		
+		var result = "empty!"
+		try {
+			// Finally, detect text on the cropped region.
+			result = tessBaseAPI.utF8Text
+		} catch (e: Exception) {
+			game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
+		}
+		
+		tessBaseAPI.clear()
+		
+		return result
 	}
 	
 	/**
