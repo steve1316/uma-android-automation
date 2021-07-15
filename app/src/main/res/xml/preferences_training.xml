@@ -4,8 +4,8 @@
     <PreferenceCategory app:title="Training Options">
 
         <MultiSelectListPreference
-            android:entries="@array/trainings"
-            android:entryValues="@array/trainings"
+            android:entries="@array/stats"
+            android:entryValues="@array/stats"
             app:key="trainingBlacklist"
             app:summary="Select Training(s) to blacklist from being selected in order to narrow the focus of overall Training.\n\nNone Selected"
             app:title="Training Blacklist" />
