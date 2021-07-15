@@ -27,6 +27,7 @@ class Navigation(val game: Game) {
 	private val enableFarmingFans = SettingsFragment.getBooleanSharedPreference(game.myContext, "enableFarmingFans")
 	private val enableSkillPointCheck: Boolean = SettingsFragment.getBooleanSharedPreference(game.myContext, "enableSkillPointCheck")
 	private val skillPointCheck: Int = SettingsFragment.getIntSharedPreference(game.myContext, "skillPointCheck")
+	private val enablePopupCheck: Boolean = SettingsFragment.getBooleanSharedPreference(game.myContext, "enablePopupCheck")
 	
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
@@ -767,6 +768,33 @@ class Navigation(val game: Game) {
 		game.findAndTapImage("afk_check", tries = 1, region = regionMiddleTwoThird, suppressError = true)
 	}
 	
+	/**
+	 * Perform misc checks to potentially fix instances where the bot is stuck.
+	 *
+	 * @return True if the checks passed. Otherwise false if the bot encountered a warning popup and needs to exit.
+	 */
+	private fun performMiscChecks(): Boolean {
+		afkCheck()
+		
+		if (enablePopupCheck && game.imageUtils.findImage("cancel", tries = 1, region = regionBottomHalf).first != null) {
+			game.printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...", tag = TAG)
+			return false
+		} else {
+			game.findAndTapImage("cancel", tries = 1, region = regionBottomHalf)
+		}
+		
+		game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
+		
+		if (game.findAndTapImage("race_confirm_result", tries = 1, region = regionBottomHalf)) {
+			// Now confirm the completion of a Training Goal popup.
+			game.wait(5.0)
+			game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
+			game.wait(3.0)
+		}
+		
+		return true
+	}
+	
 	fun start() {
 		// Set default values for Stat Prioritization if its empty.
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
@@ -831,14 +859,8 @@ class Navigation(val game: Game) {
 			}
 			
 			// Various miscellaneous checks
-			afkCheck()
-			game.findAndTapImage("cancel", tries = 1, region = regionBottomHalf)
-			game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
-			if (game.findAndTapImage("race_confirm_result", tries = 1, region = regionBottomHalf)) {
-				// Now confirm the completion of a Training Goal popup.
-				game.wait(5.0)
-				game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
-				game.wait(3.0)
+			if(!performMiscChecks()) {
+				break
 			}
 		}
 	}
