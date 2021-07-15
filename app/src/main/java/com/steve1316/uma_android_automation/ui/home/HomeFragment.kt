@@ -77,8 +77,9 @@ class HomeFragment : Fragment() {
 		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
 		
 		// Training Event Settings page
-		val character = sharedPreferences.getString("character", "Please select one in the Settings")
+		val character = sharedPreferences.getString("character", "Please select one in the Settings")!!
 		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
+		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
 		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", false)
 		
 		// OCR Optimization Settings page
@@ -117,6 +118,14 @@ class HomeFragment : Fragment() {
 			trainingBlacklist.joinToString(", ")
 		}
 		
+		val characterString: String = if (selectAllCharacters) {
+			"All Characters Selected"
+		} else if (character == "" || character == "Please select one in the Settings") {
+			"Please select one in the Settings"
+		} else {
+			character
+		}
+		
 		val supportCardListString: String = if (selectAllSupportCards) {
 			"All Support Cards Selected"
 		} else if (supportList.isEmpty() || supportList[0] == "") {
@@ -128,7 +137,7 @@ class HomeFragment : Fragment() {
 		// Update the TextView here based on the information of the SharedPreferences.
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
-		settingsStatusTextView.text = "Character Selected: $character\n" +
+		settingsStatusTextView.text = "Character Selected: $characterString\n" +
 				"Support(s) Selected: $supportCardListString\n" +
 				"Focus on Farming Fans: $enableFarmingFans\n\n" +
 				"Training Blacklist: $trainingBlacklistString\n" +
@@ -147,7 +156,7 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Force the user to go through the Settings in order to set this required setting.
-		startButton.isEnabled = (character != "None Selected. Please select one in the Settings")
+		startButton.isEnabled = (characterString != "Please select one in the Settings" || characterString != "All Characters Selected")
 		
 		return homeFragmentView
 	}

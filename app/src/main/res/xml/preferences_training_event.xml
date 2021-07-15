@@ -3,18 +3,25 @@
     <PreferenceCategory
         app:summary="Options marked with * are required"
         app:title="Character Selection">
+
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="selectAllCharactersCheckBox"
+            app:summary="Check this to select all Characters if you are too lazy to select a character."
+            app:title="Select All Characters *" />
+
         <ListPreference
             app:entries="@array/character_list"
             app:entryValues="@array/character_list"
             app:key="characterPicker"
             app:summary="Covers all R, SR and SSR variants into one."
-            app:title="Select your Uma Musume Character*" />
+            app:title="Select your Uma Musume Character *" />
 
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Support Card(s) Selection">
         <CheckBoxPreference
-            app:key="selectAllCheckBox"
+            app:key="selectAllSupportCardsCheckBox"
             app:summary="Check this to select all Support Cards if you are too lazy to select them one-by-one."
             app:title="Select All Support Cards" />
 
