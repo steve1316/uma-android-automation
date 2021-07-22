@@ -463,6 +463,70 @@
 			"Skill points +20"
 		]
 	},
+	"Gold City": {
+		"ま、やる以上はね": [
+			"Intelligence +10",
+			"Speed +5\nSkill points +15"
+		],
+		"たまには裸足になりたい": [
+			"Stamina +10",
+			"Speed +10",
+			"Power +10"
+		],
+		"ヨガのポーズ！": [
+			"Guts +10",
+			"Power +10"
+		],
+		"子どもと大人": [
+			"Intelligence +20",
+			"Stamina +10\nGuts +10"
+		],
+		"差し入れは甘いワナ？": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\n(random) Power +5\n(random) Get Overweight status"
+		],
+		"寄り道したいお年頃": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"表立っては言わないけど": [
+			"Stamina +5\nPower +5",
+			"Guts +10"
+		],
+		"サロン・ド・ボーテ シチー": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"order from client": [
+			"Speed +20",
+			"Guts +20"
+		],
+		"心に描いたもの": [
+			"Speed +20\n(random) Get Charming ○ status",
+			"Power +20"
+		],
+		"モデルのお仕事": [
+			"Energy -15\nSkill points +40",
+			"Motivation +1\nPower +10"
+		],
+		"食べないのは悪手だよ": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"寮対抗クイズバトル": [
+			"Speed +10\nPower +5",
+			"負けん気 hint +1"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Gold Ship": {
 		"落としたものは？": [
 			"Energy -10\nPower +20",

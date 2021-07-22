@@ -214,6 +214,11 @@
 		"englishName": "#LookatCurren",
 		"englishDescription": "Gain momentum while in a good position when passing someone in the middle leg"
 	},
+	"KEEP IT REAL.": {
+		"id": 100401,
+		"englishName": "KEEP IT REAL.",
+		"englishDescription": "In the second half of the race, increase acceleration if you start overtaking from the middle of the pack"
+	},
 	"優等生×バクシン＝大勝利ッ": {
 		"id": 100411,
 		"englishName": "Honor Student x Bakushin = Big Victory",

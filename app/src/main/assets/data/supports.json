@@ -730,6 +730,25 @@
 			"Energy −10\nPower +5\nGuts +5\n逃げ直線○ hint +1\nMihono Bourbon bond +5"
 		]
 	},
+	"Narita Brian": {
+		"生徒会役員！": [
+			"Motivation +1\nSpeed +5\nNarita Brian bond +5",
+			"Maximum Energy +4\nNarita Brian bond +5"
+		],
+		"孤狼": [
+			"Speed +3\nStamina +3\nPower +3\nNarita Brian bond +5",
+			"一匹狼 hint +1\nNarita Brian bond +5"
+		],
+		"レースプランナー・ブライアン": [
+			"Maximum Energy +4\nSpeed +5"
+		],
+		"姉のみぞ知る": [
+			"Energy -10\nSpeed +20"
+		],
+		"夢の続きへ駆け出して": [
+			"Energy -10\nSpeed +20\nくじけぬ精神 hint +1"
+		]
+	},
 	"Narita Taishin": {
 		"別に、ほっといて": [
 			"Stamina +5\nSkill points +15\nNarita Taishin bond +5",
