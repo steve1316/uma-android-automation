@@ -561,10 +561,10 @@ class Navigation(val game: Game) {
 			
 			// Press the skip button and then wait for your result of the race to show.
 			game.findAndTapImage("race_skip", tries = 10, region = regionBottomHalf)
-			game.wait(3.0)
+			game.wait(5.0)
 			
 			// Now tap on the screen to get to the next screen.
-			game.gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			game.gestureUtils.tap(500.0, 1000.0, "images", "ok", taps = 3)
 			game.wait(2.0)
 			
 			// Check if the race needed to be retried.
