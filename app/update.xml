@@ -1,16 +1,13 @@
 <AppUpdater>
   <update>
-    <latestVersion>1.2.0</latestVersion>
+    <latestVersion>1.2.1</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v1.2.0 - Changelog
+v1.2.1 - Changelog
 
-- The application will now automatically check for new updates online.
-- Added a new option to select all Characters.
-- Added a new option to stop upon detecting a set amount of Skill Points or more.
-- Added a new option to stop upon detecting a warning popup like lack of fans.
-- Changed color of overlay button to distinctly show when the bot is running or not.
-- Various bugfixes.
+- Added support for the new Character: Gold City.
+- Added support for the new Support Card: SSR Speed Narita Brian.
+- Made various improvements.
     </releaseNotes>
   </update>
 </AppUpdater>
