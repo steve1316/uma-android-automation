@@ -29,6 +29,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	
 	private val displayWidth: Int = MediaProjectionService.displayWidth
 	private val displayHeight: Int = MediaProjectionService.displayHeight
+	private val isTablet: Boolean = (displayWidth == 1600)
 	
 	// Initialize Google's ML OCR.
 	private val textRecognizer = TextRecognition.getClient()
@@ -86,68 +87,148 @@ class ImageUtils(context: Context, private val game: Game) {
 			sourceBitmap
 		}
 		
-		// Create the Mats of both source and template images.
-		val sourceMat = Mat()
-		val templateMat = Mat()
-		Utils.bitmapToMat(srcBitmap, sourceMat)
-		Utils.bitmapToMat(templateBitmap, templateMat)
+		val tabletScales: MutableList<Double> = mutableListOf(1.28, 1.30, 1.32, 1.34)
 		
-		// Make the Mats grayscale for the source and the template.
-		Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
-		Imgproc.cvtColor(templateMat, templateMat, Imgproc.COLOR_BGR2GRAY)
-		
-		if (useCannyAlgorithm) {
-			// Blur the source and template.
-			Imgproc.blur(sourceMat, sourceMat, Size(3.0, 3.0))
-			Imgproc.blur(templateMat, templateMat, Size(3.0, 3.0))
+		if (!isTablet) {
+			// Create the Mats of both source and template images.
+			val sourceMat = Mat()
+			val templateMat = Mat()
+			Utils.bitmapToMat(srcBitmap, sourceMat)
+			Utils.bitmapToMat(templateBitmap, templateMat)
 			
-			// Apply Canny edge detection algorithm in both source and template. Generally recommended for threshold2 to be 3 times threshold1.
-			Imgproc.Canny(sourceMat, sourceMat, 100.0, 300.0)
-			Imgproc.Canny(templateMat, templateMat, 100.0, 300.0)
-		}
-		
-		// Create the result matrix.
-		val resultColumns: Int = sourceMat.cols() - templateMat.cols() + 1
-		val resultRows: Int = sourceMat.rows() - templateMat.rows() + 1
-		val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
-		
-		// Now perform the matching and localize the result.
-		Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
-		val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
-		
-		matchLocation = Point()
-		var matchCheck = false
-		
-		// Depending on which matching method was used, the algorithms determine which location was the best.
-		if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= 0.2) {
-			matchLocation = mmr.minLoc
-			matchCheck = true
-		} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= 0.8) {
-			matchLocation = mmr.maxLoc
-			matchCheck = true
-		}
-		
-		if (matchCheck) {
-			// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for
-			// debugging purposes to see if this algorithm found the match accurately or not.
-			if (matchFilePath != "") {
-				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 128.0, 0.0), 5)
-				Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
+			// Make the Mats grayscale for the source and the template.
+			Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
+			Imgproc.cvtColor(templateMat, templateMat, Imgproc.COLOR_BGR2GRAY)
+			
+			if (useCannyAlgorithm) {
+				// Blur the source and template.
+				Imgproc.blur(sourceMat, sourceMat, Size(3.0, 3.0))
+				Imgproc.blur(templateMat, templateMat, Size(3.0, 3.0))
+				
+				// Apply Canny edge detection algorithm in both source and template. Generally recommended for threshold2 to be 3 times threshold1.
+				Imgproc.Canny(sourceMat, sourceMat, 100.0, 300.0)
+				Imgproc.Canny(templateMat, templateMat, 100.0, 300.0)
 			}
 			
-			// Center the coordinates so that any tap gesture would be directed at the center of that match location instead of the default
-			// position of the top left corner of the match location.
-			matchLocation.x += (templateMat.cols() / 2)
-			matchLocation.y += (templateMat.rows() / 2)
+			// Create the result matrix.
+			val resultColumns: Int = sourceMat.cols() - templateMat.cols() + 1
+			val resultRows: Int = sourceMat.rows() - templateMat.rows() + 1
+			val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
 			
-			// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
-			if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
-				matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
-				matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
+			// Now perform the matching and localize the result.
+			Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
+			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
+			
+			matchLocation = Point()
+			var matchCheck = false
+			
+			// Depending on which matching method was used, the algorithms determine which location was the best.
+			if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= 0.2) {
+				matchLocation = mmr.minLoc
+				matchCheck = true
+			} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= 0.8) {
+				matchLocation = mmr.maxLoc
+				matchCheck = true
 			}
 			
-			return true
+			if (matchCheck) {
+				// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for
+				// debugging purposes to see if this algorithm found the match accurately or not.
+				if (matchFilePath != "") {
+					Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 128.0, 0.0), 5)
+					Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
+				}
+				
+				// Center the coordinates so that any tap gesture would be directed at the center of that match location instead of the default
+				// position of the top left corner of the match location.
+				matchLocation.x += (templateMat.cols() / 2)
+				matchLocation.y += (templateMat.rows() / 2)
+				
+				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
+				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
+					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
+				}
+				
+				return true
+			} else {
+				return false
+			}
 		} else {
+			var matchCheck = false
+			while (!matchCheck && tabletScales.isNotEmpty()) {
+				val newScale: Double = tabletScales.removeFirst()
+				val tmp: Bitmap = Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
+				
+				// Create the Mats of both source and template images.
+				val sourceMat = Mat()
+				val templateMat = Mat()
+				Utils.bitmapToMat(srcBitmap, sourceMat)
+				Utils.bitmapToMat(tmp, templateMat)
+				
+				// Make the Mats grayscale for the source and the template.
+				Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
+				Imgproc.cvtColor(templateMat, templateMat, Imgproc.COLOR_BGR2GRAY)
+				
+				if (useCannyAlgorithm) {
+					// Blur the source and template.
+					Imgproc.blur(sourceMat, sourceMat, Size(3.0, 3.0))
+					Imgproc.blur(templateMat, templateMat, Size(3.0, 3.0))
+					
+					// Apply Canny edge detection algorithm in both source and template. Generally recommended for threshold2 to be 3 times threshold1.
+					Imgproc.Canny(sourceMat, sourceMat, 100.0, 300.0)
+					Imgproc.Canny(templateMat, templateMat, 100.0, 300.0)
+				}
+				
+				// Create the result matrix.
+				val resultColumns: Int = sourceMat.cols() - templateMat.cols() + 1
+				val resultRows: Int = sourceMat.rows() - templateMat.rows() + 1
+				if (resultColumns < 0 || resultRows < 0) {
+					break
+				}
+				
+				val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
+				
+				// Now perform the matching and localize the result.
+				Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
+				val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
+				
+				matchLocation = Point()
+				
+				// Depending on which matching method was used, the algorithms determine which location was the best.
+				if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= 0.2) {
+					matchLocation = mmr.minLoc
+					matchCheck = true
+				} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= 0.8) {
+					matchLocation = mmr.maxLoc
+					matchCheck = true
+				}
+				
+				if (matchCheck) {
+					Log.d(TAG, "Found match at scale: $newScale")
+					
+					// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for
+					// debugging purposes to see if this algorithm found the match accurately or not.
+					if (matchFilePath != "") {
+						Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 128.0, 0.0), 5)
+						Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
+					}
+					
+					// Center the coordinates so that any tap gesture would be directed at the center of that match location instead of the default
+					// position of the top left corner of the match location.
+					matchLocation.x += (templateMat.cols() / 2)
+					matchLocation.y += (templateMat.rows() / 2)
+					
+					// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
+					if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+						matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
+						matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
+					}
+					
+					return true
+				}
+			}
+			
 			return false
 		}
 	}
@@ -402,10 +483,19 @@ class ImageUtils(context: Context, private val game: Game) {
 		val (_, energyTemplateBitmap) = getBitmaps("energy", "images")
 		match(sourceBitmap!!, energyTemplateBitmap!!)
 		
-		// Acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
-		val newX: Int = max(0, matchLocation.x.toInt() - 125)
-		val newY: Int = max(0, matchLocation.y.toInt() + 116)
-		var croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
+		// Use the match location acquired from finding the energy text image and acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
+		Log.d(TAG, matchLocation.toString())
+		val newX: Int
+		val newY: Int
+		var croppedBitmap: Bitmap = if (isTablet) {
+			newX = max(0, matchLocation.x.toInt() - (250).toInt())
+			newY = max(0, matchLocation.y.toInt() + (154).toInt())
+			Bitmap.createBitmap(sourceBitmap, newX, newY, 746, 85)
+		} else {
+			newX = max(0, matchLocation.x.toInt() - 125)
+			newY = max(0, matchLocation.y.toInt() + 116)
+			Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
+		}
 		
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
@@ -458,8 +548,14 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
-		val (trainingSelectionLocation, sourceBitmap) = findImage("training_selection", region = intArrayOf(0, displayHeight - (displayHeight / 3), displayWidth, displayHeight / 3))
-		val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt(), trainingSelectionLocation.y.toInt() - 324, 100, 50)
+		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
+		
+		val croppedBitmap: Bitmap = if (isTablet) {
+			Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt() + 75, trainingSelectionLocation.y.toInt() - 25, 120, 50)
+		} else {
+			Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 14, 89, 37)
+		}
+		
 		
 		// Create a InputImage object for Google's ML OCR.
 		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -492,29 +588,31 @@ class ImageUtils(context: Context, private val game: Game) {
 		return result
 	}
 	
+	/**
+	 * Find the total stat gains for the selected Training option.
+	 *
+	 * @return Sum of stats to be gained.
+	 */
 	fun findTotalStatGains(currentStat: String): Int {
 		val test = mutableListOf<Int>()
 		
 		val (speedStatTextLocation, sourceBitmap) = findImage("stat_speed", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
 		
 		val statsToCheck: ArrayList<String> = when (currentStat) {
-			"speed" -> {
-				arrayListOf("speed", "power")
+			"Speed" -> {
+				arrayListOf("Speed", "Power")
 			}
-			"stamina" -> {
-				arrayListOf("stamina", "guts")
+			"Stamina" -> {
+				arrayListOf("Stamina", "Guts")
 			}
-			"power" -> {
-				arrayListOf("stamina", "power")
+			"Power" -> {
+				arrayListOf("Stamina", "Power")
 			}
-			"guts" -> {
-				arrayListOf("speed", "power", "guts")
-			}
-			"intelligence" -> {
-				arrayListOf("speed", "intelligence")
+			"Guts" -> {
+				arrayListOf("Speed", "Power", "Guts")
 			}
 			else -> {
-				arrayListOf("speed", "stamina", "power", "guts", "intelligence")
+				arrayListOf("Speed", "Intelligence")
 			}
 		}
 		
@@ -522,28 +620,29 @@ class ImageUtils(context: Context, private val game: Game) {
 		while (tries > 0) {
 			statsToCheck.forEach { stat ->
 				val xOffset: Int = when (stat) {
-					"speed" -> {
+					"Speed" -> {
 						-65
 					}
-					"stamina" -> {
+					"Stamina" -> {
 						107
 					}
-					"power" -> {
+					"Power" -> {
 						271
 					}
-					"guts" -> {
+					"Guts" -> {
 						443
 					}
-					"intelligence" -> {
-						615
-					}
 					else -> {
-						0
+						615
 					}
 				}
 				
 				// Crop the region.
-				val croppedBitmap: Bitmap = Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + xOffset, speedStatTextLocation.y.toInt() - 92, 130, 65)
+				val croppedBitmap: Bitmap = if (isTablet) {
+					Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + (xOffset * 1.36).toInt(), speedStatTextLocation.y.toInt() - (92 * 1.30).toInt(), 177, 80)
+				} else {
+					Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + xOffset, speedStatTextLocation.y.toInt() - 92, 130, 65)
+				}
 				
 				// Make the cropped screenshot grayscale.
 				val cvImage = Mat()
@@ -569,7 +668,7 @@ class ImageUtils(context: Context, private val game: Game) {
 								val reg = Regex("[a-zA-Z]+")
 								val regexResult: String = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
 								
-								Log.d(TAG, "Detected: $regexResult")
+								Log.d(TAG, "Stats detected: $regexResult")
 								
 								test.add(regexResult.toInt())
 							} catch (e: NumberFormatException) {
@@ -610,7 +709,11 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		if (energyTextLocation != null) {
 			// Crop the source screenshot to only contain the day number.
-			val croppedBitmap = Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+			val croppedBitmap = if (isTablet) {
+				Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
+			} else {
+				Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+			}
 			
 			// Create a InputImage object for Google's ML OCR.
 			val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -647,7 +750,11 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun determineExtraRaceFans(extraRaceLocation: Point, sourceBitmap: Bitmap, doubleStarPredictionBitmap: Bitmap): Int {
 		// Crop the source screenshot to show only the fan amount and the predictions.
-		val croppedBitmap = Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 106, 524, 96)
+		val croppedBitmap = if (isTablet) {
+			Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (173 * 1.34).toInt(), extraRaceLocation.y.toInt() - (106 * 1.34).toInt(), 220, 125)
+		} else {
+			Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 173, extraRaceLocation.y.toInt() - 106, 163, 96)
+		}
 		
 		// Determine if the extra race has double star prediction.
 		var predictionCheck = false
@@ -657,10 +764,13 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return if (predictionCheck) {
 			// Crop the source screenshot to show only the fans.
-			val croppedBitmap2 = Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 150, 30)
+			val croppedBitmap2 = if (isTablet) {
+				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (534 * 1.40).toInt(), extraRaceLocation.y.toInt() - (75 * 1.34).toInt(), 221, 40)
+			} else {
+				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 150, 30)
+			}
 			
 			// Make the cropped screenshot grayscale.
-			val cvImage = Mat()
 			Utils.bitmapToMat(croppedBitmap2, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 			
@@ -686,8 +796,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			// Format the string to be converted to an integer.
 			Log.d(TAG, "Detected number of fans before formatting: $result")
 			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "")
+				.replace(">", "").replace("<", "")
 				.replace("(", "")
-				.replace("人", "").trim()
+				.replace("人", "").replace("ォ", "").trim()
 			
 			try {
 				Log.d(TAG, "Converting $result to integer for fans")
@@ -710,8 +821,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		val (statSpeedLocation, sourceBitmap) = findImage("stat_speed")
 		
 		return if (statSpeedLocation != null) {
-			// 125, 1736 -> 901, 1764 for 137x70
-			val croppedBitmap = Bitmap.createBitmap(sourceBitmap, statSpeedLocation.x.toInt() + 776, statSpeedLocation.y.toInt() + 28, 137, 70)
+			val croppedBitmap = if (isTablet) {
+				Bitmap.createBitmap(sourceBitmap, statSpeedLocation.x.toInt() + (776 * 1.36).toInt(), statSpeedLocation.y.toInt() + (28 * 1.50).toInt(), 150, 70)
+			} else {
+				Bitmap.createBitmap(sourceBitmap, statSpeedLocation.x.toInt() + 776, statSpeedLocation.y.toInt() + 28, 137, 70)
+			}
+			
 			
 			tessBaseAPI.setImage(croppedBitmap)
 			
