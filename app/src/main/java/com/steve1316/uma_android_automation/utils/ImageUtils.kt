@@ -497,6 +497,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
 		}
 		
+		val tempImage = Mat()
+		Utils.bitmapToMat(croppedBitmap, tempImage)
+		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
+		
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
 			Log.d(TAG, "Shifting the region over by 70 pixels!")
@@ -512,17 +516,15 @@ class ImageUtils(context: Context, private val game: Game) {
 		Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 		
 		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-		Imgcodecs.imwrite("$matchFilePath/pre-RESULT.png", cvImage)
+		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
 		
 		// Thresh the grayscale cropped image to make black and white.
 		val bwImage = Mat()
 		val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-		Imgcodecs.imwrite("$matchFilePath/RESULT.png", bwImage)
+		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
 		
-		game.printToLog("[INFO] Saved result image successfully named RESULT.png to internal storage inside the /files/temp/ folder.", tag = TAG)
-		
-		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/RESULT.png")
+		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugEventTitleText_afterThreshold.png")
 		tessBaseAPI.setImage(resultBitmap)
 		
 		// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
@@ -556,6 +558,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 14, 89, 37)
 		}
 		
+		// Save the cropped image for debugging purposes.
+		val tempMat = Mat()
+		Utils.bitmapToMat(croppedBitmap, tempMat)
+		Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance.png", tempMat)
 		
 		// Create a InputImage object for Google's ML OCR.
 		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -647,6 +653,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Make the cropped screenshot grayscale.
 				val cvImage = Mat()
 				Utils.bitmapToMat(croppedBitmap, cvImage)
+				Imgcodecs.imwrite("$matchFilePath/debugFindTotalStatGains.png", cvImage)
 				Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 				
 				// Blur the cropped region.
@@ -714,6 +721,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			} else {
 				Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
 			}
+			val cvImage = Mat()
+			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
 			
 			// Create a InputImage object for Google's ML OCR.
 			val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -755,6 +765,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 173, extraRaceLocation.y.toInt() - 106, 163, 96)
 		}
+		val cvImage = Mat()
+		Utils.bitmapToMat(croppedBitmap, cvImage)
+		Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
 		
 		// Determine if the extra race has double star prediction.
 		var predictionCheck = false
@@ -775,9 +788,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 			
 			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-			Imgcodecs.imwrite("$matchFilePath/extra-race.png", cvImage)
+			Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans.png", cvImage)
 			
-			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/extra-race.png")
+			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugExtraRaceFans.png")
 			tessBaseAPI.setImage(resultBitmap)
 			
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
@@ -827,6 +840,9 @@ class ImageUtils(context: Context, private val game: Game) {
 				Bitmap.createBitmap(sourceBitmap, statSpeedLocation.x.toInt() + 776, statSpeedLocation.y.toInt() + 28, 137, 70)
 			}
 			
+			val cvImage = Mat()
+			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Imgcodecs.imwrite("$matchFilePath/debugSkillPoints.png", cvImage)
 			
 			tessBaseAPI.setImage(croppedBitmap)
 			
