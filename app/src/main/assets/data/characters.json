@@ -928,6 +928,18 @@
 			"Guts +10",
 			"Intelligence +10"
 		],
+		"マルゼンスキーの大切なもの": [
+			"急ぎ足 hint +2\n(random) Get Charming ○ status",
+			"Stamina +20\n(random) Get Charming ○ status"
+		],
+		"憧れの『マルゼンさん』": [
+			"Speed +10\nPower +10",
+			"Energy +15"
+		],
+		"ようこそ、バブリーランドへ": [
+			"Guts +20",
+			"Intelligence +20"
+		],
 		"ダンスレッスン": [
 			"Speed +10",
 			"Intelligence +10"
@@ -1879,6 +1891,23 @@
 		"青春のテニス日和": [
 			"Speed +10",
 			"Stamina +10"
+		],
+		"炸裂、水着パワー！": [
+			"Speed +10\nSkill points +15",
+			"Intelligence +20"
+		],
+		"夏、満喫大作戦！！": [
+			"Stamina +10\nPower +10",
+			"Energy +10\nAll stats +2"
+		],
+		"もう1人のお母ちゃんへ": [
+			"がんばり屋 hint +2\n(random) Get Good Practice ○ status",
+			"Guts +20\n(random) Get Good Practice ○ status"
+		],
+		"尊敬できる人だから": [
+			"Skill points +30",
+			"Stamina +5\nGuts +5",
+			"Speed +5\nPower +5"
 		],
 		"ダンスレッスン": [
 			"Guts +10",

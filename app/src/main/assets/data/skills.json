@@ -259,10 +259,20 @@
 		"englishName": "Pride of KING",
 		"englishDescription": "After proceeding through the race calmly, your speed drastically increases during the last 200m"
 	},
+	"わやかわ♪マリンダイヴ": {
+		"id": 110011,
+		"englishName": "Wayakawa ♪ Marine Dive",
+		"englishDescription": "Restore endurance if you activate two skills in the middle part of the race"
+	},
 	"絶対は、ボクだ": {
 		"id": 110031,
 		"englishName": "It's going to be me",
 		"englishDescription": "Increase speed in the last straight when chasing someone close to the lead"
+	},
+	"グッときて♪Chu": {
+		"id": 110041,
+		"englishName": "I felt that ♪ Chu",
+		"englishDescription": "In the second half of the race, increase speed when you recover endurance with your skills while being in front"
 	},
 	"ゲインヒール・スペリアー": {
 		"id": 110111,

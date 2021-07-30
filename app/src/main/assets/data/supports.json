@@ -185,6 +185,16 @@
 		],
 		"清掃だって負けないんだから！": [
 			"Intelligence +10\nまき直し hint +1"
+		],
+		"リアクションも1番！？": [
+			"Speed +3\nPower +3\nIntelligence +3\nDaiwa Scarlet bond +5",
+			"Energy +15\nEvent chain ended"
+		],
+		"ホラーで学ぼう、びっくり顔": [
+			"Power +5\nIntelligence +5"
+		],
+		"ハジけろ☆プールサイド": [
+			"One of these will be selected at random\n----------\nEnergy -5\nPower +10\nレースプランナー hint +3\n----------\nEnergy -5\nPower +5\n好位追走 hint +3"
 		]
 	},
 	"Eishin Flash": {
@@ -1089,6 +1099,17 @@
 		"イタズラは計画的に": [
 			"Speed +10\nSkill points +20\n冷静 hint +1\nSweep Tosho bond +5",
 			"Motivation -1\n一匹狼 hint +1"
+		],
+		"気まぐれ天才魔法少女スイーピー☆": [
+			"One of these will be selected at random\n----------\nMotivation +1\n直線一気 hint +2\nSweep Tosho bond +5\n----------\nMotivation -1\nIntelligence +5\nSweep Tosho bond +5",
+			"Skill points +15\nSweep Tosho bond +5"
+		],
+		"あまあま☆ニガニガ☆黒魔法！": [
+			"One of these will be selected at random\n----------\nEnergy +10\nSkill points +20\nSweep Tosho bond +5\n----------\nEnergy -10\nSkill points +15\nSweep Tosho bond +5",
+			"Intelligence +10\nSweep Tosho bond +5"
+		],
+		"少女の気分は花の移ろい☆彡": [
+			"Speed +5\nIntelligence +5\n天命士 hint +1"
 		]
 	},
 	"Symboli Rudolf": {
@@ -1265,6 +1286,16 @@
 		],
 		"挑戦！夢は叶えるものッ": [
 			"Energy -30\nStamina +5\nPower +5\n全身全霊 hint +2"
+		],
+		"チケゾー☆探検隊！": [
+			"Speed +5\nStamina +5"
+		],
+		"チケゾー☆フレンドシップ！": [
+			"Stamina +3\nGuts +3\n十万バリキ hint +1\nWinning Ticket bond +10",
+			"Energy +10\nおひとり様○ hint +3\nWinning Ticket bond -5\nEvent chain ended"
+		],
+		"チケゾー☆ナイトフィーバー！": [
+			"Speed +8\nStamina +8\nGuts +8\n努力家 hint +1"
 		]
 	},
 	"Yaeno Muteki": {
