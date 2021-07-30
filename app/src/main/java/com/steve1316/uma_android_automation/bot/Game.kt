@@ -109,10 +109,9 @@ class Game(val myContext: Context) {
 		return if (tempLocation != null) {
 			Log.d(TAG, "Found and going to tap: $imageName")
 			gestureUtils.tap(tempLocation.x, tempLocation.y, "images", imageName, taps = taps)
-			wait(0.5)
+			wait(0.25)
 			true
 		} else {
-			wait(0.5)
 			false
 		}
 	}
