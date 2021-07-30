@@ -1,9 +1,10 @@
 package com.steve1316.uma_android_automation.bot
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
-import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
@@ -18,13 +19,13 @@ import java.util.concurrent.TimeUnit
 class Game(val myContext: Context) {
 	private val TAG: String = "[${MainActivity.loggerTag}]Game"
 	
-	private var debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "debugMode")
+	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(myContext)
+	
+	private var debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 	
 	val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val navigation: Navigation = Navigation(this)
-	
-	val maximumFailureChance: Int = SettingsFragment.getIntSharedPreference(myContext, "maximumFailureChance")
 	
 	private val startTime: Long = System.currentTimeMillis()
 	

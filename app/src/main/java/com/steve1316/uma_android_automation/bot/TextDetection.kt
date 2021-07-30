@@ -1,17 +1,19 @@
 package com.steve1316.uma_android_automation.bot
 
-import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.data.CharacterData
 import com.steve1316.uma_android_automation.data.SupportData
-import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 
-class TextDetection(private val myContext: Context, private val game: Game, private val imageUtils: ImageUtils) {
+class TextDetection(private val game: Game, private val imageUtils: ImageUtils) {
 	private val TAG: String = "[${MainActivity.loggerTag}]TextDetection"
+	
+	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(game.myContext)
 	
 	private var result = ""
 	private var confidence = 0.0
@@ -20,14 +22,14 @@ class TextDetection(private val myContext: Context, private val game: Game, priv
 	private var supportCardTitle = ""
 	private var eventOptionRewards: ArrayList<String> = arrayListOf()
 	
-	private var character = SettingsFragment.getStringSharedPreference(myContext, "character")
-	private val supportCards: List<String> = SettingsFragment.getStringSharedPreference(myContext, "supportList").split("|")
-	private val hideComparisonResults: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "hideComparisonResults")
-	private val selectAllCharacters: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllCharacters")
-	private val selectAllSupportCards: Boolean = SettingsFragment.getBooleanSharedPreference(myContext, "selectAllSupportCards")
-	private var minimumConfidence = SettingsFragment.getIntSharedPreference(myContext, "confidence").toDouble() / 100.0
-	private val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold").toDouble()
-	private val enableAutomaticRetry = SettingsFragment.getBooleanSharedPreference(myContext, "enableAutomaticRetry")
+	private var character = sharedPreferences.getString("character", "")!!
+	private val supportCards: List<String> = sharedPreferences.getString("supportList", "")!!.split("|")
+	private val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
+	private val selectAllCharacters: Boolean = sharedPreferences.getBoolean("selectAllCharacters", true)
+	private val selectAllSupportCards: Boolean = sharedPreferences.getBoolean("selectAllSupportCards", true)
+	private var minimumConfidence = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
+	private val threshold = sharedPreferences.getInt("threshold", 230).toDouble()
+	private val enableAutomaticRetry = sharedPreferences.getBoolean("enableAutomaticRetry", false)
 	
 	/**
 	 * Fix incorrect characters determined by OCR by replacing them with their Japanese equivalents.
