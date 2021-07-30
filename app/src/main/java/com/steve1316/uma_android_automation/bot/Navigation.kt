@@ -1,14 +1,17 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
-import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import com.steve1316.uma_android_automation.utils.BotService
 import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import org.opencv.core.Point
 
 class Navigation(private val game: Game) {
 	private val TAG: String = "[${MainActivity.loggerTag}]Navigation"
+	
+	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(game.myContext)
 	
 	private val displayWidth: Int = MediaProjectionService.displayWidth
 	private val displayHeight: Int = MediaProjectionService.displayHeight
@@ -21,12 +24,12 @@ class Navigation(private val game: Game) {
 	
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
-	private val blacklist: List<String> = SettingsFragment.getStringSetSharedPreference(game.myContext, "trainingBlacklist").toList()
-	private var statPrioritization: List<String> = SettingsFragment.getStringSharedPreference(game.myContext, "statPrioritization").split("|")
-	private val enableFarmingFans = SettingsFragment.getBooleanSharedPreference(game.myContext, "enableFarmingFans")
-	private val enableSkillPointCheck: Boolean = SettingsFragment.getBooleanSharedPreference(game.myContext, "enableSkillPointCheck")
-	private val skillPointCheck: Int = SettingsFragment.getIntSharedPreference(game.myContext, "skillPointCheck")
-	private val enablePopupCheck: Boolean = SettingsFragment.getBooleanSharedPreference(game.myContext, "enablePopupCheck")
+	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
+	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
+	private val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
+	private val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
+	private val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
+	private val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 	
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
@@ -383,7 +386,7 @@ class Navigation(private val game: Game) {
 				optionNumber += 1
 			}
 			
-			val minimumConfidence = SettingsFragment.getIntSharedPreference(game.myContext, "confidence").toDouble() / 100.0
+			val minimumConfidence = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
 			val resultString = if (confidence >= minimumConfidence) {
 				"[TRAINING-EVENT] For this Training Event consisting of:\n$eventRewardsString\nThe bot will select Option ${optionSelected + 1}: \"${eventRewards[optionSelected]}\" with a " +
 						"selection weight of $max."

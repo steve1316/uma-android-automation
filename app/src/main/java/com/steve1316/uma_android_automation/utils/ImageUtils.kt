@@ -1,15 +1,16 @@
 package com.steve1316.uma_android_automation.utils
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.googlecode.tesseract.android.TessBaseAPI
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
-import com.steve1316.uma_android_automation.ui.settings.SettingsFragment
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
@@ -27,6 +28,8 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val TAG: String = "[${MainActivity.loggerTag}]ImageUtils"
 	private var myContext = context
 	
+	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+	
 	private val displayWidth: Int = MediaProjectionService.displayWidth
 	private val displayHeight: Int = MediaProjectionService.displayHeight
 	private val isTablet: Boolean = (displayWidth == 1600)
@@ -39,7 +42,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val tesseractLanguages = arrayListOf("jpn")
 	private val tessBaseAPI: TessBaseAPI
 	
-	private val debugMode: Boolean = SettingsFragment.getBooleanSharedPreference(context, "debugMode")
+	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 	
 	companion object {
 		private var matchFilePath: String = ""
@@ -520,7 +523,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Thresh the grayscale cropped image to make black and white.
 		val bwImage = Mat()
-		val threshold = SettingsFragment.getIntSharedPreference(myContext, "threshold")
+		val threshold = sharedPreferences.getInt("threshold", 230)
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
 		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
 		
