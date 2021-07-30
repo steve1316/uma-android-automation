@@ -377,14 +377,14 @@ class ImageUtils(context: Context, private val game: Game) {
 					if (numberOfTries <= 0) {
 						if (!suppressError && debugMode) {
 							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} image.", tag = TAG)
+						} else {
+							Log.d(TAG, "[WARNING] Failed to find the ${templateName.uppercase()} image.")
 						}
 						
 						return Pair(null, sourceBitmap)
 					}
 					
-					if (debugMode) {
-						Log.d(TAG, "Failed to find the ${templateName.uppercase()} image. Trying again...")
-					}
+					Log.d(TAG, "Failed to find the ${templateName.uppercase()} image. Trying again...")
 					
 					game.wait(0.1)
 				} else {
@@ -439,6 +439,8 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		if (!suppressError && debugMode) {
 			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = TAG)
+		} else {
+			Log.d(TAG, "[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.")
 		}
 		
 		return false
@@ -468,6 +470,8 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		if (debugMode) {
 			game.printToLog("[DEBUG] Found match locations for $templateName: $matchLocations.", tag = TAG)
+		} else {
+			Log.d(TAG, "[DEBUG] Found match locations for $templateName: $matchLocations.")
 		}
 		
 		return matchLocations
