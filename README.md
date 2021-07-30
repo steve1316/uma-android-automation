@@ -1,7 +1,7 @@
 # Uma Musume Automation For Android
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/steve1316/uma-android-automation?logo=GitHub) ![GitHub last commit](https://img.shields.io/github/last-commit/steve1316/uma-android-automation?logo=GitHub) ![GitHub issues](https://img.shields.io/github/issues/steve1316/uma-android-automation?logo=GitHub) ![GitHub pull requests](https://img.shields.io/github/issues-pr/steve1316/uma-android-automation?logo=GitHub) ![GitHub](https://img.shields.io/github/license/steve1316/uma-android-automation?logo=GitHub)
 
-> Data last updated July 21, 2021 (Gold City update).
+> Data last updated July 29, 2021 (Summer Event update).
 
 This Android application written in Kotlin is designed to fully automate a run of Uma Musume Pretty Derby by offering a set of options to customize what event rewards the bot should prioritise, stats to focus on, etc. Building on top of the work done for ![Uma Android Training Helper](https://github.com/steve1316/uma-android-training-helper), this aims to solve the issue of spending too much hands-on time with completing a run for Uma Musume Pretty Derby.
 
@@ -12,6 +12,7 @@ Any usage of this tool is at your own risk. No one will be responsible for anyth
 
 # Requirements
 - Android Device (Oreo 8.0+)
+   - Tablet needs to be a minimum width of 1600 pixels (like the Galaxy Tab S7 with its 2650x1600 pixel resolution).
 
 # Features
 - [x] Able to complete a run from start/midway to its completion.
