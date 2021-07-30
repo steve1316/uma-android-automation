@@ -20,6 +20,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 			when (key) {
 				"enableFarmingFans" -> {
 					val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
+					val daysToRunExtraRacesPreference = findPreference<SeekBarPreference>("daysToRunExtraRaces")!!
+					
+					daysToRunExtraRacesPreference.isEnabled = enableFarmingFansPreference.isChecked
 					
 					sharedPreferences.edit {
 						putBoolean("enableFarmingFans", enableFarmingFansPreference.isChecked)
@@ -130,6 +133,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		
 		// Now set the following values from the shared preferences.
 		enableFarmingFansPreference.isChecked = enableFarmingFans
+		daysToRunExtraRacesPreference.isEnabled = enableFarmingFansPreference.isChecked
 		daysToRunExtraRacesPreference.value = daysToRunExtraRaces
 		enableSkillPointCheckPreference.isChecked = enableSkillPointCheck
 		skillPointCheckPreference.value = skillPointCheck
