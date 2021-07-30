@@ -2,10 +2,8 @@ package com.steve1316.uma_android_automation.utils
 
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.os.IBinder
 import android.util.Log
@@ -14,6 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
+import android.widget.Toast
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 import com.steve1316.uma_android_automation.bot.Game
@@ -27,24 +26,11 @@ import kotlin.math.roundToInt
  * https://www.tutorialspoint.com/in-android-how-to-register-a-custom-intent-filter-to-a-broadcast-receiver
  */
 class BotService : Service() {
-	private var appName = ""
 	private val TAG: String = "[${MainActivity.loggerTag}]BotService"
+	private var appName: String = ""
 	private lateinit var myContext: Context
 	private lateinit var overlayView: View
 	private lateinit var overlayButton: ImageButton
-	
-	private val messageReceiver = object : BroadcastReceiver() {
-		// This will receive any bot state changes issued from inside the Thread and will display a Notification that will contain the intent's message.
-		override fun onReceive(context: Context?, intent: Intent?) {
-			if (intent != null) {
-				if (intent.hasExtra("EXCEPTION")) {
-					NotificationUtils.createBotStateChangedNotification(context!!, "Bot State Changed", intent.getStringExtra("EXCEPTION")!!)
-				} else if (intent.hasExtra("SUCCESS")) {
-					NotificationUtils.createBotStateChangedNotification(context!!, "Bot State Changed", intent.getStringExtra("SUCCESS")!!)
-				}
-			}
-		}
-	}
 	
 	companion object {
 		private lateinit var thread: Thread
@@ -69,11 +55,6 @@ class BotService : Service() {
 		
 		myContext = this
 		appName = myContext.getString(R.string.app_name)
-		
-		// Any Intents that wants to be received needs to have the following action attached to it to be recognized.
-		val filter = IntentFilter()
-		filter.addAction("CUSTOM_INTENT")
-		registerReceiver(messageReceiver, filter)
 		
 		// Display the overlay view layout on the screen.
 		overlayView = LayoutInflater.from(this).inflate(R.layout.bot_actions, null)
@@ -106,8 +87,10 @@ class BotService : Service() {
 					if (elapsedTime < 100L) {
 						// Update both the Notification and the overlay button to reflect the current bot status.
 						if (!isRunning) {
-							Log.d(TAG, "Service for $appName is now running.")
+							Log.d(TAG, "Bot Service for $appName is now running.")
+							Toast.makeText(myContext, "Bot Service for $appName is now running.", Toast.LENGTH_SHORT).show()
 							isRunning = true
+							NotificationUtils.updateNotification(myContext, isRunning)
 							overlayButton.setImageResource(R.drawable.stop_circle_filled)
 							
 							val game = Game(myContext)
@@ -121,30 +104,23 @@ class BotService : Service() {
 									// Start with the provided settings from SharedPreferences.
 									game.start()
 									
-									val newIntent = Intent("CUSTOM_INTENT")
-									newIntent.putExtra("SUCCESS", "Bot has completed successfully with no errors.")
-									sendBroadcast(newIntent)
+									NotificationUtils.updateNotification(myContext, false, "Bot has completed successfully with no errors.")
 									
 									performCleanUp()
 								} catch (e: Exception) {
-									val newIntent = Intent("CUSTOM_INTENT")
 									if (e.toString() == "java.lang.InterruptedException") {
-										game.printToLog("\n$appName stopped successfully.", tag = TAG)
-										newIntent.putExtra("EXCEPTION", "$appName stopped successfully.")
+										NotificationUtils.updateNotification(myContext, false, "Bot has completed successfully with no errors.")
 									} else {
-										MediaProjectionService.takeScreenshotNow(isException = true)
+										NotificationUtils.updateNotification(myContext, false, "Encountered an Exception: $e.\nTap me to see more details.")
 										game.printToLog("$appName encountered an Exception: ${e.stackTraceToString()}", tag = TAG, isError = true)
-										newIntent.putExtra("EXCEPTION", "Encountered an Exception: $e.\nTap me to see more details.")
 									}
 									
-									// Send a Broadcast with information on whether the bot stopped successfully or not.
-									sendBroadcast(newIntent)
-									
-									performCleanUp()
+									performCleanUp(isException = true)
 								}
 							}
 						} else {
 							thread.interrupt()
+							performCleanUp()
 						}
 						
 						// Returning true here freezes the animation of the click on the button.
@@ -182,12 +158,17 @@ class BotService : Service() {
 		
 		// Remove the overlay View that holds the overlay button.
 		windowManager.removeView(overlayView)
+		
+		val service = Intent(myContext, MyAccessibilityService::class.java)
+		myContext.stopService(service)
 	}
 	
 	/**
 	 * Perform cleanup upon app completion or encountering an Exception.
+	 *
+	 * @param isException Prevents updating the Notification again if the bot stopped due to an Exception.
 	 */
-	private fun performCleanUp() {
+	private fun performCleanUp(isException: Boolean = false) {
 		// Save the message log.
 		MessageLog.saveLogToFile(myContext)
 		
@@ -195,7 +176,9 @@ class BotService : Service() {
 		isRunning = false
 		
 		// Update the app's notification with the status.
-		NotificationUtils.updateNotification(myContext, isRunning)
+		if (!isException) {
+			NotificationUtils.updateNotification(myContext, false, "Bot has completed successfully with no errors.")
+		}
 		
 		// Reset the overlay button's image.
 		overlayButton.setImageResource(R.drawable.play_circle_filled)

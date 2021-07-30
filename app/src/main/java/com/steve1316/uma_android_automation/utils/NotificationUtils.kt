@@ -21,6 +21,7 @@ class NotificationUtils {
 		private lateinit var notificationManager: NotificationManager
 		private const val NOTIFICATION_ID: Int = 1
 		private const val CHANNEL_ID: String = "STATUS"
+		private const val CONTENT_TITLE = "Status"
 		
 		/**
 		 * Creates the NotificationChannel and the Notification object.
@@ -66,8 +67,6 @@ class NotificationUtils {
 		 * @return A new Notification object.
 		 */
 		private fun createNewNotification(context: Context): Notification {
-			val contentTitle = context.getString(R.string.app_name)
-			
 			// Create a STOP Intent for the MediaProjection service.
 			val stopIntent = Intent(context, StopServiceReceiver::class.java)
 			
@@ -80,7 +79,7 @@ class NotificationUtils {
 			
 			return NotificationCompat.Builder(context, CHANNEL_ID).apply {
 				setSmallIcon(R.drawable.ic_baseline_control_camera_24)
-				setContentTitle(contentTitle)
+				setContentTitle(CONTENT_TITLE)
 				setContentText("Bot is ready to go")
 				setContentIntent(contentPendingIntent)
 				addAction(R.drawable.stop_circle_filled, context.getString(R.string.stop_process), stopPendingIntent)
@@ -96,13 +95,14 @@ class NotificationUtils {
 		 *
 		 * @param context The application context.
 		 * @param isRunning Boolean for whether or not the bot process is currently running.
+		 * @param message Optional message to append to the Notification text body. Defaults to empty string.
 		 */
-		fun updateNotification(context: Context, isRunning: Boolean) {
-			val contentTitle = context.getString(R.string.app_name)
-			
-			var contentText = "Bot process is inactive"
+		fun updateNotification(context: Context, isRunning: Boolean, message: String = "") {
+			var contentText = "Bot process is stopped"
 			if (isRunning) {
 				contentText = "Bot process is running"
+			} else if (message != "") {
+				contentText = message
 			}
 			
 			// Create a STOP Intent for the MediaProjection service.
@@ -117,7 +117,7 @@ class NotificationUtils {
 			
 			val newNotification = NotificationCompat.Builder(context, CHANNEL_ID).apply {
 				setSmallIcon(R.drawable.ic_baseline_control_camera_24)
-				setContentTitle(contentTitle)
+				setContentTitle(CONTENT_TITLE)
 				setContentText(contentText)
 				setContentIntent(contentPendingIntent)
 				addAction(R.drawable.stop_circle_filled, context.getString(R.string.accessibility_service_action), stopPendingIntent)
@@ -132,43 +132,6 @@ class NotificationUtils {
 			}
 			
 			notificationManager.notify(NOTIFICATION_ID, newNotification)
-		}
-
-		/**
-		 * Displays a separate Notification indicating the user of bot state changes, like Success or Exception.
-		 * @param context The application context.
-		 * @param contentTitle The title of the Notification.
-		 * @param contentText The text of the Notification.
-		 */
-		fun createBotStateChangedNotification(context: Context, contentTitle: String, contentText: String) {
-			val notificationID = 2
-			val channelID = "STATE_CHANGED"
-			val channelName = context.getString(R.string.app_name)
-
-			// Create the NotificationChannel.
-			val mChannel = NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH)
-			mChannel.description =
-				"This Channel is for notifications that will inform users on $channelName state changes, like completing its goal successfully or if it encountered an Exception."
-
-			// Register the channel with the system; you can't change the importance or other notification behaviors after this.
-			notificationManager.createNotificationChannel(mChannel)
-
-			val contentIntent = Intent(context, MainActivity::class.java)
-			val contentPendingIntent = PendingIntent.getActivity(context, notificationID, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-			val newNotification = NotificationCompat.Builder(context, channelID).apply {
-				setSmallIcon(R.drawable.ic_baseline_error_outline_24)
-				setContentTitle(contentTitle)
-				setContentText(contentText)
-				setContentIntent(contentPendingIntent)
-				setAutoCancel(true)
-				priority = NotificationManager.IMPORTANCE_LOW
-				setCategory(Notification.CATEGORY_SERVICE)
-				setOngoing(false)
-				setShowWhen(true)
-			}.build()
-
-			notificationManager.notify(notificationID, newNotification)
 		}
 	}
 }
