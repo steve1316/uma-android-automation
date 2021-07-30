@@ -72,10 +72,12 @@ class HomeFragment : Fragment() {
 		
 		// Main Settings page
 		val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
-		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
+		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
+		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Training Settings page
@@ -85,8 +87,8 @@ class HomeFragment : Fragment() {
 		
 		// Training Event Settings page
 		val character = sharedPreferences.getString("character", "Please select one in the Settings")!!
-		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
+		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", true)
 		
 		// OCR Optimization Settings page
@@ -98,7 +100,7 @@ class HomeFragment : Fragment() {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Set these values in SharedPreferences just in case these keys do not exist yet.
+		// Set these values in SharedPreferences just in case these keys do not exist yet as they have different default values from the rest of the settings.
 		
 		sharedPreferences.edit {
 			putBoolean("hideComparisonResults", hideComparisonResults)
@@ -109,6 +111,7 @@ class HomeFragment : Fragment() {
 			putInt("maximumFailureChance", maximumFailureChance)
 			putInt("threshold", threshold)
 			putInt("confidence", confidence)
+			putInt("daysToRunExtraRaces", daysToRunExtraRaces)
 			commit()
 		}
 		
@@ -177,7 +180,19 @@ class HomeFragment : Fragment() {
 			"Disabled"
 		}
 		
+		val daysToRunExtraRacesString: String = if (enableFarmingFans) {
+			daysToRunExtraRaces.toString()
+		} else {
+			"Disabled"
+		}
+		
 		val enablePopupCheckString: String = if (enablePopupCheck) {
+			"Enabled"
+		} else {
+			"Disabled"
+		}
+		
+		val enableStopOnMandatoryRaceString: String = if (enableStopOnMandatoryRace) {
 			"Enabled"
 		} else {
 			"Disabled"
@@ -214,8 +229,10 @@ class HomeFragment : Fragment() {
 				"Minimum OCR Confidence: $confidence\n\n" +
 				"---------- Misc Options ----------\n" +
 				"Prioritize Farming Fans: $enableFarmingFansString\n" +
-				"${skillPointString}\n" +
-				"Popup Check: ${enablePopupCheckString}\n" +
+				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
+				"$skillPointString\n" +
+				"Popup Check: $enablePopupCheckString\n" +
+				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n" +
 				"Debug Mode: $debugModeString\n" +
 				"Hide String Comparison Results: $hideComparisonResultsString"
 		

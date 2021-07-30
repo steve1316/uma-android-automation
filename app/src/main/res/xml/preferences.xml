@@ -32,6 +32,15 @@
             app:summary="Enables prioritizing farming fans via conducting extra races instead of focusing on training."
             app:title="Enable Prioritizing Farming Fans" />
 
+        <SeekBarPreference
+            android:max="10"
+            app:defaultValue="4"
+            app:key="daysToRunExtraRaces"
+            app:min="1"
+            app:showSeekBarValue="true"
+            app:summary="Set the number in order to determine when to do extra races. Default is 4.\nEx) 4 % 4 = 0 -> Extra Race can be run.\nEx) 2 % 4 = 2 -> Extra Race cannot be run."
+            app:title="Set what Days to do Extra Races" />
+
         <CheckBoxPreference
             app:key="enableSkillPointCheck"
             app:summary="Enables check for a certain Skill Point threshold. If reached, the bot will stop so that you can spend the skill points."
@@ -49,6 +58,11 @@
             app:key="enablePopupCheck"
             app:summary="Enables check for warning popups like lack of fans or lack of trophies gathered.\n\nStops the bot if detected for the user to deal with them manually to prevent potentially ending the run prematurely."
             app:title="Enable Check for Popups" />
+
+        <CheckBoxPreference
+            app:key="enableStopOnMandatoryRace"
+            app:summary="Enables check to automatically stop the bot when reaching a mandatory race."
+            app:title="Enable Stop on Mandatory Race" />
 
         <CheckBoxPreference
             app:key="debugMode"

@@ -26,6 +26,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 						commit()
 					}
 				}
+				"daysToRunExtraRaces" -> {
+					val daysToRunExtraRacesPreference = findPreference<SeekBarPreference>("daysToRunExtraRaces")!!
+					
+					sharedPreferences.edit {
+						putInt("daysToRunExtraRaces", daysToRunExtraRacesPreference.value)
+						commit()
+					}
+				}
 				"enableSkillPointCheck" -> {
 					val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
 					val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
@@ -41,6 +49,22 @@ class SettingsFragment : PreferenceFragmentCompat() {
 					
 					sharedPreferences.edit {
 						putInt("skillPointCheck", skillPointCheckPreference.value)
+						commit()
+					}
+				}
+				"enablePopupCheck" -> {
+					val enablePopupCheckPreference = findPreference<CheckBoxPreference>("enablePopupCheck")!!
+					
+					sharedPreferences.edit {
+						putBoolean("enablePopupCheck", enablePopupCheckPreference.isChecked)
+						commit()
+					}
+				}
+				"enableStopOnMandatoryRace" -> {
+					val enableStopOnMandatoryRacePreference = findPreference<CheckBoxPreference>("enableStopOnMandatoryRace")!!
+					
+					sharedPreferences.edit {
+						putBoolean("enableStopOnMandatoryRace", enableStopOnMandatoryRacePreference.isChecked)
 						commit()
 					}
 				}
@@ -86,26 +110,32 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		
 		// Grab the saved preferences from the previous time the user used the app.
 		val enableFarmingFans: Boolean = sharedPreferences.getBoolean("enableFarmingFans", false)
-		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
+		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
+		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Get references to the Preference components.
 		val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
-		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
+		val daysToRunExtraRacesPreference = findPreference<SeekBarPreference>("daysToRunExtraRaces")!!
 		val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
 		val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
 		val enablePopupCheckPreference = findPreference<CheckBoxPreference>("enablePopupCheck")!!
+		val enableStopOnMandatoryRacePreference = findPreference<CheckBoxPreference>("enableStopOnMandatoryRace")!!
+		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 		val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
 		
 		// Now set the following values from the shared preferences.
 		enableFarmingFansPreference.isChecked = enableFarmingFans
-		debugModePreference.isChecked = debugMode
+		daysToRunExtraRacesPreference.value = daysToRunExtraRaces
 		enableSkillPointCheckPreference.isChecked = enableSkillPointCheck
 		skillPointCheckPreference.value = skillPointCheck
 		enablePopupCheckPreference.isChecked = enablePopupCheck
+		enableStopOnMandatoryRacePreference.isChecked = enableStopOnMandatoryRace
+		debugModePreference.isChecked = debugMode
 		hideComparisonResultsPreference.isChecked = hideComparisonResults
 		
 		skillPointCheckPreference.isEnabled = enableSkillPointCheckPreference.isChecked
