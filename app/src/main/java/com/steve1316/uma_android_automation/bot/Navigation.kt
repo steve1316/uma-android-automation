@@ -73,15 +73,6 @@ class Navigation(private val game: Game) {
 	}
 	
 	/**
-	 * Checks if the bot encountered the popup that says there are not enough fans.
-	 *
-	 * @return True if the bot detected this popup. Otherwise false.
-	 */
-	private fun checkNotEnoughFans(): Boolean {
-		return game.imageUtils.findImage("race_not_enough_fans", tries = 1, region = regionMiddle).first != null
-	}
-	
-	/**
 	 * Checks if the day number is odd to be eligible to run an extra race.
 	 *
 	 * @return True if the day number is odd. Otherwise false.
@@ -168,11 +159,12 @@ class Navigation(private val game: Game) {
 			}
 			
 			val speedFailureChance: Int = game.imageUtils.findTrainingFailureChance()
-			val overallStatsGained: Int = game.imageUtils.findTotalStatGains("Speed")
 			
 			if (speedFailureChance <= game.maximumFailureChance) {
 				game.printToLog(
 					"[TRAINING] $speedFailureChance% within acceptable range of ${game.maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
+				
+				val overallStatsGained: Int = game.imageUtils.findTotalStatGains("Speed")
 				
 				// Save the results to the map if Speed training is not blacklisted.
 				if (!blacklist.contains("Speed")) {
@@ -521,7 +513,7 @@ class Navigation(private val game: Game) {
 				if (maxFans == -1) {
 					Log.d(TAG, "Max fans was -1 so returning false...")
 					game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
-					game.wait(2.0)
+					game.wait(1.0)
 					return false
 				}
 				
@@ -588,7 +580,7 @@ class Navigation(private val game: Game) {
 			game.printToLog("[RACE] Skipping race...", tag = TAG)
 			
 			// Press the skip button and then wait for your result of the race to show.
-			game.findAndTapImage("race_skip", tries = 10, region = regionBottomHalf)
+			game.findAndTapImage("race_skip", tries = 5, region = regionBottomHalf)
 			game.wait(5.0)
 			
 			// Now tap on the screen to get to the next screen.
@@ -768,9 +760,6 @@ class Navigation(private val game: Game) {
 				}
 				
 				game.findAndTapImage("ok", region = regionMiddle)
-				
-				// Wait for a while to see if the crane game appeared.
-				game.wait(5.0)
 				raceRepeatWarningCheck = false
 				true
 			} else {
@@ -811,17 +800,19 @@ class Navigation(private val game: Game) {
 		if (enablePopupCheck && game.imageUtils.findImage("cancel", tries = 1, region = regionBottomHalf).first != null) {
 			game.printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...", tag = TAG)
 			return false
-		} else {
-			game.findAndTapImage("cancel", tries = 1, region = regionBottomHalf)
 		}
-		
-		game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
 		
 		if (game.findAndTapImage("race_confirm_result", tries = 1, region = regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
 			game.wait(5.0)
 			game.findAndTapImage("race_end", tries = 5, region = regionBottomHalf)
 			game.wait(3.0)
+		}
+		
+		if (game.imageUtils.findImage("crane_game", tries = 1, region = regionBottomHalf).first != null) {
+			// Stop when the bot has reached the Crane Game Event.
+			game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
+			return false
 		}
 		
 		return true
@@ -850,11 +841,6 @@ class Navigation(private val game: Game) {
 					game.wait(3.0)
 				} else if (recoverMood()) {
 					Log.d(TAG, "Mood recovered")
-					if (game.imageUtils.findImage("crane_game", tries = 10, region = regionBottomHalf).first != null) {
-						// Stop when the bot has reached the Crane Game Event.
-						game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
-						break
-					}
 				} else if (!checkExtraRaceAvailability()) {
 					Log.d(TAG, "Training due to not extra race day.")
 					handleTraining()
@@ -865,9 +851,6 @@ class Navigation(private val game: Game) {
 						handleTraining()
 					}
 				}
-			} else if (checkNotEnoughFans()) {
-				Log.d(TAG, "Canceling popup of not enough fans")
-				game.findAndTapImage("cancel", region = regionBottomHalf)
 			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
 				Log.d(TAG, "Detected Training Event")
@@ -884,9 +867,6 @@ class Navigation(private val game: Game) {
 			} else if (!BotService.isRunning || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				game.printToLog("\n[END] Bot has reached the end of the run. Exiting now...", tag = TAG)
-				break
-			} else if (raceRetries <= 0) {
-				game.printToLog("\n[END] Bot has run out of retry attempts for races. Exiting now...", tag = TAG)
 				break
 			}
 			
