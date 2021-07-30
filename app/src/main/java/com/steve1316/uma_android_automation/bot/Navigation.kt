@@ -26,10 +26,15 @@ class Navigation(private val game: Game) {
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
+	private val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
+	
 	private val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
+	private val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 	private val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 	private val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 	private val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
+	private val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
+	private var detectedMandatoryRaceCheck = false
 	
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
@@ -37,7 +42,7 @@ class Navigation(private val game: Game) {
 	private var raceRetries = 3
 	private var raceRepeatWarningCheck = false
 	
-	private val textDetection: TextDetection = TextDetection(game.myContext, game, game.imageUtils)
+	private val textDetection: TextDetection = TextDetection(game, game.imageUtils)
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +84,7 @@ class Navigation(private val game: Game) {
 	 */
 	private fun checkExtraRaceAvailability(): Boolean {
 		val dayNumber = game.imageUtils.determineDayForExtraRace()
-		return enableFarmingFans && dayNumber % 3 == 0 && dayNumber < 10 && !raceRepeatWarningCheck &&
+		return enableFarmingFans && dayNumber % daysToRunExtraRaces == 0 && !raceRepeatWarningCheck &&
 				game.imageUtils.findImage("race_select_extra_locked_uma_finals", tries = 1, region = regionBottomHalf).first == null &&
 				game.imageUtils.findImage("race_select_extra_locked", tries = 1, region = regionBottomHalf).first == null
 	}
@@ -160,9 +165,9 @@ class Navigation(private val game: Game) {
 			
 			val speedFailureChance: Int = game.imageUtils.findTrainingFailureChance()
 			
-			if (speedFailureChance <= game.maximumFailureChance) {
+			if (speedFailureChance <= maximumFailureChance) {
 				game.printToLog(
-					"[TRAINING] $speedFailureChance% within acceptable range of ${game.maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
+					"[TRAINING] $speedFailureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
 				
 				val overallStatsGained: Int = game.imageUtils.findTotalStatGains("Speed")
 				
@@ -228,7 +233,7 @@ class Navigation(private val game: Game) {
 				game.printToLog("[TRAINING] Process to determine stat gains and failure percentages completed.", tag = TAG)
 			} else {
 				// Clear the Training map if the bot failed to have enough energy to conduct the training.
-				game.printToLog("[TRAINING] $speedFailureChance% is not within acceptable range of ${game.maximumFailureChance}%. Proceeding to recover energy.", tag = TAG)
+				game.printToLog("[TRAINING] $speedFailureChance% is not within acceptable range of ${maximumFailureChance}%. Proceeding to recover energy.", tag = TAG)
 				trainingMap.clear()
 			}
 		}
@@ -427,6 +432,11 @@ class Navigation(private val game: Game) {
 		// First, check if there is a mandatory or a extra race available. If so, head into the Race Selection screen.
 		if (game.findAndTapImage("race_select_mandatory", tries = 1, region = regionBottomHalf)) {
 			game.printToLog("\n[RACE] Detected mandatory race.", tag = TAG)
+			
+			if (enableStopOnMandatoryRace) {
+				detectedMandatoryRaceCheck = true
+				return false
+			}
 			
 			// There is a mandatory race. Now confirm the selection and the resultant popup and then wait for the game to load.
 			game.wait(3.0)
@@ -847,6 +857,11 @@ class Navigation(private val game: Game) {
 				} else {
 					Log.d(TAG, "Racing by default")
 					if (!handleRaceEvents()) {
+						if (detectedMandatoryRaceCheck) {
+							game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = TAG)
+							break
+						}
+						
 						Log.d(TAG, "Racing by default failed due to not detecting any eligible extra races. Training instead...")
 						handleTraining()
 					}
@@ -861,6 +876,11 @@ class Navigation(private val game: Game) {
 			} else if (checkPreRaceScreen()) {
 				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
 				handleRaceEvents()
+				
+				if (detectedMandatoryRaceCheck) {
+					game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = TAG)
+					break
+				}
 			} else if (game.imageUtils.findImage("race_change_strategy", tries = 1, region = regionBottomHalf).first != null) {
 				// If the bot is already at the Racing screen, then complete this standalone race.
 				handleStandaloneRace()
