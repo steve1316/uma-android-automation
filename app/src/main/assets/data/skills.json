@@ -157,7 +157,7 @@
 	"Shadow Break": {
 		"id": 100161,
 		"englishName": "Shadow Break",
-		"englishDescription": "Increase speed with monstrous power on the final corner when passing from the outside"
+		"englishDescription": "Increase speed with monstrous power from the final corner onward when passing from the outside"
 	},
 	"汝、皇帝の神威を見よ": {
 		"id": 100171,
@@ -249,6 +249,11 @@
 		"englishName": "I'm coming, I'm coming, I'm coming!",
 		"englishDescription": "When the front is packed during the last leg of the race, the oracle's power will open a path"
 	},
+	"I Never Goof Up!": {
+		"id": 100581,
+		"englishName": "I Never Goof Up!",
+		"englishDescription": "During the last leg, if you overtake from the middle of the pack during a corner, increase speed and acceleration"
+	},
 	"きっとその先へ…！": {
 		"id": 100601,
 		"englishName": "Surely, beyond...!",
@@ -271,7 +276,7 @@
 	},
 	"グッときて♪Chu": {
 		"id": 110041,
-		"englishName": "I felt that ♪ Chu",
+		"englishName": "Heartfelt ♪ Smooch",
 		"englishDescription": "In the second half of the race, increase speed when you recover endurance with your skills while being in front"
 	},
 	"ゲインヒール・スペリアー": {

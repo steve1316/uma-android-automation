@@ -1082,6 +1082,70 @@
 			"Energy +15\n(random) Get Good Practice ○ status"
 		]
 	},
+	"Meisho Doto": {
+		"ベストショットの行方": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"私は独りでさまようばかり": [
+			"Stamina +10",
+			"Guts +10"
+		],
+		"あんしんかばん": [
+			"Intelligence +10\nSkill points +15",
+			"Power +20"
+		],
+		"にこにこ波乱日和": [
+			"One of these will be selected at random\n----------\nEnergy -5\nMotivation +1\n2 random stats +10\n----------\nEnergy −10\nGuts +10",
+			"Energy +10"
+		],
+		"うみゃうみゃうみゃ": [
+			"Power +10\nIntelligence +10\n(random) Get Good Practice ○ status",
+			"Guts +20\n(random) Get Good Practice ○ status"
+		],
+		"募る想い、嗚呼届いていますか": [
+			"Power +10",
+			"Speed +10",
+			"Guts +10"
+		],
+		"不屈の1歩は小さな1歩": [
+			"Guts +10",
+			"Energy +10"
+		],
+		"救いの言葉": [
+			"Power +10\nSkill points +15",
+			"まき直し hint +1"
+		],
+		"等価交換？": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"貴方のこぶしが名残に揺れて": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"ミルク味の夕暮れ": [
+			"Intelligence +10",
+			"Speed +5\nStamina +5"
+		],
+		"熱闘！激辛勝負": [
+			"Stamina +20",
+			"Speed +20"
+		],
+		"そびえ立つカロリー": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\n(random) Power +5\n(random) Get Overweight status"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Power +10"
+		],
+		"新年の抱負": [
+			"Guts +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Mejiro McQueen": {
 		"レース場グルメの誘惑": [
 			"Energy +30\nStamina +10\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status",
