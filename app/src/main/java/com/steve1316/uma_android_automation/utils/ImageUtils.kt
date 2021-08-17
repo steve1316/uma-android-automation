@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.googlecode.tesseract.android.TessBaseAPI
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
@@ -35,7 +36,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val isTablet: Boolean = (displayWidth == 1600)
 	
 	// Initialize Google's ML OCR.
-	private val textRecognizer = TextRecognition.getClient()
+	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	
 	private val matchMethod: Int = Imgproc.TM_CCOEFF_NORMED
 	
