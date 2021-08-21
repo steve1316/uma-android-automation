@@ -796,6 +796,16 @@
 		],
 		"背、追い風を受けて": [
 			"Energy +10\nIntelligence +5\n伏兵○ hint +3\nNice Nature bond +5"
+		],
+		"最強ムテキのネイチャさん？": [
+			"Motivation +1\nGuts +5\nIntelligence +5\nNice Nature bond +5"
+		],
+		"抑えられないキモチ": [
+			"Energy +10\nNice Nature bond +5",
+			"Energy -5\nSpeed +5\nPower +5\nNice Nature bond +5"
+		],
+		"クイズでリベンジっ！！": [
+			"Energy +10\nSpeed +5\nIntelligence +5\n乗り換え上手 hint +1\nNice Nature bond +5"
 		]
 	},
 	"Nishino Flower": {
@@ -1217,6 +1227,24 @@
 		],
 		"灯火は未来へ輝く": [
 			"Stamina +7\nPower +7\n火事場のバ鹿力 hint +1\nTokai Teio bond +5"
+		]
+	},
+	"Tosen Jordan": {
+		"スマホって時間泥棒じゃん？": [
+			"Motivation +1\nSpeed +5\nTosen Jordan bond +5",
+			"Stamina +10\nTosen Jordan bond +5"
+		],
+		"レビューって半分賭けじゃん？": [
+			"Energy +10\nMotivation +1\nTosen Jordan bond +5",
+			"ラッキーセブン hint +1\nTosen Jordan bond +5"
+		],
+		"ターフにネイリスト": [
+			"One of these will be selected at random\n----------\nSkill points +40\nTosen Jordan bond +5\n----------\nSkill points +10\nMotivation -1",
+			"Stamina +10\nTosen Jordan bond +5"
+		],
+		"下地合ってのネイルっしょ": [
+			"One of these will be selected at random\n----------\nEnergy +10\nペースアップ hint +3\nTosen Jordan bond +5\n----------\nペースアップ hint +1",
+			"Energy -5\nStamina +20\nTosen Jordan bond +5"
 		]
 	},
 	"Twin Turbo": {

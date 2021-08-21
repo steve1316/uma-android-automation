@@ -327,6 +327,66 @@
 			"Skill points +20"
 		]
 	},
+	"Eishin Flash": {
+		"天道の守護者": [
+			"Stamina +10",
+			"Power +10"
+		],
+		"追憶のFreizeitpark": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"和の心に触れて": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"闇の中にうごめく影は……": [
+			"Speed +10\nGuts +10",
+			"Stamina +20"
+		],
+		"揚げたてのサクサクを！": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\n(random) Power +5\n(random) Get Overweight status"
+		],
+		"馴染みゆく日々の中で": [
+			"Power +10",
+			"Guts +10",
+			"Stamina +10"
+		],
+		"トレンドを追って": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"賭するは名誉": [
+			"Guts +20",
+			"Intelligence +20\n(random) Get Sharp status"
+		],
+		"誇りをまとうに相応しく": [
+			"Power +20",
+			"Skill points +40"
+		],
+		"教え導くためならば": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"空飛ぶガイダンス": [
+			"Speed +5\nStamina +5\nPower +5",
+			"根幹距離○ hint +1"
+		],
+		"試験：フラッシュプラン": [
+			"Motivation +1\nNext turn, 4 random types of training will be disabled\nEvent \"結果：フラッシュプラン\" will occur next turn",
+			"Nothing happens"
+		],
+		"ダンスレッスン": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"El Condor Pasa": {
 		"もう１度、決意を": [
 			"Speed +5\nStamina +5",

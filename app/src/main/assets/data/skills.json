@@ -209,6 +209,11 @@
 		"englishName": "The ticket to victory, for you!",
 		"englishDescription": "Your speed increases on the last straight when competing for the lead"
 	},
+	"Schwarze Schwert": {
+		"id": 100371,
+		"englishName": "Schwarze Schwert",
+		"englishDescription": "If you manage to keep your composure until the final straight, your speed will increase"
+	},
 	"#LookatCurren": {
 		"id": 100381,
 		"englishName": "#LookatCurren",
