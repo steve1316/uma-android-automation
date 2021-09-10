@@ -9,7 +9,7 @@ import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import org.opencv.core.Point
 
 class Navigation(private val game: Game) {
-	private val TAG: String = "[${MainActivity.loggerTag}]Navigation"
+	private val tag: String = "[${MainActivity.loggerTag}]_Navigation"
 	
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(game.myContext)
 	
@@ -119,7 +119,7 @@ class Navigation(private val game: Game) {
 	 * The entry point for handling Training.
 	 */
 	private fun handleTraining() {
-		game.printToLog("\n[TRAINING] Starting Training process...", tag = TAG)
+		game.printToLog("\n[TRAINING] Starting Training process...", tag = tag)
 		
 		// Enter the Training screen.
 		game.findAndTapImage("training_option", region = regionBottomHalf)
@@ -146,14 +146,14 @@ class Navigation(private val game: Game) {
 		}
 		
 		raceRepeatWarningCheck = false
-		game.printToLog("\n[TRAINING] Training process completed.", tag = TAG)
+		game.printToLog("\n[TRAINING] Training process completed.", tag = tag)
 	}
 	
 	/**
 	 * Find the success percentages and stat gain for each training and assign them to the MutableMap object to be shared across the whole class.
 	 */
 	private fun findStatsAndPercentages() {
-		game.printToLog("[TRAINING] Checking for success percentages and total stat increases for training selection.", tag = TAG)
+		game.printToLog("[TRAINING] Checking for success percentages and total stat increases for training selection.", tag = tag)
 		
 		// Acquire the position of the speed stat text.
 		val (speedStatTextLocation, _) = game.imageUtils.findImage("stat_speed", region = regionBottomHalf)
@@ -167,7 +167,7 @@ class Navigation(private val game: Game) {
 			
 			if (speedFailureChance <= maximumFailureChance) {
 				game.printToLog(
-					"[TRAINING] $speedFailureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.", tag = TAG)
+					"[TRAINING] $speedFailureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.", tag = tag)
 				
 				val overallStatsGained: Int = game.imageUtils.findTotalStatGains("Speed")
 				
@@ -220,7 +220,7 @@ class Navigation(private val game: Game) {
 						val failureChance: Int = game.imageUtils.findTrainingFailureChance()
 						val totalStatGained: Int = game.imageUtils.findTotalStatGains(training)
 						
-						game.printToLog("[TRAINING] $training can gain ~$totalStatGained with $failureChance% to fail.", tag = TAG)
+						game.printToLog("[TRAINING] $training can gain ~$totalStatGained with $failureChance% to fail.", tag = tag)
 						
 						trainingMap[training] = mutableMapOf(
 							"failureChance" to failureChance,
@@ -230,10 +230,10 @@ class Navigation(private val game: Game) {
 					}
 				}
 				
-				game.printToLog("[TRAINING] Process to determine stat gains and failure percentages completed.", tag = TAG)
+				game.printToLog("[TRAINING] Process to determine stat gains and failure percentages completed.", tag = tag)
 			} else {
 				// Clear the Training map if the bot failed to have enough energy to conduct the training.
-				game.printToLog("[TRAINING] $speedFailureChance% is not within acceptable range of ${maximumFailureChance}%. Proceeding to recover energy.", tag = TAG)
+				game.printToLog("[TRAINING] $speedFailureChance% is not within acceptable range of ${maximumFailureChance}%. Proceeding to recover energy.", tag = tag)
 				trainingMap.clear()
 			}
 		}
@@ -243,7 +243,7 @@ class Navigation(private val game: Game) {
 	 * Generate the weights for each training using the settings set in the app.
 	 */
 	private fun createWeights() {
-		game.printToLog("[TRAINING] Now starting process to assign weights to each prioritised stat.", tag = TAG)
+		game.printToLog("[TRAINING] Now starting process to assign weights to each prioritised stat.", tag = tag)
 		
 		var priority = 5
 		statPrioritization.forEach { statName ->
@@ -251,7 +251,7 @@ class Navigation(private val game: Game) {
 				val failureChance: Int = trainingMap[statName]?.get("failureChance")!!
 				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
 				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
-					Log.d(TAG, "$statName already did training so applying penalty for repeating.")
+					Log.d(tag, "$statName already did training so applying penalty for repeating.")
 					500
 				} else {
 					0
@@ -264,14 +264,14 @@ class Navigation(private val game: Game) {
 			}
 		}
 		
-		game.printToLog("[TRAINING] Process to assign weights to each prioritised stat completed.", tag = TAG)
+		game.printToLog("[TRAINING] Process to assign weights to each prioritised stat completed.", tag = tag)
 	}
 	
 	/**
 	 * Execute the training with the highest stat weight.
 	 */
 	private fun executeTraining() {
-		game.printToLog("[TRAINING] Now starting process to execute training.", tag = TAG)
+		game.printToLog("[TRAINING] Now starting process to execute training.", tag = tag)
 		var trainingSelected = ""
 		var maxWeight = 0
 		
@@ -287,14 +287,14 @@ class Navigation(private val game: Game) {
 		
 		if (trainingSelected != "") {
 			printMap()
-			game.printToLog("[TRAINING] Executing the $trainingSelected Training.", tag = TAG)
+			game.printToLog("[TRAINING] Executing the $trainingSelected Training.", tag = tag)
 			game.findAndTapImage("training_${trainingSelected.lowercase()}", region = regionBottomHalf, taps = 3)
 		}
 		
 		// Now reset the Training map.
 		trainingMap.clear()
 		
-		game.printToLog("[TRAINING] Process to execute training completed.", tag = TAG)
+		game.printToLog("[TRAINING] Process to execute training completed.", tag = tag)
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +306,7 @@ class Navigation(private val game: Game) {
 	 * It will then select the best option according to the user's preferences. By default, it will choose the first option.
 	 */
 	private fun handleTrainingEvent() {
-		game.printToLog("\n[TRAINING-EVENT] Starting Training Event process...", tag = TAG)
+		game.printToLog("\n[TRAINING-EVENT] Starting Training Event process...", tag = tag)
 		
 		val (eventRewards, confidence) = textDetection.start()
 		
@@ -391,9 +391,9 @@ class Navigation(private val game: Game) {
 				"[TRAINING-EVENT] Since the confidence was less than the set minimum, first option will be selected."
 			}
 			
-			game.printToLog(resultString, tag = TAG)
+			game.printToLog(resultString, tag = tag)
 		} else {
-			game.printToLog("[TRAINING-EVENT] First option will be selected since OCR failed to detect anything.", tag = TAG)
+			game.printToLog("[TRAINING-EVENT] First option will be selected since OCR failed to detect anything.", tag = tag)
 			optionSelected = 0
 		}
 		
@@ -414,7 +414,7 @@ class Navigation(private val game: Game) {
 			game.gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
 		}
 		
-		game.printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.", tag = TAG)
+		game.printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.", tag = tag)
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -427,11 +427,11 @@ class Navigation(private val game: Game) {
 	 * @return True if the mandatory/extra race was completed successfully. Otherwise false.
 	 */
 	private fun handleRaceEvents(): Boolean {
-		game.printToLog("\n[RACE] Starting Racing process...", tag = TAG)
+		game.printToLog("\n[RACE] Starting Racing process...", tag = tag)
 		
 		// First, check if there is a mandatory or a extra race available. If so, head into the Race Selection screen.
 		if (game.findAndTapImage("race_select_mandatory", tries = 1, region = regionBottomHalf)) {
-			game.printToLog("\n[RACE] Detected mandatory race.", tag = TAG)
+			game.printToLog("\n[RACE] Detected mandatory race.", tag = tag)
 			
 			if (enableStopOnMandatoryRace) {
 				detectedMandatoryRaceCheck = true
@@ -453,15 +453,15 @@ class Navigation(private val game: Game) {
 			
 			finishRace(resultCheck, isExtra = true)
 			
-			game.printToLog("[RACE] Racing process for Mandatory Race is completed.", tag = TAG)
+			game.printToLog("[RACE] Racing process for Mandatory Race is completed.", tag = tag)
 			return true
 		} else if (game.findAndTapImage("race_select_extra", region = regionBottomHalf)) {
-			game.printToLog("\n[RACE] Detected extra race eligibility.", tag = TAG)
+			game.printToLog("\n[RACE] Detected extra race eligibility.", tag = tag)
 			
 			// If there is a popup warning about repeating races 3+ times, stop the process and do something else other than racing.
 			if (game.imageUtils.findImage("race_repeat_warning", tries = 2).first != null) {
 				raceRepeatWarningCheck = true
-				game.printToLog("\n[RACE] Closing popup of repeat warning and setting flag to prevent racing for now.", tag = TAG)
+				game.printToLog("\n[RACE] Closing popup of repeat warning and setting flag to prevent racing for now.", tag = tag)
 				game.findAndTapImage("cancel", region = regionBottomHalf)
 				return false
 			}
@@ -512,16 +512,16 @@ class Navigation(private val game: Game) {
 			}
 			
 			if (isTablet) {
-				game.printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}", tag = TAG)
+				game.printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}", tag = tag)
 			} else {
-				game.printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}, Extra 3. ${listOfFans[2]}", tag = TAG)
+				game.printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}, Extra 3. ${listOfFans[2]}", tag = tag)
 			}
 			
 			// Next determine the maximum fans and select the extra race.
 			val maxFans: Int? = listOfFans.maxOrNull()
 			if (maxFans != null) {
 				if (maxFans == -1) {
-					Log.d(TAG, "Max fans was -1 so returning false...")
+					Log.d(tag, "Max fans was -1 so returning false...")
 					game.findAndTapImage("back", tries = 1, region = regionBottomHalf)
 					game.wait(1.0)
 					return false
@@ -530,13 +530,13 @@ class Navigation(private val game: Game) {
 				// Get the index of the maximum fans.
 				val index = listOfFans.indexOf(maxFans)
 				
-				game.printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.", tag = TAG)
+				game.printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.", tag = tag)
 				
 				// Select the extra race that matches the double star prediction and the most fan gain.
 				game.gestureUtils.tap(extraRaceLocation[index].x - (100 * 1.36), extraRaceLocation[index].y, "images", "race_extra_selection")
 			} else {
 				// If no maximum is determined, select the very first extra race.
-				game.printToLog("[RACE] Selecting the first Extra Race by default.", tag = TAG)
+				game.printToLog("[RACE] Selecting the first Extra Race by default.", tag = tag)
 				game.gestureUtils.tap(extraRaceLocation[0].x - (100 * 1.36), extraRaceLocation[0].y, "images", "race_extra_selection")
 			}
 			
@@ -555,7 +555,7 @@ class Navigation(private val game: Game) {
 			
 			finishRace(resultCheck, isExtra = true)
 			
-			game.printToLog("[RACE] Racing process for Extra Race is completed.", tag = TAG)
+			game.printToLog("[RACE] Racing process for Extra Race is completed.", tag = tag)
 			return true
 		}
 		
@@ -566,7 +566,7 @@ class Navigation(private val game: Game) {
 	 * The entry point for handling standalone races if the user started the bot on the Racing screen.
 	 */
 	private fun handleStandaloneRace() {
-		game.printToLog("[RACE] Starting Standalone Racing process...", tag = TAG)
+		game.printToLog("[RACE] Starting Standalone Racing process...", tag = tag)
 		
 		// Skip the race if possible, otherwise run it manually.
 		val resultCheck: Boolean = if (game.imageUtils.findImage("race_skip_locked", tries = 1, region = regionBottomHalf, suppressError = true).first == null) {
@@ -577,7 +577,7 @@ class Navigation(private val game: Game) {
 		
 		finishRace(resultCheck)
 		
-		game.printToLog("[RACE] Racing process for Standalone Race is completed.", tag = TAG)
+		game.printToLog("[RACE] Racing process for Standalone Race is completed.", tag = tag)
 	}
 	
 	/**
@@ -587,7 +587,7 @@ class Navigation(private val game: Game) {
 	 */
 	private fun skipRace(): Boolean {
 		while (raceRetries >= 0) {
-			game.printToLog("[RACE] Skipping race...", tag = TAG)
+			game.printToLog("[RACE] Skipping race...", tag = tag)
 			
 			// Press the skip button and then wait for your result of the race to show.
 			game.findAndTapImage("race_skip", tries = 5, region = regionBottomHalf)
@@ -599,7 +599,7 @@ class Navigation(private val game: Game) {
 			
 			// Check if the race needed to be retried.
 			if (game.findAndTapImage("race_retry", tries = 3, region = regionBottomHalf)) {
-				game.printToLog("[RACE] Skipped race failed. Attempting to retry...", tag = TAG)
+				game.printToLog("[RACE] Skipped race failed. Attempting to retry...", tag = tag)
 				game.wait(5.0)
 				raceRetries--
 			} else {
@@ -617,7 +617,7 @@ class Navigation(private val game: Game) {
 	 */
 	private fun manualRace(): Boolean {
 		while (raceRetries >= 0) {
-			game.printToLog("[RACE] Skipping manual race...", tag = TAG)
+			game.printToLog("[RACE] Skipping manual race...", tag = tag)
 			
 			// Press the manual button.
 			game.findAndTapImage("race_manual", tries = 10, region = regionBottomHalf)
@@ -638,13 +638,13 @@ class Navigation(private val game: Game) {
 			
 			// Check if the race needed to be retried.
 			if (game.findAndTapImage("race_retry", tries = 3, region = regionBottomHalf)) {
-				game.printToLog("[RACE] Manual race failed. Attempting to retry...", tag = TAG)
+				game.printToLog("[RACE] Manual race failed. Attempting to retry...", tag = tag)
 				game.wait(5.0)
 				raceRetries--
 			} else {
 				// Check if a Trophy was acquired.
 				if (game.findAndTapImage("race_accept_trophy", tries = 1, region = regionBottomHalf)) {
-					game.printToLog("[RACE] Closing popup to claim trophy...", tag = TAG)
+					game.printToLog("[RACE] Closing popup to claim trophy...", tag = tag)
 				}
 				
 				return true
@@ -747,7 +747,7 @@ class Navigation(private val game: Game) {
 	 */
 	private fun recoverMood(): Boolean {
 		if (!firstTrainingCheck) {
-			game.printToLog("\n[MOOD] Detecting current mood.", tag = TAG)
+			game.printToLog("\n[MOOD] Detecting current mood.", tag = tag)
 			
 			// Detect what Mood the bot is at.
 			val currentMood: String = when {
@@ -764,7 +764,7 @@ class Navigation(private val game: Game) {
 			
 			// Only recover mood if its below Above Normal mood.
 			return if (currentMood == "Bad" && game.imageUtils.findImage("recover_energy_summer", tries = 1, region = regionBottomHalf).first == null) {
-				game.printToLog("[MOOD] Current mood is not good. Recovering mood now.", tag = TAG)
+				game.printToLog("[MOOD] Current mood is not good. Recovering mood now.", tag = tag)
 				if (!game.findAndTapImage("recover_mood", tries = 1, region = regionBottomHalf)) {
 					game.findAndTapImage("recover_energy_summer", region = regionBottomHalf)
 				}
@@ -773,7 +773,7 @@ class Navigation(private val game: Game) {
 				raceRepeatWarningCheck = false
 				true
 			} else {
-				game.printToLog("[MOOD] Current mood is good enough. Moving on.", tag = TAG)
+				game.printToLog("[MOOD] Current mood is good enough. Moving on.", tag = tag)
 				false
 			}
 		}
@@ -808,7 +808,7 @@ class Navigation(private val game: Game) {
 		afkCheck()
 		
 		if (enablePopupCheck && game.imageUtils.findImage("cancel", tries = 1, region = regionBottomHalf).first != null) {
-			game.printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...", tag = TAG)
+			game.printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...", tag = tag)
 			return false
 		}
 		
@@ -821,7 +821,7 @@ class Navigation(private val game: Game) {
 		
 		if (game.imageUtils.findImage("crane_game", tries = 1, region = regionBottomHalf).first != null) {
 			// Stop when the bot has reached the Crane Game Event.
-			game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = TAG)
+			game.printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.", tag = tag)
 			return false
 		}
 		
@@ -837,48 +837,48 @@ class Navigation(private val game: Game) {
 		while (true) {
 			if (checkMainScreen()) {
 				// If the bot is at the Main screen, that means Training and other options are available.
-				game.printToLog("[INFO] Current location is at Main screen.", tag = TAG)
+				game.printToLog("[INFO] Current location is at Main screen.", tag = tag)
 				
 				if (enableSkillPointCheck && game.imageUtils.determineSkillPoints() >= skillPointCheck) {
-					game.printToLog("\n[END] Bot has acquired the set amount of skill points. Exiting now...", tag = TAG)
+					game.printToLog("\n[END] Bot has acquired the set amount of skill points. Exiting now...", tag = tag)
 					break
 				}
 				
 				if (checkInjury()) {
 					// If the bot detected a injury, then rest.
-					game.printToLog("\n[INFO] Detected a injury. Resting now.", tag = TAG)
+					game.printToLog("\n[INFO] Detected a injury. Resting now.", tag = tag)
 					game.findAndTapImage("ok", region = regionMiddle)
 					game.wait(3.0)
 				} else if (recoverMood()) {
-					Log.d(TAG, "Mood recovered")
+					Log.d(tag, "Mood recovered")
 				} else if (!checkExtraRaceAvailability()) {
-					Log.d(TAG, "Training due to not extra race day.")
+					Log.d(tag, "Training due to not extra race day.")
 					handleTraining()
 				} else {
-					Log.d(TAG, "Racing by default")
+					Log.d(tag, "Racing by default")
 					if (!handleRaceEvents()) {
 						if (detectedMandatoryRaceCheck) {
-							game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = TAG)
+							game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = tag)
 							break
 						}
 						
-						Log.d(TAG, "Racing by default failed due to not detecting any eligible extra races. Training instead...")
+						Log.d(tag, "Racing by default failed due to not detecting any eligible extra races. Training instead...")
 						handleTraining()
 					}
 				}
 			} else if (checkTrainingEventScreen()) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
-				Log.d(TAG, "Detected Training Event")
+				Log.d(tag, "Detected Training Event")
 				handleTrainingEvent()
 			} else if (handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
-				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = TAG)
+				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = tag)
 			} else if (checkPreRaceScreen()) {
 				// If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
 				handleRaceEvents()
 				
 				if (detectedMandatoryRaceCheck) {
-					game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = TAG)
+					game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = tag)
 					break
 				}
 			} else if (game.imageUtils.findImage("race_change_strategy", tries = 1, region = regionBottomHalf).first != null) {
@@ -886,7 +886,7 @@ class Navigation(private val game: Game) {
 				handleStandaloneRace()
 			} else if (!BotService.isRunning || checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
-				game.printToLog("\n[END] Bot has reached the end of the run. Exiting now...", tag = TAG)
+				game.printToLog("\n[END] Bot has reached the end of the run. Exiting now...", tag = tag)
 				break
 			}
 			
