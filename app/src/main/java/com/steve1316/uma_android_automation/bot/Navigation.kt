@@ -56,7 +56,7 @@ class Navigation(private val game: Game) {
 	 */
 	private fun checkMainScreen(): Boolean {
 		return game.imageUtils.findImage("tazuna", tries = 1, region = regionTopHalf).first != null
-				&& game.imageUtils.findImage("race_select_mandatory", tries = 1, region = regionBottomHalf, suppressError = true).first == null
+				&& game.imageUtils.findImage("race_select_mandatory", tries = 1, region = regionBottomHalf).first == null
 	}
 	
 	/**
@@ -104,8 +104,8 @@ class Navigation(private val game: Game) {
 	 * @return True if the bot has a injury. Otherwise false.
 	 */
 	private fun checkInjury(): Boolean {
-		return if (game.findAndTapImage("recover_injury", tries = 1, region = regionBottomHalf, suppressError = true)) {
-			game.imageUtils.confirmLocation("recover_injury", tries = 1, region = regionMiddle, suppressError = true)
+		return if (game.findAndTapImage("recover_injury", tries = 1, region = regionBottomHalf)) {
+			game.imageUtils.confirmLocation("recover_injury", tries = 1, region = regionMiddle)
 		} else {
 			false
 		}
@@ -445,7 +445,7 @@ class Navigation(private val game: Game) {
 			game.wait(3.0)
 			
 			// Skip the race if possible, otherwise run it manually.
-			val resultCheck: Boolean = if (game.imageUtils.findImage("race_skip_locked", tries = 5, region = regionBottomHalf, suppressError = true).first == null) {
+			val resultCheck: Boolean = if (game.imageUtils.findImage("race_skip_locked", tries = 5, region = regionBottomHalf).first == null) {
 				skipRace()
 			} else {
 				manualRace()
@@ -569,7 +569,7 @@ class Navigation(private val game: Game) {
 		game.printToLog("[RACE] Starting Standalone Racing process...", tag = tag)
 		
 		// Skip the race if possible, otherwise run it manually.
-		val resultCheck: Boolean = if (game.imageUtils.findImage("race_skip_locked", tries = 1, region = regionBottomHalf, suppressError = true).first == null) {
+		val resultCheck: Boolean = if (game.imageUtils.findImage("race_skip_locked", tries = 1, region = regionBottomHalf).first == null) {
 			skipRace()
 		} else {
 			manualRace()
@@ -703,7 +703,7 @@ class Navigation(private val game: Game) {
 	 */
 	private fun handleInheritanceEvent(): Boolean {
 		return if (inheritancesDone < 2) {
-			if (game.findAndTapImage("inheritance", tries = 1, region = regionBottomHalf, suppressError = true)) {
+			if (game.findAndTapImage("inheritance", tries = 1, region = regionBottomHalf)) {
 				inheritancesDone++
 				true
 			} else {
@@ -722,13 +722,13 @@ class Navigation(private val game: Game) {
 	private fun recoverEnergy(): Boolean {
 		return when {
 			game.findAndTapImage("recover_energy", tries = 1, regionBottomHalf) -> {
-				game.findAndTapImage("ok", suppressError = true)
+				game.findAndTapImage("ok")
 				game.printToLog("\n[ENERGY] Successfully recovered energy.")
 				raceRepeatWarningCheck = false
 				true
 			}
 			game.findAndTapImage("recover_energy_summer", tries = 1, regionBottomHalf) -> {
-				game.findAndTapImage("ok", suppressError = true)
+				game.findAndTapImage("ok")
 				game.printToLog("\n[ENERGY] Successfully recovered energy for the Summer.")
 				raceRepeatWarningCheck = false
 				true
@@ -751,10 +751,10 @@ class Navigation(private val game: Game) {
 			
 			// Detect what Mood the bot is at.
 			val currentMood: String = when {
-				game.imageUtils.findImage("mood_above_normal", tries = 1, region = regionTopHalf, suppressError = true).first != null -> {
+				game.imageUtils.findImage("mood_above_normal", tries = 1, region = regionTopHalf).first != null -> {
 					"Above Normal"
 				}
-				game.imageUtils.findImage("mood_great", tries = 1, region = regionTopHalf, suppressError = true).first != null -> {
+				game.imageUtils.findImage("mood_great", tries = 1, region = regionTopHalf).first != null -> {
 					"Great"
 				}
 				else -> {
@@ -796,7 +796,7 @@ class Navigation(private val game: Game) {
 	 * Handle the case where the bot took too long to do anything and the AFK check came up.
 	 */
 	private fun afkCheck() {
-		game.findAndTapImage("afk_check", tries = 1, region = regionMiddle, suppressError = true)
+		game.findAndTapImage("afk_check", tries = 1, region = regionMiddle)
 	}
 	
 	/**
