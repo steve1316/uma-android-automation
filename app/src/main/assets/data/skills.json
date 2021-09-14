@@ -194,6 +194,11 @@
 		"englishName": "Let's anabolic!",
 		"englishDescription": "Increase acceleration as you attempt to overtake in last corner"
 	},
+	"I'M☆FULL☆SPEED!!": {
+		"id": 100281,
+		"englishName": "I'M☆FULL☆SPEED!!",
+		"englishDescription": "If you get a little tired while being in a good position in the middle of the race, your speed and acceleration increase"
+	},
 	"ブルーローズチェイサー": {
 		"id": 100301,
 		"englishName": "Blue Rose Chaser",
@@ -308,6 +313,11 @@
 		"id": 110241,
 		"englishName": "Flowery ☆ Maneuver",
 		"englishDescription": "During the last corner, increase speed if passing in the front; increase acceleration if passing in the back"
+	},
+	"禾スナハチ登ル": {
+		"id": 110561,
+		"englishName": "Limit of Heat",
+		"englishDescription": "In the second part of the race, increase speed when someone is drawing closer to you in the back of the pack"
 	},
 	"右回り◎": {
 		"id": 200011,
@@ -1928,5 +1938,55 @@
 		"id": 201672,
 		"englishName": "Recommendation",
 		"englishDescription": "Dirt・slightly increase your speed during the middle leg when competing for position"
+	},
+	"アオハル燃焼・速": {
+		"id": 210011,
+		"englishName": "Aoharu Burning・Speed",
+		"englishDescription": "During the Middle Leg, the higher the total speed of your team, the more your speed increases"
+	},
+	"アオハル点火・速": {
+		"id": 210012,
+		"englishName": "Aoharu Ignition・Speed",
+		"englishDescription": "During the Middle Leg, the higher the total speed of your team, the more your speed increases"
+	},
+	"アオハル燃焼・体": {
+		"id": 210021,
+		"englishName": "Aoharu Burning・Stamina",
+		"englishDescription": "During the Middle Leg, the higher the total stamina of your team, the more your stamina recovers"
+	},
+	"アオハル点火・体": {
+		"id": 210022,
+		"englishName": "Aoharu Ignition・Stamina",
+		"englishDescription": "During the Middle Leg, the higher the total stamina of your team, the more your stamina recovers"
+	},
+	"アオハル燃焼・力": {
+		"id": 210031,
+		"englishName": "Aoharu Burning・Power",
+		"englishDescription": "During the Final Leg, the higher the total power of your team, the more your acceleration increases"
+	},
+	"アオハル点火・力": {
+		"id": 210032,
+		"englishName": "Aoharu Ignition・Power",
+		"englishDescription": "During the Final Leg, the higher the total power of your team, the more your acceleration increases"
+	},
+	"アオハル燃焼・根": {
+		"id": 210041,
+		"englishName": "Aoharu Burning・Guts",
+		"englishDescription": "During the Final Leg, the higher the total guts of your team, the more your speed and acceleration increase"
+	},
+	"アオハル点火・根": {
+		"id": 210042,
+		"englishName": "Aoharu Ignition・Guts",
+		"englishDescription": "During the Final Leg, the higher the total guts of your team, the more your speed and acceleration increase"
+	},
+	"アオハル燃焼・賢": {
+		"id": 210051,
+		"englishName": "Aoharu Burning・Wisdom",
+		"englishDescription": "During the Opening Leg, the higher the total wisdom of your team, the better your positioning becomes"
+	},
+	"アオハル点火・賢": {
+		"id": 210052,
+		"englishName": "Aoharu Ignition・Wisdom",
+		"englishDescription": "During the Opening Leg, the higher the total wisdom of your team, the better your positioning becomes"
 	}
 }

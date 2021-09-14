@@ -794,6 +794,75 @@
 			"Skill points +20"
 		]
 	},
+	"Hishi Akebono": {
+		"お夜食ちゃんこの効能": [
+			"Energy +70",
+			"Energy +40\nMotivation +1"
+		],
+		"大きくな～れ！": [
+			"Intelligence +10\nSkill points +15",
+			"Energy +15"
+		],
+		"届けボーノ！": [
+			"Speed +20",
+			"Guts +20"
+		],
+		"はっけよい、陶芸教室！": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"集まれ☆お料理好き": [
+			"Power +10",
+			"Guts +10"
+		],
+		"堂々と行こう！": [
+			"Power +20\n(random) Get Sharp status",
+			"Stamina +20"
+		],
+		"腹が減っては巡回できぬ☆": [
+			"Energy +20",
+			"スタミナキープ hint +1"
+		],
+		"宇宙の食卓": [
+			"Intelligence +10",
+			"Energy +10"
+		],
+		"レッスン☆サバイバル生活": [
+			"Energy -10\nStamina +10\nGuts +10",
+			"Energy -10\nStamina +20"
+		],
+		"はっけよい、お弁当！": [
+			"Guts +10",
+			"Power +10"
+		],
+		"はっけよい、好き！": [
+			"Speed +10",
+			"Skill points +30",
+			"Stamina +5\nGuts +5"
+		],
+		"みんなでビッグチャレンジ！": [
+			"Speed +5\nPower +5",
+			"Stamina +5\nSkill points +15"
+		],
+		"凸凹ぶつかり稽古！？": [
+			"Randomly either\nSpeed +20\n善後策 hint +2\n----------\nEnergy -5\nSpeed +10",
+			"Randomly either\nEnergy +10\nPower +10\n----------\nEnergy +5\nGet Overweight status",
+			"Intelligence +5"
+		],
+		"ボーノな試食会☆": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Hishi Amazon": {
 		"炎の思い出": [
 			"Power +10",
@@ -1059,6 +1128,23 @@
 			"One of these will be selected at random\n----------\nSpeed +5\nStamina +5\n----------\nMotivation +1\nSkill points +15\n----------\nMotivation -1",
 			"Same as Option 1",
 			"Same as Option 1"
+		],
+		"私がお守りです": [
+			"Stamina +20",
+			"Obtain ラッキーセブン skill"
+		],
+		"フクキタル来れば福来たる": [
+			"Speed +20\nGet Rising Star status",
+			"Speed +7\nStamina +7\nPower +7"
+		],
+		"食い倒れ！ 七福神グルメめぐり": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"フクキタル的オマジナイ": [
+			"Speed +5\nGuts +5",
+			"Stamina +5\nPower +5",
+			"Intelligence +10"
 		],
 		"ダンスレッスン": [
 			"Power +10",

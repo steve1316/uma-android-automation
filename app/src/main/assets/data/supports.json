@@ -150,6 +150,15 @@
 		],
 		"トレーニングは理論的に": [
 			"One of these will be selected at random\n----------\nEnergy -20\nPower +5\n追い上げ hint +1\n----------\nEnergy -10\nStamina +5\nPower +15\nBiwa Hayahide bond +5\n追い上げ hint +3"
+		],
+		"plan：Safety": [
+			"Power +5\nIntelligence +5\nBiwa Hayahide bond +5"
+		],
+		"濃いめ、バリカタ、爆盛り": [
+			"Skill points +10\n(random) コーナー回復○ hint +1"
+		],
+		"友がくれたもの": [
+			"Power +5\nIntelligence +5\nクールダウン hint +1\nBiwa Hayahide bond +5"
 		]
 	},
 	"Daitaku Helios": {
@@ -738,6 +747,16 @@
 		],
 		"新たな価値観のインストール": [
 			"Energy −10\nPower +5\nGuts +5\n逃げ直線○ hint +1\nMihono Bourbon bond +5"
+		],
+		"なかよし☆こよしちゃん ～探求編～": [
+			"Skill points +10\nMihono Bourbon bond +5",
+			"Motivation +2\nMihono Bourbon bond -5"
+		],
+		"なかよし☆こよしちゃん ～調査編～": [
+			"Speed +5\nStamina +5\nMihono Bourbon bond +5"
+		],
+		"なかよし☆こよしちゃん ～実践編～": [
+			"Randomly either\nStamina +10\n逃亡者 hint +3\nMihono Bourbon bond +5\n----------\nStamina +5\n押し切り準備 hint +3\nMihono Bourbon bond +5"
 		]
 	},
 	"Narita Brian": {
@@ -873,6 +892,47 @@
 		],
 		"2人で頑張った日の1ページ": [
 			"Energy -10\n火事場のバ鹿力 hint +1 or 別腹タンク hint +1\nRice Shower bond +5"
+		],
+		"雨の日、ぷかぷか、お花畑": [
+			"Power +10\nRice Shower bond +5",
+			"Skill points +40\nパス上手 hint +1\nEvent chain ended"
+		],
+		"ずうっと、つやつや、魔法の花": [
+			"Stamina +5\nPower +10\nRice Shower bond +5",
+			"Energy +15\nPower +5\nRice Shower bond +5"
+		],
+		"晴れの日、ヒラヒラ、花束を": [
+			"Stamina +5\nPower +5\nIntelligence +5\n円弧のマエストロ hint +1\nRice Shower bond +5"
+		]
+	},
+	"Riko Kashimoto": {
+		"歌には想いを乗せて": [
+			"Energy +25\nMotivation +1\nStamina +10\nRiko Kashimoto bond +5"
+		],
+		"ひとときの休息を": [
+			"Energy +20\nMotivation +1\nStamina +10\nGuts +10\nRiko Kashimoto bond +5"
+		],
+		"喜ぶ顔を思い浮かべて": [
+			"Energy +20\nMotivation +1\nStamina +10\nGuts +5\nRiko Kashimoto bond +5",
+			"Skill points +40\nMotivation +1\nRiko Kashimoto bond +5"
+		],
+		"向けられる想いと戸惑い": [
+			"Energy +20\nMotivation +1\nSpeed +10\nStamina +5\nPower +5\nRiko Kashimoto bond +5"
+		],
+		"胸の内を少しだけ": [
+			"Energy +25\nMotivation +1\nStamina +10\nGuts +10\n一陣の風 hint +3\nRiko Kashimoto bond +5"
+		],
+		"意外な一面": [
+			"Randomly either\nEnergy +15\nMotivation +1\nStamina +10\nペースアップ hint +3\nRiko Kashimoto bond +12\nCan start dating\n----------\nおひとり様○ hint +5\nRiko Kashimoto bond -10\nEvent chain ended",
+			"Motivation +1\nGuts +15\nRiko Kashimoto bond +5\nCan start dating",
+			"一匹狼 hint +3\nRiko Kashimoto bond -10\nEvent chain ended"
+		],
+		"樫本流、片付け術": [
+			"Stamina +15\nRiko Kashimoto bond +5",
+			"Guts +15\nRiko Kashimoto bond +5"
+		],
+		"お疲れ様です": [
+			"Stamina +3\nRiko Kashimoto bond +7"
 		]
 	},
 	"Sakura Bakushin O": {
@@ -1020,6 +1080,16 @@
 		],
 		"手紙→皆の気持ち→ちゃんと待っててね": [
 			"Speed +10\n逃亡者 hint +1"
+		],
+		"奏でようWINNING!": [
+			"Guts +10\n栄養補給 hint +1",
+			"Speed +10\n軽やかステップ hint +1"
+		],
+		"踊れDREAM!": [
+			"Stamina +10\nSkill points +10"
+		],
+		"響き合うStage!": [
+			"Speed +5\nStamina +5\nコンセントレーション hint +1"
 		]
 	},
 	"Smart Falcon": {
@@ -1267,6 +1337,16 @@
 		"ターボは強いんだもん！": [
 			"One of these will be selected at random\n----------\nEnergy -10\nSpeed +25\n先手必勝 hint +1/+3\n先駆け hint +1/+3\n----------\nEnergy -10\nSpeed +5\n先手必勝 hint +1/+3\n先手必勝 hint +1/+3",
 			"Energy +15\n展開窺い hint +1"
+		],
+		"『せんでん』始動！！": [
+			"Energy -5\nGuts +15\nTwin Turbo bond +5",
+			"Energy +20\nTwin Turbo bond -5\nEvent chain ended"
+		],
+		"『せんでん』全開！！": [
+			"Energy -10\nSpeed +7\nPower +7\nTwin Turbo bond +5"
+		],
+		"『せんでん』最高！": [
+			"Randomly either\nEnergy -10\nGuts +15\nキラーチューン hint +3\nTwin Turbo bond +5\n----------\nEnergy -10\nGuts +10\nテンポアップ hint +3\nTwin Turbo bond +5"
 		]
 	},
 	"Vodka": {
