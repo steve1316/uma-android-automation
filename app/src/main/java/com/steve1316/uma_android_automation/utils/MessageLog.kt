@@ -1,11 +1,14 @@
 package com.steve1316.uma_android_automation.utils
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import com.steve1316.uma_android_automation.MainActivity
 import java.io.File
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * This class is in charge of holding the Message Log to which all logging messages from the bot goes to and also saves it all into a file when the bot has finished.
@@ -35,9 +38,15 @@ class MessageLog {
 				}
 				
 				// Generate the file name.
-				val current = LocalDateTime.now()
-				val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-				val fileName = "log @ ${current.format(formatter)}"
+				val fileName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					val current = LocalDateTime.now()
+					val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+					"log @ ${current.format(formatter)}"
+				} else {
+					val current = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+					val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+					"log @ ${current.format(sdf)}"
+				}
 				
 				// Now save the Message Log to the new text file.
 				Log.d(TAG, "Now saving Message Log to file named \"$fileName\" at $path")
