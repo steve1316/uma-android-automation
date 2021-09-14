@@ -4,7 +4,7 @@
 
 > Discord here: https://discord.gg/nmBDMqwr
 
-> Data last updated August 20, 2021 (Eishin Flash update)
+> Data last updated September 13, 2021 (Hishi Akebono update)
 
 This Android application written in Kotlin is designed to fully automate a run of Uma Musume Pretty Derby by offering a set of options to customize what event rewards the bot should prioritise, stats to focus on, etc. Building on top of the work done for ![Uma Android Training Helper](https://github.com/steve1316/uma-android-training-helper), this aims to solve the issue of spending too much hands-on time with completing a run for Uma Musume Pretty Derby.
 
