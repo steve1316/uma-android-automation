@@ -1,14 +1,15 @@
 <AppUpdater>
   <update>
-    <latestVersion>1.3.2</latestVersion>
+    <latestVersion>1.4.0</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v1.3.2 - Changelog
+v1.4.0 - Changelog
 
 New
 ---
-- Added support for the new Character: Eishin Flash.
-- Added support for the new Support Card: SR Stamina Tosen Jordan.
+- Dropped required API from 26 to 24, supporting emulators like Bluestacks and devices at least Android 7.0+ (Nougat).
+- Added support for the new Characters: Matikanefukukitaru (Full Armor), Hishi Akebono.
+- Added support for the new Support Cards: SSR Friendship Riko Kashimoto, SSR Power Rice Shower, SSR Stamina Mihono Bourbon, SSR Guts Twin Turbo, SSR Intelligence Biwa Hayahide, SSR Stamina Silence Suzuka.
     </releaseNotes>
   </update>
 </AppUpdater>
