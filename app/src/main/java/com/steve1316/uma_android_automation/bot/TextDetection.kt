@@ -11,7 +11,7 @@ import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 
 class TextDetection(private val game: Game, private val imageUtils: ImageUtils) {
-	private val TAG: String = "[${MainActivity.loggerTag}]TextDetection"
+	private val tag: String = "[${MainActivity.loggerTag}]TextDetection"
 	
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(game.myContext)
 	
@@ -35,14 +35,14 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 	 * Fix incorrect characters determined by OCR by replacing them with their Japanese equivalents.
 	 */
 	private fun fixIncorrectCharacters() {
-		game.printToLog("\n[TEXT-DETECTION] Now attempting to fix incorrect characters in: $result", tag = TAG)
+		game.printToLog("\n[TEXT-DETECTION] Now attempting to fix incorrect characters in: $result", tag = tag)
 		
 		if (result.last() == '/') {
 			result = result.replace("/", "！")
 		}
 		
 		result = result.replace("(", "（").replace(")", "）")
-		game.printToLog("[TEXT-DETECTION] Finished attempting to fix incorrect characters: $result", tag = TAG)
+		game.printToLog("[TEXT-DETECTION] Finished attempting to fix incorrect characters: $result", tag = tag)
 	}
 	
 	/**
@@ -50,9 +50,9 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 	 */
 	private fun findMostSimilarString() {
 		if (!hideComparisonResults) {
-			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result\n", tag = TAG)
+			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result\n", tag = tag)
 		} else {
-			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result", tag = TAG)
+			game.printToLog("\n[TEXT-DETECTION] Now starting process to find most similar string to: $result", tag = tag)
 		}
 		
 		// Remove any detected whitespaces.
@@ -67,7 +67,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 				CharacterData.characters[characterKey]?.forEach { (eventName, eventOptions) ->
 					val score = service.score(result, eventName)
 					if (!hideComparisonResults) {
-						game.printToLog("[CHARA] $characterKey \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+						game.printToLog("[CHARA] $characterKey \"${result}\" vs. \"${eventName}\" confidence: $score", tag = tag)
 					}
 					
 					if (score >= confidence) {
@@ -83,7 +83,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 			CharacterData.characters[character]?.forEach { (eventName, eventOptions) ->
 				val score = service.score(result, eventName)
 				if (!hideComparisonResults) {
-					game.printToLog("[CHARA] $character \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+					game.printToLog("[CHARA] $character \"${result}\" vs. \"${eventName}\" confidence: $score", tag = tag)
 				}
 				
 				if (score >= confidence) {
@@ -99,7 +99,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 		CharacterData.characters["Shared"]?.forEach { (eventName, eventOptions) ->
 			val score = service.score(result, eventName)
 			if (!hideComparisonResults) {
-				game.printToLog("[CHARA-SHARED] \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+				game.printToLog("[CHARA-SHARED] \"${result}\" vs. \"${eventName}\" confidence: $score", tag = tag)
 			}
 			
 			if (score >= confidence) {
@@ -116,7 +116,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 				SupportData.supports[supportCardName]?.forEach { (eventName, eventOptions) ->
 					val score = service.score(result, eventName)
 					if (!hideComparisonResults) {
-						game.printToLog("[SUPPORT] $supportCardName \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+						game.printToLog("[SUPPORT] $supportCardName \"${result}\" vs. \"${eventName}\" confidence: $score", tag = tag)
 					}
 					
 					if (score >= confidence) {
@@ -133,7 +133,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 				support.forEach { (eventName, eventOptions) ->
 					val score = service.score(result, eventName)
 					if (!hideComparisonResults) {
-						game.printToLog("[SUPPORT] $supportName \"${result}\" vs. \"${eventName}\" confidence: $score", tag = TAG)
+						game.printToLog("[SUPPORT] $supportName \"${result}\" vs. \"${eventName}\" confidence: $score", tag = tag)
 					}
 					
 					if (score >= confidence) {
@@ -148,9 +148,9 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 		}
 		
 		if (!hideComparisonResults) {
-			game.printToLog("\n[TEXT-DETECTION] Finished process to find similar string.", tag = TAG)
+			game.printToLog("\n[TEXT-DETECTION] Finished process to find similar string.", tag = tag)
 		} else {
-			game.printToLog("[TEXT-DETECTION] Finished process to find similar string.", tag = TAG)
+			game.printToLog("[TEXT-DETECTION] Finished process to find similar string.", tag = tag)
 		}
 	}
 	
@@ -188,23 +188,23 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 				when (category) {
 					"character" -> {
 						if (!hideComparisonResults) {
-							game.printToLog("\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence", tag = TAG)
+							game.printToLog("\n[RESULT] Character $character Event Name = $eventTitle with confidence = $confidence", tag = tag)
 						}
 					}
 					"character-shared" -> {
 						if (!hideComparisonResults) {
-							game.printToLog("\n[RESULT] Character Shared Event Name = $eventTitle with confidence = $confidence", tag = TAG)
+							game.printToLog("\n[RESULT] Character Shared Event Name = $eventTitle with confidence = $confidence", tag = tag)
 						}
 					}
 					"support" -> {
 						if (!hideComparisonResults) {
-							game.printToLog("\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence", tag = TAG)
+							game.printToLog("\n[RESULT] Support $supportCardTitle Event Name = $eventTitle with confidence = $confidence", tag = tag)
 						}
 					}
 				}
 				
 				if (enableAutomaticRetry && !hideComparisonResults) {
-					game.printToLog("\n[RESULT] Threshold incremented by $increment", tag = TAG)
+					game.printToLog("\n[RESULT] Threshold incremented by $increment", tag = tag)
 				}
 				
 				if (confidence < minimumConfidence && enableAutomaticRetry) {
@@ -218,7 +218,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 		}
 		
 		val endTime: Long = System.currentTimeMillis()
-		Log.d(TAG, "Total Runtime for detecting Text: ${endTime - startTime}ms")
+		Log.d(tag, "Total Runtime for detecting Text: ${endTime - startTime}ms")
 		
 		return Pair(eventOptionRewards, confidence)
 	}

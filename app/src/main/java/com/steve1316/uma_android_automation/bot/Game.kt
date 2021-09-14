@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  * Main driver for bot activity and navigation.
  */
 class Game(val myContext: Context) {
-	private val TAG: String = "[${MainActivity.loggerTag}]Game"
+	private val tag: String = "[${MainActivity.loggerTag}]Game"
 	
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(myContext)
 	
@@ -55,7 +55,7 @@ class Game(val myContext: Context) {
 	 * @param isError Flag to determine whether to display log message in console as debug or error.
 	 * @param isOption Flag to determine whether to append a newline right after the time in the string.
 	 */
-	fun printToLog(message: String, tag: String = TAG, isError: Boolean = false, isOption: Boolean = false) {
+	fun printToLog(message: String, tag: String = this.tag, isError: Boolean = false, isOption: Boolean = false) {
 		if (!isError) {
 			Log.d(tag, message)
 		} else {
@@ -108,7 +108,7 @@ class Game(val myContext: Context) {
 		val tempLocation: Point? = imageUtils.findImage(imageName, tries = tries, region = region, suppressError = suppressError).first
 		
 		return if (tempLocation != null) {
-			Log.d(TAG, "Found and going to tap: $imageName")
+			Log.d(tag, "Found and going to tap: $imageName")
 			gestureUtils.tap(tempLocation.x, tempLocation.y, "images", imageName, taps = taps)
 			wait(0.25)
 			true
@@ -128,7 +128,7 @@ class Game(val myContext: Context) {
 		navigation.start()
 		
 		val endTime: Long = System.currentTimeMillis()
-		Log.d(TAG, "Total Runtime: ${endTime - startTime}ms")
+		Log.d(tag, "Total Runtime: ${endTime - startTime}ms")
 		
 		return true
 	}

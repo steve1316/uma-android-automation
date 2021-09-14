@@ -33,8 +33,7 @@ import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import java.io.StringReader
 
 class HomeFragment : Fragment() {
-	private val TAG: String = "[${MainActivity.loggerTag}]HomeFragment"
-	private val SCREENSHOT_PERMISSION_REQUEST_CODE: Int = 100
+	private val logTag: String = "[${MainActivity.loggerTag}]HomeFragment"
 	private var firstBoot = false
 	private var firstRun = true
 	
@@ -264,7 +263,7 @@ class HomeFragment : Fragment() {
 		firstBoot = false
 		
 		// Now update the Message Log inside the ScrollView with the latest logging messages from the bot.
-		Log.d(TAG, "Now updating the Message Log TextView...")
+		Log.d(logTag, "Now updating the Message Log TextView...")
 		val messageLogTextView = homeFragmentView.findViewById<TextView>(R.id.message_log)
 		messageLogTextView.text = ""
 		var index = 0
@@ -285,7 +284,7 @@ class HomeFragment : Fragment() {
 	}
 	
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		if (requestCode == SCREENSHOT_PERMISSION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+		if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
 			// Start up the MediaProjection service after the user accepts the onscreen prompt.
 			myContext.startService(data?.let { MediaProjectionService.getStartIntent(myContext, resultCode, data) })
 		}
@@ -309,7 +308,7 @@ class HomeFragment : Fragment() {
 	 */
 	private fun startProjection() {
 		val mediaProjectionManager = context?.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-		startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), SCREENSHOT_PERMISSION_REQUEST_CODE)
+		startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), 100)
 	}
 	
 	/**
@@ -328,7 +327,7 @@ class HomeFragment : Fragment() {
 	 */
 	private fun checkForOverlayPermission(): Boolean {
 		if (!Settings.canDrawOverlays(requireContext())) {
-			Log.d(TAG, "Application is missing overlay permission.")
+			Log.d(logTag, "Application is missing overlay permission.")
 			
 			AlertDialog.Builder(requireContext()).apply {
 				setTitle(R.string.overlay_disabled)
@@ -344,7 +343,7 @@ class HomeFragment : Fragment() {
 			return false
 		}
 		
-		Log.d(TAG, "Application has permission to draw overlay.")
+		Log.d(logTag, "Application has permission to draw overlay.")
 		return true
 	}
 	
@@ -363,7 +362,7 @@ class HomeFragment : Fragment() {
 			val enabled = prefString.contains(myContext.packageName.toString() + "/" + MyAccessibilityService::class.java.name)
 			
 			if (enabled) {
-				Log.d(TAG, "This application's Accessibility Service is currently turned on.")
+				Log.d(logTag, "This application's Accessibility Service is currently turned on.")
 				return true
 			}
 		}
@@ -373,7 +372,7 @@ class HomeFragment : Fragment() {
 			setTitle(R.string.accessibility_disabled)
 			setMessage(R.string.accessibility_disabled_message)
 			setPositiveButton(R.string.go_to_settings) { _, _ ->
-				Log.d(TAG, "Accessibility Service is not detected. Moving user to Accessibility Settings.")
+				Log.d(logTag, "Accessibility Service is not detected. Moving user to Accessibility Settings.")
 				val accessibilitySettingsIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
 				myContext.startActivity(accessibilitySettingsIntent)
 			}

@@ -10,7 +10,7 @@ import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
-	private val TAG: String = "[${MainActivity.loggerTag}]SettingsFragment"
+	private val logTag: String = "[${MainActivity.loggerTag}]SettingsFragment"
 	
 	private lateinit var sharedPreferences: SharedPreferences
 	
@@ -163,6 +163,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 			true
 		}
 		
-		Log.d(TAG, "Main Preferences created successfully.")
+		Log.d(logTag, "Main Preferences created successfully.")
 	}
 }

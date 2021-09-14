@@ -11,7 +11,7 @@ import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
 
 class TrainingFragment : PreferenceFragmentCompat() {
-	private val TAG: String = "[${MainActivity.loggerTag}]TrainingFragment"
+	private val logTag: String = "[${MainActivity.loggerTag}]TrainingFragment"
 	
 	private lateinit var sharedPreferences: SharedPreferences
 	
@@ -54,7 +54,7 @@ class TrainingFragment : PreferenceFragmentCompat() {
 		// Update the summaries of the Preference components.
 		updateSummaries()
 		
-		Log.d(TAG, "Training Preferences created successfully.")
+		Log.d(logTag, "Training Preferences created successfully.")
 	}
 	
 	// This listener is triggered whenever the user changes a Preference setting in the Settings Page.
@@ -172,10 +172,10 @@ class TrainingFragment : PreferenceFragmentCompat() {
 			// Set the selectable items for this AlertDialog.
 			builder.setMultiChoiceItems(items, checkedItems) { _, position, isChecked ->
 				if (isChecked) {
-					Log.d(TAG, "Adding $position")
+					Log.d(logTag, "Adding $position")
 					userSelectedOptions.add(position)
 				} else {
-					Log.d(TAG, "Removing $position")
+					Log.d(logTag, "Removing $position")
 					userSelectedOptions.remove(position)
 				}
 			}

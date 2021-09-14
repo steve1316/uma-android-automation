@@ -9,7 +9,7 @@ import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import org.opencv.core.Point
 
 class Navigation(private val game: Game) {
-	private val tag: String = "[${MainActivity.loggerTag}]_Navigation"
+	private val tag: String = "[${MainActivity.loggerTag}]Navigation"
 	
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(game.myContext)
 	
@@ -251,8 +251,8 @@ class Navigation(private val game: Game) {
 				val failureChance: Int = trainingMap[statName]?.get("failureChance")!!
 				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
 				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
-					Log.d(tag, "$statName already did training so applying penalty for repeating.")
-					500
+					game.printToLog("[TRAINING] $statName already did training so applying penalty for repeating.", tag = tag)
+					250
 				} else {
 					0
 				}

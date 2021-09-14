@@ -26,7 +26,7 @@ import java.lang.Integer.max
  * Utility functions for image processing via CV like OpenCV.
  */
 class ImageUtils(context: Context, private val game: Game) {
-	private val TAG: String = "[${MainActivity.loggerTag}]ImageUtils"
+	private val tag: String = "[${MainActivity.loggerTag}]ImageUtils"
 	private var myContext = context
 	
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -71,7 +71,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Start up Tesseract.
 		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
-		game.printToLog("[INFO] Training file loaded.\n", tag = TAG)
+		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
 	}
 	
 	/**
@@ -209,7 +209,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				}
 				
 				if (matchCheck) {
-					Log.d(TAG, "Found match at scale: $newScale")
+					Log.d(tag, "Found match at scale: $newScale")
 					
 					// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for
 					// debugging purposes to see if this algorithm found the match accurately or not.
@@ -261,7 +261,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
 		
 		if (debugMode) {
-			game.printToLog("[DEBUG] Now beginning search for all matches...", tag = TAG)
+			game.printToLog("[DEBUG] Now beginning search for all matches...", tag = tag)
 		}
 		
 		// Loop until all matches are found.
@@ -274,7 +274,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				val tempMatchLocation: Point = mmr.minLoc
 				
 				if (debugMode) {
-					game.printToLog("[DEBUG] Match found with similarity <= 0.2 at Point $tempMatchLocation with minVal = ${mmr.minVal}.", tag = TAG)
+					game.printToLog("[DEBUG] Match found with similarity <= 0.2 at Point $tempMatchLocation with minVal = ${mmr.minVal}.", tag = tag)
 				}
 				
 				// Draw a rectangle around the match and then save it to the specified file.
@@ -294,7 +294,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				val tempMatchLocation: Point = mmr.maxLoc
 				
 				if (debugMode) {
-					game.printToLog("[DEBUG] Match found with similarity >= 0.8 at Point $tempMatchLocation with maxVal = ${mmr.maxVal}.", tag = TAG)
+					game.printToLog("[DEBUG] Match found with similarity >= 0.8 at Point $tempMatchLocation with maxVal = ${mmr.maxVal}.", tag = tag)
 				}
 				
 				// Draw a rectangle around the match and then save it to the specified file.
@@ -350,7 +350,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		return if (templateBitmap != null) {
 			Pair(sourceBitmap, templateBitmap)
 		} else {
-			game.printToLog("[ERROR] One or more of the Bitmaps are null.", tag = TAG, isError = true)
+			game.printToLog("[ERROR] One or more of the Bitmaps are null.", tag = tag, isError = true)
 			
 			Pair(sourceBitmap, templateBitmap)
 		}
@@ -377,20 +377,20 @@ class ImageUtils(context: Context, private val game: Game) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
 						if (!suppressError && debugMode) {
-							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} image.", tag = TAG)
+							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} image.", tag = tag)
 						} else {
-							Log.d(TAG, "[WARNING] Failed to find the ${templateName.uppercase()} image.")
+							Log.d(tag, "[WARNING] Failed to find the ${templateName.uppercase()} image.")
 						}
 						
 						return Pair(null, sourceBitmap)
 					}
 					
-					Log.d(TAG, "Failed to find the ${templateName.uppercase()} image. Trying again...")
+					Log.d(tag, "Failed to find the ${templateName.uppercase()} image. Trying again...")
 					
 					game.wait(0.1)
 				} else {
 					if (debugMode) {
-						game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = TAG)
+						game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = tag)
 					}
 					
 					return Pair(matchLocation, sourceBitmap)
@@ -430,7 +430,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					
 					game.wait(0.1)
 				} else {
-					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", tag = TAG)
+					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", tag = tag)
 					return true
 				}
 			} else {
@@ -439,9 +439,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		if (!suppressError && debugMode) {
-			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = TAG)
+			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = tag)
 		} else {
-			Log.d(TAG, "[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.")
+			Log.d(tag, "[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.")
 		}
 		
 		return false
@@ -470,9 +470,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		matchLocations.sortBy { it.y }
 		
 		if (debugMode) {
-			game.printToLog("[DEBUG] Found match locations for $templateName: $matchLocations.", tag = TAG)
+			game.printToLog("[DEBUG] Found match locations for $templateName: $matchLocations.", tag = tag)
 		} else {
-			Log.d(TAG, "[DEBUG] Found match locations for $templateName: $matchLocations.")
+			Log.d(tag, "[DEBUG] Found match locations for $templateName: $matchLocations.")
 		}
 		
 		return matchLocations
@@ -492,7 +492,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		match(sourceBitmap!!, energyTemplateBitmap!!)
 		
 		// Use the match location acquired from finding the energy text image and acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
-		Log.d(TAG, matchLocation.toString())
+		Log.d(tag, matchLocation.toString())
 		val newX: Int
 		val newY: Int
 		var croppedBitmap: Bitmap = if (isTablet) {
@@ -511,10 +511,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
-			Log.d(TAG, "Shifting the region over by 70 pixels!")
+			Log.d(tag, "Shifting the region over by 70 pixels!")
 			Bitmap.createBitmap(sourceBitmap, newX + 70, newY, 645 - 70, 65)
 		} else {
-			Log.d(TAG, "Do not need to shift.")
+			Log.d(tag, "Do not need to shift.")
 			croppedBitmap
 		}
 		
@@ -543,7 +543,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			// Finally, detect text on the cropped region.
 			result = tessBaseAPI.utF8Text
 		} catch (e: Exception) {
-			game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
+			game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 		}
 		
 		tessBaseAPI.clear()
@@ -587,7 +587,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				}
 			}
 		}.addOnFailureListener {
-			game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
+			game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
 		}
 		
 		// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
@@ -596,7 +596,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		if (debugMode) {
 			game.printToLog("[DEBUG] Failure chance detected to be at $result%.")
 		} else {
-			Log.d(TAG, "Failure chance detected to be at $result%.")
+			Log.d(tag, "Failure chance detected to be at $result%.")
 		}
 		
 		return result
@@ -683,7 +683,7 @@ class ImageUtils(context: Context, private val game: Game) {
 								val reg = Regex("[a-zA-Z]+")
 								val regexResult: String = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
 								
-								Log.d(TAG, "Stats detected: $regexResult")
+								Log.d(tag, "Stats detected: $regexResult")
 								
 								test.add(regexResult.toInt())
 							} catch (e: NumberFormatException) {
@@ -691,7 +691,7 @@ class ImageUtils(context: Context, private val game: Game) {
 						}
 					}
 				}.addOnFailureListener {
-					game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
+					game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
 				}
 				
 				// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
@@ -741,14 +741,14 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (it.textBlocks.size != 0) {
 					for (block in it.textBlocks) {
 						try {
-							Log.d(TAG, "Detected Day Number for Extra Race: ${block.text}")
+							Log.d(tag, "Detected Day Number for Extra Race: ${block.text}")
 							result = block.text.toInt()
 						} catch (e: NumberFormatException) {
 						}
 					}
 				}
 			}.addOnFailureListener {
-				game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = TAG, isError = true)
+				game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
 			}
 			
 			// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
@@ -809,26 +809,26 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Finally, detect text on the cropped region.
 				result = tessBaseAPI.utF8Text
 			} catch (e: Exception) {
-				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
+				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 			}
 			
 			tessBaseAPI.clear()
 			
 			// Format the string to be converted to an integer.
-			Log.d(TAG, "Detected number of fans before formatting: $result")
+			Log.d(tag, "Detected number of fans before formatting: $result")
 			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "")
 				.replace(">", "").replace("<", "")
 				.replace("(", "")
 				.replace("人", "").replace("ォ", "").trim()
 			
 			try {
-				Log.d(TAG, "Converting $result to integer for fans")
+				Log.d(tag, "Converting $result to integer for fans")
 				result.toInt()
 			} catch (e: NumberFormatException) {
 				-1
 			}
 		} else {
-			Log.d(TAG, "This race has no double prediction.")
+			Log.d(tag, "This race has no double prediction.")
 			return -1
 		}
 	}
@@ -862,19 +862,19 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Finally, detect text on the cropped region.
 				result = tessBaseAPI.utF8Text
 			} catch (e: Exception) {
-				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = TAG, isError = true)
+				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 			}
 			
 			tessBaseAPI.clear()
 			
 			try {
-				Log.d(TAG, "Converting $result to integer for skill points")
+				Log.d(tag, "Converting $result to integer for skill points")
 				result.toInt()
 			} catch (e: NumberFormatException) {
 				-1
 			}
 		} else {
-			game.printToLog("[ERROR] Could not start the process of detecting skill points.", tag = TAG, isError = true)
+			game.printToLog("[ERROR] Could not start the process of detecting skill points.", tag = tag, isError = true)
 			-1
 		}
 	}
@@ -893,12 +893,12 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			// If the folder was not able to be created for some reason, log the error and stop the MediaProjection Service.
 			if (!successfullyCreated) {
-				game.printToLog("[ERROR] Failed to create the /files/tesseract/tessdata/ folder.", tag = TAG, isError = true)
+				game.printToLog("[ERROR] Failed to create the /files/tesseract/tessdata/ folder.", tag = tag, isError = true)
 			} else {
-				game.printToLog("[INFO] Successfully created /files/tesseract/tessdata/ folder.", tag = TAG)
+				game.printToLog("[INFO] Successfully created /files/tesseract/tessdata/ folder.", tag = tag)
 			}
 		} else {
-			game.printToLog("[INFO] /files/tesseract/tessdata/ folder already exists.", tag = TAG)
+			game.printToLog("[INFO] /files/tesseract/tessdata/ folder already exists.", tag = tag)
 		}
 		
 		// If the traineddata is not in the application folder, copy it there from assets.
@@ -906,7 +906,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			val trainedDataPath = File(tempDirectory, "$lang.traineddata")
 			if (!trainedDataPath.exists()) {
 				try {
-					game.printToLog("[INFO] Starting Tesseract initialization.", tag = TAG)
+					game.printToLog("[INFO] Starting Tesseract initialization.", tag = tag)
 					val input = myContext.assets.open("$lang.traineddata")
 					
 					val output = FileOutputStream("$tempDirectory/$lang.traineddata")
@@ -920,9 +920,9 @@ class ImageUtils(context: Context, private val game: Game) {
 					input.close()
 					output.flush()
 					output.close()
-					game.printToLog("[INFO] Finished Tesseract initialization.", tag = TAG)
+					game.printToLog("[INFO] Finished Tesseract initialization.", tag = tag)
 				} catch (e: IOException) {
-					game.printToLog("[ERROR] IO EXCEPTION: ${e.stackTraceToString()}", tag = TAG, isError = true)
+					game.printToLog("[ERROR] IO EXCEPTION: ${e.stackTraceToString()}", tag = tag, isError = true)
 				}
 			}
 		}

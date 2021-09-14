@@ -247,11 +247,12 @@ class MediaProjectionService : Service() {
 	 * Custom Callback for when the user rotates their device from horizontal to vertical and vice-versa.
 	 */
 	private inner class OrientationChangeCallback(context: Context) : OrientationEventListener(context) {
-		private val TAG_OrientationChangeCallback: String = "[${MainActivity.loggerTag}]OrientationChangeCallback"
+		private val tagOrientationChangeCallback: String = "[${MainActivity.loggerTag}]OrientationChangeCallback"
 		
 		override fun onOrientationChanged(orientation: Int) {
 			val newRotation: Int = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
 			if (newRotation != oldRotation) {
+				Log.d(tagOrientationChangeCallback, "Device was rotated. Reconstructing the Virtual Display now...")
 				oldRotation = newRotation
 				try {
 					// Perform cleanup.
@@ -260,7 +261,7 @@ class MediaProjectionService : Service() {
 					// Now re-create the VirtualDisplay based on the new width and height of the rotated screen.
 					createVirtualDisplay()
 				} catch (e: Exception) {
-					Log.e(TAG_OrientationChangeCallback, "Failed to perform cleanup and recreating the VirtualDisplay after device rotation.")
+					Log.e(tagOrientationChangeCallback, "Failed to perform cleanup and recreating the VirtualDisplay after device rotation.")
 					Toast.makeText(
 						myContext, "Failed to perform cleanup and recreating the VirtualDisplay after device rotation.",
 						Toast.LENGTH_SHORT
@@ -274,7 +275,7 @@ class MediaProjectionService : Service() {
 	 * Custom Callback for when it is necessary to stop the MediaProjection.
 	 */
 	private inner class MediaProjectionStopCallback : MediaProjection.Callback() {
-		private val TAG_MediaProjectionStopCallback = "[${MainActivity.loggerTag}]MediaProjectionStopCallback"
+		private val tagMediaProjectionStopCallback = "[${MainActivity.loggerTag}]MediaProjectionStopCallback"
 		
 		override fun onStop() {
 			threadHandler.post {
@@ -296,7 +297,7 @@ class MediaProjectionService : Service() {
 				// Now set the MediaProjection object to null to eliminate the "Invalid media projection" error.
 				mediaProjection = null
 				
-				Log.d(TAG_MediaProjectionStopCallback, "MediaProjection Service for $appName has stopped.")
+				Log.d(tagMediaProjectionStopCallback, "MediaProjection Service for $appName has stopped.")
 				Toast.makeText(myContext, "MediaProjection Service for $appName has stopped.", Toast.LENGTH_SHORT).show()
 			}
 		}
