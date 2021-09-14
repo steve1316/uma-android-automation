@@ -16,8 +16,9 @@ Any usage of this tool is at your own risk. No one will be responsible for anyth
 
 # Requirements
 
--   Android Device (Oreo 8.0+)
+-   Android Device or Emulator (Nougat 7.0+)
     -   Tablet needs to be a minimum width of 1600 pixels (like the Galaxy Tab S7 with its 2650x1600 pixel resolution).
+    -   Tested emulator was Bluestacks 5. Make sure to have the device be in Portrait Mode BEFORE starting the bot as emulators do not have a way to tell the bot that it rotated.
 
 # Features
 
