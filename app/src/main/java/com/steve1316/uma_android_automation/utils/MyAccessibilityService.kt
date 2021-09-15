@@ -8,9 +8,9 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Path
+import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.R
@@ -22,7 +22,7 @@ import kotlinx.coroutines.runBlocking
  */
 class MyAccessibilityService : AccessibilityService() {
 	private var appName: String = ""
-	private val TAG: String = "[${MainActivity.loggerTag}]MyAccessibilityService"
+	private val tag: String = "[${MainActivity.loggerTag}]MyAccessibilityService"
 	private lateinit var myContext: Context
 	
 	companion object {
@@ -45,7 +45,7 @@ class MyAccessibilityService : AccessibilityService() {
 		myContext = this
 		appName = myContext.getString(R.string.app_name)
 		
-		Log.d(TAG, "Accessibility Service for $appName is now running.")
+		Log.d(tag, "Accessibility Service for $appName is now running.")
 		Toast.makeText(myContext, "Accessibility Service for $appName now running.", Toast.LENGTH_SHORT).show()
 	}
 	
@@ -56,7 +56,7 @@ class MyAccessibilityService : AccessibilityService() {
 	override fun onDestroy() {
 		super.onDestroy()
 		
-		Log.d(TAG, "Accessibility Service for $appName is now stopped.")
+		Log.d(tag, "Accessibility Service for $appName is now stopped.")
 		Toast.makeText(myContext, "Accessibility Service for $appName is now stopped.", Toast.LENGTH_SHORT).show()
 	}
 	
@@ -143,7 +143,11 @@ class MyAccessibilityService : AccessibilityService() {
 		val gesture: GestureDescription = if (longPress) {
 			// Long press for 1000ms.
 			GestureDescription.Builder().apply {
-				addStroke(GestureDescription.StrokeDescription(tapPath, 0, 1000, true))
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					addStroke(GestureDescription.StrokeDescription(tapPath, 0, 1000, true))
+				} else {
+					addStroke(GestureDescription.StrokeDescription(tapPath, 0, 1000))
+				}
 			}.build()
 		} else {
 			GestureDescription.Builder().apply {
@@ -173,37 +177,50 @@ class MyAccessibilityService : AccessibilityService() {
 	/**
 	 * Creates a scroll gesture either scrolling up or down the screen depending on the given action.
 	 *
-	 * @param action The scrolling action, either ACTION_SCROLL_UP or ACTION_SCROLL_DOWN. Defaults to ACTION_SCROLL_DOWN.
+	 * @param scrollDown The scrolling action, either up or down the screen. Defaults to true which is scrolling down.
 	 * @param duration How long the scroll should take. Defaults to 100L.
 	 * @param ignoreWait Whether or not to not wait 0.5 seconds after dispatching the gesture.
 	 * @return True if the scroll gesture was executed successfully. False otherwise.
 	 */
-	fun scroll(action: AccessibilityNodeInfo.AccessibilityAction = AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN, duration: Long = 500L, ignoreWait: Boolean = false): Boolean {
+	fun scroll(scrollDown: Boolean = true, duration: Long = 500L, ignoreWait: Boolean = false): Boolean {
 		val scrollPath = Path()
 		
 		// Get certain portions of the screen's dimensions.
 		val displayMetrics = Resources.getSystem().displayMetrics
-		val top: Float = (displayMetrics.heightPixels * 0.75).toFloat()
-		val middle: Float = (displayMetrics.widthPixels / 2).toFloat()
-		val bottom: Float = (displayMetrics.heightPixels * 0.25).toFloat()
 		
-		when (action) {
-			AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP -> {
-				// Create a Path to scroll the screen up starting from the bottom and swiping to the top.
-				scrollPath.apply {
-					moveTo(middle, bottom)
-					lineTo(middle, top)
-				}
+		// Set different scroll paths for different screen sizes.
+		val top: Float
+		val middle: Float
+		val bottom: Float
+		when (displayMetrics.widthPixels) {
+			1600 -> {
+				top = (displayMetrics.heightPixels * 0.60).toFloat()
+				middle = (displayMetrics.widthPixels * 0.20).toFloat()
+				bottom = (displayMetrics.heightPixels * 0.40).toFloat()
 			}
-			AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN -> {
-				// Create a Path to scroll the screen down starting from the top and swiping to the bottom.
-				scrollPath.apply {
-					moveTo(middle, top)
-					lineTo(middle, bottom)
-				}
+			2650 -> {
+				top = (displayMetrics.heightPixels * 0.60).toFloat()
+				middle = (displayMetrics.widthPixels * 0.20).toFloat()
+				bottom = (displayMetrics.heightPixels * 0.40).toFloat()
 			}
 			else -> {
-				Log.e(TAG, "Invalid action received.")
+				top = (displayMetrics.heightPixels * 0.75).toFloat()
+				middle = (displayMetrics.widthPixels / 2).toFloat()
+				bottom = (displayMetrics.heightPixels * 0.25).toFloat()
+			}
+		}
+		
+		if (scrollDown) {
+			// Create a Path to scroll the screen down starting from the top and swiping to the bottom.
+			scrollPath.apply {
+				moveTo(middle, top)
+				lineTo(middle, bottom)
+			}
+		} else {
+			// Create a Path to scroll the screen up starting from the bottom and swiping to the top.
+			scrollPath.apply {
+				moveTo(middle, bottom)
+				lineTo(middle, top)
 			}
 		}
 		
@@ -217,7 +234,14 @@ class MyAccessibilityService : AccessibilityService() {
 		}
 		
 		if (!dispatchResult) {
-			Log.e(TAG, "Failed to dispatch scroll gesture.")
+			Log.e(tag, "Failed to dispatch scroll gesture.")
+		} else {
+			val direction: String = if (scrollDown) {
+				"down"
+			} else {
+				"up"
+			}
+			Log.d(tag, "Scrolling $direction.")
 		}
 		
 		return dispatchResult
