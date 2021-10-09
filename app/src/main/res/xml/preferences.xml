@@ -5,6 +5,13 @@
         app:summary="Options marked with * are required"
         app:title="Options">
 
+        <ListPreference
+            android:entries="@array/campaigns"
+            android:entryValues="@array/campaigns"
+            android:summary="Choose your selected Campaign"
+            app:key="campaign"
+            app:title="Select Campaign *" />
+
         <Preference
             app:fragment="com.steve1316.uma_android_automation.ui.settings.TrainingFragment"
             app:key="trainingOptions"

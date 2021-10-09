@@ -18,6 +18,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
 	private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
 		if (key != null) {
 			when (key) {
+				"campaign" -> {
+					val campaignListPreference = findPreference<ListPreference>("campaign")!!
+					sharedPreferences.edit {
+						putString("campaign", campaignListPreference.value)
+						commit()
+					}
+				}
 				"enableFarmingFans" -> {
 					val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
 					val daysToRunExtraRacesPreference = findPreference<SeekBarPreference>("daysToRunExtraRaces")!!
@@ -112,6 +119,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
 		// Grab the saved preferences from the previous time the user used the app.
+		val campaign: String = sharedPreferences.getString("campaign", "")!!
 		val enableFarmingFans: Boolean = sharedPreferences.getBoolean("enableFarmingFans", false)
 		val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
@@ -122,6 +130,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Get references to the Preference components.
+		val campaignListPreference = findPreference<ListPreference>("campaign")!!
 		val enableFarmingFansPreference = findPreference<CheckBoxPreference>("enableFarmingFans")!!
 		val daysToRunExtraRacesPreference = findPreference<SeekBarPreference>("daysToRunExtraRaces")!!
 		val enableSkillPointCheckPreference = findPreference<CheckBoxPreference>("enableSkillPointCheck")!!
@@ -132,6 +141,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
 		
 		// Now set the following values from the shared preferences.
+		campaignListPreference.value = campaign
 		enableFarmingFansPreference.isChecked = enableFarmingFans
 		daysToRunExtraRacesPreference.isEnabled = enableFarmingFansPreference.isChecked
 		daysToRunExtraRacesPreference.value = daysToRunExtraRaces
@@ -141,7 +151,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		enableStopOnMandatoryRacePreference.isChecked = enableStopOnMandatoryRace
 		debugModePreference.isChecked = debugMode
 		hideComparisonResultsPreference.isChecked = hideComparisonResults
-		
 		skillPointCheckPreference.isEnabled = enableSkillPointCheckPreference.isChecked
 		
 		// Solution courtesy of https://stackoverflow.com/a/63368599
