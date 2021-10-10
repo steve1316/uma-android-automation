@@ -5,8 +5,8 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.bot.campaigns.Normal
 import com.steve1316.uma_android_automation.utils.ImageUtils
-import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import kotlinx.coroutines.delay
@@ -27,13 +27,13 @@ class Game(val myContext: Context) {
 	val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val textDetection: TextDetection = TextDetection(this, imageUtils)
-
+	
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
 	private val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
-
+	
 	private val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
 	private val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 	val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
@@ -41,7 +41,7 @@ class Game(val myContext: Context) {
 	private val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 	private val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
 	var detectedMandatoryRaceCheck = false
-
+	
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
 	private var inheritancesDone = 0
@@ -567,10 +567,10 @@ class Game(val myContext: Context) {
 			}
 			
 			// There is a mandatory race. Now confirm the selection and the resultant popup and then wait for the game to load.
-			wait(3.0)
+			wait(1.0)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
-			wait(3.0)
+			wait(1.0)
 			
 			// Skip the race if possible, otherwise run it manually.
 			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
@@ -651,7 +651,6 @@ class Game(val myContext: Context) {
 				if (maxFans == -1) {
 					Log.d(tag, "Max fans was -1 so returning false...")
 					findAndTapImage("back", tries = 1, region = imageUtils.regionBottomHalf)
-					wait(1.0)
 					return false
 				}
 				
@@ -672,7 +671,7 @@ class Game(val myContext: Context) {
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
 			afkCheck()
-			wait(3.0)
+			wait(1.0)
 			
 			// Skip the race if possible, otherwise run it manually.
 			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
@@ -719,10 +718,14 @@ class Game(val myContext: Context) {
 			
 			// Press the skip button and then wait for your result of the race to show.
 			findAndTapImage("race_skip", tries = 5, region = imageUtils.regionBottomHalf)
-			wait(5.0)
+			wait(3.0)
 			
 			// Now tap on the screen to get to the next screen.
-			gestureUtils.tap(500.0, 1000.0, "images", "ok", taps = 3)
+			gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			wait(0.3)
+			gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			wait(0.3)
+			gestureUtils.tap(500.0, 1000.0, "images", "ok")
 			wait(2.0)
 			
 			// Check if the race needed to be retried.
@@ -749,7 +752,7 @@ class Game(val myContext: Context) {
 			
 			// Press the manual button.
 			findAndTapImage("race_manual", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(5.0)
+			wait(2.0)
 			
 			// Now press the confirm button to get past the list of participants.
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
@@ -762,12 +765,12 @@ class Game(val myContext: Context) {
 			findAndTapImage("race_skip_manual", tries = 10, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 10, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(3.0)
+			wait(2.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 3, region = imageUtils.regionBottomHalf)) {
 				printToLog("[RACE] Manual race failed. Attempting to retry...")
-				wait(5.0)
+				wait(2.0)
 				raceRetries--
 			} else {
 				// Check if a Trophy was acquired.
@@ -796,28 +799,28 @@ class Game(val myContext: Context) {
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
 		findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)
-		wait(2.0)
+		wait(1.0)
 		
 		// Now press the end button to finish the race.
 		findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
 		
 		if (!isExtra) {
 			// Wait until the popup showing the completion of a Training Goal appears and confirm it.
-			wait(5.0)
+			wait(2.0)
 			findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(3.0)
+			wait(1.0)
 			
 			// Now confirm the completion of a Training Goal popup.
 			findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
 		} else {
 			if (findAndTapImage("race_confirm_result", tries = 5, region = imageUtils.regionBottomHalf)) {
 				// Now confirm the completion of a Training Goal popup.
-				wait(2.0)
+				wait(1.0)
 				findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
 			}
 		}
 		
-		wait(3.0)
+		wait(1.0)
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -922,9 +925,11 @@ class Game(val myContext: Context) {
 	
 	/**
 	 * Handle the case where the bot took too long to do anything and the AFK check came up.
+	 *
+	 * @return True if the AFK check was completed. Otherwise false if no AFK check is encountered.
 	 */
-	private fun afkCheck() {
-		findAndTapImage("afk_check", tries = 1, region = imageUtils.regionMiddle)
+	private fun afkCheck(): Boolean {
+		return findAndTapImage("afk_check", tries = 1, region = imageUtils.regionMiddle)
 	}
 	
 	/**
@@ -933,21 +938,17 @@ class Game(val myContext: Context) {
 	 * @return True if the checks passed. Otherwise false if the bot encountered a warning popup and needs to exit.
 	 */
 	fun performMiscChecks(): Boolean {
-		afkCheck()
-		
-		if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
+		if (afkCheck()) {
+			return true
+		} else if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
 			return false
-		}
-		
-		if (findAndTapImage("race_confirm_result", tries = 1, region = imageUtils.regionBottomHalf)) {
+		} else if (findAndTapImage("race_confirm_result", tries = 1, region = imageUtils.regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
-			wait(5.0)
+			wait(2.0)
 			findAndTapImage("race_end", tries = 5, region = imageUtils.regionBottomHalf)
-			wait(3.0)
-		}
-		
-		if (imageUtils.findImage("crane_game", tries = 5, region = imageUtils.regionBottomHalf).first != null) {
+			wait(1.0)
+		} else if (imageUtils.findImage("crane_game", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			// Stop when the bot has reached the Crane Game Event.
 			printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.")
 			return false
@@ -969,7 +970,9 @@ class Game(val myContext: Context) {
 		
 		val startTime: Long = System.currentTimeMillis()
 		
-		Log.d(tag, imageUtils.determineSkillPoints().toString())
+		val normalCampaign = Normal(this)
+		normalCampaign.start()
+		// Log.d(tag, "${imageUtils.determineSkillPoints()}")
 		
 		val endTime: Long = System.currentTimeMillis()
 		Log.d(tag, "Total Runtime: ${endTime - startTime}ms")
