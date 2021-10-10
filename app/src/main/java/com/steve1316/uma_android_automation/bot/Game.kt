@@ -380,12 +380,12 @@ class Game(val myContext: Context) {
 				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
 				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
 					printToLog("[TRAINING] $statName already did training so applying penalty for repeating.")
-					250
+					150
 				} else {
 					0
 				}
 				
-				val weight: Int = (25 * priority) + (20 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
+				val weight: Int = (20 * priority) + (20 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
 				
 				trainingMap[statName]?.set("weight", weight)
 				priority--
