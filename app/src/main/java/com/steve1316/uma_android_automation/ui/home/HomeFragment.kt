@@ -70,6 +70,7 @@ class HomeFragment : Fragment() {
 		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 		
 		// Main Settings page
+		val campaign: String = sharedPreferences.getString("campaign", "")!!
 		val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
 		val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
@@ -138,6 +139,12 @@ class HomeFragment : Fragment() {
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Now construct the strings to print them.
+		
+		val campaignString: String = if (campaign != "") {
+			campaign
+		} else {
+			"Please select one in the Settings"
+		}
 		
 		val characterString: String = if (selectAllCharacters) {
 			"All Characters Selected"
@@ -215,7 +222,9 @@ class HomeFragment : Fragment() {
 		
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
-		settingsStatusTextView.text = "---------- Training Event Options ----------\n" +
+		settingsStatusTextView.text =
+				"Campaign Selected: $campaignString\n" +
+				"---------- Training Event Options ----------\n" +
 				"Character Selected: $characterString\n" +
 				"Support(s) Selected: $supportCardListString\n\n" +
 				"---------- Training Options ----------\n" +
