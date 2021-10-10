@@ -262,6 +262,12 @@
 		],
 		"素敵な♪レース日和": [
 			"Energy -10\nGuts +5\nIntelligence +5/+10\nSkill points +15\nスピードスター hint +1/+3 or 抜け出し準備 hint +1"
+		],
+		"どちらも日常なんだよね～": [
+			"Energy +15\nPower +5\nSkill points +10"
+		],
+		"君もクローバーだよ♪": [
+			"Skill points +20\n食い下がり hint +2"
 		]
 	},
 	"Fuji Kiseki": {
@@ -420,6 +426,16 @@
 		"イクノ式サポートメソッド": [
 			"Intelligence +15\n逃げ駆け引き hint +3\nIkuno Dictus bond +5",
 			"Intelligence +15\n追込駆け引き hint +3\nIkuno Dictus bond +5"
+		],
+		"探偵U": [
+			"Maximum Energy +4\nStamina +10\nIntelligence +5"
+		],
+		"Uゆしき事態？": [
+			"Guts +15\n臨機応変 hint +1\nIkuno Dictus bond +5",
+			"Energy +20\nSpeed +10\nSkill points +10\nEvent chain ended"
+		],
+		"U情": [
+			"Stamina +20\nGuts +10\nSkill points +10\n大局観 hint +1"
 		]
 	},
 	"Ines Fujin": {
@@ -756,7 +772,17 @@
 			"Speed +5\nStamina +5\nMihono Bourbon bond +5"
 		],
 		"なかよし☆こよしちゃん ～実践編～": [
-			"Randomly either\nStamina +10\n逃亡者 hint +3\nMihono Bourbon bond +5\n----------\nStamina +5\n押し切り準備 hint +3\nMihono Bourbon bond +5"
+			"One of these will be selected at random\n----------\nStamina +10\n逃亡者 hint +3\nMihono Bourbon bond +5\n----------\nStamina +5\n押し切り準備 hint +3\nMihono Bourbon bond +5"
+		],
+		"ステータス『つまらない？』": [
+			"Speed +10\n勢い任せ hint +1\nMihono Bourbon bond +5",
+			"Intelligence +15\nMihono Bourbon bond +5"
+		],
+		"ステータス『そのまま』": [
+			"Stamina +5\nIntelligence +10"
+		],
+		"ステータス『楽しい！』": [
+			"Stamina +5\nIntelligence +10\n先手必勝 hint +1"
 		]
 	},
 	"Narita Brian": {
@@ -1239,6 +1265,16 @@
 		],
 		"貧しさは友だ！": [
 			"Stamina +5\nPower +10\n迅速果断 hint +1"
+		],
+		"ミイラハント～笑劇を打破せよ！～": [
+			"Power +10\nTamamo Cross bond +5",
+			"Energy +20\nSpeed +10\n道悪○ hint +1\nEvent chain ended"
+		],
+		"ミイラハント～目覚めよ狩人！～": [
+			"Speed +10\nPower +10"
+		],
+		"ミイラハント～最恐スイート・マミー～": [
+			"One of these will be selected at random\nSpeed +5\nPower +5\n百万バリキ hint +1\n----------\nSpeed +15\nPower +15\n百万バリキ hint +3"
 		]
 	},
 	"Tazuna Hayakawa": {
@@ -1469,6 +1505,17 @@
 		],
 		"いつか、『物語』の主役に": [
 			"Stamina +10\nIntelligence +10\n鋭い眼光 hint +1"
+		],
+		"読書少女と賢者の催し物": [
+			"Skill points +15"
+		],
+		"読書少女と秘密の作戦会議": [
+			"\t\nStamina +5\n右回り○ hint +2\nZenno Rob Roy bond +5",
+			"Speed +5\n左回り○ hint +2\nZenno Rob Roy bond +5",
+			"Intelligence +30\nZenno Rob Roy bond +5"
+		],
+		"読書少女とあるカエルの友人": [
+			"Skill points +20\n潜伏態勢 hint +1"
 		]
 	}
 }

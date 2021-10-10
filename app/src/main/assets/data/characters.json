@@ -1,4 +1,76 @@
 {
+	"Agnes Digital": {
+		"あなたの背中を\"推し\"たくて……": [
+			"Speed +10\nPower +10",
+			"Stamina +10\nGuts +10"
+		],
+		"推し事探訪 ～入門編～": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"公式が最大手すぐる件": [
+			"\t\nPower +5\nGuts +5",
+			"Energy +5\nIntelligence +5"
+		],
+		"萌えは無限の可能性": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"ウマ娘ちゃんクイズ☆～ルーツ編～": [
+			"Power +15\nマイルコーナー○ hint +1",
+			"Power +5"
+		],
+		"ヲタク最高すぎるんだが？": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"推し接近アラート、発令！？": [
+			"Power +10",
+			"Energy +10"
+		],
+		"推し事探訪 ～極編～": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"推し事探訪 ～免許皆伝編～": [
+			"Guts +10",
+			"Speed +10",
+			"Skill points +30"
+		],
+		"ウマ娘ちゃんクイズ☆～関係性編～": [
+			"Speed +15\n末脚 hint +1",
+			"Speed +5"
+		],
+		"\"推し\"みない愛を推しに！": [
+			"Stamina +10\nSkill points +15\n(random) Get Rising Star status",
+			"Power +20\n(random) Get Rising Star status"
+		],
+		"\"推し\"えて、デジタル先生！": [
+			"Intelligence +20",
+			"Power +20"
+		],
+		"毎日がコラボカフェ": [
+			"レコメンド hint +1",
+			"アクセラレーション hint +1"
+		],
+		"ウマ娘ちゃんクイズ☆～嗜好編～": [
+			"Stamina +5",
+			"Stamina +15\n京都レース場○ hint +1"
+		],
+		"トレードさせていただきますっ！": [
+			"Energy +10\nSkill points +5",
+			"One of these will be selected at random\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Power +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Agnes Tachyon": {
 		"速くなれるお薬依頼？": [
 			"Power +5\nGuts +5",
@@ -1760,7 +1832,7 @@
 		],
 		"甘くて真っ赤な1ページ": [
 			"Energy +10\nSkill points +5",
-			"Energy +30\nSkill points +10\n(random) Get Overweight status"
+			"One of these will be selected at random\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"雲が空を覆っても": [
 			"Speed+5\nPower +5",
@@ -1798,6 +1870,18 @@
 		"参考にしたくて": [
 			"Energy -10\nGuts +20",
 			"Energy +5\nSkill points+15"
+		],
+		"ライスのトリート大作戦！": [
+			"深呼吸 hint +2",
+			"Stamina +20"
+		],
+		"ライスのトリック大作戦！": [
+			"Intelligence +20\n(random) Get Good Practice ○ status",
+			"先行駆け引き hint +2\n(random) Get Good Practice ○ status"
+		],
+		"ライスのヴァンパイア退治大作戦！": [
+			"Energy +15",
+			"Speed +10\nPower +10"
 		],
 		"ダンスレッスン": [
 			"Stamina +10",
@@ -2182,6 +2266,22 @@
 		"1日体験☆陶芸教室": [
 			"Speed +5\nIntelligence +5",
 			"Stamina +10"
+		],
+		"Accident or Ghost": [
+			"Stamina +10\nSkill points +15",
+			"Power +20"
+		],
+		"Curse or Wrap": [
+			"食い下がり hint +2\n(random) Get Charming ○ status",
+			"Speed +20\n(random) Get Charming ○ status"
+		],
+		"Search or Mommy": [
+			"Intelligence +20",
+			"読解力 hint +2"
+		],
+		"ギュッとマッサージ！": [
+			"Guts +10",
+			"Speed +5\nIntelligence +5"
 		],
 		"ダンスレッスン": [
 			"Stamina +10",
