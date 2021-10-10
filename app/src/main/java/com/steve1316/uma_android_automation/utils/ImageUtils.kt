@@ -904,19 +904,17 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 	}
 	
-	fun getRelativeCoordinates(oldX: Int, oldY: Int): Pair<Int, Int> {
-		return if (!isDefault) {
-			val percentageX: Double = (oldX.toDouble() / 1080.0)
-			val percentageY: Double = (oldY.toDouble() / 2400.0)
-			Log.d(tag, "Percentages: $percentageX, $percentageY")
-			
-			val newX: Int = (percentageX * displayWidth.toDouble()).toInt()
-			val newY: Int = (percentageY * displayHeight.toDouble()).toInt()
-			Log.d(tag, "Converted $oldX, $oldY to $newX, $newY")
-			Pair(newX, newY)
+	/**
+	 * Convert absolute coordinates on 1080p to relative coordinates on different resolutions.
+	 *
+	 * @param old The old absolute coordinate based off of the 1080p resolution.
+	 * @return The new relative coordinate based off of the current resolution.
+	 */
+	fun rel(old: Int): Int {
+		return if (isDefault) {
+			old
 		} else {
-			Log.d(tag, "Still using old $oldX, $oldY")
-			Pair(oldX, oldY)
+			(old.toDouble() * (displayWidth.toDouble() / 1080.0)).toInt()
 		}
 	}
 	
@@ -926,18 +924,19 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return Number of skill points or -1 if not found.
 	 */
 	fun determineSkillPoints(): Int {
-		val (statSpeedLocation, sourceBitmap) = findImage("stat_speed")
+		val (skillPointLocation, sourceBitmap) = findImage("skill_points")
 		
-		return if (statSpeedLocation != null) {
+		return if (skillPointLocation != null) {
 			val croppedBitmap = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap, statSpeedLocation.x.toInt() + (776 * 1.36).toInt(), statSpeedLocation.y.toInt() + (28 * 1.50).toInt(), 150, 70)
+				Bitmap.createBitmap(sourceBitmap, skillPointLocation.x.toInt() - 75, skillPointLocation.y.toInt() + 45, 150, 70)
 			} else {
-				val new = getRelativeCoordinates(statSpeedLocation.x.toInt() + 776, statSpeedLocation.y.toInt() + 28)
-				Bitmap.createBitmap(sourceBitmap, new.first, new.second, 137, 70)
+				val new = Pair(skillPointLocation.x.toInt() - rel(70), skillPointLocation.y.toInt() + rel(28))
+				Bitmap.createBitmap(sourceBitmap, new.first, new.second, rel(135), rel(70))
 			}
 			
 			val cvImage = Mat()
 			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 			Imgcodecs.imwrite("$matchFilePath/debugSkillPoints.png", cvImage)
 			
 			tessBaseAPI.setImage(croppedBitmap)
