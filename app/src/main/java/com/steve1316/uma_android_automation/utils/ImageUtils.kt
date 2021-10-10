@@ -217,7 +217,8 @@ class ImageUtils(context: Context, private val game: Game) {
 					// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for debugging purposes to see if this
 					// algorithm found the match accurately or not.
 					if (matchFilePath != "") {
-						Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 128.0, 0.0), 5)
+						val tempLocation = Point(matchLocation.x - (templateMat.cols() / 2), matchLocation.y - (templateMat.rows() / 2))
+						Imgproc.rectangle(sourceMat, tempLocation, Point(matchLocation.x, matchLocation.y), Scalar(0.0, 0.0, 0.0), 10)
 						Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
 					}
 				}
@@ -229,8 +230,8 @@ class ImageUtils(context: Context, private val game: Game) {
 				
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
-					matchLocation.x = sourceBitmap.width - (region[0] + matchLocation.x)
-					matchLocation.y = sourceBitmap.height - (region[1] + matchLocation.y)
+					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
+					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
 				}
 				
 				return true
@@ -329,7 +330,8 @@ class ImageUtils(context: Context, private val game: Game) {
 				matchLocation.y += (templateMat.rows() / 2)
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
-				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(255.0, 255.0, 255.0), 5)
+				val tempLocation = Point(matchLocation.x - (templateMat.cols() / 2), matchLocation.y - (templateMat.rows() / 2))
+				Imgproc.rectangle(sourceMat, tempLocation, Point(matchLocation.x, matchLocation.y), Scalar(0.0, 0.0, 0.0), 10)
 				
 				matchLocations.add(matchLocation)
 			} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= setConfidence) {
@@ -341,7 +343,8 @@ class ImageUtils(context: Context, private val game: Game) {
 				matchLocation.y += (templateMat.rows() / 2)
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
-				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(255.0, 255.0, 255.0), 5)
+				val tempLocation = Point(matchLocation.x - (templateMat.cols() / 2), matchLocation.y - (templateMat.rows() / 2))
+				Imgproc.rectangle(sourceMat, tempLocation, Point(matchLocation.x, matchLocation.y), Scalar(0.0, 0.0, 0.0), 10)
 				
 				matchLocations.add(matchLocation)
 			}
@@ -361,7 +364,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				val tempMatchLocation: Point = mmr.minLoc
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
-				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(255.0, 255.0, 255.0), 5)
+				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
 				
 				if (debugMode) {
 					game.printToLog("[DEBUG] Match found with $minVal <= ${1.0 - setConfidence} at Point $matchLocation with scale: $newScale.", tag = tag)
@@ -379,7 +382,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				val tempMatchLocation: Point = mmr.maxLoc
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
-				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(255.0, 255.0, 255.0), 5)
+				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
 				
 				if (debugMode) {
 					game.printToLog("[DEBUG] Match found with $maxVal >= $setConfidence at Point $matchLocation with scale: $newScale.", tag = tag)
