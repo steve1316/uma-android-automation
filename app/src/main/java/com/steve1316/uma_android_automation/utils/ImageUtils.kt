@@ -29,54 +29,45 @@ import java.text.DecimalFormat
 class ImageUtils(context: Context, private val game: Game) {
 	private val tag: String = "[${MainActivity.loggerTag}]ImageUtils"
 	private var myContext = context
+	private val matchMethod: Int = Imgproc.TM_CCOEFF_NORMED
+	private val decimalFormat = DecimalFormat("#.###")
+	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+	private val tessBaseAPI: TessBaseAPI
+	private val tesseractLanguages = arrayListOf("jpn")
 	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// SharedPreferences
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	private val campaign: String = sharedPreferences.getString("campaign", "")!!
 	private var customScale: Double = sharedPreferences.getString("customScale", "1.0")!!.toDouble()
 	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// Device configuration
 	val displayWidth: Int = MediaProjectionService.displayWidth
 	val displayHeight: Int = MediaProjectionService.displayHeight
+	val isLowerEnd: Boolean = (displayWidth == 720)
+	private val isDefault: Boolean = (displayWidth == 1080)
+	val isTablet: Boolean = (displayWidth == 1600 && displayHeight == 2560) || (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Portrait Mode
+	val isLandscape: Boolean = (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Landscape Mode
+	
+	// Scales
+	private val lowerEndScales: MutableList<Double> = mutableListOf(0.60, 0.61, 0.62, 0.63, 0.64, 0.65, 0.67, 0.68, 0.69, 0.70)
+	private val middleEndScales: MutableList<Double> = mutableListOf(
+		0.70, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83, 0.84, 0.85, 0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99
+	)
+	private val tabletPortraitScales: MutableList<Double> = mutableListOf(0.70, 0.71, 0.72, 0.73, 0.74, 0.75)
+	private val tabletLandscapeScales: MutableList<Double> = mutableListOf(0.55, 0.56, 0.57, 0.58, 0.59, 0.60)
 	
 	// Define template matching regions of the screen.
 	val regionTopHalf: IntArray = intArrayOf(0, 0, displayWidth, displayHeight / 2)
 	val regionBottomHalf: IntArray = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2)
 	val regionMiddle: IntArray = intArrayOf(0, displayHeight / 4, displayWidth, displayHeight / 2)
 	
-	private val isDefault: Boolean = (displayWidth == 1080) // 1080p
-	val isLowerEnd: Boolean = (displayWidth == 720) // 720p
-	val isTablet: Boolean = (displayWidth == 1600 && displayHeight == 2560) || (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Portrait Mode
-	val isLandscape: Boolean = (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Landscape Mode
-	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	// Scales
-	
-	// 720 pixels in width.
-	private val lowerEndScales: MutableList<Double> = mutableListOf(0.60, 0.61, 0.62, 0.63, 0.64, 0.65, 0.67, 0.68, 0.69, 0.70)
-	
-	// Middle ground between 720 and 1080 pixels.
-	private val middleEndScales: MutableList<Double> = mutableListOf(
-		0.70, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83, 0.84, 0.85, 0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99
-	)
-	
-	// 1600 pixels in width in Portrait Mode.
-	private val tabletPortraitScales: MutableList<Double> = mutableListOf(0.70, 0.71, 0.72, 0.73, 0.74, 0.75)
-	
-	// 2560 pixels in width in Landscape Mode.
-	private val tabletLandscapeScales: MutableList<Double> = mutableListOf(0.55, 0.56, 0.57, 0.58, 0.59, 0.60)
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
-	
-	// Initialize Google's ML OCR.
-	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-	
-	private val decimalFormat = DecimalFormat("#.###")
-	
-	private val matchMethod: Int = Imgproc.TM_CCOEFF_NORMED
-	
-	private val tesseractLanguages = arrayListOf("jpn")
-	private val tessBaseAPI: TessBaseAPI
 	
 	companion object {
 		private var matchFilePath: String = ""
@@ -915,11 +906,12 @@ class ImageUtils(context: Context, private val game: Game) {
 	
 	fun getRelativeCoordinates(oldX: Int, oldY: Int): Pair<Int, Int> {
 		return if (!isDefault) {
-			val percentageX = (oldX * 100) / 1080
-			val percentageY = (oldY * 100) / 2400
+			val percentageX: Double = (oldX.toDouble() / 1080.0)
+			val percentageY: Double = (oldY.toDouble() / 2400.0)
+			Log.d(tag, "Percentages: $percentageX, $percentageY")
 			
-			val newX = (percentageX * displayWidth) / 100
-			val newY = (percentageY * displayHeight) / 100
+			val newX: Int = (percentageX * displayWidth.toDouble()).toInt()
+			val newY: Int = (percentageY * displayHeight.toDouble()).toInt()
 			Log.d(tag, "Converted $oldX, $oldY to $newX, $newY")
 			Pair(newX, newY)
 		} else {
