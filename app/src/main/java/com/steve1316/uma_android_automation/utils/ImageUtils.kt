@@ -724,13 +724,11 @@ class ImageUtils(context: Context, private val game: Game) {
 	/**
 	 * Find the total stat gains for the selected Training option.
 	 *
+	 * @param currentStat The stat that the bot already selected.
+	 * @param speedLocation A Pair object containing the location of the stat_speed image asset and the source bitmap to save time trying to find it again. Defaults to null.
 	 * @return Sum of stats to be gained.
 	 */
-	fun findTotalStatGains(currentStat: String): Int {
-		val test = mutableListOf<Int>()
-		
-		val (speedStatTextLocation, sourceBitmap) = findImage("stat_speed", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
-		
+	fun findTotalStatGains(currentStat: String, speedLocation: Pair<Point?, Bitmap?> = Pair(null, null)): Int {
 		val statsToCheck: ArrayList<String> = when (currentStat) {
 			"Speed" -> {
 				arrayListOf("Speed", "Power")
@@ -749,87 +747,157 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 		}
 		
-		var tries = 2
-		while (tries > 0) {
-			statsToCheck.forEach { stat ->
-				val xOffset: Int = when (stat) {
-					"Speed" -> {
-						-65
-					}
-					"Stamina" -> {
-						107
-					}
-					"Power" -> {
-						271
-					}
-					"Guts" -> {
-						443
-					}
-					else -> {
-						615
-					}
-				}
-				
-				// Crop the region.
-				val croppedBitmap: Bitmap = if (isTablet) {
-					Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + (xOffset * 1.36).toInt(), speedStatTextLocation.y.toInt() - (92 * 1.30).toInt(), 177, 80)
-				} else {
-					Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + xOffset, speedStatTextLocation.y.toInt() - 92, 130, 65)
-				}
-				
-				// Make the cropped screenshot grayscale.
-				val cvImage = Mat()
-				Utils.bitmapToMat(croppedBitmap, cvImage)
-				Imgcodecs.imwrite("$matchFilePath/debugFindTotalStatGains.png", cvImage)
-				Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-				
-				// Blur the cropped region.
-				Imgproc.medianBlur(cvImage, cvImage, 3)
-				
-				// Threshold the cropped region.
-				Imgproc.threshold(cvImage, cvImage, 110.0 + (5 * tries), 200.0, Imgproc.THRESH_BINARY)
-				Utils.matToBitmap(cvImage, croppedBitmap)
-				
-				// Create a InputImage object for Google's ML OCR.
-				val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
-				
-				// Count up all of the total stat gains for this training selection.
-				textRecognizer.process(inputImage).addOnSuccessListener {
-					if (it.textBlocks.size != 0) {
-						for (block in it.textBlocks) {
-							try {
-								// Regex to eliminate characters.
-								val reg = Regex("[a-zA-Z]+")
-								val regexResult: String = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
-								
-								Log.d(tag, "Stats detected: $regexResult")
-								
-								test.add(regexResult.toInt())
-							} catch (e: NumberFormatException) {
-							}
-						}
-					}
-				}.addOnFailureListener {
-					game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
-				}
-				
-				// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
-				game.wait(0.1)
-			}
-			
-			tries -= 1
-		}
+		val customRegion = intArrayOf(displayWidth - (displayWidth / 3), 0, (displayWidth / 3), displayHeight)
+		val numberofSpeed = findAll("stat_speed_block", region = customRegion).size
+		val numberOfStamina = findAll("stat_stamina_block", region = customRegion).size
+		val numberOfPower = findAll("stat_power_block", region = customRegion).size
+		val numberOfGuts = findAll("stat_guts_block", region = customRegion).size
+		val numberOfIntelligence = findAll("stat_intelligence_block", region = customRegion).size
+		var totalStatGain = 0
 		
-		// An attempt at normalizing the result to account for inaccuracies.
-		var result: Int = test.sum() / 2
-		if (test.size != 0) {
-			val resultMax = test.maxOrNull()
-			if (resultMax != null) {
-				result += resultMax / 2
+		// This is assuming Great Mood with +20% stat modifier.
+		when (currentStat) {
+			"Speed" -> {
+				totalStatGain += (numberofSpeed * 16) + (numberOfStamina * 12) + (numberOfPower * 12) + (numberOfGuts * 12) + (numberOfIntelligence * 12)
+			}
+			"Stamina" -> {
+				totalStatGain += (numberofSpeed * 12) + (numberOfStamina * 16) + (numberOfPower * 12) + (numberOfGuts * 12) + (numberOfIntelligence * 12)
+			}
+			"Power" -> {
+				totalStatGain += (numberofSpeed * 12) + (numberOfStamina * 12) + (numberOfPower * 16) + (numberOfGuts * 12) + (numberOfIntelligence * 12)
+			}
+			"Guts" -> {
+				totalStatGain += (numberofSpeed * 12) + (numberOfStamina * 12) + (numberOfPower * 12) + (numberOfGuts * 16) + (numberOfIntelligence * 12)
+			}
+			"Intelligence" -> {
+				totalStatGain += (numberofSpeed * 12) + (numberOfStamina * 12) + (numberOfPower * 12) + (numberOfGuts * 12) + (numberOfIntelligence * 16)
 			}
 		}
 		
-		return result
+		return totalStatGain
+		
+//		val test = mutableListOf<Int>()
+//
+//		val (speedStatTextLocation: Point?, sourceBitmap: Bitmap) = if (speedLocation == Pair(null, null)) {
+//			if (campaign == "Normal") {
+//				findImage("stat_speed", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
+//			} else {
+//				findImage("aoharu_stat_speed", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
+//			}
+//		} else {
+//			Pair(speedLocation.first!!, speedLocation.second!!)
+//		}
+//
+//		val statsToCheck: ArrayList<String> = when (currentStat) {
+//			"Speed" -> {
+//				arrayListOf("Speed", "Power")
+//			}
+//			"Stamina" -> {
+//				arrayListOf("Stamina", "Guts")
+//			}
+//			"Power" -> {
+//				arrayListOf("Stamina", "Power")
+//			}
+//			"Guts" -> {
+//				arrayListOf("Speed", "Power", "Guts")
+//			}
+//			else -> {
+//				arrayListOf("Speed", "Intelligence")
+//			}
+//		}
+//
+//		var tries = 2
+//		while (tries > 0) {
+//			statsToCheck.forEach { stat ->
+//				val xOffset: Int = when (stat) {
+//					"Speed" -> {
+//						-60
+//					}
+//					"Stamina" -> {
+//						-60 + (170 * 1)
+//					}
+//					"Power" -> {
+//						-60 + (170 * 2)
+//					}
+//					"Guts" -> {
+//						-60 + (170 * 3)
+//					}
+//					else -> {
+//						-60 + (170 * 4)
+//					}
+//				}
+//
+//				// Crop the region.
+//				val croppedBitmap: Bitmap = if (isTablet) {
+//					if (campaign == "Normal") {
+//						Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + (xOffset * 1.36).toInt(), speedStatTextLocation.y.toInt() - (92 * 1.30).toInt(), 177, 80)
+//					} else {
+//						Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + (xOffset * 1.36).toInt(), speedStatTextLocation.y.toInt() - (62 * 1.30).toInt(), 177, 80)
+//					}
+//				} else {
+//					if (campaign == "Normal") {
+//						Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + xOffset, speedStatTextLocation.y.toInt() - 92, 130, 65)
+//					} else {
+//						Bitmap.createBitmap(sourceBitmap, speedStatTextLocation!!.x.toInt() + xOffset, speedStatTextLocation.y.toInt() - 65, 130, 45)
+//					}
+//				}
+//
+//				// TODO: Get image asset for training with spirit explosion available.
+//
+//				// Make the cropped screenshot grayscale.
+//				val cvImage = Mat()
+//				Utils.bitmapToMat(croppedBitmap, cvImage)
+//				Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+//				Imgcodecs.imwrite("$matchFilePath/debugFindTotalStatGains.png", cvImage)
+//
+//				// Blur the cropped region.
+//				Imgproc.medianBlur(cvImage, cvImage, 3)
+//
+//				// Threshold the cropped region.
+//				Imgproc.threshold(cvImage, cvImage, 127.0, 128.0, Imgproc.THRESH_BINARY_INV)
+//				Imgcodecs.imwrite("$matchFilePath/debugFindTotalStatGains-$tries.png", cvImage)
+//				Utils.matToBitmap(cvImage, croppedBitmap)
+//
+//				// Create a InputImage object for Google's ML OCR.
+//				val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
+//
+//				// Count up all of the total stat gains for this training selection.
+//				textRecognizer.process(inputImage).addOnSuccessListener {
+//					if (it.textBlocks.size != 0) {
+//						for (block in it.textBlocks) {
+//							try {
+//								// Regex to eliminate characters.
+//								val reg = Regex("[a-zA-Z]+")
+//								val regexResult: String = reg.replace(block.text, "").replace("+", "").replace("-", "").trim()
+//
+//								Log.d(tag, "Stats detected: $regexResult")
+//
+//								test.add(regexResult.toInt())
+//							} catch (e: NumberFormatException) {
+//							}
+//						}
+//					}
+//				}.addOnFailureListener {
+//					game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
+//				}
+//
+//				// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
+//				game.wait(0.1)
+//			}
+//
+//			tries -= 1
+//		}
+//
+//		// An attempt at normalizing the result to account for inaccuracies.
+//		var result: Int = test.sum() / 2
+//		if (test.size != 0) {
+//			val resultMax = test.maxOrNull()
+//			if (resultMax != null) {
+//				result += resultMax / 2
+//			}
+//		}
+//
+//		return result
 	}
 	
 	/**
