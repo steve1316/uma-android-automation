@@ -131,7 +131,7 @@ class Game(val myContext: Context) {
 		
 		return if (tempLocation != null) {
 			Log.d(tag, "Found and going to tap: $imageName")
-			gestureUtils.tap(tempLocation.x, tempLocation.y, "images", imageName, taps = taps)
+			gestureUtils.tap(tempLocation.x, tempLocation.y, imageName, taps = taps)
 			true
 		} else {
 			false
@@ -337,12 +337,12 @@ class Game(val myContext: Context) {
 						
 						if (imageUtils.isTablet) {
 							if (training == "Stamina") {
-								gestureUtils.tap(speedStatTextLocation.x + (newX * 1.05), speedStatTextLocation.y + (newY * 1.50), "images", "training_option_circular")
+								gestureUtils.tap(speedStatTextLocation.x + (newX * 1.05), speedStatTextLocation.y + (newY * 1.50), "training_option_circular")
 							} else {
-								gestureUtils.tap(speedStatTextLocation.x + (newX * 1.36), speedStatTextLocation.y + (newY * 1.50), "images", "training_option_circular")
+								gestureUtils.tap(speedStatTextLocation.x + (newX * 1.36), speedStatTextLocation.y + (newY * 1.50), "training_option_circular")
 							}
 						} else {
-							gestureUtils.tap(speedStatTextLocation.x + newX, speedStatTextLocation.y + newY, "images", "training_option_circular")
+							gestureUtils.tap(speedStatTextLocation.x + newX, speedStatTextLocation.y + newY, "training_option_circular")
 						}
 						
 						val failureChance: Int = imageUtils.findTrainingFailureChance()
@@ -539,7 +539,7 @@ class Game(val myContext: Context) {
 		}
 		
 		if (selectedLocation != null) {
-			gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "images", "training_event_active")
+			gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "training_event_active")
 		}
 		
 		printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.")
@@ -601,9 +601,9 @@ class Game(val myContext: Context) {
 			wait(0.5)
 			
 			if (imageUtils.isTablet) {
-				gestureUtils.tap(statusLocation.x, statusLocation.y + (325 * 1.36), "images", "ok")
+				gestureUtils.tap(statusLocation.x, statusLocation.y + (325 * 1.36), "ok")
 			} else {
-				gestureUtils.tap(statusLocation.x, statusLocation.y + 325, "images", "ok")
+				gestureUtils.tap(statusLocation.x, statusLocation.y + 325, "ok")
 			}
 			
 			// Now determine the best extra race with the following parameters: highest fans and double star prediction.
@@ -628,9 +628,9 @@ class Game(val myContext: Context) {
 				// Select the next extra race.
 				if (count != 2) {
 					if (imageUtils.isTablet) {
-						gestureUtils.tap(extraRaceLocation[count].x - (100 * 1.36), extraRaceLocation[count].y + (150 * 1.50), "images", "race_extra_selection")
+						gestureUtils.tap(extraRaceLocation[count].x - (100 * 1.36), extraRaceLocation[count].y + (150 * 1.50), "race_extra_selection")
 					} else {
-						gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "images", "race_extra_selection")
+						gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "race_extra_selection")
 					}
 					
 					wait(0.5)
@@ -660,11 +660,11 @@ class Game(val myContext: Context) {
 				printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.")
 				
 				// Select the extra race that matches the double star prediction and the most fan gain.
-				gestureUtils.tap(extraRaceLocation[index].x - (100 * 1.36), extraRaceLocation[index].y, "images", "race_extra_selection")
+				gestureUtils.tap(extraRaceLocation[index].x - (100 * 1.36), extraRaceLocation[index].y, "race_extra_selection")
 			} else {
 				// If no maximum is determined, select the very first extra race.
 				printToLog("[RACE] Selecting the first Extra Race by default.")
-				gestureUtils.tap(extraRaceLocation[0].x - (100 * 1.36), extraRaceLocation[0].y, "images", "race_extra_selection")
+				gestureUtils.tap(extraRaceLocation[0].x - (100 * 1.36), extraRaceLocation[0].y, "race_extra_selection")
 			}
 			
 			// Confirm the selection and the resultant popup and then wait for the game to load.
@@ -721,11 +721,11 @@ class Game(val myContext: Context) {
 			wait(3.0)
 			
 			// Now tap on the screen to get to the next screen.
-			gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			gestureUtils.tap(500.0, 1000.0, "ok")
 			wait(0.3)
-			gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			gestureUtils.tap(500.0, 1000.0, "ok")
 			wait(0.3)
-			gestureUtils.tap(500.0, 1000.0, "images", "ok")
+			gestureUtils.tap(500.0, 1000.0, "ok")
 			wait(2.0)
 			
 			// Check if the race needed to be retried.
