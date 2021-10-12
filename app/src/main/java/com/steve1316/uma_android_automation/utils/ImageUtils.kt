@@ -911,13 +911,23 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		if (energyTextLocation != null) {
 			// Crop the source screenshot to only contain the day number.
-			val croppedBitmap = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
+			val croppedBitmap: Bitmap = if (campaign == "Normal") {
+				 if (isTablet) {
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
+				} else {
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+				}
 			} else {
-				Bitmap.createBitmap(sourceBitmap, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+				if (isTablet) {
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (260 * 1.32).toInt(), energyTextLocation.y.toInt() - (140 * 1.32).toInt(), 135, 100)
+				} else {
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 260, energyTextLocation.y.toInt() - 140, 105, 75)
+				}
 			}
+			
 			val cvImage = Mat()
 			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 			Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
 			
 			// Create a InputImage object for Google's ML OCR.
