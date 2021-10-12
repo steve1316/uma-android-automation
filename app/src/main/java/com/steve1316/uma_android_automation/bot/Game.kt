@@ -19,37 +19,54 @@ import java.util.concurrent.TimeUnit
  */
 class Game(val myContext: Context) {
 	private val tag: String = "[${MainActivity.loggerTag}]Game"
-	
-	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(myContext)
-	
-	private var debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
-	
 	val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val textDetection: TextDetection = TextDetection(this, imageUtils)
 	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// SharedPreferences
+	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(myContext)
+	private val campaign: String = sharedPreferences.getString("campaign", "")!!
+	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// Training
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
+	private val trainingMapAoHaru: MutableMap<String, MutableMap<String, Boolean>> = mutableMapOf()
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
 	private val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
+	private var firstTrainingCheck = true
+	private var previouslySelectedTraining = ""
 	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// Racing
 	private val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
 	private val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
+	private var raceRetries = 3
+	private var raceRepeatWarningCheck = false
+	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// Stops
 	val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
 	val skillPointsRequired: Int = sharedPreferences.getInt("skillPointCheck", 750)
 	private val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 	private val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
 	var detectedMandatoryRaceCheck = false
 	
-	private var firstTrainingCheck = true
-	private var previouslySelectedTraining = ""
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// Misc
 	private var inheritancesDone = 0
-	private var raceRetries = 3
-	private var raceRepeatWarningCheck = false
-	///////////////////////////
-	
 	private val startTime: Long = System.currentTimeMillis()
+	
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Returns a formatted string of the elapsed time since the bot started as HH:MM:SS format.
