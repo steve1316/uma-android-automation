@@ -246,10 +246,18 @@ class ImageUtils(context: Context, private val game: Game) {
 	 *
 	 * @param sourceBitmap Bitmap from the /files/temp/ folder.
 	 * @param templateBitmap Bitmap from the assets folder.
+	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
 	 * @param customConfidence Specify a custom confidence. Defaults to the confidence set in the app's settings.
 	 * @return ArrayList of Point objects that represents the matches found on the source screenshot.
 	 */
-	private fun matchAll(sourceBitmap: Bitmap, templateBitmap: Bitmap, customConfidence: Double = 0.0): java.util.ArrayList<Point> {
+	private fun matchAll(sourceBitmap: Bitmap, templateBitmap: Bitmap, region: IntArray = intArrayOf(0, 0, 0, 0), customConfidence: Double = 0.0): java.util.ArrayList<Point> {
+		// If a custom region was specified, crop the source screenshot.
+		val srcBitmap = if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+			Bitmap.createBitmap(sourceBitmap, region[0], region[1], region[2], region[3])
+		} else {
+			sourceBitmap
+		}
+		
 		// Scale images if the device is not 1080p which is supported by default.
 		val scales: MutableList<Double> = when {
 			customScale != 1.0 -> {
@@ -298,7 +306,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 			
 			// Create the Mats of both source and template images.
-			Utils.bitmapToMat(sourceBitmap, sourceMat)
+			Utils.bitmapToMat(srcBitmap, sourceMat)
 			Utils.bitmapToMat(tmp, templateMat)
 			
 			// Make the Mats grayscale for the source and the template.
@@ -329,6 +337,12 @@ class ImageUtils(context: Context, private val game: Game) {
 				matchLocation.x += (templateMat.cols() / 2)
 				matchLocation.y += (templateMat.rows() / 2)
 				
+				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
+				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
+					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
+				}
+				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
 				val tempLocation = Point(matchLocation.x - (templateMat.cols() / 2), matchLocation.y - (templateMat.rows() / 2))
 				Imgproc.rectangle(sourceMat, tempLocation, Point(matchLocation.x, matchLocation.y), Scalar(0.0, 0.0, 0.0), 10)
@@ -341,6 +355,12 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Center the location coordinates and then save it.
 				matchLocation.x += (templateMat.cols() / 2)
 				matchLocation.y += (templateMat.rows() / 2)
+				
+				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
+				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
+					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
+				}
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
 				val tempLocation = Point(matchLocation.x - (templateMat.cols() / 2), matchLocation.y - (templateMat.rows() / 2))
@@ -374,6 +394,13 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Center the location coordinates and then save it.
 				tempMatchLocation.x += (templateMat.cols() / 2)
 				tempMatchLocation.y += (templateMat.rows() / 2)
+				
+				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
+				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+					tempMatchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + tempMatchLocation.x))
+					tempMatchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + tempMatchLocation.y))
+				}
+				
 				if (!matchLocations.contains(tempMatchLocation) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y)) &&
 					!matchLocations.contains(Point(tempMatchLocation.x, tempMatchLocation.y + 1.0)) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y + 1.0))) {
 					matchLocations.add(tempMatchLocation)
@@ -392,6 +419,13 @@ class ImageUtils(context: Context, private val game: Game) {
 				// Center the location coordinates and then save it.
 				tempMatchLocation.x += (templateMat.cols() / 2)
 				tempMatchLocation.y += (templateMat.rows() / 2)
+				
+				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
+				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
+					tempMatchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + tempMatchLocation.x))
+					tempMatchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + tempMatchLocation.y))
+				}
+				
 				if (!matchLocations.contains(tempMatchLocation) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y)) &&
 					!matchLocations.contains(Point(tempMatchLocation.x, tempMatchLocation.y + 1.0)) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y + 1.0))) {
 					matchLocations.add(tempMatchLocation)
@@ -537,16 +571,17 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * Finds all occurrences of the specified image in the images folder.
 	 *
 	 * @param templateName File name of the template image.
+	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
 	 * @return An ArrayList of Point objects containing all the occurrences of the specified image or null if not found.
 	 */
-	fun findAll(templateName: String): ArrayList<Point> {
+	fun findAll(templateName: String, region: IntArray = intArrayOf(0, 0, 0, 0)): ArrayList<Point> {
 		val (sourceBitmap, templateBitmap) = getBitmaps(templateName)
 		
 		// Clear the ArrayList first before attempting to find all matches.
 		matchLocations.clear()
 		
 		if (sourceBitmap != null && templateBitmap != null) {
-			matchAll(sourceBitmap, templateBitmap)
+			matchAll(sourceBitmap, templateBitmap, region = region)
 		}
 		
 		// Sort the match locations by ascending x and y coordinates.
