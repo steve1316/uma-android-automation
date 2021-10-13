@@ -46,12 +46,12 @@ class ImageUtils(context: Context, private val game: Game) {
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	// Device configuration
-	val displayWidth: Int = MediaProjectionService.displayWidth
-	val displayHeight: Int = MediaProjectionService.displayHeight
-	val isLowerEnd: Boolean = (displayWidth == 720)
+	private val displayWidth: Int = MediaProjectionService.displayWidth
+	private val displayHeight: Int = MediaProjectionService.displayHeight
+	private val isLowerEnd: Boolean = (displayWidth == 720)
 	private val isDefault: Boolean = (displayWidth == 1080)
 	val isTablet: Boolean = (displayWidth == 1600 && displayHeight == 2560) || (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Portrait Mode
-	val isLandscape: Boolean = (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Landscape Mode
+	private val isLandscape: Boolean = (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Landscape Mode
 	private val isSplitScreen: Boolean = false // Uma Musume Pretty Derby is only playable in Portrait mode.
 	
 	// Scales
@@ -486,16 +486,16 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @param tries Number of tries before failing. Defaults to 3.
 	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
 	 * @param suppressError Whether or not to suppress saving error messages to the log. Defaults to false.
-	 * @return Pair object consisting of the Point object containing the location of the match and the source screenshot.
+	 * @return Pair object consisting of the Point object containing the location of the match and the source screenshot. Can be null.
 	 */
-	fun findImage(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Pair<Point?, Bitmap> {
+	fun findImage(templateName: String, tries: Int = 3, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Pair<Point?, Bitmap?> {
 		var numberOfTries = tries
 		
 		if (debugMode) {
 			game.printToLog("\n[DEBUG] Starting process to find the ${templateName.uppercase()} button image...", tag = tag)
 		}
 		
-		val (sourceBitmap, templateBitmap) = getBitmaps(templateName)
+		var (sourceBitmap, templateBitmap) = getBitmaps(templateName)
 		
 		while (numberOfTries > 0) {
 			if (sourceBitmap != null && templateBitmap != null) {
@@ -511,17 +511,16 @@ class ImageUtils(context: Context, private val game: Game) {
 					}
 					
 					Log.d(tag, "Failed to find the ${templateName.uppercase()} button. Trying again...")
-					
 					game.wait(0.1)
+					sourceBitmap = getSourceBitmap()
 				} else {
 					game.printToLog("[SUCCESS] Found the ${templateName.uppercase()} at $matchLocation.", tag = tag)
-					
 					return Pair(matchLocation, sourceBitmap)
 				}
 			}
 		}
 		
-		return Pair(null, sourceBitmap!!)
+		return Pair(null, sourceBitmap)
 	}
 	
 	/**
@@ -540,9 +539,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			game.printToLog("\n[DEBUG] Starting process to find the ${templateName.uppercase()} header image...", tag = tag)
 		}
 		
+		var (sourceBitmap, templateBitmap) = getBitmaps(templateName + "_header")
+		
 		while (numberOfTries > 0) {
-			val (sourceBitmap, templateBitmap) = getBitmaps(templateName + "_header")
-			
 			if (sourceBitmap != null && templateBitmap != null) {
 				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, region)
 				if (!resultFlag) {
@@ -552,6 +551,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					}
 					
 					game.wait(0.1)
+					sourceBitmap = getSourceBitmap()
 				} else {
 					game.printToLog("[SUCCESS] Current location confirmed to be at ${templateName.uppercase()}.", tag = tag)
 					return true
@@ -612,7 +612,6 @@ class ImageUtils(context: Context, private val game: Game) {
 		match(sourceBitmap!!, energyTemplateBitmap!!)
 		
 		// Use the match location acquired from finding the energy text image and acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
-		Log.d(tag, matchLocation.toString())
 		val newX: Int
 		val newY: Int
 		var croppedBitmap: Bitmap = if (isTablet) {
@@ -678,17 +677,18 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
-		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance", region = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2))
+		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance")
 		
 		val croppedBitmap: Bitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt() + 75, trainingSelectionLocation.y.toInt() - 25, 120, 50)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 75, trainingSelectionLocation.y.toInt() - 25, 120, 50)
 		} else {
-			Bitmap.createBitmap(sourceBitmap, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 17, 89, 37)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 17, 89, 37)
 		}
 		
 		// Save the cropped image for debugging purposes.
 		val tempMat = Mat()
 		Utils.bitmapToMat(croppedBitmap, tempMat)
+		Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2GRAY)
 		Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance.png", tempMat)
 		
 		// Create a InputImage object for Google's ML OCR.
@@ -777,17 +777,17 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		if (energyTextLocation != null) {
 			// Crop the source screenshot to only contain the day number.
-			val croppedBitmap: Bitmap = if (campaign == "Normal") {
-				 if (isTablet) {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
-				} else {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
-				}
-			} else {
+			val croppedBitmap: Bitmap = if (campaign == "Ao Haru") {
 				if (isTablet) {
 					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (260 * 1.32).toInt(), energyTextLocation.y.toInt() - (140 * 1.32).toInt(), 135, 100)
 				} else {
 					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 260, energyTextLocation.y.toInt() - 140, 105, 75)
+				}
+			} else {
+				if (isTablet) {
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
+				} else {
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
 				}
 			}
 			
@@ -920,10 +920,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return if (skillPointLocation != null) {
 			val croppedBitmap = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap, skillPointLocation.x.toInt() - 75, skillPointLocation.y.toInt() + 45, 150, 70)
+				Bitmap.createBitmap(sourceBitmap!!, skillPointLocation.x.toInt() - 75, skillPointLocation.y.toInt() + 45, 150, 70)
 			} else {
 				val new = Pair(skillPointLocation.x.toInt() - rel(70), skillPointLocation.y.toInt() + rel(28))
-				Bitmap.createBitmap(sourceBitmap, new.first, new.second, rel(135), rel(70))
+				Bitmap.createBitmap(sourceBitmap!!, new.first, new.second, rel(135), rel(70))
 			}
 			
 			val cvImage = Mat()
