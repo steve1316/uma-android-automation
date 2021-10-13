@@ -58,16 +58,16 @@ class MediaProjectionService : Service() {
 		private lateinit var windowManager: WindowManager
 		private var oldRotation: Int = 0
 		private lateinit var imageReader: ImageReader
-		private var SCREENSHOT_NUM: Int = 0
 		var isRunning: Boolean = false
 		
 		/**
 		 * Tell the ImageReader to grab the latest acquired screenshot and process it into a Bitmap.
 		 *
+		 * @param saveImage Flag to check whether to save the image to a file in the temp directory or not. Defaults to false.
 		 * @param isException Saves the screenshot as part of Exception logging or not. Defaults to false.
 		 * @return Bitmap of the latest acquired screenshot.
 		 */
-		fun takeScreenshotNow(isException: Boolean = false): Bitmap? {
+		fun takeScreenshotNow(saveImage: Boolean = false, isException: Boolean = false): Bitmap? {
 			var sourceBitmap: Bitmap? = null
 			
 			val image: Image? = imageReader.acquireLatestImage()
@@ -83,20 +83,21 @@ class MediaProjectionService : Service() {
 				sourceBitmap = Bitmap.createBitmap(displayWidth + rowPadding / pixelStride, displayHeight, Bitmap.Config.ARGB_8888)
 				sourceBitmap.copyPixelsFromBuffer(buffer)
 				
-				// Now write the Bitmap to the specified file inside the /files/temp/ folder.
-				SCREENSHOT_NUM++
-				val fos = if (isException) {
-					FileOutputStream("$tempDirectory/exception.png")
-				} else {
-					FileOutputStream("$tempDirectory/source.png")
-				}
-				sourceBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-				
-				// Perform cleanup by closing streams and freeing up memory.
-				try {
-					fos.close()
-				} catch (ioe: IOException) {
-					ioe.printStackTrace()
+				// Now write the Bitmap to the specified file inside the /files/temp/ folder. This adds about 500-600ms to runtime every time this is called when Debug Mode is on.
+				if (saveImage) {
+					val fos = if (isException) {
+						FileOutputStream("$tempDirectory/exception.png")
+					} else {
+						FileOutputStream("$tempDirectory/source.png")
+					}
+					sourceBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+					
+					// Perform cleanup by closing streams and freeing up memory.
+					try {
+						fos.close()
+					} catch (ioe: IOException) {
+						ioe.printStackTrace()
+					}
 				}
 				
 				image.close()

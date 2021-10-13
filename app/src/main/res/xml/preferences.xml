@@ -73,7 +73,7 @@
 
         <CheckBoxPreference
             app:key="debugMode"
-            app:summary="Allows debugging messages to be shown in the log to reveal diagnostic information and potential errors."
+            app:summary="Allows debugging messages in the log and test images to be created in the /temp/ folder.\n\nIncreases the average runtime of the bot due to constant IO operations."
             app:title="Enable Debug Mode" />
 
         <CheckBoxPreference
