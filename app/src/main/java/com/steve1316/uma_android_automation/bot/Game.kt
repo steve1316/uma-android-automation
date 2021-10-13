@@ -888,6 +888,9 @@ class Game(val myContext: Context) {
 					findAndTapImage("recover_energy_summer", region = imageUtils.regionBottomHalf)
 				}
 				
+				// Do the date if it is unlocked.
+				findAndTapImage("recover_mood_date", region = imageUtils.regionMiddle)
+				
 				findAndTapImage("ok", region = imageUtils.regionMiddle)
 				raceRepeatWarningCheck = false
 				true
@@ -927,7 +930,8 @@ class Game(val myContext: Context) {
 	fun performMiscChecks(): Boolean {
 		if (afkCheck()) {
 			return true
-		} else if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
+		} else if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
+			imageUtils.findImage("recover_mood_date", region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
 			return false
 		} else if (findAndTapImage("race_confirm_result", tries = 1, region = imageUtils.regionBottomHalf)) {
