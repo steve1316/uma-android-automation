@@ -229,6 +229,11 @@
 		"englishName": "#LookatCurren",
 		"englishDescription": "Gain momentum while in a good position when passing someone in the middle leg"
 	},
+	"姫たるもの、勝利をこの手に": {
+		"id": 100391,
+		"englishName": "Victory Befitting a Princess",
+		"englishDescription": "If you struggle for victory on the last straight from the middle of the pack, your speed will increase"
+	},
 	"KEEP IT REAL.": {
 		"id": 100401,
 		"englishName": "KEEP IT REAL.",

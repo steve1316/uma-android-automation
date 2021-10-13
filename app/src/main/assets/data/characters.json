@@ -995,6 +995,70 @@
 			"Skill points +20"
 		]
 	},
+	"Kawakami Princess": {
+		"完成！究極フォーム！": [
+			"Power +30\n(random) Energy -10",
+			"Energy +10"
+		],
+		"決意はドレスにこめて": [
+			"Speed +20",
+			"Guts +20"
+		],
+		"元ガキ大将の誓い": [
+			"Speed +10",
+			"Stamina +10",
+			"Power +10"
+		],
+		"この胸にあふれる想いは！": [
+			"Power +5\nGuts +5",
+			"Speed +10"
+		],
+		"じゃじゃウマ娘のパーティー": [
+			"Speed +5\nPower +5",
+			"Intelligence +10"
+		],
+		"元ガキ大将の風格": [
+			"Stamina +5\nSkill points +15",
+			"Power +10"
+		],
+		"受け止めます、姫のパワーで！": [
+			"Stamina +10\nPower +10",
+			"Intelligence +10\nSkill points +15"
+		],
+		"努力の円舞曲": [
+			"Power +10",
+			"Guts +10"
+		],
+		"王子様の優雅なる休日": [
+			"Guts +15",
+			"抜け出し準備 hint +1"
+		],
+		"マスコット対決！": [
+			"Speed +10",
+			"Power +10"
+		],
+		"いつか一流のプリンセスに": [
+			"Power +20\n(random) Get Good Practice ○ status",
+			"Stamina +10\nIntelligence +10\n(random) Get Good Practice ○ status"
+		],
+		"元ガキ大将の背中": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"リトルプリンセスたちの夢": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"King Halo": {
 		"門限破りは二流よ": [
 			"Guts +5\nIntelligence +5",
