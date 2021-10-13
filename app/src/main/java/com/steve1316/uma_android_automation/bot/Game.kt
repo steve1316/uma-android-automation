@@ -281,9 +281,6 @@ class Game(val myContext: Context) {
 				throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
 			}
 		} else {
-			// Generate weights for the stats based on what settings the user set.
-			createWeights()
-			
 			// Now select the training option with the highest weight.
 			executeTraining()
 			
@@ -298,30 +295,33 @@ class Game(val myContext: Context) {
 	 * Find the success percentages and stat gain for each training and assign them to the MutableMap object to be shared across the whole class.
 	 */
 	private fun findStatsAndPercentages() {
-		printToLog("[TRAINING] Checking for success percentages and total stat increases for training selection.")
+		printToLog("\n[TRAINING] Checking for success percentages and total stat increases for training selection...")
 		
 		// Acquire the position of the speed stat text.
-		val (speedStatTextLocation, _) = imageUtils.findImage("stat_speed", region = imageUtils.regionBottomHalf)
+		val (speedStatTextLocation, _) = if (campaign == "Ao Haru") {
+			imageUtils.findImage("aoharu_stat_speed", region = imageUtils.regionBottomHalf)
+		} else {
+			imageUtils.findImage("stat_speed", region = imageUtils.regionBottomHalf)
+		}
+		
 		if (speedStatTextLocation != null) {
 			// Perform a percentage check of Speed training to see if the bot has enough energy to do training. As a result, Speed training will be the one selected for the rest of the algorithm.
 			if (!imageUtils.confirmLocation("speed_training", tries = 1, region = imageUtils.regionTopHalf)) {
 				findAndTapImage("training_speed")
 			}
 			
-			val speedFailureChance: Int = imageUtils.findTrainingFailureChance()
+			var failureChance: Int = imageUtils.findTrainingFailureChance()
 			
-			if (speedFailureChance <= maximumFailureChance) {
-				printToLog(
-					"[TRAINING] $speedFailureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases.")
+			if (failureChance <= maximumFailureChance) {
+				printToLog("[TRAINING] $failureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases...")
 				
-				val overallStatsGained: Int = imageUtils.findTotalStatGains("Speed")
+				var initialStatWeight: Int = imageUtils.findInitialStatWeight("Speed")
 				
 				// Save the results to the map if Speed training is not blacklisted.
 				if (!blacklist.contains("Speed")) {
 					trainingMap["Speed"] = mutableMapOf(
-						"failureChance" to speedFailureChance,
-						"totalStatGained" to overallStatsGained,
-						"weight" to 0
+						"failureChance" to failureChance,
+						"statWeight" to initialStatWeight,
 					)
 				}
 				
@@ -362,15 +362,14 @@ class Game(val myContext: Context) {
 							gestureUtils.tap(speedStatTextLocation.x + newX, speedStatTextLocation.y + newY, "training_option_circular")
 						}
 						
-						val failureChance: Int = imageUtils.findTrainingFailureChance()
-						val totalStatGained: Int = imageUtils.findTotalStatGains(training)
+						failureChance = imageUtils.findTrainingFailureChance()
+						initialStatWeight = imageUtils.findInitialStatWeight(training)
 						
-						printToLog("[TRAINING] $training can gain ~$totalStatGained with $failureChance% to fail.")
+						printToLog("[TRAINING] $training can gain ~$initialStatWeight with $failureChance% to fail.")
 						
 						trainingMap[training] = mutableMapOf(
 							"failureChance" to failureChance,
-							"totalStatGained" to totalStatGained,
-							"weight" to 0
+							"statWeight" to initialStatWeight,
 						)
 					}
 				}
@@ -378,52 +377,24 @@ class Game(val myContext: Context) {
 				printToLog("[TRAINING] Process to determine stat gains and failure percentages completed.")
 			} else {
 				// Clear the Training map if the bot failed to have enough energy to conduct the training.
-				printToLog("[TRAINING] $speedFailureChance% is not within acceptable range of ${maximumFailureChance}%. Proceeding to recover energy.")
+				printToLog("[TRAINING] $failureChance% is not within acceptable range of ${maximumFailureChance}%. Proceeding to recover energy.")
 				trainingMap.clear()
 			}
 		}
 	}
 	
 	/**
-	 * Generate the weights for each training using the settings set in the app.
-	 */
-	private fun createWeights() {
-		printToLog("[TRAINING] Now starting process to assign weights to each prioritised stat.")
-		
-		var priority = 5
-		statPrioritization.forEach { statName ->
-			if (trainingMap.containsKey(statName)) {
-				val failureChance: Int = trainingMap[statName]?.get("failureChance")!!
-				val totalStatGained: Int = trainingMap[statName]?.get("totalStatGained")!!
-				val penaltyForRepeat: Int = if (previouslySelectedTraining == statName) {
-					printToLog("[TRAINING] $statName already did training so applying penalty for repeating.")
-					150
-				} else {
-					0
-				}
-				
-				val weight: Int = (20 * priority) + (20 * totalStatGained) - (failureChance * 2) - penaltyForRepeat
-				
-				trainingMap[statName]?.set("weight", weight)
-				priority--
-			}
-		}
-		
-		printToLog("[TRAINING] Process to assign weights to each prioritised stat completed.")
-	}
-	
-	/**
 	 * Execute the training with the highest stat weight.
 	 */
 	private fun executeTraining() {
-		printToLog("[TRAINING] Now starting process to execute training.")
+		printToLog("[TRAINING] Now starting process to execute training...")
 		var trainingSelected = ""
-		var maxWeight = 0
+		var maxWeight = -1
 		
 		// Grab the training with the maximum weight.
 		trainingMap.forEach { (statName, map) ->
-			val weight = map["weight"]!!
-			if ((maxWeight == 0 && trainingSelected == "") || weight > maxWeight) {
+			val weight = map["statWeight"]!!
+			if (weight > maxWeight) {
 				maxWeight = weight
 				trainingSelected = statName
 				previouslySelectedTraining = statName
@@ -933,10 +904,9 @@ class Game(val myContext: Context) {
 	 * Prints the training map object for informational purposes.
 	 */
 	private fun printMap() {
+		printToLog("\n[INFO] Calculated Stat Weight by Training:")
 		trainingMap.keys.forEach { stat ->
-			printToLog(
-				"[INFO] Estimated Total Stat Gain of $stat Training: ${trainingMap[stat]?.get("totalStatGained")} for ${trainingMap[stat]?.get("failureChance")}% with a weight of " +
-						"${trainingMap[stat]?.get("weight")}")
+			printToLog("\n$stat: ${trainingMap[stat]?.get("statWeight")} for ${trainingMap[stat]?.get("failureChance")}%")
 		}
 	}
 	
