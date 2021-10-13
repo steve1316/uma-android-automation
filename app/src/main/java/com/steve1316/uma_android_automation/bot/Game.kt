@@ -965,11 +965,20 @@ class Game(val myContext: Context) {
 			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 		}
 		
+		// If debug mode is off, then it is necessary to wait a few seconds for the Toast message to disappear from the screen to prevent it obstructing anything beneath it.
+		if (!debugMode) {
+			wait(2.0)
+		}
+		
 		val startTime: Long = System.currentTimeMillis()
 		
-		val normalCampaign = Normal(this)
-		normalCampaign.start()
-		// Log.d(tag, "${imageUtils.determineSkillPoints()}")
+		if (campaign == "Ao Haru") {
+			val aoHaruCampaign = AoHaru(this)
+			aoHaruCampaign.start()
+		} else {
+			val normalCampaign = Normal(this)
+			normalCampaign.start()
+		}
 		
 		val endTime: Long = System.currentTimeMillis()
 		Log.d(tag, "Total Runtime: ${endTime - startTime}ms")

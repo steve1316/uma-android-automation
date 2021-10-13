@@ -14,12 +14,14 @@ class AoHaru(private val game: Game) {
 	/**
 	 * Checks for Ao Haru's tutorial first before handling a Training Event.
 	 */
-	fun handleTrainingEventAoHaru() {
+	private fun handleTrainingEventAoHaru() {
 		if (tutorialChances > 0) {
 			if (game.imageUtils.confirmLocation("aoharu_tutorial", tries = 2)) {
+				game.printToLog("\n[AOHARU] Detected tutorial for Ao Haru. Closing it now...", tag = tag)
+				
 				// If the tutorial is detected, select the second option to close it.
 				val trainingOptionLocations: ArrayList<Point> = game.imageUtils.findAll("training_event_active")
-				game.gestureUtils.tap(trainingOptionLocations[1].x, trainingOptionLocations[1].y,  "training_event_active")
+				game.gestureUtils.tap(trainingOptionLocations[1].x, trainingOptionLocations[1].y, "training_event_active")
 				tutorialChances = 0
 			} else {
 				tutorialChances -= 1
@@ -30,18 +32,21 @@ class AoHaru(private val game: Game) {
 		}
 	}
 	
-	fun handleRaceEventsAoHaru() {
-		if (aoHaruRaceFirstTime && game.imageUtils.confirmLocation("aoharu_set_initial_team", tries = 5)) {
-			game.findAndTapImage("race_accept_trophy")
-		}
-		
+	/**
+	 * Handles the Ao Haru's race event.
+	 */
+	private fun handleRaceEventsAoHaru() {
+		game.printToLog("\n[AOHARU] Starting process to handle Ao Haru race...", tag = tag)
 		aoHaruRaceFirstTime = false
 		
-		if (game.imageUtils.confirmLocation("aoharu_race_header", tries = 5)) {
-			// Head to the next screen with the 3 racing options.
-			game.findAndTapImage("aoharu_race")
-			game.wait(1.0)
-			
+		// Head to the next screen with the 3 racing options.
+		game.findAndTapImage("aoharu_race")
+		game.wait(4.0)
+		
+		if (game.findAndTapImage("aoharu_final_race", tries = 5)) {
+			game.printToLog("\n[AOHARU] Final race detected. Racing it now...", tag = tag)
+			game.findAndTapImage("aoharu_select_race")
+		} else {
 			// Run the first option if it has more than 3 double circles and if not, run the second option.
 			val racingOptions = game.imageUtils.findAll("aoharu_race_option")
 			game.gestureUtils.tap(racingOptions[0].x, racingOptions[0].y, "aoharu_race_option")
@@ -49,26 +54,32 @@ class AoHaru(private val game: Game) {
 			game.wait(2.0)
 			val doubleCircles = game.imageUtils.findAll("race_prediction_double_circle")
 			if (doubleCircles.size >= 3) {
+				game.printToLog("[AOHARU] First race has sufficient double circle predictions. Selecting it now...", tag = tag)
 				game.findAndTapImage("aoharu_select_race")
 			} else {
+				game.printToLog("[AOHARU] First race did not have the sufficient double circle predictions. Selecting the 2nd race now...", tag = tag)
 				game.findAndTapImage("cancel")
 				game.wait(0.5)
+				
 				game.gestureUtils.tap(racingOptions[1].x, racingOptions[1].y, "aoharu_race_option")
+				
 				game.findAndTapImage("aoharu_select_race")
 				game.wait(2.0)
 				game.findAndTapImage("aoharu_select_race")
 			}
-			
-			game.wait(3.0)
-			
-			// Now run the race and skip to the end.
-			game.findAndTapImage("aoharu_run_race", tries = 10)
-			game.wait(1.0)
-			game.findAndTapImage("race_skip_manual", tries = 10)
-			game.wait(3.0)
-			
-			game.findAndTapImage("race_end", tries = 10)
 		}
+		
+		game.wait(5.0)
+		
+		// Now run the race and skip to the end.
+		game.findAndTapImage("aoharu_run_race", tries = 10)
+		game.wait(1.0)
+		game.findAndTapImage("race_skip_manual", tries = 10)
+		game.wait(3.0)
+		
+		game.findAndTapImage("race_end", tries = 10)
+		game.wait(1.0)
+		game.findAndTapImage("race_end", tries = 10)
 	}
 	
 	fun start() {
@@ -107,6 +118,11 @@ class AoHaru(private val game: Game) {
 				// If the bot is at the Training Event screen, that means there are selectable options for rewards.
 				Log.d(tag, "Detected Training Event")
 				handleTrainingEventAoHaru()
+			} else if (aoHaruRaceFirstTime && game.imageUtils.confirmLocation("aoharu_set_initial_team", tries = 1)) {
+				game.findAndTapImage("race_accept_trophy")
+				handleRaceEventsAoHaru()
+			} else if (game.imageUtils.confirmLocation("aoharu_race", tries = 1)) {
+				handleRaceEventsAoHaru()
 			} else if (game.handleInheritanceEvent()) {
 				// If the bot is at the Inheritance screen, then accept the inheritance.
 				game.printToLog("\n[INFO] Accepted the Inheritance.", tag = tag)
