@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.bot.campaigns.AoHaru
 import com.steve1316.uma_android_automation.bot.campaigns.Normal
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MessageLog
@@ -35,7 +36,6 @@ class Game(val myContext: Context) {
 	// Training
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
-	private val trainingMapAoHaru: MutableMap<String, MutableMap<String, Boolean>> = mutableMapOf()
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
 	private val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
@@ -429,6 +429,11 @@ class Game(val myContext: Context) {
 		val regex = Regex("[a-zA-Z]+")
 		var optionSelected = 0
 		
+		// Double check if the bot is at the Main screen or not.
+		if (checkMainScreen()) {
+			return
+		}
+		
 		if (eventRewards.isNotEmpty() && eventRewards[0] != "") {
 			// Initialize the List.
 			val selectionWeight = mutableListOf<Int>()
@@ -558,7 +563,7 @@ class Game(val myContext: Context) {
 			wait(1.0)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
-			wait(1.0)
+			wait(5.0)
 			
 			// Skip the race if possible, otherwise run it manually.
 			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
@@ -705,7 +710,8 @@ class Game(val myContext: Context) {
 			printToLog("[RACE] Skipping race...")
 			
 			// Press the skip button and then wait for your result of the race to show.
-			findAndTapImage("race_skip", tries = 5, region = imageUtils.regionBottomHalf)
+			wait(2.0)
+			findAndTapImage("race_skip", tries = 10, region = imageUtils.regionBottomHalf)
 			wait(3.0)
 			
 			// Now tap on the screen to get to the next screen.
@@ -787,7 +793,7 @@ class Game(val myContext: Context) {
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
 		findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)
-		wait(1.0)
+		wait(3.0)
 		
 		// Now press the end button to finish the race.
 		findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
@@ -796,16 +802,14 @@ class Game(val myContext: Context) {
 			// Wait until the popup showing the completion of a Training Goal appears and confirm it.
 			wait(2.0)
 			findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(1.0)
+			wait(2.0)
 			
 			// Now confirm the completion of a Training Goal popup.
 			findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
-		} else {
-			if (findAndTapImage("race_confirm_result", tries = 5, region = imageUtils.regionBottomHalf)) {
-				// Now confirm the completion of a Training Goal popup.
-				wait(1.0)
-				findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
-			}
+		} else if (findAndTapImage("race_confirm_result", tries = 5, region = imageUtils.regionBottomHalf)) {
+			// Now confirm the completion of a Training Goal popup.
+			wait(2.0)
+			findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
 		}
 		
 		wait(1.0)
@@ -928,6 +932,8 @@ class Game(val myContext: Context) {
 	 * @return True if the checks passed. Otherwise false if the bot encountered a warning popup and needs to exit.
 	 */
 	fun performMiscChecks(): Boolean {
+		printToLog("\n[INFO] Beginning check for misc cases...")
+		
 		if (afkCheck()) {
 			return true
 		} else if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
