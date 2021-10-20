@@ -445,7 +445,6 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun getBitmaps(templateName: String): Pair<Bitmap?, Bitmap?> {
 		var sourceBitmap: Bitmap? = null
 		
-		// Keep swiping a little bit up and down to trigger a new image for ImageReader to grab.
 		while (sourceBitmap == null) {
 			sourceBitmap = MediaProjectionService.takeScreenshotNow(saveImage = debugMode)
 		}
@@ -469,8 +468,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 	}
 	
+	/**
+	 * Acquire the Bitmap for only the source screenshot.
+	 *
+	 * @return Bitmap of the source screenshot.
+	 */
 	private fun getSourceBitmap(): Bitmap {
-		// Keep swiping a little bit up and down to trigger a new image for ImageReader to grab.
 		var sourceBitmap: Bitmap? = null
 		while (sourceBitmap == null) {
 			sourceBitmap = MediaProjectionService.takeScreenshotNow(saveImage = debugMode)
@@ -503,7 +506,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (!resultFlag) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
-						if (!suppressError) {
+						if (debugMode && !suppressError) {
 							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", tag = tag)
 						}
 						
@@ -561,7 +564,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 		}
 		
-		if (!suppressError) {
+		if (debugMode && !suppressError) {
 			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = tag)
 		}
 		

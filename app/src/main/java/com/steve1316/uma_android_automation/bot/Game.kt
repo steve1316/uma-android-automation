@@ -274,6 +274,7 @@ class Game(val myContext: Context) {
 		
 		if (trainingMap.isEmpty()) {
 			findAndTapImage("back", region = imageUtils.regionBottomHalf)
+			wait(1.0)
 			
 			if (checkMainScreen()) {
 				recoverEnergy()
