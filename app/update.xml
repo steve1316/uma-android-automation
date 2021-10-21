@@ -1,28 +1,19 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.0.0</latestVersion>
+    <latestVersion>2.0.1</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.0.0 - Changelog
-
-New
----
-- Added support for Ao Haru campaign. You can now select from the following campaigns in the Settings page: Normal and Ao Haru.
-- Added support for the new Characters: `Agnes Digital`, `Rice Shower (Halloween)`, `Super Creek (Halloween)` and `Kawakami Princess`. 
-- Added support for the new Support Cards: `SR Power Fine Motion`, `SSR Guts Ikuno Dictus`, `SSR Intelligence Mihono Bourbon`, `SSR Speed Zenno Rob Roy` and `SSR Power Tamamo Cross`. 
+v2.0.1 - Changelog 
+ 
+New 
+--- 
+- Added support for the new Character: Manhattan Cafe.
+- Added support for the new Support Cards: SSR and R Stamina Nakayama Festa, SR and R Guts Sirius Symboli.
 
 Changed
 ---
-- `IMPORTANT` Significantly sped up the entire bot process by having the creation of the source screenshot in the /temp/ folder be tied to having Debug Mode being enabled. Previously, the bot always saved the source screenshot file and thus added about 500ms every single time it was called. As a result of this change, the bot is now going lightning fast. I did not have much time to fully test out how this change affects everything else, so please report any issues by opening up a GitHub issue and/or hop into the Discord server (link is in the README).
-- Significantly overhauled how the bot chooses which training to run.
-- Mood recovery logic will now take into account available dates as well (Tazuna and Riko).
-- Better compatibility with non-1080p devices.
-- Optimized process of determining number of skill points.
-- Various minor changes and optimizations.
-
-Fixed
----
-- Fixed matching functions not putting the bounding box precisely around the target location in test images.
+- Start button will require Campaign to be selected.
+- Minor changes.
     </releaseNotes>
   </update>
 </AppUpdater>
