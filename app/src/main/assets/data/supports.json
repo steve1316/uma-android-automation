@@ -785,6 +785,26 @@
 			"Stamina +5\nIntelligence +10\n先手必勝 hint +1"
 		]
 	},
+	"Nakayama Festa": {
+		"夕暮れにひと勝負": [
+			"Energy +15\nNakayama Festa bond +5",
+			"Guts +15\nNakayama Festa bond +5"
+		],
+		"夕暮れの独り飯": [
+			"中山レース場○ hint +1\nNakayama Festa bond +5",
+			"阪神レース場○ hint +1\nNakayama Festa bond +5"
+		],
+		"予兆の夜": [
+			"Stamina +10\nGuts +5\nSkill points +10\nNakayama Festa bond +5\nWill affect the outcome of the third event",
+			"Energy -10\nSkill points +5\nNakayama Festa bond +5\nWill affect the outcome of the third event"
+		],
+		"火花散る昼": [
+			"Skill points +25\nNakayama Festa bond +5"
+		],
+		"闇に溶ける夕": [
+			"Randomly either\nCan only happen if you chose the top option during the first event\nSkill points +40\nウマ好み hint +1\nNakayama Festa bond +5\n----------\nCan only happen if you chose the bottom option during the first event\nStamina +15\nGuts +15\nSkill points +20\n決死の覚悟 hint +3\nNakayama Festa bond +5\n----------\nCan only happen if you chose the bottom option during the first event\nMotivation -1\nGuts +10\nありったけ hint +3\nNakayama Festa bond +5"
+		]
+	},
 	"Narita Brian": {
 		"生徒会役員！": [
 			"Motivation +1\nSpeed +5\nNarita Brian bond +5",
@@ -1116,6 +1136,23 @@
 		],
 		"響き合うStage!": [
 			"Speed +5\nStamina +5\nコンセントレーション hint +1"
+		]
+	},
+	"Sirius Symboli": {
+		"教えてやろうか？": [
+			"Energy -5\nStamina +20\nSirius Symboli bond +5",
+			"Intelligence +10\nSirius Symboli bond +5"
+		],
+		"助けてやろうか？": [
+			"Intelligence +5\nかく乱 hint +1\nSirius Symboli bond +5",
+			"Skill points +15\nSirius Symboli bond +5"
+		],
+		"問題児たちの王": [
+			"Guts +15\nSirius Symboli bond +5"
+		],
+		"水と油": [
+			"Randomly either\nSpeed +15\nPower +15\nSirius Symboli bond +5\n----------\nEnergy -5\nSpeed +10\nSirius Symboli bond -5",
+			"Skill points +20\n巧みなステップ hint +1\nSirius Symboli bond +5"
 		]
 	},
 	"Smart Falcon": {

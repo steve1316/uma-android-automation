@@ -1127,6 +1127,70 @@
 			"Skill points +20"
 		]
 	},
+	"Manhattan Cafe": {
+		"ライ ホウ シャ": [
+			"Stamina +10\nSkill points +15",
+			"差し切り体勢 hint +1"
+		],
+		"漆黒のバリスタ": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"ドキドキ怪奇探索ツアー": [
+			"Power +10",
+			"Energy -10\nGuts +20"
+		],
+		"悪魔のささやき": [
+			"Randomly either\nEnergy +15\nSpeed +15\nStamina +15\n----------\nEnergy -15\nSpeed +10\nStamina +10",
+			"Speed +5"
+		],
+		"それは百鬼夜行のように": [
+			"Guts +10",
+			"Power +10"
+		],
+		"夢幻ナル世界ノ中デ": [
+			"Power +20\n(random) Get Charming ○ status",
+			"Guts +20\n(random) Get Charming ○ status"
+		],
+		"ズット、ズット、待ッテイタ……": [
+			"Power +20",
+			"Speed +20"
+		],
+		"影ナル者": [
+			"Intelligence +20",
+			"Speed +10\nGuts +10"
+		],
+		"2人だけのフレーバー": [
+			"Stamina +10",
+			"Power +10",
+			"Speed +5\nStamina +5"
+		],
+		"アナタだけの好み": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"カフェはカフェでも": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"私だけのコーヒー": [
+			"Guts +10",
+			"Stamina +5\nSkill points +15"
+		],
+		"お腹いっぱいの優しさを": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Maruzensky": {
 		"ヘイカノジョ、遊びましょ♪": [
 			"Energy +10",

@@ -171,7 +171,7 @@
 	},
 	"尊み☆ﾗｽﾄｽﾊﾟ—(ﾟ∀ﾟ)—ﾄ!": {
 		"id": 100191,
-		"englishName": "Kyuute☆Last SpuU(ﾟ∀ﾟ)Uurt!",
+		"englishName": "Respect☆Last Spurt —(ﾟ∀ﾟ)—ﾄ!",
 		"englishDescription": "If you overtake others at least twice at the end of the race, your speed will increase"
 	},
 	"アングリング×スキーミング": {
@@ -188,6 +188,11 @@
 		"id": 100241,
 		"englishName": "Inspiration ☆ Landing",
 		"englishDescription": "After a struggle for the lead on the last corner, it becomes easier to break away during the final straight"
+	},
+	"アナタヲ・オイカケテ": {
+		"id": 100251,
+		"englishName": "Chasing After You",
+		"englishDescription": "If you're in the middle of the pack in the second half of the race, your speed will increase while draining the speed of the girls ahead of you"
 	},
 	"G00 1st.F∞;": {
 		"id": 100261,
@@ -327,7 +332,7 @@
 	"Drain for rose": {
 		"id": 110301,
 		"englishName": "Drain For Rose",
-		"englishDescription": "If you're in a good position around halfway through the race, you will drain endurance from horse girls ahead of you"
+		"englishDescription": "If you're in a good position around halfway through the race and about to be overtaken, you will drain endurance from horse girls ahead of you"
 	},
 	"ぐるぐるマミートリック♡": {
 		"id": 110451,
@@ -357,167 +362,167 @@
 	"左回り◎": {
 		"id": 200021,
 		"englishName": "Left Turns ◎",
-		"englishDescription": "Become better at counterclockwise tracks"
+		"englishDescription": "Become better at left counterclockwise tracks"
 	},
 	"左回り○": {
 		"id": 200022,
 		"englishName": "Left Turns ○",
-		"englishDescription": "Become a little better at counterclockwise tracks"
+		"englishDescription": "Become a little better at left counterclockwise track"
 	},
 	"左回り×": {
 		"id": 200023,
 		"englishName": "Left Turns ×",
-		"englishDescription": "Become a little worse at counterclockwise tracks"
+		"englishDescription": "Become a little worse at left counterclockwise track"
 	},
 	"東京レース場◎": {
 		"id": 200031,
 		"englishName": "Tokyo Racetrack ◎",
-		"englishDescription": "Become better at running at the Tokyo racetrack"
+		"englishDescription": "Become better at Tokyo Racetrack"
 	},
 	"東京レース場○": {
 		"id": 200032,
 		"englishName": "Tokyo Racetrack ○",
-		"englishDescription": "Become a little better at running at the Tokyo racetrack"
+		"englishDescription": "Become a little better at Tokyo Racetrack"
 	},
 	"東京レース場×": {
 		"id": 200033,
 		"englishName": "Tokyo Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Tokyo racetrack"
+		"englishDescription": "Become a little worse at Tokyo Racetrack"
 	},
 	"中山レース場◎": {
 		"id": 200041,
 		"englishName": "Nakayama Racetrack ◎",
-		"englishDescription": "Become better at running at the Nakayama racetrack"
+		"englishDescription": "Become better at Nakayama Racetrack"
 	},
 	"中山レース場○": {
 		"id": 200042,
 		"englishName": "Nakayama Racetrack ○",
-		"englishDescription": "Become a little better at running at the Nakayama racetrack"
+		"englishDescription": "Become a little better at Nakayama Racetrack"
 	},
 	"中山レース場×": {
 		"id": 200043,
 		"englishName": "Nakayama Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Nakayama racetrack"
+		"englishDescription": "Become a little worse at Nakayama Racetrack"
 	},
 	"阪神レース場◎": {
 		"id": 200051,
 		"englishName": "Hanshin Racetrack ◎",
-		"englishDescription": "Become better at running at the Hanshin racetrack"
+		"englishDescription": "Become better at Hanshin Racetrack"
 	},
 	"阪神レース場○": {
 		"id": 200052,
 		"englishName": "Hanshin Racetrack ○",
-		"englishDescription": "Become a little better at running at the Hanshin racetrack"
+		"englishDescription": "Become a little better at Hanshin Racetrack"
 	},
 	"阪神レース場×": {
 		"id": 200053,
 		"englishName": "Hanshin Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Hanshin racetrack"
+		"englishDescription": "Become a little worse at Hanshin Racetrack"
 	},
 	"京都レース場◎": {
 		"id": 200061,
 		"englishName": "Kyoto Racetrack ◎",
-		"englishDescription": "Become better at running at the Kyoto racetrack"
+		"englishDescription": "Become better at Kyoto Racetrack"
 	},
 	"京都レース場○": {
 		"id": 200062,
 		"englishName": "Kyoto Racetrack ○",
-		"englishDescription": "Become a little better at running at the Kyoto racetrack"
+		"englishDescription": "Become a little better at Kyoto Racetrack"
 	},
 	"京都レース場×": {
 		"id": 200063,
 		"englishName": "Kyoto Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Kyoto racetrack"
+		"englishDescription": "Become a little worse at Kyoto Racetrack"
 	},
 	"中京レース場◎": {
 		"id": 200071,
 		"englishName": "Chukyo Racetrack ◎",
-		"englishDescription": "Become better at running at the Chukyo racetrack"
+		"englishDescription": "Become better at Chukyo Racetrack"
 	},
 	"中京レース場○": {
 		"id": 200072,
 		"englishName": "Chukyo Racetrack ○",
-		"englishDescription": "Become a little better at running at the Chukyo racetrack"
+		"englishDescription": "Become a little better at Chukyo Racetrack"
 	},
 	"中京レース場×": {
 		"id": 200073,
 		"englishName": "Chukyo Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Chukyo racetrack"
+		"englishDescription": "Become a little worse at Chukyo Racetrack"
 	},
 	"札幌レース場◎": {
 		"id": 200081,
 		"englishName": "Sapporo Racetrack ◎",
-		"englishDescription": "Become better at running at the Sapporo racetrack"
+		"englishDescription": "Become better at Sapporo Racetrack"
 	},
 	"札幌レース場○": {
 		"id": 200082,
 		"englishName": "Sapporo Racetrack ○",
-		"englishDescription": "Become a little better at running at the Sapporo racetrack"
+		"englishDescription": "Become a little better at Sapporo Racetrack"
 	},
 	"札幌レース場×": {
 		"id": 200083,
 		"englishName": "Sapporo Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Sapporo racetrack"
+		"englishDescription": "Become a little worse at Sapporo Racetrack"
 	},
 	"函館レース場◎": {
 		"id": 200091,
 		"englishName": "Hakodate Racetrack ◎",
-		"englishDescription": "Become better at running at the Hakodate racetrack"
+		"englishDescription": "Become better at Hakodate Racetrack"
 	},
 	"函館レース場○": {
 		"id": 200092,
 		"englishName": "Hakodate Racetrack ○",
-		"englishDescription": "Become a little better at running at the Hakodate racetrack"
+		"englishDescription": "Become a little better at Hakodate Racetrack"
 	},
 	"函館レース場×": {
 		"id": 200093,
 		"englishName": "Hakodate Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Hakodate racetrack"
+		"englishDescription": "Become a little worse at Hakodate Racetrack"
 	},
 	"福島レース場◎": {
 		"id": 200101,
 		"englishName": "Fukushima Racetrack ◎",
-		"englishDescription": "Become better at running at the Fukushima racetrack"
+		"englishDescription": "Become better at Fukushima Racetrack"
 	},
 	"福島レース場○": {
 		"id": 200102,
 		"englishName": "Fukushima Racetrack ○",
-		"englishDescription": "Become a little better at running at the Fukushima racetrack"
+		"englishDescription": "Become a little better at Fukushima Racetrack"
 	},
 	"福島レース場×": {
 		"id": 200103,
 		"englishName": "Fukushima Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Fukushima racetrack"
+		"englishDescription": "Become a little worse at Fukushima Racetrack"
 	},
 	"新潟レース場◎": {
 		"id": 200111,
 		"englishName": "Niigata Racetrack ◎",
-		"englishDescription": "Become better at running at the Niigata racetrack"
+		"englishDescription": "Become better at Niigata Racetrack"
 	},
 	"新潟レース場○": {
 		"id": 200112,
 		"englishName": "Niigata Racetrack ○",
-		"englishDescription": "Become a little better at running at the Niigata racetrack"
+		"englishDescription": "Become a little better at Niigata Racetrack"
 	},
 	"新潟レース場×": {
 		"id": 200113,
 		"englishName": "Niigata Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Niigata racetrack"
+		"englishDescription": "Become a little worse at Niigata Racetrack"
 	},
 	"小倉レース場◎": {
 		"id": 200121,
 		"englishName": "Kokura Racetrack ◎",
-		"englishDescription": "Become better at running at the Ogura racetrack"
+		"englishDescription": "Become better at Ogura Racetrack"
 	},
 	"小倉レース場○": {
 		"id": 200122,
 		"englishName": "Kokura Racetrack ○",
-		"englishDescription": "Become a little better at running at the Ogura racetrack"
+		"englishDescription": "Become a little better at Ogura Racetrack"
 	},
 	"小倉レース場×": {
 		"id": 200123,
 		"englishName": "Kokura Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Ogura racetrack"
+		"englishDescription": "Become a little worse at Ogura Racetrack"
 	},
 	"根幹距離◎": {
 		"id": 200131,
@@ -567,77 +572,77 @@
 	"道悪◎": {
 		"id": 200161,
 		"englishName": "Wicked Path ◎",
-		"englishDescription": "Become better on tracks in Slightly Poor, Poor, and Bad condition"
+		"englishDescription": "Become better on Slightly Poor, Poor, and Bad condition tracks"
 	},
 	"道悪○": {
 		"id": 200162,
 		"englishName": "Wicked Path ○",
-		"englishDescription": "Become a little better on tracks in Slightly Poor, Poor, and Bad condition"
+		"englishDescription": "Become a little better on Slightly Poor, Poor, and Bad condition tracks"
 	},
 	"道悪×": {
 		"id": 200163,
 		"englishName": "Wicked Path ×",
-		"englishDescription": "Become a little worse on tracks in Slightly Poor, Poor, and Bad condition"
+		"englishDescription": "Become a little worse on Slightly Poor, Poor, and Bad condition tracks"
 	},
 	"春ウマ娘◎": {
 		"id": 200171,
 		"englishName": "Spring Girl ◎",
-		"englishDescription": "Become better at races in Spring"
+		"englishDescription": "Become better at races in the Spring"
 	},
 	"春ウマ娘○": {
 		"id": 200172,
 		"englishName": "Spring Girl ○",
-		"englishDescription": "Become a little better at races in Spring"
+		"englishDescription": "Become a little better at races in the Spring"
 	},
 	"春ウマ娘×": {
 		"id": 200173,
 		"englishName": "Spring Girl ×",
-		"englishDescription": "Become a little worse at races in Spring"
+		"englishDescription": "Become a little worse at races in the Spring"
 	},
 	"夏ウマ娘◎": {
 		"id": 200181,
 		"englishName": "Summer Girl ◎",
-		"englishDescription": "Become better at races in Summer"
+		"englishDescription": "Become better at races in the Summer"
 	},
 	"夏ウマ娘○": {
 		"id": 200182,
 		"englishName": "Summer Girl ○",
-		"englishDescription": "Become a little better at races in Summer"
+		"englishDescription": "Become a little better at races in the Summer"
 	},
 	"夏ウマ娘×": {
 		"id": 200183,
 		"englishName": "Summer Girl ×",
-		"englishDescription": "Become a little worse at races in Summer"
+		"englishDescription": "Become a little worse at races in the Summer"
 	},
 	"秋ウマ娘◎": {
 		"id": 200191,
 		"englishName": "Autumn Girl ◎",
-		"englishDescription": "Become better at races in Autumn"
+		"englishDescription": "Become better at races in the Autumn"
 	},
 	"秋ウマ娘○": {
 		"id": 200192,
 		"englishName": "Autumn Girl ○",
-		"englishDescription": "Become a little better at races in Autumn"
+		"englishDescription": "Become a little better at races in the Autumn"
 	},
 	"秋ウマ娘×": {
 		"id": 200193,
 		"englishName": "Autumn Girl ×",
-		"englishDescription": "Become a little worse at races in Autumn"
+		"englishDescription": "Become a little worse at races in the Autumn"
 	},
 	"冬ウマ娘◎": {
 		"id": 200201,
 		"englishName": "Winter Girl ◎",
-		"englishDescription": "Become better at races in Winter"
+		"englishDescription": "Become better at races in the Winter"
 	},
 	"冬ウマ娘○": {
 		"id": 200202,
 		"englishName": "Winter Girl ○",
-		"englishDescription": "Become a little better at races in Winter"
+		"englishDescription": "Become a little better at races in the Winter"
 	},
 	"冬ウマ娘×": {
 		"id": 200203,
 		"englishName": "Winter Girl ×",
-		"englishDescription": "Become a little worse at races in Winter"
+		"englishDescription": "Become a little worse at races in the Winter"
 	},
 	"晴れの日◎": {
 		"id": 200211,
@@ -687,32 +692,32 @@
 	"内枠得意◎": {
 		"id": 200251,
 		"englishName": "Inner Gate Affinity ◎",
-		"englishDescription": "Become better at races when starting at gate block 1-3"
+		"englishDescription": "Become better at races when starting at gate 1-3"
 	},
 	"内枠得意○": {
 		"id": 200252,
 		"englishName": "Inner Gate Affinity ○",
-		"englishDescription": "Become a little better at races when starting at gate block 1-3"
+		"englishDescription": "Become a little better at races when starting at gate 1-3"
 	},
 	"内枠苦手": {
 		"id": 200253,
 		"englishName": "Inner Gate Affinity ×",
-		"englishDescription": "Become a little worse at races when starting at gate block 1-3"
+		"englishDescription": "Become a little worse at races when starting at gate 1-3"
 	},
 	"外枠得意◎": {
 		"id": 200261,
 		"englishName": "Outer Gate Affinity ◎",
-		"englishDescription": "Become better at races when starting at gate block 6-8"
+		"englishDescription": "Become better at races when starting at gate 6-8"
 	},
 	"外枠得意○": {
 		"id": 200262,
 		"englishName": "Outer Gate Affinity ○",
-		"englishDescription": "Become a little better at races when starting at gate block 6-8"
+		"englishDescription": "Become a little better at races when starting at gate 6-8"
 	},
 	"外枠苦手": {
 		"id": 200263,
 		"englishName": "Outer Gate Affinity ×",
-		"englishDescription": "Become a little worse at races when starting at gate block 1-3"
+		"englishDescription": "Become a little worse at races when starting at gate 1-3"
 	},
 	"おひとり様◎": {
 		"id": 200271,
@@ -737,7 +742,7 @@
 	"引っ込み思案": {
 		"id": 200283,
 		"englishName": "Introverted",
-		"englishDescription": "Harder at showing off your ability when at least 6 other girls share your strategy"
+		"englishDescription": "Harder at showing off your ability when at least 6 other girls share your strateg"
 	},
 	"徹底マーク◎": {
 		"id": 200291,
@@ -761,8 +766,8 @@
 	},
 	"GⅠ苦手": {
 		"id": 200311,
-		"englishName": "G1 Dislike",
-		"englishDescription": "Become worse at G1 races"
+		"englishName": "GⅠ Dislike",
+		"englishDescription": "Become worse at GⅠ races"
 	},
 	"小心者": {
 		"id": 200321,
@@ -1122,7 +1127,7 @@
 	"慧眼": {
 		"id": 200691,
 		"englishName": "Wisdom Eye",
-		"englishDescription": "Mile・Become harder to tire when in the back of the pack during the Opening Le"
+		"englishDescription": "Mile・Become harder to tire when in the back of the pack during the Opening Leg"
 	},
 	"展開窺い": {
 		"id": 200692,
@@ -1297,17 +1302,17 @@
 	"大井レース場◎": {
 		"id": 200951,
 		"englishName": "Ooi Racetrack ◎",
-		"englishDescription": "Become better at running at the Ooi racetrack"
+		"englishDescription": "Become better at Ooi Racetrack"
 	},
 	"大井レース場○": {
 		"id": 200952,
 		"englishName": "Ooi Racetrack ○",
-		"englishDescription": "Become a little better at running at the Ooi racetrack"
+		"englishDescription": "Become a little better at Ooi Racetrack"
 	},
 	"大井レース場×": {
 		"id": 200953,
 		"englishName": "Ooi Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Ooi racetrack"
+		"englishDescription": "Become a little worse at Ooi Racetrack"
 	},
 	"短距離直線◎": {
 		"id": 200961,
@@ -1987,7 +1992,17 @@
 	"静かな呼吸": {
 		"id": 201692,
 		"englishName": "Quiet Breathing",
-		"englishDescription": "Betweener・In the second half of the Opening Leg, your endurance will recover"
+		"englishDescription": "レース中盤が迫ったとき後方にいると持久力をわずかに回復する＜作戦・差し＞"
+	},
+	"決死の覚悟": {
+		"id": 201701,
+		"englishName": "Prepared To Die",
+		"englishDescription": "Medium・If you're in a good position during the Last Spurt, your speed will increase"
+	},
+	"ありったけ": {
+		"id": 201702,
+		"englishName": "All That There Is",
+		"englishDescription": "Medium・If you're in a good position during the Last Spurt, your speed will slightly increase"
 	},
 	"アオハル燃焼・速": {
 		"id": 210011,
@@ -2038,5 +2053,15 @@
 		"id": 210052,
 		"englishName": "Aoharu Ignition・Wisdom",
 		"englishDescription": "During the Opening Leg, the higher the total wisdom of your team, the better your positioning becomes"
+	},
+	"癒えない渇き": {
+		"id": 300011,
+		"englishName": "Unquenched Thirst",
+		"englishDescription": "The thirst for racing makes it a little easier to demonstrate your abilities"
+	},
+	"変わらぬままで": {
+		"id": 300021,
+		"englishName": "Unchanged",
+		"englishDescription": "Feelings from the days past will improve your abilities"
 	}
 }
