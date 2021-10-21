@@ -223,7 +223,7 @@ class HomeFragment : Fragment() {
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
 		settingsStatusTextView.text =
-				"Campaign Selected: $campaignString\n" +
+				"Campaign Selected: $campaignString Campaign\n" +
 				"---------- Training Event Options ----------\n" +
 				"Character Selected: $characterString\n" +
 				"Support(s) Selected: $supportCardListString\n\n" +
@@ -251,7 +251,7 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Force the user to go through the Settings in order to set this required setting.
-		startButton.isEnabled = (characterString != "Please select one in the Settings" || characterString == "All Characters Selected")
+		startButton.isEnabled = (campaignString != "Please select one in the Settings" && (characterString != "Please select one in the Settings" || characterString == "All Characters Selected"))
 		
 		return homeFragmentView
 	}
