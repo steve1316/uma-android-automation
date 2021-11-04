@@ -172,8 +172,8 @@ class Game(val myContext: Context) {
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	fun checkMainScreen(): Boolean {
-		return if (imageUtils.findImage("tazuna", tries = 1, region = imageUtils.regionTopHalf).first != null &&
-			imageUtils.findImage("race_select_mandatory", tries = 1, region = imageUtils.regionBottomHalf).first == null) {
+		return if (imageUtils.findImage("tazuna", tries = 5, region = imageUtils.regionTopHalf).first != null &&
+			imageUtils.findImage("race_select_mandatory", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
 			printToLog("\n[INFO] Current bot location is at Main screen.")
 			true
 		} else {
@@ -299,7 +299,7 @@ class Game(val myContext: Context) {
 		printToLog("\n[TRAINING] Checking for success percentages and total stat increases for training selection...")
 		
 		// Acquire the position of the speed stat text.
-		val (speedStatTextLocation, _) = if (campaign == "Ao Haru") {
+		val (speedStatTextLocation, sourceBitmap) = if (campaign == "Ao Haru") {
 			imageUtils.findImage("aoharu_stat_speed", region = imageUtils.regionBottomHalf)
 		} else {
 			imageUtils.findImage("stat_speed", region = imageUtils.regionBottomHalf)
@@ -307,7 +307,7 @@ class Game(val myContext: Context) {
 		
 		if (speedStatTextLocation != null) {
 			// Perform a percentage check of Speed training to see if the bot has enough energy to do training. As a result, Speed training will be the one selected for the rest of the algorithm.
-			if (!imageUtils.confirmLocation("speed_training", tries = 1, region = imageUtils.regionTopHalf)) {
+			if (!imageUtils.confirmLocation("speed_training", tries = 5, region = imageUtils.regionTopHalf)) {
 				findAndTapImage("training_speed")
 			}
 			

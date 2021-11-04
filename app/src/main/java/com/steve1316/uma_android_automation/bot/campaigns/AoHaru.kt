@@ -41,45 +41,47 @@ class AoHaru(private val game: Game) {
 		
 		// Head to the next screen with the 3 racing options.
 		game.findAndTapImage("aoharu_race")
-		game.wait(4.0)
+		game.wait(7.0)
 		
-		if (game.findAndTapImage("aoharu_final_race", tries = 5)) {
+		if (game.findAndTapImage("aoharu_final_race", tries = 10)) {
 			game.printToLog("\n[AOHARU] Final race detected. Racing it now...", tag = tag)
 			game.findAndTapImage("aoharu_select_race")
 		} else {
 			// Run the first option if it has more than 3 double circles and if not, run the second option.
-			val racingOptions = game.imageUtils.findAll("aoharu_race_option")
+			var racingOptions = game.imageUtils.findAll("aoharu_race_option")
 			game.gestureUtils.tap(racingOptions[0].x, racingOptions[0].y, "aoharu_race_option")
-			game.findAndTapImage("aoharu_select_race")
+			
+			game.findAndTapImage("aoharu_select_race", tries = 10)
 			game.wait(2.0)
+			
 			val doubleCircles = game.imageUtils.findAll("race_prediction_double_circle")
 			if (doubleCircles.size >= 3) {
 				game.printToLog("[AOHARU] First race has sufficient double circle predictions. Selecting it now...", tag = tag)
-				game.findAndTapImage("aoharu_select_race")
+				game.findAndTapImage("aoharu_select_race", tries = 10)
 			} else {
 				game.printToLog("[AOHARU] First race did not have the sufficient double circle predictions. Selecting the 2nd race now...", tag = tag)
-				game.findAndTapImage("cancel")
-				game.wait(0.5)
+				game.findAndTapImage("cancel", tries = 10)
+				game.wait(1.0)
 				
+				racingOptions = game.imageUtils.findAll("aoharu_race_option")
 				game.gestureUtils.tap(racingOptions[1].x, racingOptions[1].y, "aoharu_race_option")
 				
-				game.findAndTapImage("aoharu_select_race")
-				game.wait(2.0)
-				game.findAndTapImage("aoharu_select_race")
+				game.findAndTapImage("aoharu_select_race", tries = 30)
+				game.findAndTapImage("aoharu_select_race", tries = 30)
 			}
 		}
 		
-		game.wait(5.0)
+		game.wait(7.0)
 		
 		// Now run the race and skip to the end.
-		game.findAndTapImage("aoharu_run_race", tries = 10)
+		game.findAndTapImage("aoharu_run_race", tries = 30)
 		game.wait(1.0)
-		game.findAndTapImage("race_skip_manual", tries = 10)
+		game.findAndTapImage("race_skip_manual", tries = 30)
 		game.wait(3.0)
 		
-		game.findAndTapImage("race_end", tries = 10)
+		game.findAndTapImage("race_end", tries = 30)
 		game.wait(1.0)
-		game.findAndTapImage("race_end", tries = 10)
+		game.findAndTapImage("race_end", tries = 30)
 	}
 	
 	fun start() {
