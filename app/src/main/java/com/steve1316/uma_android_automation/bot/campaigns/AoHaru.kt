@@ -68,6 +68,7 @@ class AoHaru(private val game: Game) {
 				
 				game.findAndTapImage("aoharu_select_race", tries = 30)
 				game.findAndTapImage("aoharu_select_race", tries = 30)
+				game.findAndTapImage("aoharu_select_race", tries = 10)
 			}
 		}
 		
