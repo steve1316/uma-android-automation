@@ -267,29 +267,31 @@ class Game(val myContext: Context) {
 		printToLog("\n[TRAINING] Starting Training process...")
 		
 		// Enter the Training screen.
-		findAndTapImage("training_option", region = imageUtils.regionBottomHalf)
-		
-		// Acquire the percentages and stat gains for each training.
-		findStatsAndPercentages()
-		
-		if (trainingMap.isEmpty()) {
-			findAndTapImage("back", region = imageUtils.regionBottomHalf)
-			wait(1.0)
+		if (findAndTapImage("training_option", region = imageUtils.regionBottomHalf)) {
+			// Acquire the percentages and stat gains for each training.
+			findStatsAndPercentages()
 			
-			if (checkMainScreen()) {
-				recoverEnergy()
+			if (trainingMap.isEmpty()) {
+				findAndTapImage("back", region = imageUtils.regionBottomHalf)
+				wait(1.0)
+				
+				if (checkMainScreen()) {
+					recoverEnergy()
+				} else {
+					printToLog("[ERROR] Could not head back to the Main screen in order to recover energy.")
+				}
 			} else {
-				throw IllegalStateException("Could not head back to the Main screen in order to recover energy.")
+				// Now select the training option with the highest weight.
+				executeTraining()
+				
+				firstTrainingCheck = false
 			}
-		} else {
-			// Now select the training option with the highest weight.
-			executeTraining()
 			
-			firstTrainingCheck = false
+			raceRepeatWarningCheck = false
+			printToLog("\n[TRAINING] Training process completed.")
+		} else {
+			printToLog("[ERROR] Cannot start the Training process. Moving on...", isError = true)
 		}
-		
-		raceRepeatWarningCheck = false
-		printToLog("\n[TRAINING] Training process completed.")
 	}
 	
 	/**
@@ -793,27 +795,30 @@ class Game(val myContext: Context) {
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
-		findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)
-		wait(3.0)
-		
-		// Now press the end button to finish the race.
-		findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
-		
-		if (!isExtra) {
-			// Wait until the popup showing the completion of a Training Goal appears and confirm it.
-			wait(2.0)
-			findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(2.0)
+		if (findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)) {
+			wait(3.0)
 			
-			// Now confirm the completion of a Training Goal popup.
+			// Now press the end button to finish the race.
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
-		} else if (findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)) {
-			// Now confirm the completion of a Training Goal popup.
-			wait(2.0)
-			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
+			
+			if (!isExtra) {
+				// Wait until the popup showing the completion of a Training Goal appears and confirm it.
+				wait(2.0)
+				findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)
+				wait(2.0)
+				
+				// Now confirm the completion of a Training Goal popup.
+				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
+			} else if (findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)) {
+				// Now confirm the completion of a Training Goal popup.
+				wait(2.0)
+				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
+			}
+			
+			wait(1.0)
+		} else {
+			printToLog("[ERROR] Cannot start the cleanup process for finishing the race. Moving on...", isError = true)
 		}
-		
-		wait(1.0)
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
