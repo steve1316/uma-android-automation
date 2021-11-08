@@ -301,7 +301,7 @@ class Game(val myContext: Context) {
 		printToLog("\n[TRAINING] Checking for success percentages and total stat increases for training selection...")
 		
 		// Acquire the position of the speed stat text.
-		val (speedStatTextLocation, sourceBitmap) = if (campaign == "Ao Haru") {
+		val (speedStatTextLocation, _) = if (campaign == "Ao Haru") {
 			imageUtils.findImage("aoharu_stat_speed", region = imageUtils.regionBottomHalf)
 		} else {
 			imageUtils.findImage("stat_speed", region = imageUtils.regionBottomHalf)
@@ -863,7 +863,7 @@ class Game(val myContext: Context) {
 				true
 			}
 			else -> {
-				printToLog("\n[ENERGY] Failed to recover energy.")
+				printToLog("\n[ENERGY] Failed to recover energy. Moving on...")
 				false
 			}
 		}
@@ -905,7 +905,7 @@ class Game(val myContext: Context) {
 				raceRepeatWarningCheck = false
 				true
 			} else {
-				printToLog("[MOOD] Current mood is good enough. Moving on.")
+				printToLog("[MOOD] Current mood is good enough. Moving on...")
 				false
 			}
 		}
