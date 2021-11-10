@@ -649,6 +649,18 @@
 			"Speed +10\nPower +5",
 			"負けん気 hint +1"
 		],
+		"本番前の、静かな余談": [
+			"Power +20",
+			"差し切り体勢 hint +2"
+		],
+		"シチーガールの今の気分♪": [
+			"Speed +20",
+			"Energy +15"
+		],
+		"金色の佳景、極まる": [
+			"Stamina +10\nPower +10\n(random) Get Rising Star status",
+			"十万バリキ hint +2\n(random) Get Rising Star status"
+		],
 		"ダンスレッスン": [
 			"Guts +10",
 			"Intelligence +10"
@@ -2483,6 +2495,18 @@
 			"Intelligence +10\nSkill points +15",
 			"雨の日○ hint +1"
 		],
+		"経験を授けよ": [
+			"Power +20",
+			"先行コーナー○ hint +2"
+		],
+		"心に咲く、熱": [
+			"Speed +10\nPower +10",
+			"抜け出し準備 hint +2"
+		],
+		"鮮やかな記憶": [
+			"Stamina +10\nGuts +10\n(random) Get Sharp status",
+			"Skill points +40\n(random) Get Sharp status"
+		],
 		"ダンスレッスン": [
 			"Intelligence +10",
 			"Power +10"
@@ -2700,6 +2724,62 @@
 		"ワガハイがテイオー先輩だ！": [
 			"コーナー加速○ hint +2",
 			"Intelligence +10\nSkill points +15"
+		]
+	},
+	"Tosen Jordan": {
+		"まっ、流行ってすぐ変わるし！": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"ギャル、絵画を語る": [
+			"Speed +10",
+			"Power +10"
+		],
+		"盛って盛って、めっちゃ盛んぞー！": [
+			"Stamina +10\nSkill points +15",
+			"直線加速 hint +1"
+		],
+		"大事なのは今っしょ！": [
+			"Intelligence +10",
+			"Stamina +10"
+		],
+		"少しずつ伸びてるから！": [
+			"Intelligence +10",
+			"Speed +5\nStamina +5"
+		],
+		"基本フリータイムっしょ！": [
+			"Intelligence +20",
+			"Power +20"
+		],
+		"ラメの輝きに託して": [
+			"Guts +20",
+			"Speed +20"
+		],
+		"勝利の味ってヤツ！": [
+			"Stamina +10\nSkill points +15\n(random) Get Charming ○ status",
+			"Guts +10\nIntelligence +10\n(random) Get Charming ○ status"
+		],
+		"ほんの少しのキッカケ": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"背伸びから始まること": [
+			"Guts +10",
+			"Power +10",
+			"Intelligence +10"
+		],
+		"テンアゲ☆全サイズキャンペーン！": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Guts +10",
+			"Power +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
 		]
 	},
 	"Vodka": {

@@ -171,7 +171,7 @@
 	},
 	"尊み☆ﾗｽﾄｽﾊﾟ—(ﾟ∀ﾟ)—ﾄ!": {
 		"id": 100191,
-		"englishName": "Respect☆Last Spurt —(ﾟ∀ﾟ)—ﾄ!",
+		"englishName": "Kyuute☆Last SpuU(ﾟ∀ﾟ)Uurt!",
 		"englishDescription": "If you overtake others at least twice at the end of the race, your speed will increase"
 	},
 	"アングリング×スキーミング": {
@@ -259,6 +259,11 @@
 		"englishName": "Sparkling☆STARDOM",
 		"englishDescription": "Increase your momentum during the middle leg's straight with the feeling of keeping the lead from being overtaken"
 	},
+	"YEAH☆VIVID TIME!": {
+		"id": 100481,
+		"englishName": "YEAH☆VIVID TIME!",
+		"englishDescription": "If you overtake or are about to be overtaken by someone else on the final straight while in a good position, your speed will increase"
+	},
 	"Nemesis": {
 		"id": 100501,
 		"englishName": "Nemesis",
@@ -319,6 +324,11 @@
 		"englishName": "Condor Onslaught",
 		"englishDescription": "During the last corner, gain acceleration when aiming for the lead from the middle of the pack"
 	},
+	"翳り退く、さざめきの矢": {
+		"id": 110171,
+		"englishName": "Howling Arrow Piercing The Darkness",
+		"englishDescription": "If you're about to be overtaken at the front after the final corner, your speed will increase"
+	},
 	"薫風、永遠なる瞬間を": {
 		"id": 110181,
 		"englishName": "Summer Breeze, The Eternal Moment",
@@ -333,6 +343,11 @@
 		"id": 110301,
 		"englishName": "Drain For Rose",
 		"englishDescription": "If you're in a good position around halfway through the race and about to be overtaken, you will drain endurance from horse girls ahead of you"
+	},
+	"GET DOWN": {
+		"id": 110401,
+		"englishName": "GET DOWN",
+		"englishDescription": "If you're blocked in the middle of the pack at the final corner, it will become easier to get out"
 	},
 	"ぐるぐるマミートリック♡": {
 		"id": 110451,
@@ -572,17 +587,17 @@
 	"道悪◎": {
 		"id": 200161,
 		"englishName": "Wicked Path ◎",
-		"englishDescription": "Become better on Slightly Poor, Poor, and Bad condition tracks"
+		"englishDescription": "Become better on tracks in Slightly Heavy, Heavy, or Bad condition"
 	},
 	"道悪○": {
 		"id": 200162,
 		"englishName": "Wicked Path ○",
-		"englishDescription": "Become a little better on Slightly Poor, Poor, and Bad condition tracks"
+		"englishDescription": "Become a little better on tracks in Slightly Heavy, Heavy, or Bad condition"
 	},
 	"道悪×": {
 		"id": 200163,
 		"englishName": "Wicked Path ×",
-		"englishDescription": "Become a little worse on Slightly Poor, Poor, and Bad condition tracks"
+		"englishDescription": "Become a little worse on tracks in Slightly Heavy, Heavy, or Bad condition"
 	},
 	"春ウマ娘◎": {
 		"id": 200171,
@@ -629,6 +644,11 @@
 		"englishName": "Autumn Girl ×",
 		"englishDescription": "Become a little worse at races in the Autumn"
 	},
+	"初嵐": {
+		"id": 200194,
+		"englishName": "The First Storm",
+		"englishDescription": "Become better at autumn races, increasing speed and power"
+	},
 	"冬ウマ娘◎": {
 		"id": 200201,
 		"englishName": "Winter Girl ◎",
@@ -667,17 +687,17 @@
 	"雨の日◎": {
 		"id": 200231,
 		"englishName": "Rainy Day ◎",
-		"englishDescription": "Become better at races on a Rainy Day"
+		"englishDescription": "Become better at races on Rainy Days"
 	},
 	"雨の日○": {
 		"id": 200232,
 		"englishName": "Rainy Day ○",
-		"englishDescription": "Become a little better at races on a Rainy Day"
+		"englishDescription": "Become a little better at races on Rainy Days"
 	},
 	"雨の日×": {
 		"id": 200233,
 		"englishName": "Rainy Day ×",
-		"englishDescription": "Become a little worse at races on a Rainy Day"
+		"englishDescription": "Become a little worse at races on Rainy Days"
 	},
 	"雪の日◎": {
 		"id": 200241,
@@ -717,17 +737,17 @@
 	"外枠苦手": {
 		"id": 200263,
 		"englishName": "Outer Gate Affinity ×",
-		"englishDescription": "Become a little worse at races when starting at gate 1-3"
+		"englishDescription": "Become a little worse at races when starting at gate 6-8"
 	},
 	"おひとり様◎": {
 		"id": 200271,
 		"englishName": "The One ◎",
-		"englishDescription": "Showing off your ability becomes easier when no other girls share your strategy"
+		"englishDescription": "Become better at showing off your ability when no other girls share your strategy"
 	},
 	"おひとり様○": {
 		"id": 200272,
 		"englishName": "The One ○",
-		"englishDescription": "Showing off your ability becomes a little easier when no other girls share your strategy"
+		"englishDescription": "Become a little better at showing off your ability when no other girls share your strategy"
 	},
 	"対抗意識◎": {
 		"id": 200281,
@@ -742,7 +762,7 @@
 	"引っ込み思案": {
 		"id": 200283,
 		"englishName": "Introverted",
-		"englishDescription": "Harder at showing off your ability when at least 6 other girls share your strateg"
+		"englishDescription": "Become a little worse at showing off your ability when at least 6 other girls share your strategy"
 	},
 	"徹底マーク◎": {
 		"id": 200291,
@@ -766,8 +786,8 @@
 	},
 	"GⅠ苦手": {
 		"id": 200311,
-		"englishName": "GⅠ Dislike",
-		"englishDescription": "Become worse at GⅠ races"
+		"englishName": "G1 Dislike",
+		"englishDescription": "Become worse at G1 races"
 	},
 	"小心者": {
 		"id": 200321,
@@ -1992,7 +2012,7 @@
 	"静かな呼吸": {
 		"id": 201692,
 		"englishName": "Quiet Breathing",
-		"englishDescription": "レース中盤が迫ったとき後方にいると持久力をわずかに回復する＜作戦・差し＞"
+		"englishDescription": "Betweener・In the second half of the Opening Leg, your endurance will slightly recover"
 	},
 	"決死の覚悟": {
 		"id": 201701,
@@ -2003,6 +2023,11 @@
 		"id": 201702,
 		"englishName": "All That There Is",
 		"englishDescription": "Medium・If you're in a good position during the Last Spurt, your speed will slightly increase"
+	},
+	"凸凹ネイル": {
+		"id": 201801,
+		"englishName": "Uneven Nail",
+		"englishDescription": "Become a little worse on tracks in Good condition"
 	},
 	"アオハル燃焼・速": {
 		"id": 210011,

@@ -161,6 +161,26 @@
 			"Power +5\nIntelligence +5\nクールダウン hint +1\nBiwa Hayahide bond +5"
 		]
 	},
+	"Curren Chan": {
+		"#あなただけのカワイイ": [
+			"Speed +5\nIntelligence +10\nCurren Chan bond +5",
+			"Speed +10\nPower +5\nCurren Chan bond +5"
+		],
+		"#カワイイフォーユー☆": [
+			"Skill points +15\nCurren Chan bond +5",
+			"後方釘付 hint +1\nCurren Chan bond +5"
+		],
+		"#カレンの可能性": [
+			"Randomly either\nSpeed +10\nIntelligence +10\n抜け駆け禁止 hint +1\nCurren Chan bond +5\n----------\nSpeed +5\nIntelligence +5\nCurren Chan bond +5",
+			"Energy +30\n遊びはおしまいっ！ hint +1\nEvent chain ended"
+		],
+		"#カレンの疑問": [
+			"Intelligence +10"
+		],
+		"#カレンらしく": [
+			"Randomly either\nIntelligence +10\nSkill points +20\n準備万全！ hint +3\nCurren Chan bond +5\n----------\nIntelligence +5\nSkill points +10\n仕掛け準備 hint +3\nCurren Chan bond +5"
+		]
+	},
 	"Daitaku Helios": {
 		"太陽とエンカウント☆": [
 			"Power +10\nDaitaku Helios bond +5",
@@ -822,6 +842,16 @@
 		],
 		"夢の続きへ駆け出して": [
 			"Energy -10\nSpeed +20\nくじけぬ精神 hint +1"
+		],
+		"いつかの標的": [
+			"Stamina +10"
+		],
+		"池の覇者": [
+			"Randomly either\nMaximum Energy +4\nStamina +10\nテンポアップ hint +1\nNarita Brian bond +5\n----------\nGuts +10\nNarita Brian bond -5",
+			"Intelligence +10\nNarita Brian bond +5"
+		],
+		"戦場の心得": [
+			"Energy -5\nStamina +5\nハヤテ一文字 hint +2\nNarita Brian bond +5"
 		]
 	},
 	"Narita Taishin": {
@@ -1525,6 +1555,16 @@
 		"あたし、勝ちたいンです！": [
 			"Motivation +1\nノンストップガール hint +1\nYukino Bijin bond +5",
 			"Power +3\nGuts +3\nIntelligence +3\nノンストップガール hint +1\nYukino Bijin bond +5"
+		],
+		"あたしがなンとかするでがんす！": [
+			"Energy -10\nGuts +10\nIntelligence +10\nYukino Bijin bond +5"
+		],
+		"飾らねぇ、魅力を……": [
+			"Energy -10\nStamina +5\nGuts +10\n雪の日○ hint +1\nYukino Bijin bond +5",
+			"Skill points +20\n遊びはおしまいっ！ hint +1\nYukino Bijin bond -5\nEvent chain ended"
+		],
+		"どんど晴れの立役者": [
+			"Energy -10\nGuts +10\nIntelligence +5\n曲線のソムリエ hint +1\nYukino Bijin bond +5"
 		]
 	},
 	"Zenno Rob Roy": {
