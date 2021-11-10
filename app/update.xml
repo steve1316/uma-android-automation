@@ -1,19 +1,19 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.0.2</latestVersion>
+    <latestVersion>2.1.0</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.0.2 - Changelog 
+v2.1.0 - Changelog 
  
 New 
 --- 
-- Added support for the new Character: Manhattan Cafe.
-- Added support for the new Support Cards: SSR and R Stamina Nakayama Festa, SR and R Guts Sirius Symboli.
+- Added support for the new Characters: Gold City (Festival), Symboli Rudolf (Festival) and Tosen Jordan.
+- Added support for the new Support Cards: SSR Stamina Narita Brian, R/SSR Intelligence Curren Chan and SSR Guts Yukino Bijin.
 
-Changed
+Fixes
 ---
-- Start button will require Campaign to be selected.
-- Minor changes.
+- General bugfixes and optimizations for Ao Haru campaign.
+- General optimizations for General campaign.
     </releaseNotes>
   </update>
 </AppUpdater>
