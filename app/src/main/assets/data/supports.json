@@ -198,7 +198,17 @@
         "#lol #Party! #2nd": [
             "Speed +10\nPower +10\n直滑降 hint +3\nDaitaku Helios bond +5",
             "Energy +20\n展開窺い hint +1\nDaitaku Helios bond +5"
-        ]
+        ],
+		"笑顔伝説・爆誕！": [
+			"Energy -5\nPower +15\n先駆け hint +1\nDaitaku Helios bond +5",
+			"Energy +10\nSpeed +15\n先行コーナー○ hint +1\nEvent chain ended"
+		],
+		"テンアゲ☆ヘリオスチャンネル～！": [
+			"Energy -5\nPower +10\nSkill points +20"
+		],
+		"笑顔は続くよどこまでも": [
+			"Randomly either\nEnergy -10\nSpeed +20\nPower +20\n脱出術 hint +3\nDaitaku Helios bond +5\n----------\nEnergy -10\nSpeed +10\nPower +10\n急ぎ足 hint +3\nDaitaku Helios bond +5"
+		]
 	},
 	"Daiwa Scarlet": {
 		"明日は私が勝つんだから！": [
@@ -1469,6 +1479,13 @@
 		],
 		"記録に残せよ？": [
 			"Power +5\nSkill points +30\n好転一息 hint +1"
+		],
+		"黄昏サボタージュ": [
+			"Maximum Energy +4\nPower +10\nVodka bond +5",
+			"Speed +15\nマイルコーナー○ hint +1\nVodka bond +5"
+		],
+		"勇戦ネバーギブアップ": [
+			"Speed +15\nSkill points +15"
 		]
 	},
 	"Winning Ticket": {

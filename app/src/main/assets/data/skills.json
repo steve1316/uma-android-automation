@@ -284,6 +284,11 @@
 		"englishName": "I Never Goof Up!",
 		"englishDescription": "During the last leg, if you overtake from the middle of the pack during a corner, increase speed and acceleration"
 	},
+	"彼方、その先へ…": {
+		"id": 100591,
+		"englishName": "Beyond The Other Side",
+		"englishDescription": "If you keep your calm in the middle of the pack during a Middle or Final Leg corner, your acceleration will increase"
+	},
 	"きっとその先へ…！": {
 		"id": 100601,
 		"englishName": "Surely, beyond...!",
@@ -448,6 +453,11 @@
 		"id": 200063,
 		"englishName": "Kyoto Racetrack ×",
 		"englishDescription": "Become a little worse at Kyoto Racetrack"
+	},
+	"淀の申し子": {
+		"id": 200064,
+		"englishName": "Child of Hesitation",
+		"englishDescription": "Become better at Kyoto Racetrack, increasing stamina and wisdom"
 	},
 	"中京レース場◎": {
 		"id": 200071,

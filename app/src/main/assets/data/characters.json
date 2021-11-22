@@ -1504,6 +1504,70 @@
 			"Skill points +20"
 		]
 	},
+	"Mejiro Dober": {
+		"願い、花火に寄せて": [
+			"Speed +10",
+			"Stamina +10",
+			"Power +10"
+		],
+		"今のアタシは……": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"嵐の大特訓": [
+			"Energy -10\nStamina +20",
+			"Power +10"
+		],
+		"ゆたかなる友情": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"夕陽にときめいて": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"カラオケチャレンジ": [
+			"Randomly either\nEnergy +10\nAll stats +5\n----------\nStamina +5\nGuts +10",
+			"Energy +10"
+		],
+		"香りの魔術師": [
+			"Intelligence +20",
+			"Guts +10\nSkill points +15"
+		],
+		"メジロの色": [
+			"Stamina +20",
+			"Power +20"
+		],
+		"きゅんきゅんティータイム！？": [
+			"Guts +10",
+			"Intelligence +5\nSkill points +15"
+		],
+		"ヤミナベス女王杯！？": [
+			"Speed +15",
+			"秋ウマ娘○ hint +1"
+		],
+		"ワンクッション親子": [
+			"Speed +20\n(random) Get Charming ○ status",
+			"Power +20\n(random) Get Charming ○ status"
+		],
+		"アタシ、やってみる": [
+			"Stamina +10",
+			"Intelligence +10"
+		],
+		"想いの重さ＞砂糖の重さ": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Guts +10"
+		],
+		"新年の抱負": [
+			"Intelligence +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
 	"Mejiro McQueen": {
 		"レース場グルメの誘惑": [
 			"Energy +30\nStamina +10\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status",
