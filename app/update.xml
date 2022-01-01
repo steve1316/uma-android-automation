@@ -1,14 +1,14 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.1.1</latestVersion>
+    <latestVersion>2.1.2</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.1.1 - Changelog 
+v2.1.2 - Changelog 
  
 New 
 --- 
-- Added support for the new Character: Mejiro Dober.
-- Added support for the new Support Cards: SR Speed Vodka and SSR Power Daitaku Helios.
+- Updated character data from 11/19/21 to 12/31/21 including Tamamo Cross, Haru Urara (New Year) and TM Opera O (New Year).
+- Updated support card data from 11/19/21 to 12/31/21.
     </releaseNotes>
   </update>
 </AppUpdater>

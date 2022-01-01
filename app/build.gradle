@@ -11,8 +11,8 @@ android {
         applicationId "com.steve1316.uma_android_automation"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 15
-        versionName "2.1.1"
+        versionCode 16
+        versionName "2.1.2"
     }
 
     buildTypes {
