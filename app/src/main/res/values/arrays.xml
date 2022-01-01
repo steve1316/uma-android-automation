@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="campaigns">
+        <item>Normal</item>
+        <item>Ao Haru</item>
+    </string-array>
+
+    <string-array name="stats">
+        <item>Speed</item>
+        <item>Stamina</item>
+        <item>Power</item>
+        <item>Guts</item>
+        <item>Intelligence</item>
+    </string-array>
+
     <string-array name="character_list">
         <item>Agnes Digital</item>
         <item>Agnes Tachyon</item>
