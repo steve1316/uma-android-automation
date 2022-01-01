@@ -1,4 +1,25 @@
 {
+	"Admire Vega": {
+		"不器用なトライアングラム": [
+			"Power +15\nAdmire Vega bond +5",
+			"Energy +10"
+		],
+		"孤高のケフェウス": [
+			"先行けん制 hint +1\nAdmire Vega bond +5",
+			"Intelligence +10\nAdmire Vega bond +5"
+		],
+		"アヤベさんは見過ごせない": [
+			"Randomly either\n----------\nPower +5\nIntelligence +15\n先行焦り hint +2\n----------\nPower +5\nIntelligence +10",
+			"Energy +15\nAdmire Vega bond +5"
+		],
+		"アヤベさんは譲れない": [
+			"Power +7\nIntelligence +7"
+		],
+		"アヤベさんは挫けない": [
+			"Power +15\nIntelligence +10\n強攻策 hint +1\nAdmire Vega bond +5",
+			"Speed +15\nSkill points +30\nAdmire Vega bond +5"
+		]
+	},
 	"Agnes Digital": {
 		"ウマ娘ちゃん欠乏症": [
 			"Energy +5\nSpeed +5\nAgnes Digital bond +5",
@@ -171,14 +192,14 @@
 			"後方釘付 hint +1\nCurren Chan bond +5"
 		],
 		"#カレンの可能性": [
-			"Randomly either\nSpeed +10\nIntelligence +10\n抜け駆け禁止 hint +1\nCurren Chan bond +5\n----------\nSpeed +5\nIntelligence +5\nCurren Chan bond +5",
+			"One of these will be selected at random\n----------\nSpeed +10\nIntelligence +10\n抜け駆け禁止 hint +1\nCurren Chan bond +5\n----------\nSpeed +5\nIntelligence +5\nCurren Chan bond +5",
 			"Energy +30\n遊びはおしまいっ！ hint +1\nEvent chain ended"
 		],
 		"#カレンの疑問": [
 			"Intelligence +10"
 		],
 		"#カレンらしく": [
-			"Randomly either\nIntelligence +10\nSkill points +20\n準備万全！ hint +3\nCurren Chan bond +5\n----------\nIntelligence +5\nSkill points +10\n仕掛け準備 hint +3\nCurren Chan bond +5"
+			"One of these will be selected at random\n----------\nIntelligence +10\nSkill points +20\n準備万全！ hint +3\nCurren Chan bond +5\n----------\nIntelligence +5\nSkill points +10\n仕掛け準備 hint +3\nCurren Chan bond +5"
 		]
 	},
 	"Daitaku Helios": {
@@ -207,7 +228,7 @@
 			"Energy -5\nPower +10\nSkill points +20"
 		],
 		"笑顔は続くよどこまでも": [
-			"Randomly either\nEnergy -10\nSpeed +20\nPower +20\n脱出術 hint +3\nDaitaku Helios bond +5\n----------\nEnergy -10\nSpeed +10\nPower +10\n急ぎ足 hint +3\nDaitaku Helios bond +5"
+			"One of these will be selected at random\n----------\nEnergy -10\nSpeed +20\nPower +20\n脱出術 hint +3\nDaitaku Helios bond +5\n----------\nEnergy -10\nSpeed +10\nPower +10\n急ぎ足 hint +3\nDaitaku Helios bond +5"
 		]
 	},
 	"Daiwa Scarlet": {
@@ -468,6 +489,23 @@
 			"Stamina +20\nGuts +10\nSkill points +10\n大局観 hint +1"
 		]
 	},
+	"Inari One": {
+		"喧嘩だワッショイ": [
+			"Energy -5\nPower +15\nInari One bond +5",
+			"Motivation +1\nGuts +5\nInari One bond +5"
+		],
+		"神輿だワッショイ": [
+			"Skill points +15\nInari One bond +5",
+			"京都レース場○ hint +1\nInari One bond +5"
+		],
+		"いきちょん！": [
+			"Energy -10\nSpeed +12\nPower +12\nInari One bond +5"
+		],
+		"おうすうちゃん！": [
+			"Energy -5\nMotivation +1\nSpeed +3\nPower +3\nGuts +3\nInari One bond +5",
+			"Energy -5\nSpeed +10\n大井レース場○ hint +3\nInari One bond +5"
+		]
+	},
 	"Ines Fujin": {
 		"鬼ごっこ、なの！": [
 			"Energy +10\nSpeed +5\nInes Fujin bond +5",
@@ -569,6 +607,16 @@
 		],
 		"大雨のお誘い": [
 			"Stamina +15\n読解力 hint +1\nManhattan Cafe bond +5"
+		],
+		"ヒカレテ": [
+			"Stamina +10\nIntelligence +5"
+		],
+		"ミツケテ": [
+			"One of these will be selected at random\n----------\nStamina +10\nIntelligence +10\n長距離コーナー○ hint +1\nManhattan Cafe bond +5\n----------\nEnergy +15\n長距離コーナー○ hint +1\nGet Insomnia status\nManhattan Cafe bond +5",
+			"Energy +15\nManhattan Cafe bond +5"
+		],
+		"オイカケテ": [
+			"Stamina +15\nスタミナグリード hint +1\nManhattan Cafe bond +5"
 		]
 	},
 	"Maruzensky": {
@@ -595,6 +643,16 @@
 		],
 		"とってもすごいよマーベラス☆": [
 			"Guts +15\nIntelligence +15"
+		],
+		"マーベラスへご案内☆": [
+			"Speed +10"
+		],
+		"キラッと輝くマーベラス☆": [
+			"Energy +10\nMarvelous Sunday bond +5",
+			"曇りの日○ hint +2\nMarvelous Sunday bond +5"
+		],
+		"白銀のマーベラス☆": [
+			"One of these will be selected at random\n----------\nSpeed +5\nSkill points +5\n迅速果断 hint +3\nMarvelous Sunday bond +5\n----------\nSpeed +5\nSkill points +10\n位置取り押し上げ hint +3\nMarvelous Sunday bond +5"
 		]
 	},
 	"Matikane Tannhauser": {
@@ -615,6 +673,17 @@
 		],
 		"個性的な走り方": [
 			"One of these will be selected at random\n----------\nPower +10\nSkill points +15\nMatikane Tannhauser bond +5\nどこ吹く風 hint +3\n----------\nPower +5\nSkill points +10\nMatikane Tannhauser bond +5\nウマ込み冷静 hint +3"
+		],
+		"謎の儀式図で運試し！": [
+			"Randomly either\n----------\nAll stats +7\nMatikanefukukitaru bond +7\n----------\nIntelligence +4\nEvent chain ended",
+			"Energy +5\nMatikanefukukitaru bond +5\nEvent chain ended"
+		],
+		"仲間と一緒に笑福万来！": [
+			"Randomly either\n----------\nAll stats +7\nMatikanefukukitaru bond +7\n----------\nIntelligence +4\nEvent chain ended",
+			"Energy +5\nMatikanefukukitaru bond +5\nEvent chain ended"
+		],
+		"辿り着いたよミラクルハッピー！": [
+			"Randomly either\n----------\nAll stats +7\nSkill points +77\nスーパーラッキーセブン hint +3\nMatikanefukukitaru bond +7\n----------\nAll stats +7\nSkill points +7\nスーパーラッキーセブン hint +1\nMatikanefukukitaru bond +7\n----------\nSkill points +7\nラッキーセブン hint +3\nMatikanefukukitaru bond +7"
 		]
 	},
 	"Matikanefukukitaru": {
@@ -648,6 +717,17 @@
 		],
 		"トレンドへテイクオフ♪": [
 			"Stamina +10\nSkill points +15\n集中力 hint +1\nMayano Top Gun bond +5"
+		],
+		"なんでもない日の……♪": [
+			"One of these will be selected at random\n----------\nMotivation +1\nSpeed +20\nGuts +10\n真っ向勝負 hint +1\nMayano Top Gun bond +5\n----------\nEnergy -10\nMotivation +1\nGuts +10\nMayano Top Gun bond +5",
+			"Intelligence +15\nMayano Top Gun bond +5",
+			"Energy +20\nStamina +10\n対抗意識○ hint +1\nEvent chain ended"
+		],
+		"素敵な休日の……♪": [
+			"Speed +10\nGuts +5"
+		],
+		"特別な日の特別な……♪": [
+			"Energy +10\nSpeed +10\nGuts +5\nじゃじゃウマ娘 hint +1\nMayano Top Gun bond +5"
 		]
 	},
 	"Meishodoto": {
@@ -665,6 +745,16 @@
 		],
 		"私の、欲しいもの……": [
 			"Energy +10\nMotivation +1\nSkill points +15\n抜け出し準備 hint +1"
+		],
+		"覇王の危機！？": [
+			"Energy +10\nMeisho Doto bond +5",
+			"Stamina +5\n中距離コーナー○ hint +1\nMeisho Doto bond +5"
+		],
+		"お食事券事件": [
+			"Speed +3\nStamina +3\nPower +3\nSkill points +10"
+		],
+		"めーめー団の新団員": [
+			"Energy -20\nSpeed +5\nStamina +10\nキラーチューン hint +3\nMeisho Doto bond +5"
 		]
 	},
 	"Mejiro Ardan": {
@@ -832,7 +922,7 @@
 			"Skill points +25\nNakayama Festa bond +5"
 		],
 		"闇に溶ける夕": [
-			"Randomly either\nCan only happen if you chose the top option during the first event\nSkill points +40\nウマ好み hint +1\nNakayama Festa bond +5\n----------\nCan only happen if you chose the bottom option during the first event\nStamina +15\nGuts +15\nSkill points +20\n決死の覚悟 hint +3\nNakayama Festa bond +5\n----------\nCan only happen if you chose the bottom option during the first event\nMotivation -1\nGuts +10\nありったけ hint +3\nNakayama Festa bond +5"
+			"One of these will be selected at random\n----------\nCan only happen if you chose the top option during the first event\nSkill points +40\nウマ好み hint +1\nNakayama Festa bond +5\n----------\nCan only happen if you chose the bottom option during the first event\nStamina +15\nGuts +15\nSkill points +20\n決死の覚悟 hint +3\nNakayama Festa bond +5\n----------\nCan only happen if you chose the bottom option during the first event\nMotivation -1\nGuts +10\nありったけ hint +3\nNakayama Festa bond +5"
 		]
 	},
 	"Narita Brian": {
@@ -857,11 +947,21 @@
 			"Stamina +10"
 		],
 		"池の覇者": [
-			"Randomly either\nMaximum Energy +4\nStamina +10\nテンポアップ hint +1\nNarita Brian bond +5\n----------\nGuts +10\nNarita Brian bond -5",
+			"One of these will be selected at random\n----------\nMaximum Energy +4\nStamina +10\nテンポアップ hint +1\nNarita Brian bond +5\n----------\nGuts +10\nNarita Brian bond -5",
 			"Intelligence +10\nNarita Brian bond +5"
 		],
 		"戦場の心得": [
 			"Energy -5\nStamina +5\nハヤテ一文字 hint +2\nNarita Brian bond +5"
+		],
+		"タイシンの恩返し": [
+			"Energy -5\nStamina +10\nIntelligence +10\nNarita Taishin bond +5"
+		],
+		"素直トレーニング！": [
+			"Power +10\n軽やかステップ hint +1\nNarita Taishin bond +5",
+			"Stamina +10\nパス上手 hint +1\nNarita Taishin bond +5"
+		],
+		"真っ直ぐ届け、この気持ち！": [
+			"One of these will be selected at random\n----------\nStamina +10\nIntelligence +10\n眠れる獅子 hint +3\n----------\nStamina +5\nIntelligence +5\n後方待機 hint +3"
 		]
 	},
 	"Narita Taishin": {
@@ -1009,7 +1109,7 @@
 			"Energy +25\nMotivation +1\nStamina +10\nGuts +10\n一陣の風 hint +3\nRiko Kashimoto bond +5"
 		],
 		"意外な一面": [
-			"Randomly either\nEnergy +15\nMotivation +1\nStamina +10\nペースアップ hint +3\nRiko Kashimoto bond +12\nCan start dating\n----------\nおひとり様○ hint +5\nRiko Kashimoto bond -10\nEvent chain ended",
+			"One of these will be selected at random\n----------\nEnergy +15\nMotivation +1\nStamina +10\nペースアップ hint +3\nRiko Kashimoto bond +12\nCan start dating\n----------\nおひとり様○ hint +5\nRiko Kashimoto bond -10\nEvent chain ended",
 			"Motivation +1\nGuts +15\nRiko Kashimoto bond +5\nCan start dating",
 			"一匹狼 hint +3\nRiko Kashimoto bond -10\nEvent chain ended"
 		],
@@ -1176,6 +1276,15 @@
 		],
 		"響き合うStage!": [
 			"Speed +5\nStamina +5\nコンセントレーション hint +1"
+		],
+		"“景色”へ導く": [
+			"Speed +15"
+		],
+		"仲間と見る“景色”": [
+			"Skill points +20"
+		],
+		"未来の“景色”": [
+			"Speed +15\n切り開く者 hint +1"
 		]
 	},
 	"Sirius Symboli": {
@@ -1191,7 +1300,7 @@
 			"Guts +15\nSirius Symboli bond +5"
 		],
 		"水と油": [
-			"Randomly either\nSpeed +15\nPower +15\nSirius Symboli bond +5\n----------\nEnergy -5\nSpeed +10\nSirius Symboli bond -5",
+			"One of these will be selected at random\n----------\nSpeed +15\nPower +15\nSirius Symboli bond +5\n----------\nEnergy -5\nSpeed +10\nSirius Symboli bond -5",
 			"Skill points +20\n巧みなステップ hint +1\nSirius Symboli bond +5"
 		]
 	},
@@ -1459,7 +1568,7 @@
 			"Energy -10\nSpeed +7\nPower +7\nTwin Turbo bond +5"
 		],
 		"『せんでん』最高！": [
-			"Randomly either\nEnergy -10\nGuts +15\nキラーチューン hint +3\nTwin Turbo bond +5\n----------\nEnergy -10\nGuts +10\nテンポアップ hint +3\nTwin Turbo bond +5"
+			"One of these will be selected at random\n----------\nEnergy -10\nGuts +15\nキラーチューン hint +3\nTwin Turbo bond +5\n----------\nEnergy -10\nGuts +10\nテンポアップ hint +3\nTwin Turbo bond +5"
 		]
 	},
 	"Vodka": {

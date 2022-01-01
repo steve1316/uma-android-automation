@@ -265,6 +265,18 @@
 			"Intelligence +10",
 			"Guts +10"
 		],
+		"助っ人参上！": [
+			"Stamina +5\nSkill points +15",
+			"追い上げ hint +2"
+		],
+		"お願い、お姉さん！": [
+			"Speed +15",
+			"Stamina +15"
+		],
+		"もうひとつの星": [
+			"Energy -10\nSpeed +30\nGuts +10\n冬ウマ娘○ hint +2",
+			"Energy +15\nSkill points +20\n冬ウマ娘○ hint +2"
+		],
 		"ダンスレッスン": [
 			"Speed +10",
 			"Guts +10"
@@ -533,6 +545,77 @@
 		"衣装に宿る熱き炎！": [
 			"ウマ込み冷静 hint +2",
 			"Speed +7\nPower +7\nGuts +7"
+		]
+	},
+	"Fine Motion": {
+		"Who Will Escort Me?": [
+			"Speed +10\nThe last objective race will be Tenno Sho (Autumn)",
+			"Intelligence +10\nThe last objective race will be Queen Elizabeth Cup",
+			"Guts +10\nThe last objective race will be Mile Championship",
+			"Stamina +10\nThe last objective race will be Arima Kinen"
+		],
+		"殿下と刺激的なお茶会": [
+			"Speed +5\nGuts +5",
+			"Stamina +5\nPower +5"
+		],
+		"遠くの地より花は来りて": [
+			"Stamina +10\nSkill points +15",
+			"先行コーナー○ hint +1"
+		],
+		"殿下の華麗なるたしなみ": [
+			"Power +10",
+			"Intelligence +10+"
+		],
+		"こういうの、ロマンでしょう？": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"殿下、推し文化に触れる": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"異国の地ならなんでも": [
+			"Guts +10",
+			"Speed +10"
+		],
+		"約束のシャムロック": [
+			"Power +20",
+			"Speed +20"
+		],
+		"よしよし殿下": [
+			"Stamina +10\nGuts +10",
+			"Intelligence +20"
+		],
+		"大儀であります": [
+			"Stamina +10",
+			"Intelligence +10",
+			"Power +10"
+		],
+		"殿下がバザーにやってきた！": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"殿下と映画鑑賞会": [
+			"Power +10\nGuts +10",
+			"Intelligence +10\nSkill points +15"
+		],
+		"Love Ramen": [
+			"Randomly either\n----------\nEnergy +30\nSkill points +15\n----------\nEnergy +30\nSpeed -10\nSkill points +5\nGet Overweight status",
+			"Stamina +20\nPower +10",
+			"ありったけ hint +3"
+		],
+		"懐かしのアイルランド料理": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
 		]
 	},
 	"Fuji Kiseki": {
@@ -929,13 +1012,13 @@
 			"Stamina +5\nSkill points +15"
 		],
 		"凸凹ぶつかり稽古！？": [
-			"Randomly either\nSpeed +20\n善後策 hint +2\n----------\nEnergy -5\nSpeed +10",
-			"Randomly either\nEnergy +10\nPower +10\n----------\nEnergy +5\nGet Overweight status",
+			"Randomly either\n----------\nSpeed +20\n善後策 hint +2\n----------\nEnergy -5\nSpeed +10",
+			"Randomly either\n----------\nEnergy +10\nPower +10\n----------\nEnergy +5\nGet Overweight status",
 			"Intelligence +5"
 		],
 		"ボーノな試食会☆": [
 			"Energy +10\nSkill points +5",
-			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"ダンスレッスン": [
 			"Power +10",
@@ -1059,7 +1142,7 @@
 		],
 		"リトルプリンセスたちの夢": [
 			"Energy +10\nSkill points +5",
-			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+			"Randomly either\n----------\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"ダンスレッスン": [
 			"Power +10",
@@ -1153,7 +1236,7 @@
 			"Energy -10\nGuts +20"
 		],
 		"悪魔のささやき": [
-			"Randomly either\nEnergy +15\nSpeed +15\nStamina +15\n----------\nEnergy -15\nSpeed +10\nStamina +10",
+			"Randomly either\n----------\nEnergy +15\nSpeed +15\nStamina +15\n----------\nEnergy -15\nSpeed +10\nStamina +10",
 			"Speed +5"
 		],
 		"それは百鬼夜行のように": [
@@ -1191,7 +1274,7 @@
 		],
 		"お腹いっぱいの優しさを": [
 			"Energy +10\nSkill points +5",
-			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"ダンスレッスン": [
 			"Intelligence +10",
@@ -1351,7 +1434,7 @@
 		],
 		"食い倒れ！ 七福神グルメめぐり": [
 			"Energy +10\nSkill points +5",
-			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+			"Randomly either\n----------\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"フクキタル的オマジナイ": [
 			"Speed +5\nGuts +5",
@@ -1527,7 +1610,7 @@
 			"Intelligence +10"
 		],
 		"カラオケチャレンジ": [
-			"Randomly either\nEnergy +10\nAll stats +5\n----------\nStamina +5\nGuts +10",
+			"Randomly either\n----------\nEnergy +10\nAll stats +5\n----------\nStamina +5\nGuts +10",
 			"Energy +10"
 		],
 		"香りの魔術師": [
@@ -1556,7 +1639,7 @@
 		],
 		"想いの重さ＞砂糖の重さ": [
 			"Energy +10\nSkill points +5",
-			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"ダンスレッスン": [
 			"Power +10",
@@ -2014,6 +2097,18 @@
 		"気になる隣の晩ご飯！": [
 			"Speed +10",
 			"Guts +10"
+		],
+		"先取り大人のクリスマス！？": [
+			"Energy +20\nMotivation +1\n冬ウマ娘○ hint +2",
+			"Speed +10\nIntelligence +20\n冬ウマ娘○ hint +2"
+		],
+		"聖夜に並んで走るため": [
+			"Skill points +30",
+			"Speed +10\nPower +5"
+		],
+		"みんなのオグリキャップ": [
+			"栄養補給 hint +2\n(random) Get Charming ○ status",
+			"Power +10\nGuts +5\n(random) Get Charming ○ status"
 		],
 		"ダンスレッスン": [
 			"Power +10",
@@ -2581,67 +2676,6 @@
 			"Skill points +20"
 		]
 	},
-	"TM Opera O": {
-		"聞こえる声は": [
-			"Power +10",
-			"Intelligence +10"
-		],
-		"鏡が映すのは": [
-			"Intelligence +10",
-			"Guts +10"
-		],
-		"パジャマ姿の姫君": [
-			"Speed +10",
-			"Stamina +10"
-		],
-		"夕暮れ時のオペラオー劇場": [
-			"Power +10",
-			"Energy +10"
-		],
-		"素晴らしき美を維持するために……": [
-			"Speed +10",
-			"Intelligence +10"
-		],
-		"愛しき瞳の為に": [
-			"Stamina +10\nGuts +10",
-			"Speed +20"
-		],
-		"輝きを君に": [
-			"Power +10",
-			"Guts +10",
-			"Intelligence +10"
-		],
-		"尽くせ、礼": [
-			"Speed +10",
-			"Skill points +15",
-			"非根幹距離○ hint +1"
-		],
-		"意志の力": [
-			"Intelligence +20\n(random) Get Sharp status",
-			"Speed +10\nPower +10\n(random) Speed +20\n(random) Get Sharp status"
-		],
-		"\\\"覇王\\\"として": [
-			"Intelligence +20",
-			"Power +20"
-		],
-		"幾重もの輝き": [
-			"Energy -10\nPower +20",
-			"Speed +10"
-		],
-		"王者の戦い～ラーメン編～": [
-			"Energy +10\nSkill points +5",
-			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
-		],
-		"ダンスレッスン": [
-			"Stamina +10",
-			"Speed +10"
-		],
-		"新年の抱負": [
-			"Power +10",
-			"Energy +20",
-			"Skill points +20"
-		]
-	},
 	"Taiki Shuttle": {
 		"TO THE NO.1！": [
 			"Power +10\nGuts +10\n(random) Get Sharp status",
@@ -2706,6 +2740,135 @@
 		],
 		"新年の抱負": [
 			"Speed +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"Tamamo Cross": {
+		"たこパ、やったるで！": [
+			"Speed +10\nPower +10",
+			"Guts +10\nIntelligence +10"
+		],
+		"恐怖のネバネバ": [
+			"Intelligence +10",
+			"Power +10"
+		],
+		"稲妻ハート": [
+			"Guts +20",
+			"Energy +15"
+		],
+		"浪花魂みせたるわい！": [
+			"Speed +5\nPower +5",
+			"Stamina +10"
+		],
+		"助け、助けられ": [
+			"Guts +10",
+			"Intelligence +10",
+			"Speed +10"
+		],
+		"行ったれ！牧場体験！": [
+			"Energy +10",
+			"Stamina +10"
+		],
+		"姉ちゃんにまかしとき！": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"おとろしないで、おいなりさん": [
+			"Speed +10",
+			"Guts +10"
+		],
+		"これなんぼやと思う？": [
+			"Power +10",
+			"Stamina +10"
+		],
+		"大人ってなんなん？": [
+			"Speed +5\nPower +10",
+			"阪神レース場○ hint +1"
+		],
+		"すくむ脚": [
+			"Energy -30\n1 random stat +8\nSkill points +45",
+			"Energy -20\n1 random stat +3\nSkill points +25"
+		],
+		"ウチに似合う服": [
+			"Speed +20\n(random) Get Charming ○ status",
+			"Power +10\nGuts +10\n(random) Get Charming ○ status"
+		],
+		"イカ焼きの誘惑": [
+			"Energy +10\nSkill points +5",
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+		],
+		"ダンスレッスン": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"新年の抱負": [
+			"Stamina +10",
+			"Energy +20",
+			"Skill points +20"
+		]
+	},
+	"TM Opera O": {
+		"聞こえる声は": [
+			"Power +10",
+			"Intelligence +10"
+		],
+		"鏡が映すのは": [
+			"Intelligence +10",
+			"Guts +10"
+		],
+		"パジャマ姿の姫君": [
+			"Speed +10",
+			"Stamina +10"
+		],
+		"夕暮れ時のオペラオー劇場": [
+			"Power +10",
+			"Energy +10"
+		],
+		"素晴らしき美を維持するために……": [
+			"Speed +10",
+			"Intelligence +10"
+		],
+		"愛しき瞳の為に": [
+			"Stamina +10\nGuts +10",
+			"Speed +20"
+		],
+		"輝きを君に": [
+			"Power +10",
+			"Guts +10",
+			"Intelligence +10"
+		],
+		"尽くせ、礼": [
+			"Speed +10",
+			"Skill points +15",
+			"非根幹距離○ hint +1"
+		],
+		"意志の力": [
+			"Intelligence +20\n(random) Get Sharp status",
+			"Speed +10\nPower +10\n(random) Speed +20\n(random) Get Sharp status"
+		],
+		"\\\"覇王\\\"として": [
+			"Intelligence +20",
+			"Power +20"
+		],
+		"幾重もの輝き": [
+			"Energy -10\nPower +20",
+			"Speed +10"
+		],
+		"王者の戦い～ラーメン編～": [
+			"Energy +10\nSkill points +5",
+			"Energy +30\nSkill points +10\n(random) Speed -5\nPower +5\nGet Overweight status"
+		],
+		"新たな魅力を……": [
+			"束縛 hint +1",
+			"Power +10"
+		],
+		"ダンスレッスン": [
+			"Stamina +10",
+			"Speed +10"
+		],
+		"新年の抱負": [
+			"Power +10",
 			"Energy +20",
 			"Skill points +20"
 		]
@@ -2834,7 +2997,7 @@
 		],
 		"テンアゲ☆全サイズキャンペーン！": [
 			"Energy +10\nSkill points +5",
-			"Randomly either\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
+			"Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Overweight status"
 		],
 		"ダンスレッスン": [
 			"Guts +10",
