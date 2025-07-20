@@ -66,8 +66,8 @@ class HomeFragment : Fragment() {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 		
 		// Main Settings page
 		val campaign: String = sharedPreferences.getString("campaign", "")!!
