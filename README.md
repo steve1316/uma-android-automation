@@ -47,15 +47,30 @@ Any usage of this tool is at your own risk. No one will be responsible for anyth
 1. Download and extract the project repository.
 2. Go to `https://opencv.org/releases/` and download OpenCV (make sure to download the Android version of OpenCV) and extract it. As of 2025-07-20, the OpenCV version used in this project is 4.12.0.
 3. Create a new folder inside the root of the project repository named `opencv` and copy the extracted files in `/OpenCV-android-sdk/sdk/` from Step 2 into it.
-4. Open the project repository in `Android Studio` and you can now build and run on your Android Device or build your own .apk file.
-5. You can set `universalApk` to `true` in the `build.gradle` for the application to build a one-for-all .apk file or adjust the `include 'arm64-v8a'` to customize which ABI to build the .apk file for.
+4. Open the project repository in `Android Studio`.
+5. Open up the `opencv` module's `build.gradle`. At the end of the file, paste the following JVM Toolchain block:
+
+```kotlin
+// Explicitly set Kotlin JVM toolchain to Java 17 to match the OpenCV module's Java target.
+// Without this, Kotlin defaults to JVM 21 (especially with Kotlin 2.x), which causes a build failure:
+// "Inconsistent JVM Target Compatibility Between Java and Kotlin Tasks".
+// See: https://kotl.in/gradle/jvm/toolchain for details.
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+```
+
+6. You can now build and run on your Android Device or build your own .apk file.
+7. You can set `universalApk` to `true` in the app's `build.gradle` to build a one-for-all .apk file or adjust the `include 'arm64-v8a'` to customize which ABI to build the .apk file for.
 
 # Technologies Used
 
 1. [jpn.traineddata from UmaUmaCruise by @amate](https://github.com/amate/UmaUmaCruise)
 2. [MediaProjection - Used to obtain full screenshots](https://developer.android.com/reference/android/media/projection/MediaProjection)
 3. [AccessibilityService - Used to dispatch gestures like tapping and scrolling](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService)
-4. [OpenCV Android 4.12.0 - Used to template match](https://opencv.org/releases/)
-5. [Tesseract4Android 2.1.1 - For performing OCR on the screen](https://github.com/adaptech-cz/Tesseract4Android)
-6. [string-similarity 1.0.0 - For comparing string similarities during text detection](https://github.com/rrice/java-string-similarity)
-7. [AppUpdater 2.7 - For automatically checking and notifying the user for new app updates](https://github.com/javiersantos/AppUpdater)
+4. [OpenCV Android - Used to template match](https://opencv.org/releases/)
+5. [Tesseract4Android - For performing OCR on the screen](https://github.com/adaptech-cz/Tesseract4Android)
+6. [string-similarity - For comparing string similarities during text detection](https://github.com/rrice/java-string-similarity)
+7. [AppUpdater - For automatically checking and notifying the user for new app updates](https://github.com/javiersantos/AppUpdater)
