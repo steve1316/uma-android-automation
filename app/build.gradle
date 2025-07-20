@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace "com.steve1316.uma_android_automation"
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
