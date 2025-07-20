@@ -103,12 +103,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		super.onResume()
 		
 		// Makes sure that OnSharedPreferenceChangeListener works properly and avoids the situation where the app suddenly stops triggering the listener.
-		preferenceScreen.sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+		preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
 	}
 	
 	override fun onPause() {
 		super.onPause()
-		preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+		preferenceScreen.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
 	}
 	
 	// This function is called right after the user navigates to the SettingsFragment.
@@ -117,7 +117,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		setPreferencesFromResource(R.xml.preferences, rootKey)
 		
 		// Get the SharedPreferences.
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 		
 		// Grab the saved preferences from the previous time the user used the app.
 		val campaign: String = sharedPreferences.getString("campaign", "")!!

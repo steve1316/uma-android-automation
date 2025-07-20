@@ -66,8 +66,8 @@ class HomeFragment : Fragment() {
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+		val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 		
 		// Main Settings page
 		val campaign: String = sharedPreferences.getString("campaign", "")!!
@@ -388,8 +388,40 @@ class HomeFragment : Fragment() {
 			setNegativeButton(android.R.string.cancel, null)
 			show()
 		}
-		
+
+		showRestrictedSettingsDialog()
 		return false
+	}
+
+	/**
+	 * Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
+	 * The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
+	 */
+	private fun showRestrictedSettingsDialog() {
+		AlertDialog.Builder(myContext).apply {
+			setTitle(R.string.accessibility_disabled)
+			setMessage(
+				"""
+            To enable Accessibility Service:
+            
+            1. Tap "Go to App Info".
+            2. Tap the 3-dot menu in the top right.
+            3. Tap "Allow restricted settings".
+            4. Return to Accessibility Settings and enable the service.
+            """.trimIndent()
+			)
+			setPositiveButton("Go to App Info") { _, _ ->
+				val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+					data = Uri.parse("package:${myContext.packageName}")
+				}
+				startActivity(intent)
+			}
+			setNeutralButton("Accessibility Settings") { _, _ ->
+				val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+				startActivity(intent)
+			}
+			setNegativeButton(android.R.string.cancel, null)
+		}.show()
 	}
 	
 	/**

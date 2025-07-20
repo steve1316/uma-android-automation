@@ -21,7 +21,7 @@ class OCRFragment : PreferenceFragmentCompat() {
 		setPreferencesFromResource(R.xml.preferences_ocr, rootKey)
 		
 		// Get the SharedPreferences.
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 		
 		// Grab the saved preferences from the previous time the user used the app.
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
@@ -77,11 +77,11 @@ class OCRFragment : PreferenceFragmentCompat() {
 		super.onResume()
 		
 		// Makes sure that OnSharedPreferenceChangeListener works properly and avoids the situation where the app suddenly stops triggering the listener.
-		preferenceScreen.sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+		preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
 	}
 	
 	override fun onPause() {
 		super.onPause()
-		preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+		preferenceScreen.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
 	}
 }
