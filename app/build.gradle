@@ -38,11 +38,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     // Specify which architecture to make apks for, or set universalApk to true for an all-in-one apk with increased file size.
@@ -87,4 +84,10 @@ dependencies {
 
     // AppUpdater for notifying users when there is a new update available.
     implementation 'com.github.javiersantos:AppUpdater:2.7'
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
