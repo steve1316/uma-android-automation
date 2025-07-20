@@ -5,8 +5,9 @@ plugins {
 
 android {
     namespace "com.steve1316.uma_android_automation"
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    //noinspection GradleDependency
+    compileSdk 35
+    buildToolsVersion "36.0.0"
 
     defaultConfig {
         applicationId "com.steve1316.uma_android_automation"
