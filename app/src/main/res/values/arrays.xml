@@ -2,7 +2,7 @@
 <resources>
     <string-array name="campaigns">
         <item>Normal</item>
-        <item>Ao Haru</item>
+<!--        <item>Ao Haru</item>-->
     </string-array>
 
     <string-array name="stats">
