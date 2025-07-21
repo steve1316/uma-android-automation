@@ -120,7 +120,7 @@ class TrainingFragment : PreferenceFragmentCompat() {
 			summaryBody
 		} else {
 			"Select Stat(s) to prioritize in order from highest priority to lowest. Any stat not selected will be assigned the lowest priority.\n\nFollowing Default Prioritisation Order:\n1. " +
-					"Speed\n2. Stamina\n3. Power\n4. Guts\n5. Intelligence"
+					"Speed\n2. Stamina\n3. Power\n4. Guts\n5. Wit"
 		}
 	}
 	

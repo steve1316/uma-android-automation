@@ -737,25 +737,25 @@ class ImageUtils(context: Context, private val game: Game) {
 		val numberOfStamina = findAll("stat_stamina_block", region = customRegion).size
 		val numberOfPower = findAll("stat_power_block", region = customRegion).size
 		val numberOfGuts = findAll("stat_guts_block", region = customRegion).size
-		val numberOfIntelligence = findAll("stat_intelligence_block", region = customRegion).size
+		val numberOfWit = findAll("stat_wit_block", region = customRegion).size
 		var totalStatGain = 0
 		
 		// This is assuming Great Mood with +20% stat modifier.
 		when (currentStat) {
 			"Speed" -> {
-				totalStatGain += (numberOfSpeed * 20) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 20) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Stamina" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 20) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 20) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Power" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 20) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 20) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Guts" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 20) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 20) + (numberOfWit * 10) + 10
 			}
-			"Intelligence" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 20) + 10
+			"Wit" -> {
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 20) + 10
 			}
 		}
 		

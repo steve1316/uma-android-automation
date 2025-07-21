@@ -120,7 +120,7 @@ class HomeFragment : Fragment() {
 		// Set default values if this is the user's first time.
 		
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
-			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
 			defaultCheck = true
 		}
 		
