@@ -33,7 +33,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val decimalFormat = DecimalFormat("#.###")
 	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	private val tessBaseAPI: TessBaseAPI
-	private val tesseractLanguages = arrayListOf("jpn")
+	private val tesseractLanguages = arrayListOf("eng")
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -93,12 +93,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		val matchFilePath: String = myContext.getExternalFilesDir(null)?.absolutePath + "/temp"
 		updateMatchFilePath(matchFilePath)
 		
-		// Initialize Tesseract with the jpn.traineddata model.
+		// Initialize Tesseract with the traineddata model.
 		initTesseract()
 		tessBaseAPI = TessBaseAPI()
 		
 		// Start up Tesseract.
-		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
+		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "eng")
 		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
 	}
 	
