@@ -100,7 +100,7 @@ class TrainingFragment : PreferenceFragmentCompat() {
 	 */
 	private fun updateSummaries() {
 		val trainingBlacklistPreference = findPreference<MultiSelectListPreference>("trainingBlacklist")!!
-		trainingBlacklistPreference.summary = if (trainingBlacklistPreference.values.size != 0) {
+		trainingBlacklistPreference.summary = if (trainingBlacklistPreference.values.isNotEmpty()) {
 			"Select Training(s) to blacklist from being selected in order to narrow the focus of overall Training.\n\nBlacklisted: ${trainingBlacklistPreference.values.joinToString(", ")}"
 		} else {
 			"Select Training(s) to blacklist from being selected in order to narrow the focus of overall Training.\n\nNone Selected"
