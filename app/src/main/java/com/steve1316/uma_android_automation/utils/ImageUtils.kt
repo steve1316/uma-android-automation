@@ -155,7 +155,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		while (scales.isNotEmpty()) {
-			val newScale: Double = decimalFormat.format(scales.removeFirst()).toDouble()
+			val newScale: Double = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
 				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
@@ -296,7 +296,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Set templateMat at whatever scale it found the very first match for the next while loop.
 		while (!matchCheck && scales.isNotEmpty()) {
-			newScale = decimalFormat.format(scales.removeFirst()).toDouble()
+			newScale = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
 				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
