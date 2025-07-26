@@ -880,8 +880,8 @@ class Game(val myContext: Context) {
 			
 			// Detect what Mood the bot is at.
 			val currentMood: String = when {
-				imageUtils.findImage("mood_above_normal", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
-					"Above Normal"
+				imageUtils.findImage("mood_good", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
+					"Good"
 				}
 				imageUtils.findImage("mood_great", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
 					"Great"
