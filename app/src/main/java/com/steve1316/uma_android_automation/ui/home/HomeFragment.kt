@@ -375,29 +375,9 @@ class HomeFragment : Fragment() {
 				return true
 			}
 		}
-		
-		// Moves the user to the Accessibility Settings if the service is not detected.
-		AlertDialog.Builder(myContext).apply {
-			setTitle(R.string.accessibility_disabled)
-			setMessage(R.string.accessibility_disabled_message)
-			setPositiveButton(R.string.go_to_settings) { _, _ ->
-				Log.d(logTag, "Accessibility Service is not detected. Moving user to Accessibility Settings.")
-				val accessibilitySettingsIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-				myContext.startActivity(accessibilitySettingsIntent)
-			}
-			setNegativeButton(android.R.string.cancel, null)
-			show()
-		}
 
-		showRestrictedSettingsDialog()
-		return false
-	}
-
-	/**
-	 * Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
-	 * The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
-	 */
-	private fun showRestrictedSettingsDialog() {
+		// Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
+		// The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
 		AlertDialog.Builder(myContext).apply {
 			setTitle(R.string.accessibility_disabled)
 			setMessage(
@@ -422,6 +402,8 @@ class HomeFragment : Fragment() {
 			}
 			setNegativeButton(android.R.string.cancel, null)
 		}.show()
+
+		return false
 	}
 	
 	/**
