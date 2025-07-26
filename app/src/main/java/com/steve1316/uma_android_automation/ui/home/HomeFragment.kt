@@ -120,7 +120,7 @@ class HomeFragment : Fragment() {
 		// Set default values if this is the user's first time.
 		
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
-			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
 			defaultCheck = true
 		}
 		
@@ -375,29 +375,9 @@ class HomeFragment : Fragment() {
 				return true
 			}
 		}
-		
-		// Moves the user to the Accessibility Settings if the service is not detected.
-		AlertDialog.Builder(myContext).apply {
-			setTitle(R.string.accessibility_disabled)
-			setMessage(R.string.accessibility_disabled_message)
-			setPositiveButton(R.string.go_to_settings) { _, _ ->
-				Log.d(logTag, "Accessibility Service is not detected. Moving user to Accessibility Settings.")
-				val accessibilitySettingsIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-				myContext.startActivity(accessibilitySettingsIntent)
-			}
-			setNegativeButton(android.R.string.cancel, null)
-			show()
-		}
 
-		showRestrictedSettingsDialog()
-		return false
-	}
-
-	/**
-	 * Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
-	 * The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
-	 */
-	private fun showRestrictedSettingsDialog() {
+		// Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
+		// The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
 		AlertDialog.Builder(myContext).apply {
 			setTitle(R.string.accessibility_disabled)
 			setMessage(
@@ -405,7 +385,7 @@ class HomeFragment : Fragment() {
             To enable Accessibility Service:
             
             1. Tap "Go to App Info".
-            2. Tap the 3-dot menu in the top right.
+            2. Tap the 3-dot menu in the top right. If not available, you can skip to step 4.
             3. Tap "Allow restricted settings".
             4. Return to Accessibility Settings and enable the service.
             """.trimIndent()
@@ -422,6 +402,8 @@ class HomeFragment : Fragment() {
 			}
 			setNegativeButton(android.R.string.cancel, null)
 		}.show()
+
+		return false
 	}
 	
 	/**

@@ -1,2212 +1,1997 @@
 {
-	"波乱注意砲！": {
-		"id": 10071,
-		"englishName": "Warning Shot!",
-		"englishDescription": "From the middle of the race slightly increase your speed by running a long spurt"
-	},
-	"アクセルX": {
-		"id": 10081,
-		"englishName": "Accelerator X",
-		"englishDescription": "Increase speed and power lightly when close to the lead in last 200m"
-	},
-	"レッドエース": {
-		"id": 10091,
-		"englishName": "Red Ace",
-		"englishDescription": "Be in the lead during the 2nd half of the race to gain slightly more power to help you stay in 1st place"
-	},
-	"精神一到": {
-		"id": 10111,
-		"englishName": "Desire to win",
-		"englishDescription": "Lightly increase speed when passing in the back in Final Leg straight."
-	},
-	"熱血☆アミーゴ": {
-		"id": 10141,
-		"englishName": "Hot Blooded ☆ Amigo",
-		"englishDescription": "Slightly easier to keep advantage if you have enough strength in the Final Leg straight"
-	},
-	"エンプレス・プライド": {
-		"id": 10181,
-		"englishName": "Empress・Pride",
-		"englishDescription": "Lightly increase speed when passing in the back in last corner"
-	},
-	"勝利のキッス☆": {
-		"id": 10241,
-		"englishName": "Victory Kiss ☆",
-		"englishDescription": "Slightly easier to break away when competing in the last corner"
-	},
-	"燃えろ筋肉！": {
-		"id": 10271,
-		"englishName": "Burning Muscles!",
-		"englishDescription": "Gain a slight increase in acceleration as you attempt to gain positions during the last corner of the race"
-	},
-	"introduction：My body": {
-		"id": 10321,
-		"englishName": "introduction：My body",
-		"englishDescription": "Lightly recover stamina in the second half of the race by holding yourself back during corners"
-	},
-	"全力Vサインッ！": {
-		"id": 10351,
-		"englishName": "Full Power for V",
-		"englishDescription": "On the final straight your desire not to lose, increases your speed lightly"
-	},
-	"学級委員長+速さ＝バクシン": {
-		"id": 10411,
-		"englishName": "Class President + Speed = Bakushin",
-		"englishDescription": "While fighting for the lead during the second part of the race, lightly increase your speed through displaying your Bakushin power"
-	},
-	"クリアハート": {
-		"id": 10451,
-		"englishName": "Clear Heart",
-		"englishDescription": "Be in a good position during the middle stage of the race to lightly recover your endurance"
-	},
-	"ワクワクよーいドン": {
-		"id": 10521,
-		"englishName": "Ready, Steady, Go!",
-		"englishDescription": "Being at the back during the last corner, lightly restores your endurance when you see another horse girl"
-	},
-	"来てください来てください！": {
-		"id": 10561,
-		"englishName": "Come, Come!",
-		"englishDescription": "If during the last leg of the race your way to the front of the field is blocked, your power of divination will make it lightly easier to spot an opening"
-	},
-	"アタシもたまには、ね？": {
-		"id": 10601,
-		"englishName": "You know, sometimes even I can…",
-		"englishDescription": "When you're in 3rd place at the end of the race and about to lose, you gain a little bit more fighting spirit and lightly increase your speed"
-	},
-	"Call me KING": {
-		"id": 10611,
-		"englishName": "Call me KING",
-		"englishDescription": "If you can get calm and composed through the race, you will be able to showcase your ability and increase your speed for the last 200m"
-	},
-	"シューティングスター": {
-		"id": 100011,
-		"englishName": "Shooting Star",
-		"englishDescription": "Overtake the opponent in front of you during the last leg of the race to gain momentum and increase your speed"
-	},
-	"先頭の景色は譲らない…！": {
-		"id": 100021,
-		"englishName": "I'm not giving up the lead…!",
-		"englishDescription": "Be in the lead with a gap behind you at the last straight to increase your speed even more through your legs"
-	},
-	"究極テイオーステップ": {
-		"id": 100031,
-		"englishName": "Ultimate Teio Step",
-		"englishDescription": "Close down the leader on the final straight to greatly increase your speed even further through your brilliant leg work"
-	},
-	"紅焔ギア/LP1211-M": {
-		"id": 100041,
-		"englishName": "Red Flame Gear/LP1211-M",
-		"englishDescription": "Be close to the leader at the final corner to increase your acceleration by changing gears"
-	},
-	"煌星のヴォードヴィル": {
-		"id": 100051,
-		"englishName": "Glittering Star Vaudeville",
-		"englishDescription": "If you're in front at the final straight and manage to break out a little, increase speed greatly"
-	},
-	"勝利の鼓動": {
-		"id": 100061,
-		"englishName": "The Beat of Victory",
-		"englishDescription": "Be close to the lead during the last 200m to make it easier to break through and find a way through the field"
-	},
-	"不沈艦、抜錨ォッ！": {
-		"id": 100071,
-		"englishName": "Unsinkable ship, anchored!",
-		"englishDescription": "Gradually increase speed during the long spurt in Middle Leg"
-	},
-	"カッティング×DRIVE！": {
-		"id": 100081,
-		"englishName": "Cutting × DRIVE!",
-		"englishDescription": "Increase speed and power when close to the lead in last 200m"
-	},
-	"ブリリアント・レッドエース": {
-		"id": 100091,
-		"englishName": "Brilliant Red Ace",
-		"englishDescription": "Display your power in keeping the lead position during the latter half of the race"
-	},
-	"ヴィクトリーショット！": {
-		"id": 100101,
-		"englishName": "Victory Shot!",
-		"englishDescription": "Be in a good position at the last corner to gain momentum and increase your acceleration"
-	},
-	"精神一到何事か成らざらん": {
-		"id": 100111,
-		"englishName": "Where there's a will, there's a way",
-		"englishDescription": "Increase speed when passing in the back in Final Leg straight"
-	},
-	"タイマン！デッドヒート！": {
-		"id": 100121,
-		"englishName": "One-on-one! Dead heat!",
-		"englishDescription": "On the last straight, gain speed when passing from the outside back"
-	},
-	"貴顕の使命を果たすべく": {
-		"id": 100131,
-		"englishName": "Fulfilling your noble duty",
-		"englishDescription": "Be close to the lead in the final corner to gain speed as you resolve yourself to not be overtaken"
-	},
-	"プランチャ☆ガナドール": {
-		"id": 100141,
-		"englishName": "Plancha ☆ Ganador",
-		"englishDescription": "Easier to keep a good position in last straight with spare energy"
-	},
-	"ヴィットーリアに捧ぐ舞踏": {
-		"id": 100151,
-		"englishName": "Dance for Vittoria",
-		"englishDescription": "Fight for the lead at the last corner to increase your speed through your kingly radiance"
-	},
-	"Shadow Break": {
-		"id": 100161,
-		"englishName": "Shadow Break",
-		"englishDescription": "Increase speed with monstrous power from the final corner onward when passing from the outside"
-	},
-	"汝、皇帝の神威を見よ": {
-		"id": 100171,
-		"englishName": "Thou, witness the heavenly might of the Emperor",
-		"englishDescription": "During the last leg of the race make three overtakes to strongly increase your speed on the final straight"
-	},
-	"ブレイズ・オブ・プライド": {
-		"id": 100181,
-		"englishName": "Blaze of Pride",
-		"englishDescription": "Increase speed when passing in the back in last corner"
-	},
-	"尊み☆ﾗｽﾄｽﾊﾟ—(ﾟ∀ﾟ)—ﾄ!": {
-		"id": 100191,
-		"englishName": "Kyuute☆Last SpuU(ﾟ∀ﾟ)Uurt!",
-		"englishDescription": "If you overtake others at least twice at the end of the race, your speed will increase"
-	},
-	"アングリング×スキーミング": {
-		"id": 100201,
-		"englishName": "Angling×Scheming",
-		"englishDescription": "During the last corner, gain acceleration when in the first position"
-	},
-	"白い稲妻、見せたるで！": {
-		"id": 100211,
-		"englishName": "Imma Show You White Lightning!",
-		"englishDescription": "In the second half of the race on a straight, if you're in a good position or aiming for one from the back of the pack, you will start running like a lightning bolt"
-	},
-	"Fairy tale": {
-		"id": 100221,
-		"englishName": "Fairy Tale",
-		"englishDescription": "If you're competing for good position in the second half of the race, your speed will increase"
-	},
-	"∴win Q.E.D.": {
-		"id": 100231,
-		"englishName": "∴win Q.E.D.",
-		"englishDescription": "Increase speed when passing in the front of the last corner"
-	},
-	"ひらめき☆ランディング": {
-		"id": 100241,
-		"englishName": "Inspiration ☆ Landing",
-		"englishDescription": "After a struggle for the lead on the last corner, it becomes easier to break away during the final straight"
-	},
-	"アナタヲ・オイカケテ": {
-		"id": 100251,
-		"englishName": "Chasing After You",
-		"englishDescription": "If you're in the middle of the pack in the second half of the race, your speed will increase while draining the speed of the girls ahead of you"
-	},
-	"G00 1st.F∞;": {
-		"id": 100261,
-		"englishName": "G00 1st.F∞;",
-		"englishDescription": "Lead by yourself without letting up until the final straight to increase your speed"
-	},
-	"レッツ・アナボリック！": {
-		"id": 100271,
-		"englishName": "Let's anabolic!",
-		"englishDescription": "Increase acceleration as you attempt to overtake in last corner"
-	},
-	"I'M☆FULL☆SPEED!!": {
-		"id": 100281,
-		"englishName": "I'M☆FULL☆SPEED!!",
-		"englishDescription": "If you get a little tired while being in a good position in the middle of the race, your speed and acceleration increase"
-	},
-	"ブルーローズチェイサー": {
-		"id": 100301,
-		"englishName": "Blue Rose Chaser",
-		"englishDescription": "Break away on the last straight to steel your will and increase your speed"
-	},
-	"U=ma2": {
-		"id": 100321,
-		"englishName": "U=ma2",
-		"englishDescription": "When being held back on corners of the later half of the race, your endurance recovers"
-	},
-	"勝利のチケットを、君にッ！": {
-		"id": 100351,
-		"englishName": "The ticket to victory, for you!",
-		"englishDescription": "Your speed increases on the last straight when competing for the lead"
-	},
-	"Schwarzes Schwert": {
-		"id": 100371,
-		"englishName": "Schwarzes Schwert",
-		"englishDescription": "If you manage to keep your composure until the final straight, your speed will increase"
-	},
-	"#LookatCurren": {
-		"id": 100381,
-		"englishName": "#LookatCurren",
-		"englishDescription": "Gain momentum while in a good position when passing someone in the middle leg"
-	},
-	"姫たるもの、勝利をこの手に": {
-		"id": 100391,
-		"englishName": "Victory Befitting a Princess",
-		"englishDescription": "If you struggle for victory on the last straight from the middle of the pack, your speed will increase"
-	},
-	"KEEP IT REAL.": {
-		"id": 100401,
-		"englishName": "KEEP IT REAL.",
-		"englishDescription": "In the second half of the race, increase acceleration if you start overtaking from the middle of the pack"
-	},
-	"優等生×バクシン＝大勝利ッ": {
-		"id": 100411,
-		"englishName": "Honor Student x Bakushin = Big Victory",
-		"englishDescription": "During the later half of the race, your speed increases when competing for the lead"
-	},
-	"ピュリティオブハート": {
-		"id": 100451,
-		"englishName": "Purity of Heart",
-		"englishDescription": "Be in good position in Middle Leg to recover endurance"
-	},
-	"キラキラ☆STARDOM": {
-		"id": 100461,
-		"englishName": "Sparkling☆STARDOM",
-		"englishDescription": "Increase your momentum during the middle leg's straight with the feeling of keeping the lead from being overtaken"
-	},
-	"YEAH☆VIVID TIME!": {
-		"id": 100481,
-		"englishName": "YEAH☆VIVID TIME!",
-		"englishDescription": "If you overtake or are about to be overtaken by someone else on the final straight while in a good position, your speed will increase"
-	},
-	"Nemesis": {
-		"id": 100501,
-		"englishName": "Nemesis",
-		"englishDescription": "Increase speed in the last corner when coming up from the back of the pack"
-	},
-	"ワクワククライマックス": {
-		"id": 100521,
-		"englishName": "Exciting Climax",
-		"englishDescription": "When in the back in last corner, restore your endurance when you see another horse girl"
-	},
-	"来ます来てます来させます！": {
-		"id": 100561,
-		"englishName": "I'm coming, I'm coming, I'm coming!",
-		"englishDescription": "When the front is packed during the last leg of the race, the oracle's power will open a path"
-	},
-	"I Never Goof Up!": {
-		"id": 100581,
-		"englishName": "I Never Goof Up!",
-		"englishDescription": "During the last leg, if you overtake from the middle of the pack during a corner, increase speed and acceleration"
-	},
-	"彼方、その先へ…": {
-		"id": 100591,
-		"englishName": "Beyond The Other Side",
-		"englishDescription": "If you keep your calm in the middle of the pack during a Middle or Final Leg corner, your acceleration will increase"
-	},
-	"きっとその先へ…！": {
-		"id": 100601,
-		"englishName": "Surely, beyond...!",
-		"englishDescription": "When you're in 3rd place at the end of the race and about to lose, your speed increases"
-	},
-	"Pride of KING": {
-		"id": 100611,
-		"englishName": "Pride of KING",
-		"englishDescription": "After proceeding through the race calmly, your speed drastically increases during the last 200m"
-	},
-	"わやかわ♪マリンダイヴ": {
-		"id": 110011,
-		"englishName": "Wayakawa ♪ Marine Dive",
-		"englishDescription": "Restore endurance if you activate two skills in the middle part of the race"
-	},
-	"絶対は、ボクだ": {
-		"id": 110031,
-		"englishName": "It's going to be me",
-		"englishDescription": "Increase speed in the last straight when chasing someone close to the lead"
-	},
-	"グッときて♪Chu": {
-		"id": 110041,
-		"englishName": "Heartfelt ♪ Smooch",
-		"englishDescription": "In the second half of the race, increase speed when you recover endurance with your skills while being in front"
-	},
-	"聖夜のミラクルラン！": {
-		"id": 110061,
-		"englishName": "Christmas Eve Miracle Run!",
-		"englishDescription": "If you activate at least 3 recovery skills, then in the second half of the race, your speed and acceleration will increase, and you'll recover more stamina"
-	},
-	"ゲインヒール・スペリアー": {
-		"id": 110111,
-		"englishName": "Gain Superior Heal",
-		"englishDescription": "During the Middle Leg, recover stamina when overtaken in the back of the pack"
-	},
-	"最強の名を懸けて": {
-		"id": 110131,
-		"englishName": "For the Strongest Name",
-		"englishDescription": "Increase speed after the last corner when stamina runs out being one of the lead"
-	},
-	"コンドル猛撃波": {
-		"id": 110141,
-		"englishName": "Condor Onslaught",
-		"englishDescription": "During the last corner, gain acceleration when aiming for the lead from the middle of the pack"
-	},
-	"恵福バルカローレ": {
-		"id": 110151,
-		"englishName": "Blessed Barcarolle",
-		"englishDescription": "If you're in front when there's 400 m remaining in the race, increase your speed; if you've used 7 skills by then, increase it significantly"
-	},
-	"翳り退く、さざめきの矢": {
-		"id": 110171,
-		"englishName": "Howling Arrow Piercing The Darkness",
-		"englishDescription": "If you're about to be overtaken at the front after the final corner, your speed will increase"
-	},
-	"薫風、永遠なる瞬間を": {
-		"id": 110181,
-		"englishName": "Summer Breeze, The Eternal Moment",
-		"englishDescription": "Increase speed if you're in the front during the Middle Leg"
-	},
-	"Presents from X": {
-		"id": 110231,
-		"englishName": "Presents from X",
-		"englishDescription": "If you maintain good position from the start to the second half of the race, your speed will increase"
-	},
-	"フラワリー☆マニューバ": {
-		"id": 110241,
-		"englishName": "Flowery ☆ Maneuver",
-		"englishDescription": "During the last corner, increase speed if passing in the front; increase acceleration if passing in the back"
-	},
-	"Drain for rose": {
-		"id": 110301,
-		"englishName": "Drain For Rose",
-		"englishDescription": "If you're in a good position around halfway through the race and about to be overtaken, you will drain endurance from horse girls ahead of you"
-	},
-	"GET DOWN": {
-		"id": 110401,
-		"englishName": "GET DOWN",
-		"englishDescription": "If you're blocked in the middle of the pack at the final corner, it will become easier to get out"
-	},
-	"ぐるぐるマミートリック♡": {
-		"id": 110451,
-		"englishName": "Round And Round, Mummy Trick♡",
-		"englishDescription": "If you're in front after the final corner and about to overtake another girl, your speed and acceleration will increase"
-	},
-	"113転び114起き": {
-		"id": 110521,
-		"englishName": "Fall Down 113 Times, Get Up 114",
-		"englishDescription": "The farther you are from the front during the final corner, the more will your speed increase"
-	},
-	"禾スナハチ登ル": {
-		"id": 110561,
-		"englishName": "Limit of Heat",
-		"englishDescription": "In the second part of the race, increase speed when someone is drawing closer to you in the back of the pack"
-	},
-	"右回り◎": {
-		"id": 200011,
-		"englishName": "Right Turns ◎",
-		"englishDescription": "Become better at clockwise tracks"
-	},
-	"右回り○": {
-		"id": 200012,
-		"englishName": "Right Turns ○",
-		"englishDescription": "Become a little better at clockwise tracks"
-	},
-	"右回り×": {
-		"id": 200013,
-		"englishName": "Right Turns ×",
-		"englishDescription": "Become a little worse at clockwise tracks"
-	},
-	"左回り◎": {
-		"id": 200021,
-		"englishName": "Left Turns ◎",
-		"englishDescription": "Become better at counterclockwise tracks"
-	},
-	"左回り○": {
-		"id": 200022,
-		"englishName": "Left Turns ○",
-		"englishDescription": "Become a little better at counterclockwise track"
-	},
-	"左回り×": {
-		"id": 200023,
-		"englishName": "Left Turns ×",
-		"englishDescription": "Become a little worse at counterclockwise track"
-	},
-	"東京レース場◎": {
-		"id": 200031,
-		"englishName": "Tokyo Racetrack ◎",
-		"englishDescription": "Become better at running at the Tokyo Racetrack"
-	},
-	"東京レース場○": {
-		"id": 200032,
-		"englishName": "Tokyo Racetrack ○",
-		"englishDescription": "Become a little better at running at the Tokyo Racetrack"
-	},
-	"東京レース場×": {
-		"id": 200033,
-		"englishName": "Tokyo Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Tokyo Racetrack"
-	},
-	"中山レース場◎": {
-		"id": 200041,
-		"englishName": "Nakayama Racetrack ◎",
-		"englishDescription": "Become better at running at the Nakayama Racetrack"
-	},
-	"中山レース場○": {
-		"id": 200042,
-		"englishName": "Nakayama Racetrack ○",
-		"englishDescription": "Become a little better at running at the Nakayama Racetrack"
-	},
-	"中山レース場×": {
-		"id": 200043,
-		"englishName": "Nakayama Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Nakayama Racetrack"
-	},
-	"阪神レース場◎": {
-		"id": 200051,
-		"englishName": "Hanshin Racetrack ◎",
-		"englishDescription": "Become better at running at the Hanshin Racetrack"
-	},
-	"阪神レース場○": {
-		"id": 200052,
-		"englishName": "Hanshin Racetrack ○",
-		"englishDescription": "Become a little better at running at the Hanshin Racetrack"
-	},
-	"阪神レース場×": {
-		"id": 200053,
-		"englishName": "Hanshin Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Hanshin Racetrack"
-	},
-	"京都レース場◎": {
-		"id": 200061,
-		"englishName": "Kyoto Racetrack ◎",
-		"englishDescription": "Become better at running at the Kyoto Racetrack"
-	},
-	"京都レース場○": {
-		"id": 200062,
-		"englishName": "Kyoto Racetrack ○",
-		"englishDescription": "Become a little better at running at the Kyoto Racetrack"
-	},
-	"京都レース場×": {
-		"id": 200063,
-		"englishName": "Kyoto Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Kyoto Racetrack"
-	},
-	"淀の申し子": {
-		"id": 200064,
-		"englishName": "Child of Hesitation",
-		"englishDescription": "Become better at running at the Kyoto Racetrack, increasing stamina and wisdom"
-	},
-	"中京レース場◎": {
-		"id": 200071,
-		"englishName": "Chukyo Racetrack ◎",
-		"englishDescription": "Become better at running at the Chukyo Racetrack"
-	},
-	"中京レース場○": {
-		"id": 200072,
-		"englishName": "Chukyo Racetrack ○",
-		"englishDescription": "Become a little better at running at the Chukyo Racetrack"
-	},
-	"中京レース場×": {
-		"id": 200073,
-		"englishName": "Chukyo Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Chukyo Racetrack"
-	},
-	"札幌レース場◎": {
-		"id": 200081,
-		"englishName": "Sapporo Racetrack ◎",
-		"englishDescription": "Become better at running at the Sapporo Racetrack"
-	},
-	"札幌レース場○": {
-		"id": 200082,
-		"englishName": "Sapporo Racetrack ○",
-		"englishDescription": "Become a little better at running at the Sapporo Racetrack"
-	},
-	"札幌レース場×": {
-		"id": 200083,
-		"englishName": "Sapporo Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Sapporo Racetrack"
-	},
-	"函館レース場◎": {
-		"id": 200091,
-		"englishName": "Hakodate Racetrack ◎",
-		"englishDescription": "Become better at running at the Hakodate Racetrack"
-	},
-	"函館レース場○": {
-		"id": 200092,
-		"englishName": "Hakodate Racetrack ○",
-		"englishDescription": "Become a little better at running at the Hakodate Racetrack"
-	},
-	"函館レース場×": {
-		"id": 200093,
-		"englishName": "Hakodate Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Hakodate Racetrack"
-	},
-	"福島レース場◎": {
-		"id": 200101,
-		"englishName": "Fukushima Racetrack ◎",
-		"englishDescription": "Become better at running at the Fukushima Racetrack"
-	},
-	"福島レース場○": {
-		"id": 200102,
-		"englishName": "Fukushima Racetrack ○",
-		"englishDescription": "Become a little better at running at the Fukushima Racetrack"
-	},
-	"福島レース場×": {
-		"id": 200103,
-		"englishName": "Fukushima Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Fukushima Racetrack"
-	},
-	"新潟レース場◎": {
-		"id": 200111,
-		"englishName": "Niigata Racetrack ◎",
-		"englishDescription": "Become better at running at the Niigata Racetrack"
-	},
-	"新潟レース場○": {
-		"id": 200112,
-		"englishName": "Niigata Racetrack ○",
-		"englishDescription": "Become a little better at running at the Niigata Racetrack"
-	},
-	"新潟レース場×": {
-		"id": 200113,
-		"englishName": "Niigata Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Niigata Racetrack"
-	},
-	"小倉レース場◎": {
-		"id": 200121,
-		"englishName": "Kokura Racetrack ◎",
-		"englishDescription": "Become better at running at the Kokura Racetrack"
-	},
-	"小倉レース場○": {
-		"id": 200122,
-		"englishName": "Kokura Racetrack ○",
-		"englishDescription": "Become a little better at running at the Kokura Racetrack"
-	},
-	"小倉レース場×": {
-		"id": 200123,
-		"englishName": "Kokura Racetrack ×",
-		"englishDescription": "Become a little worse at running at the Kokura Racetrack"
-	},
-	"根幹距離◎": {
-		"id": 200131,
-		"englishName": "Core Distance ◎",
-		"englishDescription": "Become better at Core Distances (Multiples of 400m)"
-	},
-	"根幹距離○": {
-		"id": 200132,
-		"englishName": "Core Distance ○",
-		"englishDescription": "Become a little better at Core Distances (Multiples of 400m)"
-	},
-	"根幹距離×": {
-		"id": 200133,
-		"englishName": "Core Distance ×",
-		"englishDescription": "Become a little worse at Core Distances (Multiples of 400m)"
-	},
-	"非根幹距離◎": {
-		"id": 200141,
-		"englishName": "Non-Core Distances ◎",
-		"englishDescription": "Become better at Non-Core Distances (Not Multiples of 400m)"
-	},
-	"非根幹距離○": {
-		"id": 200142,
-		"englishName": "Non-Core Distances ○",
-		"englishDescription": "Become a little better at Non-Core Distances (Not Multiples of 400m)"
-	},
-	"非根幹距離×": {
-		"id": 200143,
-		"englishName": "Non-Core Distances ×",
-		"englishDescription": "Become a little worse at Non-Core Distances (Not Multiples of 400m)"
-	},
-	"良バ場◎": {
-		"id": 200151,
-		"englishName": "Track Condition (Good) ◎",
-		"englishDescription": "Become better on tracks in Good condition"
-	},
-	"良バ場○": {
-		"id": 200152,
-		"englishName": "Track Condition (Good) ○",
-		"englishDescription": "Become a little better on tracks in Good condition"
-	},
-	"良バ場×": {
-		"id": 200153,
-		"englishName": "Track Condition (Good) ×",
-		"englishDescription": "Become a little worse on tracks in Good condition"
-	},
-	"道悪◎": {
-		"id": 200161,
-		"englishName": "Wicked Path ◎",
-		"englishDescription": "Become better on tracks in Slightly Heavy, Heavy, or Bad condition"
-	},
-	"道悪○": {
-		"id": 200162,
-		"englishName": "Wicked Path ○",
-		"englishDescription": "Become a little better on tracks in Slightly Heavy, Heavy, or Bad condition"
-	},
-	"道悪×": {
-		"id": 200163,
-		"englishName": "Wicked Path ×",
-		"englishDescription": "Become a little worse on tracks in Slightly Heavy, Heavy, or Bad condition"
-	},
-	"春ウマ娘◎": {
-		"id": 200171,
-		"englishName": "Spring Girl ◎",
-		"englishDescription": "Become better at races in Spring"
-	},
-	"春ウマ娘○": {
-		"id": 200172,
-		"englishName": "Spring Girl ○",
-		"englishDescription": "Become a little better at races in Spring"
-	},
-	"春ウマ娘×": {
-		"id": 200173,
-		"englishName": "Spring Girl ×",
-		"englishDescription": "Become a little worse at races in Spring"
-	},
-	"夏ウマ娘◎": {
-		"id": 200181,
-		"englishName": "Summer Girl ◎",
-		"englishDescription": "Become better at races in Summer"
-	},
-	"夏ウマ娘○": {
-		"id": 200182,
-		"englishName": "Summer Girl ○",
-		"englishDescription": "Become a little better at races in Summer"
-	},
-	"夏ウマ娘×": {
-		"id": 200183,
-		"englishName": "Summer Girl ×",
-		"englishDescription": "Become a little worse at races in Summer"
-	},
-	"秋ウマ娘◎": {
-		"id": 200191,
-		"englishName": "Autumn Girl ◎",
-		"englishDescription": "Become better at races in Autumn"
-	},
-	"秋ウマ娘○": {
-		"id": 200192,
-		"englishName": "Autumn Girl ○",
-		"englishDescription": "Become a little better at races in Autumn"
-	},
-	"秋ウマ娘×": {
-		"id": 200193,
-		"englishName": "Autumn Girl ×",
-		"englishDescription": "Become a little worse at races in Autumn"
-	},
-	"初嵐": {
-		"id": 200194,
-		"englishName": "The First Storm",
-		"englishDescription": "Become better at autumn races, increasing speed and power"
-	},
-	"冬ウマ娘◎": {
-		"id": 200201,
-		"englishName": "Winter Girl ◎",
-		"englishDescription": "Become better at races in Winter"
-	},
-	"冬ウマ娘○": {
-		"id": 200202,
-		"englishName": "Winter Girl ○",
-		"englishDescription": "Become a little better at races in Winter"
-	},
-	"冬ウマ娘×": {
-		"id": 200203,
-		"englishName": "Winter Girl ×",
-		"englishDescription": "Become a little worse at races in Winter"
-	},
-	"晴れの日◎": {
-		"id": 200211,
-		"englishName": "Sunny Days ◎",
-		"englishDescription": "Become better at races on Sunny Days"
-	},
-	"晴れの日○": {
-		"id": 200212,
-		"englishName": "Sunny Days ○",
-		"englishDescription": "Become a little better at races on Sunny Days"
-	},
-	"曇りの日◎": {
-		"id": 200221,
-		"englishName": "Cloudy Days ◎",
-		"englishDescription": "Become better at races on Cloudy Days"
-	},
-	"曇りの日○": {
-		"id": 200222,
-		"englishName": "Cloudy Days ○",
-		"englishDescription": "Become a little better at races on Cloudy Days"
-	},
-	"雨の日◎": {
-		"id": 200231,
-		"englishName": "Rainy Day ◎",
-		"englishDescription": "Become better at races on Rainy Days"
-	},
-	"雨の日○": {
-		"id": 200232,
-		"englishName": "Rainy Day ○",
-		"englishDescription": "Become a little better at races on Rainy Days"
-	},
-	"雨の日×": {
-		"id": 200233,
-		"englishName": "Rainy Day ×",
-		"englishDescription": "Become a little worse at races on Rainy Days"
-	},
-	"雪の日◎": {
-		"id": 200241,
-		"englishName": "Snowy Days ◎",
-		"englishDescription": "Become better at races on Snowy Days"
-	},
-	"雪の日○": {
-		"id": 200242,
-		"englishName": "Snowy Days ○",
-		"englishDescription": "Become a little better at races on Snowy Days"
-	},
-	"内枠得意◎": {
-		"id": 200251,
-		"englishName": "Inner Gate Affinity ◎",
-		"englishDescription": "Become better at races when starting at gate block 1-3"
-	},
-	"内枠得意○": {
-		"id": 200252,
-		"englishName": "Inner Gate Affinity ○",
-		"englishDescription": "Become a little better at races when starting at gate block 1-3"
-	},
-	"内枠苦手": {
-		"id": 200253,
-		"englishName": "Inner Gate Affinity ×",
-		"englishDescription": "Become a little worse at races when starting at gate block 1-3"
-	},
-	"外枠得意◎": {
-		"id": 200261,
-		"englishName": "Outer Gate Affinity ◎",
-		"englishDescription": "Become better at races when starting at gate block 6-8"
-	},
-	"外枠得意○": {
-		"id": 200262,
-		"englishName": "Outer Gate Affinity ○",
-		"englishDescription": "Become a little better at races when starting at gate block 6-8"
-	},
-	"外枠苦手": {
-		"id": 200263,
-		"englishName": "Outer Gate Affinity ×",
-		"englishDescription": "Become a little worse at races when starting at gate block 6-8"
-	},
-	"おひとり様◎": {
-		"id": 200271,
-		"englishName": "The One ◎",
-		"englishDescription": "Become better at showing off your ability when no other girls share your strategy"
-	},
-	"おひとり様○": {
-		"id": 200272,
-		"englishName": "The One ○",
-		"englishDescription": "Become a little better at showing off your ability when no other girls share your strategy"
-	},
-	"対抗意識◎": {
-		"id": 200281,
-		"englishName": "Competitive Spirit ◎",
-		"englishDescription": "Become better at showing off your ability when at least 6 other girls share your strategy"
-	},
-	"対抗意識○": {
-		"id": 200282,
-		"englishName": "Competitive Spirit ○",
-		"englishDescription": "Become a little better at showing off your ability when at least 6 other girls share your strategy"
-	},
-	"引っ込み思案": {
-		"id": 200283,
-		"englishName": "Introverted",
-		"englishDescription": "Become a little worse at showing off your ability when at least 6 other girls share your strategy"
-	},
-	"徹底マーク◎": {
-		"id": 200291,
-		"englishName": "Eyes On You ◎",
-		"englishDescription": "Become better at showing off your ability when sharing a strategy with the crowd favorite"
-	},
-	"徹底マーク○": {
-		"id": 200292,
-		"englishName": "Eyes On You ○",
-		"englishDescription": "Become a little better at showing off your ability when sharing a strategy with the crowd favorite"
-	},
-	"伏兵◎": {
-		"id": 200301,
-		"englishName": "Underdog ◎",
-		"englishDescription": "Become better at showing off your ability when 4th favorite or below"
-	},
-	"伏兵○": {
-		"id": 200302,
-		"englishName": "Underdog ○",
-		"englishDescription": "Become a little better at showing off your ability when 4th favorite or below"
-	},
-	"GⅠ苦手": {
-		"id": 200311,
-		"englishName": "G1 Dislike",
-		"englishDescription": "Become worse at G1 races"
-	},
-	"小心者": {
-		"id": 200321,
-		"englishName": "Timid",
-		"englishDescription": "Become worse when you're the crowd favourite of the race"
-	},
-	"弧線のプロフェッサー": {
-		"id": 200331,
-		"englishName": "Archline Professor",
-		"englishDescription": "Become better at corners, increases speed"
-	},
-	"コーナー巧者○": {
-		"id": 200332,
-		"englishName": "Clever Cornerer ○",
-		"englishDescription": "Become better at corners, slightly increased speed"
-	},
-	"コーナー巧者×": {
-		"id": 200333,
-		"englishName": "Clever Cornerer ×",
-		"englishDescription": "Become better at corners, decreases speed"
-	},
-	"曲線のソムリエ": {
-		"id": 200341,
-		"englishName": "Curve Sommelier",
-		"englishDescription": "Increases acceleration through elegant cornering"
-	},
-	"コーナー加速○": {
-		"id": 200342,
-		"englishName": "Corner Accel ○",
-		"englishDescription": "Slightly increases acceleration through elegant cornering"
-	},
-	"コーナー加速×": {
-		"id": 200343,
-		"englishName": "Corner Accel ×",
-		"englishDescription": "Lightly decreases acceleration because of awkward cornering"
-	},
-	"円弧のマエストロ": {
-		"id": 200351,
-		"englishName": "Arc Maestro",
-		"englishDescription": "Recover stamina through efficient cornering"
-	},
-	"コーナー回復○": {
-		"id": 200352,
-		"englishName": "Corner Recovery ○",
-		"englishDescription": "Slightly recover stamina through efficient cornering"
-	},
-	"コーナー回復×": {
-		"id": 200353,
-		"englishName": "Corner Recovery ×",
-		"englishDescription": "Lightly reduces stamina because of wasteful cornering"
-	},
-	"ハヤテ一文字": {
-		"id": 200361,
-		"englishName": "Like The Wind",
-		"englishDescription": "Increases speed on straights"
-	},
-	"直線巧者": {
-		"id": 200362,
-		"englishName": "Straight Skill",
-		"englishDescription": "Slightly increases speed on straights"
-	},
-	"一陣の風": {
-		"id": 200371,
-		"englishName": "Gust of Wind",
-		"englishDescription": "Increases acceleration on straights"
-	},
-	"直線加速": {
-		"id": 200372,
-		"englishName": "Straight Accel",
-		"englishDescription": "Slightly increases acceleration on straights"
-	},
-	"好転一息": {
-		"id": 200381,
-		"englishName": "Breath of Fresh Air",
-		"englishDescription": "Recover stamina on straights"
-	},
-	"直線回復": {
-		"id": 200382,
-		"englishName": "Straight Recovery",
-		"englishDescription": "Slightly recover stamina on straights"
-	},
-	"坂苦手": {
-		"id": 200391,
-		"englishName": "Hill Dislike",
-		"englishDescription": "Become lightly more tired during uphills"
-	},
-	"バ群嫌い": {
-		"id": 200401,
-		"englishName": "Crowd Hater",
-		"englishDescription": "Endurance decreases lightly when surrounded"
-	},
-	"あきらめ癖": {
-		"id": 200411,
-		"englishName": "Resignation",
-		"englishDescription": "Tends to give up at the final straight line"
-	},
-	"手抜き癖": {
-		"id": 200421,
-		"englishName": "Negligence",
-		"englishDescription": "Tends to get off-guard when leading at the remaining 200m"
-	},
-	"コンセントレーション": {
-		"id": 200431,
-		"englishName": "Concentration",
-		"englishDescription": "Improve Starts, decreases delay of Late Starts"
-	},
-	"集中力": {
-		"id": 200432,
-		"englishName": "Focus",
-		"englishDescription": "Improve Starts, slightly decreases delay of Late Starts"
-	},
-	"ゲート難": {
-		"id": 200433,
-		"englishName": "Gate Trouble",
-		"englishDescription": "Worse at starts, lightly increases delay of Late Starts"
-	},
-	"鋼の意志": {
-		"id": 200441,
-		"englishName": "Will of Steel",
-		"englishDescription": "Remain composed and recover stamina in Opening Leg if front-side is crowded"
-	},
-	"隠れ蓑": {
-		"id": 200442,
-		"englishName": "Undercover",
-		"englishDescription": "Remain composed and slightly recover stamina in Opening Leg if front-side is crowded"
-	},
-	"注目の踊り子": {
-		"id": 200451,
-		"englishName": "Star of the Show",
-		"englishDescription": "Become better at taking a good track position during the Opening Leg"
-	},
-	"ポジションセンス": {
-		"id": 200452,
-		"englishName": "Position Sense",
-		"englishDescription": "Become a little better at taking position during the Opening Leg of the race"
-	},
-	"アガッてきた！": {
-		"id": 200461,
-		"englishName": "Now I'm Pumped!",
-		"englishDescription": "Increases speed when passing during the Middle Leg"
-	},
-	"ペースアップ": {
-		"id": 200462,
-		"englishName": "Up The Pace",
-		"englishDescription": "Slightly increases speed when passing during the Middle Leg"
-	},
-	"不屈の心": {
-		"id": 200471,
-		"englishName": "Indomitable Heart",
-		"englishDescription": "Recover stamina when passed in the Middle Leg"
-	},
-	"ペースキープ": {
-		"id": 200472,
-		"englishName": "Keep the Pace",
-		"englishDescription": "Slightly recover stamina when passed in the Middle Leg"
-	},
-	"どこ吹く風": {
-		"id": 200481,
-		"englishName": "Where the Wind Blows",
-		"englishDescription": "Recover stamina when boxed in during the Middle Leg"
-	},
-	"ウマ込み冷静": {
-		"id": 200482,
-		"englishName": "Crowded Calm",
-		"englishDescription": "Slightly recover stamina when boxed in during the Middle Leg"
-	},
-	"ノンストップガール": {
-		"id": 200491,
-		"englishName": "Non-stop Girl",
-		"englishDescription": "When blocked during Last Spurt, become better at navigating through it"
-	},
-	"垂れウマ回避": {
-		"id": 200492,
-		"englishName": "Slight Detour",
-		"englishDescription": "When blocked during Last Spurt, become slightly better at navigating through it"
-	},
-	"レーンの魔術師": {
-		"id": 200501,
-		"englishName": "Magician of the Lane",
-		"englishDescription": "Become a little better at positioning during the Final Leg of the race"
-	},
-	"臨機応変": {
-		"id": 200502,
-		"englishName": "Improvise",
-		"englishDescription": "Become a little better at positioning during the Final Leg of the race"
-	},
-	"全身全霊": {
-		"id": 200511,
-		"englishName": "Heart and Soul",
-		"englishDescription": "Increase Speed during your Last Spurt"
-	},
-	"末脚": {
-		"id": 200512,
-		"englishName": "Last Leg",
-		"englishDescription": "Slightly increases speed at the Last Spurt"
-	},
-	"空回り": {
-		"id": 200521,
-		"englishName": "Running Idle",
-		"englishDescription": "Become a little tired if you lead at the beginning"
-	},
-	"先手必勝": {
-		"id": 200531,
-		"englishName": "Fortune Favors the Fast",
-		"englishDescription": "Runner・Moving forwards becomes easier during the Opening Leg"
-	},
-	"先駆け": {
-		"id": 200532,
-		"englishName": "Frontrunner",
-		"englishDescription": "Runner・Moving forwards becomes slightly easier during the Opening Leg"
-	},
-	"脱出術": {
-		"id": 200541,
-		"englishName": "Escape Artist",
-		"englishDescription": "Runner・Going forwards during the Middle Leg becomes easier"
-	},
-	"急ぎ足": {
-		"id": 200542,
-		"englishName": "Fast Paced",
-		"englishDescription": "Runner・Going forwards during the Middle Leg becomes slightly easier"
-	},
-	"逃亡者": {
-		"id": 200551,
-		"englishName": "Runaway",
-		"englishDescription": "Runner・Keeping the lead on the final corner becomes easier"
-	},
-	"押し切り準備": {
-		"id": 200552,
-		"englishName": "Press Forward, Ready!",
-		"englishDescription": "Runner・Keeping the lead position on the final corner becomes slightly easier"
-	},
-	"余裕綽々": {
-		"id": 200561,
-		"englishName": "Calm and Composed",
-		"englishDescription": "Leader・Harder to tire out during the Opening Leg"
-	},
-	"スタミナキープ": {
-		"id": 200562,
-		"englishName": "Stamina Keep",
-		"englishDescription": "Leader・Slightly harder to tire out during the Opening Leg"
-	},
-	"レースプランナー": {
-		"id": 200571,
-		"englishName": "Race Planner",
-		"englishDescription": "Leader・Harder to tire during the Middle Leg"
-	},
-	"好位追走": {
-		"id": 200572,
-		"englishName": "Favorite Place",
-		"englishDescription": "Leader・Become slightly harder to tire during the Middle Leg"
-	},
-	"スピードスター": {
-		"id": 200581,
-		"englishName": "Speed Star",
-		"englishDescription": "Leader・Passing becomes easier on the Final corner"
-	},
-	"抜け出し準備": {
-		"id": 200582,
-		"englishName": "Passing Preparations",
-		"englishDescription": "Leader・Passing becomes slightly easier on the Final corner"
-	},
-	"迅速果断": {
-		"id": 200591,
-		"englishName": "Quick and Decisive",
-		"englishDescription": "Betweener・Increases speed during the Middle Leg"
-	},
-	"位置取り押し上げ": {
-		"id": 200592,
-		"englishName": "Position Swiper",
-		"englishDescription": "Betweener・Slightly increases speed during the Middle Leg"
-	},
-	"乗り換え上手": {
-		"id": 200601,
-		"englishName": "Switch-up Pro",
-		"englishDescription": "Betweener・Increases acceleration in the Final Leg"
-	},
-	"差し切り体勢": {
-		"id": 200602,
-		"englishName": "Between the Lines",
-		"englishDescription": "Betweener・Slightly increases acceleration during the Final Leg"
-	},
-	"昇り龍": {
-		"id": 200611,
-		"englishName": "Rising Dragon",
-		"englishDescription": "Betweener・Increases speed when passing from the outside on the final corner"
-	},
-	"外差し準備": {
-		"id": 200612,
-		"englishName": "Outside Pass, Ready!",
-		"englishDescription": "Betweener・Slightly increases speed when passing from the outside on the final corner"
-	},
-	"眠れる獅子": {
-		"id": 200621,
-		"englishName": "Sleeping Lion",
-		"englishDescription": "Chaser・Become harder to tire out during the Middle Leg"
-	},
-	"後方待機": {
-		"id": 200622,
-		"englishName": "On Standby",
-		"englishDescription": "Chaser・Become slightly harder to tire out during the Middle Leg"
-	},
-	"疾風怒濤": {
-		"id": 200631,
-		"englishName": "Storm and Stress",
-		"englishDescription": "Chaser・Get ready to pass during the Final Leg and become better at positioning"
-	},
-	"仕掛け抜群": {
-		"id": 200632,
-		"englishName": "Master Trickster",
-		"englishDescription": "Chaser・Get ready to pass during the Final Leg and become slightly better at positioning"
-	},
-	"迫る影": {
-		"id": 200641,
-		"englishName": "Imminent Shadow",
-		"englishDescription": "Chaser・Increases acceleration on the straight in the Last Spurt"
-	},
-	"直線一気": {
-		"id": 200642,
-		"englishName": "Straight Shot",
-		"englishDescription": "Chaser・Slightly increases acceleration on the straight in the Last Spurt"
-	},
-	"スプリントターボ": {
-		"id": 200651,
-		"englishName": "Sprint Turbo",
-		"englishDescription": "Short・Increases acceleration on straights"
-	},
-	"スプリントギア": {
-		"id": 200652,
-		"englishName": "Sprinting Gear",
-		"englishDescription": "Short・Slightly increases acceleration on straights"
-	},
-	"様子見": {
-		"id": 200662,
-		"englishName": "Wait and See",
-		"englishDescription": "Short・Slightly harder to tire when in the back during the Middle Leg"
-	},
-	"電撃の煌めき": {
-		"id": 200671,
-		"englishName": "Glimmer of Shock",
-		"englishDescription": "Short・Spurts become easier when in the back of the pack during the Final Leg"
-	},
-	"詰め寄り": {
-		"id": 200672,
-		"englishName": "Draw Forward",
-		"englishDescription": "Short・Spurts become slightly easier when in the back of the pack during the Final Leg"
-	},
-	"マイルの支配者": {
-		"id": 200681,
-		"englishName": "Ruler of Mile",
-		"englishDescription": "Mile・When in the lead in Opening Leg, extending the lead becomes easier"
-	},
-	"積極策": {
-		"id": 200682,
-		"englishName": "Positive Planning",
-		"englishDescription": "Mile・When in the lead in Opening Leg, extending the lead becomes a little easier"
-	},
-	"慧眼": {
-		"id": 200691,
-		"englishName": "Wisdom Eye",
-		"englishDescription": "Mile・Become harder to tire when in the back of the pack during the Opening Leg"
-	},
-	"展開窺い": {
-		"id": 200692,
-		"englishName": "Progress Peek",
-		"englishDescription": "Mile・Become slightly harder to tire when in the back of the pack during the Opening Leg"
-	},
-	"豪脚": {
-		"id": 200701,
-		"englishName": "Big Strides",
-		"englishDescription": "Mile・Passing ability increases when behind in the Final Leg"
-	},
-	"上昇気流": {
-		"id": 200702,
-		"englishName": "Updraft",
-		"englishDescription": "Mile・Slightly increases passing ability when behind in the Final Leg"
-	},
-	"切り開く者": {
-		"id": 200711,
-		"englishName": "The One Who Clears The Path",
-		"englishDescription": "Medium・Become harder to tire out when in the lead during the Middle Leg"
-	},
-	"前途洋々": {
-		"id": 200712,
-		"englishName": "Bright Future",
-		"englishDescription": "Medium・Become slightly harder to tire out when in the lead during the Middle Leg"
-	},
-	"キラーチューン": {
-		"id": 200721,
-		"englishName": "Killer Tune",
-		"englishDescription": "Medium・Easier to take a good position in the Middle Leg if you're leading"
-	},
-	"テンポアップ": {
-		"id": 200722,
-		"englishName": "Uptempo",
-		"englishDescription": "Medium・Slightly easier to take a good position during the Middle Leg if you're leading"
-	},
-	"勝利への執念": {
-		"id": 200731,
-		"englishName": "To Victory!",
-		"englishDescription": "Medium・When overtaken in the Final Leg, retaking your place becomes easier"
-	},
-	"食い下がり": {
-		"id": 200732,
-		"englishName": "Stand Your Ground",
-		"englishDescription": "Medium・When overtaken in the Final Leg, retaking your place becomes slightly easier"
-	},
-	"クールダウン": {
-		"id": 200741,
-		"englishName": "Cooldown",
-		"englishDescription": "Long・Take a breath when entering straights and become harder to tire out"
-	},
-	"深呼吸": {
-		"id": 200742,
-		"englishName": "Deep Breaths",
-		"englishDescription": "Long・Take a breath when entering straights and become slightly harder to tire out"
-	},
-	"内的体験": {
-		"id": 200751,
-		"englishName": "Intrinsic Experience",
-		"englishDescription": "Long・Increases speed when near the inner fence during the Final Leg"
-	},
-	"内弁慶": {
-		"id": 200752,
-		"englishName": "King of the Castle",
-		"englishDescription": "Long・Slightly increases speed when near the inner fence during the Final Leg"
-	},
-	"火事場のバ鹿力": {
-		"id": 200761,
-		"englishName": "Fight or Flight",
-		"englishDescription": "Long・Recover the will to run after exhausting your strength"
-	},
-	"別腹タンク": {
-		"id": 200762,
-		"englishName": "Backup Belly",
-		"englishDescription": "Long・Slightly recovers running willpower after exhausting your strength"
-	},
-	"トリック（前）": {
-		"id": 200771,
-		"englishName": "Trick (Front)",
-		"englishDescription": "If you're in the front in the Middle Leg, tire out girls that are behind you and distracted"
-	},
-	"見惚れるトリック": {
-		"id": 200772,
-		"englishName": "Captivating Trick",
-		"englishDescription": "If you're in the front in the Middle Leg, tire out girls that are behind you and distracted"
-	},
-	"トリック（後）": {
-		"id": 200781,
-		"englishName": "Trick (Back)",
-		"englishDescription": "If you're behind in the Middle Leg, tire out girls that are in the front and distracted"
-	},
-	"逃げ駆け引き": {
-		"id": 200791,
-		"englishName": "Frantic Runners",
-		"englishDescription": "When girls with <Strategy・Runner> become frantic, they take longer to calm down"
-	},
-	"先行駆け引き": {
-		"id": 200801,
-		"englishName": "Frantic Leaders",
-		"englishDescription": "When girls with <Strategy・Leader> become frantic, they take longer to calm down"
-	},
-	"差し駆け引き": {
-		"id": 200811,
-		"englishName": "Frantic Betweeners",
-		"englishDescription": "When girls with <Strategy・Betweener> become frantic, they take longer to calm down"
-	},
-	"追込駆け引き": {
-		"id": 200821,
-		"englishName": "Frantic Chasers",
-		"englishDescription": "When girls with <Strategy・Chaser> become frantic, they take longer to calm down"
-	},
-	"逃げけん制": {
-		"id": 200831,
-		"englishName": "Runners Restraint",
-		"englishDescription": "Restrain and slightly tire out girls with <Strategy・Runner> in the Opening Leg"
-	},
-	"逃げ焦り": {
-		"id": 200841,
-		"englishName": "Panicked Runners",
-		"englishDescription": "Panic and slightly tire out girls with <Strategy・Runner> in Middle Leg"
-	},
-	"逃げためらい": {
-		"id": 200851,
-		"englishName": "Faltering Runners",
-		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Runner> in the Final Leg"
-	},
-	"先行けん制": {
-		"id": 200861,
-		"englishName": "Leaders Restraint",
-		"englishDescription": "Restrain and slightly tire out girls with <Strategy・Leader> in the Opening Leg"
-	},
-	"先行焦り": {
-		"id": 200871,
-		"englishName": "Panicked Leaders",
-		"englishDescription": "Panic and slightly tire out girls with <Strategy・Leader> in the Middle Leg"
-	},
-	"先行ためらい": {
-		"id": 200881,
-		"englishName": "Faltering Leaders",
-		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Leader> in the Final Leg"
-	},
-	"差しけん制": {
-		"id": 200891,
-		"englishName": "Betweeners Restraint",
-		"englishDescription": "Restrain and slightly tire out girls with <Strategy・Betweener> in the Opening Leg"
-	},
-	"差し焦り": {
-		"id": 200901,
-		"englishName": "Panicked Betweener",
-		"englishDescription": "Panic and slightly tire out girls with <Strategy・Betweener> in Middle Leg"
-	},
-	"差しためらい": {
-		"id": 200911,
-		"englishName": "Faltering Betweeners",
-		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Betweener> in the Final Leg"
-	},
-	"追込けん制": {
-		"id": 200921,
-		"englishName": "Chasers Restraint",
-		"englishDescription": "Restrain and slightly tire out girls with <Strategy・Chaser> in the Opening Leg"
-	},
-	"追込焦り": {
-		"id": 200931,
-		"englishName": "Panicked Chasers",
-		"englishDescription": "Panic and slightly tire out girls with <Strategy・Chaser> in Middle Leg"
-	},
-	"追込ためらい": {
-		"id": 200941,
-		"englishName": "Faltering Chasers",
-		"englishDescription": "Instil hesitation and slows down girls with <Strategy・Chaser> in the Final Leg"
-	},
-	"大井レース場◎": {
-		"id": 200951,
-		"englishName": "Ooi Racetrack ◎",
-		"englishDescription": "Become better at Ooi Racetrack"
-	},
-	"大井レース場○": {
-		"id": 200952,
-		"englishName": "Ooi Racetrack ○",
-		"englishDescription": "Become a little better at Ooi Racetrack"
-	},
-	"大井レース場×": {
-		"id": 200953,
-		"englishName": "Ooi Racetrack ×",
-		"englishDescription": "Become a little worse at Ooi Racetrack"
-	},
-	"短距離直線◎": {
-		"id": 200961,
-		"englishName": "Short Distance Straights ◎",
-		"englishDescription": "Short・Lightly increases speed on straights"
-	},
-	"短距離直線○": {
-		"id": 200962,
-		"englishName": "Short Distance Straights ○",
-		"englishDescription": "Short・Slightly increases speed on straights"
-	},
-	"短距離コーナー◎": {
-		"id": 200971,
-		"englishName": "Short Distance Corners ◎",
-		"englishDescription": "Short・Lightly increases speed on corners"
-	},
-	"短距離コーナー○": {
-		"id": 200972,
-		"englishName": "Short Distance Corners ○",
-		"englishDescription": "Short・Slightly increases speed on corners"
-	},
-	"圧倒的リード": {
-		"id": 200981,
-		"englishName": "Overwhelming Lead",
-		"englishDescription": "Short・Easier to keep the lead if you lead with big margin in the Middle Leg"
-	},
-	"大きなリード": {
-		"id": 200982,
-		"englishName": "Big Lead",
-		"englishDescription": "Short・Slightly easier to keep the lead if you lead with big margin in the Middle Leg"
-	},
-	"プランX": {
-		"id": 200991,
-		"englishName": "Plan X",
-		"englishDescription": "Short・Passing becomes easier when in the front in Middle Leg"
-	},
-	"善後策": {
-		"id": 200992,
-		"englishName": "Countermeasures",
-		"englishDescription": "Short・Passing becomes slightly easier when in the front in Middle Leg"
-	},
-	"準備万全！": {
-		"id": 201001,
-		"englishName": "Flawless Preparation!",
-		"englishDescription": "Short・Get more prepared for the goal line during the Middle Leg"
-	},
-	"仕掛け準備": {
-		"id": 201002,
-		"englishName": "Calculated Preparations",
-		"englishDescription": "Short・Get a bit more prepared for the goal line during the Middle Leg"
-	},
-	"悩殺術": {
-		"id": 201011,
-		"englishName": "Bewitching",
-		"englishDescription": "Short・weaken girls in the back when leading in the opening leg"
-	},
-	"後方釘付": {
-		"id": 201012,
-		"englishName": "Final Nail",
-		"englishDescription": "Short・When in the front in Opening Leg, girls in the back become lightly weakened"
-	},
-	"逃亡禁止令": {
-		"id": 201021,
-		"englishName": "Escape Prohibition",
-		"englishDescription": "Short・When behind in Opening Leg, panic girls in the front"
-	},
-	"抜け駆け禁止": {
-		"id": 201022,
-		"englishName": "No Running Allowed",
-		"englishDescription": "Short・When behind in Opening Leg, slightly panic girls in the front"
-	},
-	"マイル直線◎": {
-		"id": 201031,
-		"englishName": "Mile Straights ◎",
-		"englishDescription": "Mile・Lightly increases speed on straights"
-	},
-	"マイル直線○": {
-		"id": 201032,
-		"englishName": "Mile Straights ○",
-		"englishDescription": "Mile・Slightly increases speed on straights"
-	},
-	"マイルコーナー◎": {
-		"id": 201041,
-		"englishName": "Mile Corner ◎",
-		"englishDescription": "Mile・lightly ncreases speed on corners"
-	},
-	"マイルコーナー○": {
-		"id": 201042,
-		"englishName": "Mile Corner ○",
-		"englishDescription": "Mile・Slightly increases speed on corners"
-	},
-	"ギアチェンジ": {
-		"id": 201051,
-		"englishName": "Gear Change",
-		"englishDescription": "Mile・Passing becomes easier if you're in front in Middle Leg"
-	},
-	"ギアシフト": {
-		"id": 201052,
-		"englishName": "Shift Gears",
-		"englishDescription": "Mile・Passing becomes slightly easier if you're in front in Middle Leg"
-	},
-	"アクセル全開！": {
-		"id": 201061,
-		"englishName": "Accel Full Throttle!",
-		"englishDescription": "Mile・Increases acceleration when passing in Middle Leg"
-	},
-	"アクセラレーション": {
-		"id": 201062,
-		"englishName": "Acceleration",
-		"englishDescription": "Mile・Slightly increase acceleration when passing in Middle Leg"
-	},
-	"姉御肌": {
-		"id": 201071,
-		"englishName": "Big Sister Disposition",
-		"englishDescription": "Mile・Passing becomes easier to succeed"
-	},
-	"負けん気": {
-		"id": 201072,
-		"englishName": "Rival Spirit",
-		"englishDescription": "Mile・Passing becomes slightly easier to succeed"
-	},
-	"スピードグリード": {
-		"id": 201081,
-		"englishName": "Speed Greed",
-		"englishDescription": "Mile・Steal a bit of speed from horse girls behind you when leading in Middle Leg"
-	},
-	"スピードイーター": {
-		"id": 201082,
-		"englishName": "Speed Eater",
-		"englishDescription": "Mile・Slightly steal speed of girls behind you when leading in Middle Leg"
-	},
-	"布陣": {
-		"id": 201091,
-		"englishName": "Battle Formation",
-		"englishDescription": "Mile・Slows down girls in the front if you're behind in Opening Leg"
-	},
-	"布石": {
-		"id": 201092,
-		"englishName": "Opener",
-		"englishDescription": "Mile・Slightly slows down girls in the front if you're behind in Opening Leg"
-	},
-	"中距離直線◎": {
-		"id": 201101,
-		"englishName": "Medium Distance Straights ◎",
-		"englishDescription": "Medium・Lightly increases speed on straights"
-	},
-	"中距離直線○": {
-		"id": 201102,
-		"englishName": "Medium Distance Straights ○",
-		"englishDescription": "Medium・Slightly increases speed on straights"
-	},
-	"中距離コーナー◎": {
-		"id": 201111,
-		"englishName": "Medium Distance Corner ◎",
-		"englishDescription": "Medium・Increases speed on corners"
-	},
-	"中距離コーナー○": {
-		"id": 201112,
-		"englishName": "Medium Distance Corner ○",
-		"englishDescription": "Medium・Slightly increases speed on corners"
-	},
-	"千里眼": {
-		"id": 201121,
-		"englishName": "Clairvoyance",
-		"englishDescription": "Medium・Sharpens observation skills during the Opening Leg, widening field of vision"
-	},
-	"ホークアイ": {
-		"id": 201122,
-		"englishName": "Hawkeye",
-		"englishDescription": "Medium・Lightly sharpens observation skills during the Opening Leg, widening field of vision"
-	},
-	"ライトニングステップ": {
-		"id": 201131,
-		"englishName": "Lightning Step",
-		"englishDescription": "Medium・Become harder to box in if behind in Middle Leg"
-	},
-	"イナズマステップ": {
-		"id": 201132,
-		"englishName": "Inazuma Step",
-		"englishDescription": "Medium・Become lightly harder to box in if behind in Middle Leg"
-	},
-	"神業ステップ": {
-		"id": 201141,
-		"englishName": "Miracle Step",
-		"englishDescription": "Medium・Become harder to tire out from left-right movements"
-	},
-	"軽やかステップ": {
-		"id": 201142,
-		"englishName": "Light Step",
-		"englishDescription": "Medium・Become slightly harder to tire out from left-right movements"
-	},
-	"独占力": {
-		"id": 201151,
-		"englishName": "Mono Poisoner",
-		"englishDescription": "Medium・Slows down girls in the front if you're behind in Final Leg"
-	},
-	"束縛": {
-		"id": 201152,
-		"englishName": "Binding Chains",
-		"englishDescription": "Medium・Slightly slows down girls in the front if you're behind in Final Leg"
-	},
-	"魅惑のささやき": {
-		"id": 201161,
-		"englishName": "A Charming Whisper",
-		"englishDescription": "Medium・Confuses the girl right in front of you in Middle Leg"
-	},
-	"ささやき": {
-		"id": 201162,
-		"englishName": "A Gentle Whisper",
-		"englishDescription": "Medium・Slightly confuses the girl right in front of you in Middle Leg"
-	},
-	"長距離直線◎": {
-		"id": 201171,
-		"englishName": "Long Distance Straight ◎",
-		"englishDescription": "Long・Lightly increases speed on straights"
-	},
-	"長距離直線○": {
-		"id": 201172,
-		"englishName": "Long Distance Straight ○",
-		"englishDescription": "Long・Slightly increases speed on straights"
-	},
-	"長距離コーナー◎": {
-		"id": 201181,
-		"englishName": "Long Distance Corner ◎",
-		"englishDescription": "Long・Lightly increases speed on corners"
-	},
-	"長距離コーナー○": {
-		"id": 201182,
-		"englishName": "Long Distance Corner ○",
-		"englishDescription": "Long・Slightly increases speed on corners"
-	},
-	"先陣の心得": {
-		"id": 201191,
-		"englishName": "Vanguard's Wisdom",
-		"englishDescription": "Long・Easier to keep the lead if you lead with big margin in the Middle Leg"
-	},
-	"リードキープ": {
-		"id": 201192,
-		"englishName": "Keep the Lead",
-		"englishDescription": "Long・Slightly easier to keep the lead if you lead with big margin in the Middle Leg"
-	},
-	"VIP顔パス": {
-		"id": 201201,
-		"englishName": "VIP Pass",
-		"englishDescription": "Long・Your stamina will recover when you're about to overtake someone"
-	},
-	"パス上手": {
-		"id": 201202,
-		"englishName": "Pass Expert",
-		"englishDescription": "Long・Become slightly harder to tire when passing"
-	},
-	"怒涛の追い上げ": {
-		"id": 201211,
-		"englishName": "Tempestuous Pressure",
-		"englishDescription": "Long・Increases speed when passing in the Final Leg"
-	},
-	"追い上げ": {
-		"id": 201212,
-		"englishName": "Press the Attack",
-		"englishDescription": "Long・Slightly increases speed when passing in the Final Leg"
-	},
-	"スタミナグリード": {
-		"id": 201221,
-		"englishName": "Stamina Greed",
-		"englishDescription": "Long・Steal a bit of stamina from girls in the front when behind in Middle Leg"
-	},
-	"スタミナイーター": {
-		"id": 201222,
-		"englishName": "Stamina Eater",
-		"englishDescription": "Long・Slightly steal stamina of girls in the front when behind in Middle Leg"
-	},
-	"奇術師": {
-		"id": 201231,
-		"englishName": "Conjurer",
-		"englishDescription": "Long・Narrows the field of vision of girls in the front in Final Leg"
-	},
-	"目くらまし": {
-		"id": 201232,
-		"englishName": "Smoke Screen",
-		"englishDescription": "Long・Lightly narrows the field of vision of girls in the front in Final Leg"
-	},
-	"逃げ直線◎": {
-		"id": 201241,
-		"englishName": "Runner's Straight ◎",
-		"englishDescription": "Runner・Lightly increases speed on straights"
-	},
-	"逃げ直線○": {
-		"id": 201242,
-		"englishName": "Runner's Straight ○",
-		"englishDescription": "Runner・Slightly increases speed on straights"
-	},
-	"逃げコーナー◎": {
-		"id": 201251,
-		"englishName": "Runner's Corner ◎",
-		"englishDescription": "Runner・Lightly increases speed on corners"
-	},
-	"逃げコーナー○": {
-		"id": 201252,
-		"englishName": "Runner's Corner ○",
-		"englishDescription": "Runner・Slightly increases speed on corners"
-	},
-	"シックスセンス": {
-		"id": 201261,
-		"englishName": "Sixth Sense",
-		"englishDescription": "Runner・Become harder to box in during Opening Leg"
-	},
-	"危険回避": {
-		"id": 201262,
-		"englishName": "Danger Avoidance",
-		"englishDescription": "Runner・Become a bit harder to surround in Opening Leg"
-	},
-	"先頭プライド": {
-		"id": 201272,
-		"englishName": "Lead Pride",
-		"englishDescription": "Runner・Become slightly harder to pass in the Opening Leg"
-	},
-	"じゃじゃウマ娘": {
-		"id": 201281,
-		"englishName": "Wild Girl",
-		"englishDescription": "Runner・Become harder to tire out on uphills"
-	},
-	"勢い任せ": {
-		"id": 201282,
-		"englishName": "Leave it to vigour!",
-		"englishDescription": "Runner・Become slightly harder to tire out on uphills"
-	},
-	"再燃焼": {
-		"id": 201291,
-		"englishName": "Recombustion",
-		"englishDescription": "Runner・Increases acceleration when behind in Middle Leg"
-	},
-	"二の矢": {
-		"id": 201292,
-		"englishName": "Next Steps",
-		"englishDescription": "Runner・Slightly increases acceleration when behind in Middle Leg"
-	},
-	"リスタート": {
-		"id": 201302,
-		"englishName": "Restart",
-		"englishDescription": "Runner・When failing to take the lead during the Opening Leg, girls in front will become flustered"
-	},
-	"先行直線◎": {
-		"id": 201311,
-		"englishName": "Leader's Straights ◎",
-		"englishDescription": "Leader・Lightly increases speed on straights"
-	},
-	"先行直線○": {
-		"id": 201312,
-		"englishName": "Leader's Straights ○",
-		"englishDescription": "Leader・Slightly increases speed on straights"
-	},
-	"先行コーナー◎": {
-		"id": 201321,
-		"englishName": "Leaders Corner ◎",
-		"englishDescription": "Leader・Lightly increases speed on corners"
-	},
-	"先行コーナー○": {
-		"id": 201322,
-		"englishName": "Leaders Corner ○",
-		"englishDescription": "Leader・Slightly increases speed on corners"
-	},
-	"技巧派": {
-		"id": 201331,
-		"englishName": "Technician",
-		"englishDescription": "Leader・Taking position becomes a bit smoother"
-	},
-	"巧みなステップ": {
-		"id": 201332,
-		"englishName": "Clever Step",
-		"englishDescription": "Leader・Taking position becomes very slightly smoother"
-	},
-	"決意の直滑降": {
-		"id": 201341,
-		"englishName": "Straight Down Resolution",
-		"englishDescription": "Leader・Become a bit better at downhills"
-	},
-	"直滑降": {
-		"id": 201342,
-		"englishName": "Straight Down",
-		"englishDescription": "Leader・Become slightly better at downhills"
-	},
-	"食いしん坊": {
-		"id": 201351,
-		"englishName": "Big Eater",
-		"englishDescription": "Leader・Recover stamina in Middle Leg"
-	},
-	"栄養補給": {
-		"id": 201352,
-		"englishName": "Nutritional Supplements",
-		"englishDescription": "Leader・Slightly recover stamina in Middle Leg"
-	},
-	"くじけぬ精神": {
-		"id": 201361,
-		"englishName": "Unbreakable Spirit",
-		"englishDescription": "Leader・Lightly increases acceleration when behind in Middle Leg"
-	},
-	"まき直し": {
-		"id": 201362,
-		"englishName": "Redo",
-		"englishDescription": "Leader・Slightly increases acceleration when behind in Middle Leg"
-	},
-	"幻惑のかく乱": {
-		"id": 201371,
-		"englishName": "Glamorous Perturbation",
-		"englishDescription": "Leader・Lightly narrows the field of vision of girls in the back when in front in Final Leg"
-	},
-	"かく乱": {
-		"id": 201372,
-		"englishName": "Derangement",
-		"englishDescription": "Leader・Slightly narrows the field of view of girls in the back when in Front in Final Leg"
-	},
-	"差し直線◎": {
-		"id": 201381,
-		"englishName": "Betweener's Straights ◎",
-		"englishDescription": "Betweener・Lightly increases speed on straights"
-	},
-	"差し直線○": {
-		"id": 201382,
-		"englishName": "Betweener's Straights ○",
-		"englishDescription": "Betweener・Slightly increases speed on straights"
-	},
-	"差しコーナー◎": {
-		"id": 201391,
-		"englishName": "Betweener's Corner ◎",
-		"englishDescription": "Betweener・Lightly increases speed on corners"
-	},
-	"差しコーナー○": {
-		"id": 201392,
-		"englishName": "Betweener's Corner ○",
-		"englishDescription": "Betweener・Slightly increases speed on corners"
-	},
-	"努力家": {
-		"id": 201401,
-		"englishName": "Laborious",
-		"englishDescription": "Betweener・Passing becomes a bit easier to succeed"
-	},
-	"がんばり屋": {
-		"id": 201402,
-		"englishName": "Hard Worker",
-		"englishDescription": "Betweener・Passing becomes slightly easier to succeed"
-	},
-	"百万バリキ": {
-		"id": 201411,
-		"englishName": "1M Horsepower",
-		"englishDescription": "Betweener・Increases speed on uphills"
-	},
-	"十万バリキ": {
-		"id": 201412,
-		"englishName": "100K Horsepower",
-		"englishDescription": "Betweener・Slightly increases speed on uphills"
-	},
-	"リラックス": {
-		"id": 201421,
-		"englishName": "Relax",
-		"englishDescription": "Betweener・Recover stamina during the Final Leg"
-	},
-	"小休憩": {
-		"id": 201422,
-		"englishName": "A Little Break",
-		"englishDescription": "Betweener・Slightly recover stamina during the Final Leg"
-	},
-	"大局観": {
-		"id": 201431,
-		"englishName": "Seeing The Big Picture",
-		"englishDescription": "Betweener・Sharpens observation skills in Middle Leg, widening field of vision a little"
-	},
-	"読解力": {
-		"id": 201432,
-		"englishName": "Reading Comprehension",
-		"englishDescription": "Betweener・Slightly sharpens observation skills during the Middle Leg, widening field of vision a little"
-	},
-	"八方にらみ": {
-		"id": 201441,
-		"englishName": "Watching All Directions",
-		"englishDescription": "Betweener・Flusters other girls in Final Leg"
-	},
-	"鋭い眼光": {
-		"id": 201442,
-		"englishName": "Sharp Gaze",
-		"englishDescription": "Betweener・Slightly flusters other girls in Final Leg"
-	},
-	"追込直線◎": {
-		"id": 201451,
-		"englishName": "Chasers Straights ◎",
-		"englishDescription": "Chaser・Lightly increases speed on straights"
-	},
-	"追込直線○": {
-		"id": 201452,
-		"englishName": "Chasers Straights ○",
-		"englishDescription": "Chaser・Slightly increases speed on straights"
-	},
-	"追込コーナー◎": {
-		"id": 201461,
-		"englishName": "Chaser's Corner ◎",
-		"englishDescription": "Chaser・Lightly increases speed on corners"
-	},
-	"追込コーナー○": {
-		"id": 201462,
-		"englishName": "Chaser's Corner ○",
-		"englishDescription": "Chaser・Slightly increase speed on corners"
-	},
-	"視界良好！異常なし！": {
-		"id": 201471,
-		"englishName": "Good Visibility! All Clear!",
-		"englishDescription": "Chaser・Grasp the situation when moving left-right, lightly widening field of vision"
-	},
-	"お見通し": {
-		"id": 201472,
-		"englishName": "See Right Through",
-		"englishDescription": "Chaser・Grasp the situation when moving left-right, slightly widening field of vision"
-	},
-	"下校後のスペシャリスト": {
-		"id": 201481,
-		"englishName": "After School Specialist",
-		"englishDescription": "Chaser・Become harder to tire out on downhills"
-	},
-	"下校の楽しみ": {
-		"id": 201482,
-		"englishName": "Winding Down",
-		"englishDescription": "Chaser・Become slightly harder to tire out on downhills"
-	},
-	"冷静沈着": {
-		"id": 201491,
-		"englishName": "Calm and Collected",
-		"englishDescription": "Chaser・When front is crowded, calm down and remain composed"
-	},
-	"冷静": {
-		"id": 201492,
-		"englishName": "Serene",
-		"englishDescription": "Chaser・When front is crowded, slightly calm down remain composed"
-	},
-	"天命士": {
-		"id": 201501,
-		"englishName": "Heavenly Warrior",
-		"englishDescription": "Chaser・Widens field of vision when behind in Final Leg"
-	},
-	"策士": {
-		"id": 201502,
-		"englishName": "Tactician",
-		"englishDescription": "Chaser・Slightly widens field of vision when behind in Final Leg"
-	},
-	"熱いまなざし": {
-		"id": 201511,
-		"englishName": "A Passionate Gaze",
-		"englishDescription": "Chaser・Unnerve girls you set your sights on in Final Leg"
-	},
-	"まなざし": {
-		"id": 201512,
-		"englishName": "Sightlines",
-		"englishDescription": "Chaser・Slightly unnerve girls you set your sights on in the Final Leg"
-	},
-	"逃げのコツ◎": {
-		"id": 201521,
-		"englishName": "Runner's Tricks ◎",
-		"englishDescription": "Runner・Taking a good position becomes easier"
-	},
-	"逃げのコツ○": {
-		"id": 201522,
-		"englishName": "Runner's Tricks ○",
-		"englishDescription": "Runner・Taking a good position becomes a little easier"
-	},
-	"先行のコツ◎": {
-		"id": 201531,
-		"englishName": "Leaders Tricks ◎",
-		"englishDescription": "Leader・Taking a good position becomes easier"
-	},
-	"先行のコツ○": {
-		"id": 201532,
-		"englishName": "Leaders Tricks ○",
-		"englishDescription": "Leader・Taking a good position becomes a little easier"
-	},
-	"差しのコツ◎": {
-		"id": 201541,
-		"englishName": "Betweener's Tricks ◎",
-		"englishDescription": "Betweener・Taking a good position becomes easier"
-	},
-	"差しのコツ○": {
-		"id": 201542,
-		"englishName": "Betweener's Tricks ○",
-		"englishDescription": "Betweener・Taking a good position becomes a little easier"
-	},
-	"追込のコツ◎": {
-		"id": 201551,
-		"englishName": "Chasers Tricks ◎",
-		"englishDescription": "Chaser・Taking a good position becomes easier"
-	},
-	"追込のコツ○": {
-		"id": 201552,
-		"englishName": "Chasers Tricks ○",
-		"englishDescription": "Chaser・Taking a good position becomes a little easier"
-	},
-	"スーパーラッキーセブン": {
-		"id": 201561,
-		"englishName": "Super Lucky Seven",
-		"englishDescription": "Good things may happen if your starting gate block is 7"
-	},
-	"ラッキーセブン": {
-		"id": 201562,
-		"englishName": "Lucky Seven",
-		"englishDescription": "A little good thing may happen if your starting gate block is 7"
-	},
-	"スリーセブン": {
-		"id": 201571,
-		"englishName": "Triple 7s",
-		"englishDescription": "Slightly improve mood when the remaining distance is 777m"
-	},
-	"登山家": {
-		"id": 201581,
-		"englishName": "Mountain Climber",
-		"englishDescription": "Become slightly better at uphills"
-	},
-	"ウマ好み": {
-		"id": 201591,
-		"englishName": "Big Fan",
-		"englishDescription": "Slightly increase speed when many girls are nearby"
-	},
-	"ウママニア": {
-		"id": 201592,
-		"englishName": "Uma Mania",
-		"englishDescription": "When there are many other horse girls nearby, your speed will increase"
-	},
-	"地固め": {
-		"id": 201601,
-		"englishName": "Groundwork",
-		"englishDescription": "Slightly increase acceleration when many skills are activated during the Opening Leg"
-	},
-	"尻尾上がり": {
-		"id": 201611,
-		"englishName": "Hold Your Tail High",
-		"englishDescription": "Slightly increase speed if many skills were activated during the Middle Leg"
-	},
-	"尻尾の滝登り": {
-		"id": 201612,
-		"englishName": "Tail of Victory",
-		"englishDescription": "If you activate a lot of skills in the Middle Leg, your speed will increase"
-	},
-	"ふり絞り": {
-		"id": 201621,
-		"englishName": "Shake It Out",
-		"englishDescription": "Slightly recover stamina if many skills activate during the Final Leg"
-	},
-	"シンパシー": {
-		"id": 201631,
-		"englishName": "Sympathy",
-		"englishDescription": "Increases ability a little if there are many girls with Sympathetic Heart"
-	},
-	"一匹狼": {
-		"id": 201641,
-		"englishName": "Lone Wolf",
-		"englishDescription": "Raises your abilities a little if you're the only girl with Lone Wolf's Heart"
-	},
-	"スリップストリーム": {
-		"id": 201651,
-		"englishName": "Slipstream",
-		"englishDescription": "When following right behind a girl, become slightly less affected by wind resistance"
-	},
-	"遊びはおしまいっ！": {
-		"id": 201661,
-		"englishName": "Playtime's Over!",
-		"englishDescription": "Slightly increase speed when a girl has been following you for a while"
-	},
-	"チャート急上昇！": {
-		"id": 201671,
-		"englishName": "Trending Charts!",
-		"englishDescription": "Dirt・increase your speed during the middle leg when competing for position"
-	},
-	"レコメンド": {
-		"id": 201672,
-		"englishName": "Recommendation",
-		"englishDescription": "Dirt・slightly increase your speed during the middle leg when competing for position"
-	},
-	"狙うは最前列！": {
-		"id": 201681,
-		"englishName": "Aim For The Front Row!",
-		"englishDescription": "Dirt・During the Final Leg, your overtaking abilities will increase"
-	},
-	"前列狙い": {
-		"id": 201682,
-		"englishName": "Front Row Aim",
-		"englishDescription": "Dirt・During the Final Leg, your overtaking abilities will slighty increase"
-	},
-	"潜伏態勢": {
-		"id": 201691,
-		"englishName": "Concealed Readiness",
-		"englishDescription": "Betweener・In the second half of the Opening Leg, your endurance will recover"
-	},
-	"静かな呼吸": {
-		"id": 201692,
-		"englishName": "Quiet Breathing",
-		"englishDescription": "Betweener・In the second half of the Opening Leg, your endurance will slightly recover"
-	},
-	"決死の覚悟": {
-		"id": 201701,
-		"englishName": "Prepared To Die",
-		"englishDescription": "Medium・If you're in a good position during the Last Spurt, your speed will increase"
-	},
-	"ありったけ": {
-		"id": 201702,
-		"englishName": "All That There Is",
-		"englishDescription": "Medium・If you're in a good position during the Last Spurt, your speed will slightly increase"
-	},
-	"凸凹ネイル": {
-		"id": 201801,
-		"englishName": "Uneven Nail",
-		"englishDescription": "Become a little worse on tracks in Good condition"
-	},
-	"真っ向勝負": {
-		"id": 201902,
-		"englishName": "Head-to-head",
-		"englishDescription": "Leader・If you're in front during the Final Leg, your acceleration will increase"
-	},
-	"砂塵慣れ": {
-		"id": 202002,
-		"englishName": "Sandstorm Practice",
-		"englishDescription": "Dirt・If you're behind in the Middle Leg, your stamina will slightly recover"
-	},
-	"真打": {
-		"id": 202011,
-		"englishName": "Shinuchi",
-		"englishDescription": "Long・When the end of the race is approaching and you're in the first half of the pack, your speed will increase"
-	},
-	"影打": {
-		"id": 202012,
-		"englishName": "Kageuchi",
-		"englishDescription": "Long・When the end of the race is approaching and you're in the first half of the pack, your speed will slightly increase"
-	},
-	"強攻策": {
-		"id": 202021,
-		"englishName": "Daring Attack",
-		"englishDescription": "Chaser・If you're in the second half of the pack during the Middle Leg, your speed will increase"
-	},
-	"早仕掛け": {
-		"id": 202022,
-		"englishName": "Early Gambit",
-		"englishDescription": "Chaser・If you're in the second half of the pack during the Middle Leg, your speed will slightly increase"
-	},
-	"アオハル燃焼・速": {
-		"id": 210011,
-		"englishName": "Aoharu Burning・Speed",
-		"englishDescription": "During the Middle Leg, the higher the total speed of your team, the more your speed increases"
-	},
-	"アオハル点火・速": {
-		"id": 210012,
-		"englishName": "Aoharu Ignition・Speed",
-		"englishDescription": "During the Middle Leg, the higher the total speed of your team, the more your speed increases"
-	},
-	"アオハル燃焼・体": {
-		"id": 210021,
-		"englishName": "Aoharu Burning・Stamina",
-		"englishDescription": "During the Middle Leg, the higher the total stamina of your team, the more your stamina recovers"
-	},
-	"アオハル点火・体": {
-		"id": 210022,
-		"englishName": "Aoharu Ignition・Stamina",
-		"englishDescription": "During the Middle Leg, the higher the total stamina of your team, the more your stamina recovers"
-	},
-	"アオハル燃焼・力": {
-		"id": 210031,
-		"englishName": "Aoharu Burning・Power",
-		"englishDescription": "During the Final Leg, the higher the total power of your team, the more your acceleration increases"
-	},
-	"アオハル点火・力": {
-		"id": 210032,
-		"englishName": "Aoharu Ignition・Power",
-		"englishDescription": "During the Final Leg, the higher the total power of your team, the more your acceleration increases"
-	},
-	"アオハル燃焼・根": {
-		"id": 210041,
-		"englishName": "Aoharu Burning・Guts",
-		"englishDescription": "During the Final Leg, the higher the total guts of your team, the more your speed and acceleration increase"
-	},
-	"アオハル点火・根": {
-		"id": 210042,
-		"englishName": "Aoharu Ignition・Guts",
-		"englishDescription": "During the Final Leg, the higher the total guts of your team, the more your speed and acceleration increase"
-	},
-	"アオハル燃焼・賢": {
-		"id": 210051,
-		"englishName": "Aoharu Burning・Wisdom",
-		"englishDescription": "During the Opening Leg, the higher the total wisdom of your team, the better your positioning becomes"
-	},
-	"アオハル点火・賢": {
-		"id": 210052,
-		"englishName": "Aoharu Ignition・Wisdom",
-		"englishDescription": "During the Opening Leg, the higher the total wisdom of your team, the better your positioning becomes"
-	},
-	"癒えない渇き": {
-		"id": 300011,
-		"englishName": "Unquenched Thirst",
-		"englishDescription": "The thirst for racing makes it a little easier to demonstrate your abilities"
-	},
-	"変わらぬままで": {
-		"id": 300021,
-		"englishName": "Unchanged",
-		"englishDescription": "Feelings from the days past will improve your abilities"
-	},
-	"夢の景色へ": {
-		"id": 300031,
-		"englishName": "Scenery of Dreams",
-		"englishDescription": "Frantically chasing after the scenery, your speed is increased"
-	},
-	"拡がる恐れ": {
-		"id": 300041,
-		"englishName": "Spreading Fear",
-		"englishDescription": "The fear is spreading, and your speed is decreased"
-	},
-	"鮮明になる畏怖": {
-		"id": 300051,
-		"englishName": "Unfolding Horror",
-		"englishDescription": "The trainer's fears become more vivid, and your speed is significantly decreased"
-	},
-	"夢の走り": {
-		"id": 300061,
-		"englishName": "Dream Run",
-		"englishDescription": "If you have a strong desire to run through the finish line with everyone, your speed will increase on the final straight line"
-	},
-	"未知への走りを見せてくれ": {
-		"id": 300071,
-		"englishName": "Running Towards The Unknown",
-		"englishDescription": "Silence Suzuka's speed is increased"
-	},
-	"ほんにゃか快走祈願！": {
-		"id": 300081,
-		"englishName": "Pray For a Fast Run!",
-		"englishDescription": "Silence Suzuka's stamina is increased"
-	},
-	"友として、ライバルとして": {
-		"id": 300091,
-		"englishName": "As a Friend, as a Rival",
-		"englishDescription": "Silence Suzuka's power is increased"
-	},
-	"憧れのエール": {
-		"id": 300101,
-		"englishName": "Cheers of Admiration",
-		"englishDescription": "When Silence Suzuka hears shouts of support in the second half of the race, her stamina will recover"
-	}
+    "Right-Handed ◎": {
+        "id": 200011,
+        "englishName": "Right-Handed ◎",
+        "englishDescription": "Increase performance on right-handed tracks."
+    },
+    "Right-Handed ○": {
+        "id": 200012,
+        "englishName": "Right-Handed ○",
+        "englishDescription": "Moderately increase performance on right-handed tracks."
+    },
+    "Left-Handed ◎": {
+        "id": 200021,
+        "englishName": "Left-Handed ◎",
+        "englishDescription": "Increase performance on left-handed tracks."
+    },
+    "Left-Handed ○": {
+        "id": 200022,
+        "englishName": "Left-Handed ○",
+        "englishDescription": "Moderately increase performance on left-handed tracks."
+    },
+    "Spring Runner ◎": {
+        "id": 200171,
+        "englishName": "Spring Runner ◎",
+        "englishDescription": "Increase performance in spring."
+    },
+    "Spring Runner ○": {
+        "id": 200172,
+        "englishName": "Spring Runner ○",
+        "englishDescription": "Moderately increase performance in spring."
+    },
+    "Summer Runner ◎": {
+        "id": 200181,
+        "englishName": "Summer Runner ◎",
+        "englishDescription": "Increase performance in summer."
+    },
+    "Summer Runner ○": {
+        "id": 200182,
+        "englishName": "Summer Runner ○",
+        "englishDescription": "Moderately increase performance in summer."
+    },
+    "Fall Runner ◎": {
+        "id": 200191,
+        "englishName": "Fall Runner ◎",
+        "englishDescription": "Increase performance in fall."
+    },
+    "Fall Runner ○": {
+        "id": 200192,
+        "englishName": "Fall Runner ○",
+        "englishDescription": "Moderately increase performance in fall."
+    },
+    "Winter Runner ◎": {
+        "id": 200201,
+        "englishName": "Winter Runner ◎",
+        "englishDescription": "Increase performance in winter."
+    },
+    "Winter Runner ○": {
+        "id": 200202,
+        "englishName": "Winter Runner ○",
+        "englishDescription": "Moderately increase performance in winter."
+    },
+    "Outer Post Proficiency ◎": {
+        "id": 200261,
+        "englishName": "Outer Post Proficiency ◎",
+        "englishDescription": "Increase performance in brackets 6–8."
+    },
+    "Outer Post Proficiency ○": {
+        "id": 200262,
+        "englishName": "Outer Post Proficiency ○",
+        "englishDescription": "Moderately increase performance in brackets 6–8."
+    },
+    "Maverick ◎": {
+        "id": 200271,
+        "englishName": "Maverick ◎",
+        "englishDescription": "Increase performance when no other runners are using the same strategy."
+    },
+    "Maverick ○": {
+        "id": 200272,
+        "englishName": "Maverick ○",
+        "englishDescription": "Moderately increase performance when no other runners are using the same strategy."
+    },
+    "Long Shot ◎": {
+        "id": 200301,
+        "englishName": "Long Shot ◎",
+        "englishDescription": "Increase performance when 4th favorite or below."
+    },
+    "Long Shot ○": {
+        "id": 200302,
+        "englishName": "Long Shot ○",
+        "englishDescription": "Moderately increase performance when 4th favorite or below."
+    },
+    "Sympathy": {
+        "id": 201631,
+        "englishName": "Sympathy",
+        "englishDescription": "Moderately increase performance when many runners share a sympathetic heart."
+    },
+    "Lone Wolf": {
+        "id": 201641,
+        "englishName": "Lone Wolf",
+        "englishDescription": "Moderately increase performance when no other runners have the heart of a lone wolf."
+    },
+    "Unchanging": {
+        "id": 300021,
+        "englishName": "Unchanging",
+        "englishDescription": "Greatly increase performance with the same ambition of days past."
+    },
+    "Right-Handed ×": {
+        "id": 200013,
+        "englishName": "Right-Handed ×",
+        "englishDescription": "Moderately decrease performance on right-handed tracks."
+    },
+    "Left-Handed ×": {
+        "id": 200023,
+        "englishName": "Left-Handed ×",
+        "englishDescription": "Moderately decrease performance on left-handed tracks."
+    },
+    "Spring Runner ×": {
+        "id": 200173,
+        "englishName": "Spring Runner ×",
+        "englishDescription": "Moderately decrease performance in spring."
+    },
+    "Summer Runner ×": {
+        "id": 200183,
+        "englishName": "Summer Runner ×",
+        "englishDescription": "Moderately decrease performance in summer."
+    },
+    "Fall Runner ×": {
+        "id": 200193,
+        "englishName": "Fall Runner ×",
+        "englishDescription": "Moderately decrease performance in fall."
+    },
+    "Winter Runner ×": {
+        "id": 200203,
+        "englishName": "Winter Runner ×",
+        "englishDescription": "Moderately decrease performance in winter."
+    },
+    "Outer Post Averseness": {
+        "id": 200263,
+        "englishName": "Outer Post Averseness",
+        "englishDescription": "Moderately decrease performance in brackets 6–8."
+    },
+    "G1 Averseness": {
+        "id": 200311,
+        "englishName": "G1 Averseness",
+        "englishDescription": "Moderately decrease performance in G1 or otherwise important races."
+    },
+    "Tokyo Racecourse ◎": {
+        "id": 200031,
+        "englishName": "Tokyo Racecourse ◎",
+        "englishDescription": "Increase performance at Tokyo Racecourse."
+    },
+    "Tokyo Racecourse ○": {
+        "id": 200032,
+        "englishName": "Tokyo Racecourse ○",
+        "englishDescription": "Moderately increase performance at Tokyo Racecourse."
+    },
+    "Nakayama Racecourse ◎": {
+        "id": 200041,
+        "englishName": "Nakayama Racecourse ◎",
+        "englishDescription": "Increase performance at Nakayama Racecourse."
+    },
+    "Nakayama Racecourse ○": {
+        "id": 200042,
+        "englishName": "Nakayama Racecourse ○",
+        "englishDescription": "Moderately increase performance at Nakayama Racecourse."
+    },
+    "Hanshin Racecourse ◎": {
+        "id": 200051,
+        "englishName": "Hanshin Racecourse ◎",
+        "englishDescription": "Increase performance at Hanshin Racecourse."
+    },
+    "Hanshin Racecourse ○": {
+        "id": 200052,
+        "englishName": "Hanshin Racecourse ○",
+        "englishDescription": "Moderately increase performance at Hanshin Racecourse."
+    },
+    "Kyoto Racecourse ◎": {
+        "id": 200061,
+        "englishName": "Kyoto Racecourse ◎",
+        "englishDescription": "Increase performance at Kyoto Racecourse."
+    },
+    "Kyoto Racecourse ○": {
+        "id": 200062,
+        "englishName": "Kyoto Racecourse ○",
+        "englishDescription": "Moderately increase performance at Kyoto Racecourse."
+    },
+    "Chukyo Racecourse ◎": {
+        "id": 200071,
+        "englishName": "Chukyo Racecourse ◎",
+        "englishDescription": "Increase performance at Chukyo Racecourse."
+    },
+    "Chukyo Racecourse ○": {
+        "id": 200072,
+        "englishName": "Chukyo Racecourse ○",
+        "englishDescription": "Moderately increase performance at Chukyo Racecourse."
+    },
+    "Sapporo Racecourse ◎": {
+        "id": 200081,
+        "englishName": "Sapporo Racecourse ◎",
+        "englishDescription": "Increase performance at Sapporo Racecourse."
+    },
+    "Sapporo Racecourse ○": {
+        "id": 200082,
+        "englishName": "Sapporo Racecourse ○",
+        "englishDescription": "Moderately increase performance at Sapporo Racecourse."
+    },
+    "Hakodate Racecourse ◎": {
+        "id": 200091,
+        "englishName": "Hakodate Racecourse ◎",
+        "englishDescription": "Increase performance at Hakodate Racecourse."
+    },
+    "Hakodate Racecourse ○": {
+        "id": 200092,
+        "englishName": "Hakodate Racecourse ○",
+        "englishDescription": "Moderately increase performance at Hakodate Racecourse."
+    },
+    "Fukushima Racecourse ◎": {
+        "id": 200101,
+        "englishName": "Fukushima Racecourse ◎",
+        "englishDescription": "Increase performance at Fukushima Racecourse."
+    },
+    "Fukushima Racecourse ○": {
+        "id": 200102,
+        "englishName": "Fukushima Racecourse ○",
+        "englishDescription": "Moderately increase performance at Fukushima Racecourse."
+    },
+    "Niigata Racecourse ◎": {
+        "id": 200111,
+        "englishName": "Niigata Racecourse ◎",
+        "englishDescription": "Increase performance at Niigata Racecourse."
+    },
+    "Niigata Racecourse ○": {
+        "id": 200112,
+        "englishName": "Niigata Racecourse ○",
+        "englishDescription": "Moderately increase performance at Niigata Racecourse."
+    },
+    "Kokura Racecourse ◎": {
+        "id": 200121,
+        "englishName": "Kokura Racecourse ◎",
+        "englishDescription": "Increase performance at Kokura Racecourse."
+    },
+    "Kokura Racecourse ○": {
+        "id": 200122,
+        "englishName": "Kokura Racecourse ○",
+        "englishDescription": "Moderately increase performance at Kokura Racecourse."
+    },
+    "Standard Distance ◎": {
+        "id": 200131,
+        "englishName": "Standard Distance ◎",
+        "englishDescription": "Increase performance over standard distances (multiples of 400m)."
+    },
+    "Standard Distance ○": {
+        "id": 200132,
+        "englishName": "Standard Distance ○",
+        "englishDescription": "Moderately increase performance over standard distances (multiples of 400m)."
+    },
+    "Non-Standard Distance ◎": {
+        "id": 200141,
+        "englishName": "Non-Standard Distance ◎",
+        "englishDescription": "Increase performance over non-standard distances (non-multiples of 400m)."
+    },
+    "Non-Standard Distance ○": {
+        "id": 200142,
+        "englishName": "Non-Standard Distance ○",
+        "englishDescription": "Moderately increase performance over non-standard distances (non-multiples of 400m)."
+    },
+    "Oi Racecourse ◎": {
+        "id": 200951,
+        "englishName": "Oi Racecourse ◎",
+        "englishDescription": "Increase performance at Oi Racecourse."
+    },
+    "Oi Racecourse ○": {
+        "id": 200952,
+        "englishName": "Oi Racecourse ○",
+        "englishDescription": "Moderately increase performance at Oi Racecourse."
+    },
+    "Unquenched Thirst": {
+        "id": 300011,
+        "englishName": "Unquenched Thirst",
+        "englishDescription": "Moderately increase performance with the desire to race."
+    },
+    "Tokyo Racecourse ×": {
+        "id": 200033,
+        "englishName": "Tokyo Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Tokyo Racecourse."
+    },
+    "Nakayama Racecourse ×": {
+        "id": 200043,
+        "englishName": "Nakayama Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Nakayama Racecourse."
+    },
+    "Hanshin Racecourse ×": {
+        "id": 200053,
+        "englishName": "Hanshin Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Hanshin Racecourse."
+    },
+    "Kyoto Racecourse ×": {
+        "id": 200063,
+        "englishName": "Kyoto Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Kyoto Racecourse."
+    },
+    "Chukyo Racecourse ×": {
+        "id": 200073,
+        "englishName": "Chukyo Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Chukyo Racecourse."
+    },
+    "Sapporo Racecourse ×": {
+        "id": 200083,
+        "englishName": "Sapporo Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Sapporo Racecourse."
+    },
+    "Hakodate Racecourse ×": {
+        "id": 200093,
+        "englishName": "Hakodate Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Hakodate Racecourse."
+    },
+    "Fukushima Racecourse ×": {
+        "id": 200103,
+        "englishName": "Fukushima Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Fukushima Racecourse."
+    },
+    "Niigata Racecourse ×": {
+        "id": 200113,
+        "englishName": "Niigata Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Niigata Racecourse."
+    },
+    "Kokura Racecourse ×": {
+        "id": 200123,
+        "englishName": "Kokura Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Kokura Racecourse."
+    },
+    "Standard Distance ×": {
+        "id": 200133,
+        "englishName": "Standard Distance ×",
+        "englishDescription": "Moderately decrease performance over standard distances (multiples of 400m)."
+    },
+    "Non-Standard Distance ×": {
+        "id": 200143,
+        "englishName": "Non-Standard Distance ×",
+        "englishDescription": "Moderately decrease performance over non-standard distances (non-multiples of 400m)."
+    },
+    "Paddock Fright": {
+        "id": 200321,
+        "englishName": "Paddock Fright",
+        "englishDescription": "Moderately decrease performance when the favorite."
+    },
+    "Oi Racecourse ×": {
+        "id": 200953,
+        "englishName": "Oi Racecourse ×",
+        "englishDescription": "Moderately decrease performance at Oi Racecourse."
+    },
+    "Firm Conditions ◎": {
+        "id": 200151,
+        "englishName": "Firm Conditions ◎",
+        "englishDescription": "Increase performance on firm ground."
+    },
+    "Firm Conditions ○": {
+        "id": 200152,
+        "englishName": "Firm Conditions ○",
+        "englishDescription": "Moderately increase performance on firm ground."
+    },
+    "Wet Conditions ◎": {
+        "id": 200161,
+        "englishName": "Wet Conditions ◎",
+        "englishDescription": "Increase performance on good, soft, and heavy ground."
+    },
+    "Wet Conditions ○": {
+        "id": 200162,
+        "englishName": "Wet Conditions ○",
+        "englishDescription": "Moderately increase performance on good, soft, and heavy ground."
+    },
+    "Competitive Spirit ◎": {
+        "id": 200281,
+        "englishName": "Competitive Spirit ◎",
+        "englishDescription": "Increase performance when at least 5 other runners are using the same strategy."
+    },
+    "Competitive Spirit ○": {
+        "id": 200282,
+        "englishName": "Competitive Spirit ○",
+        "englishDescription": "Moderately increase performance when at least 5 other runners are using the same strategy."
+    },
+    "Firm Conditions ×": {
+        "id": 200153,
+        "englishName": "Firm Conditions ×",
+        "englishDescription": "Moderately decrease performance on firm ground."
+    },
+    "Wet Conditions ×": {
+        "id": 200163,
+        "englishName": "Wet Conditions ×",
+        "englishDescription": "Moderately decrease performance on good, soft, and heavy ground."
+    },
+    "Wallflower": {
+        "id": 200283,
+        "englishName": "Wallflower",
+        "englishDescription": "Moderately decrease performance when at least 5 other runners are using the same strategy."
+    },
+    "Sunny Days ◎": {
+        "id": 200211,
+        "englishName": "Sunny Days ◎",
+        "englishDescription": "Increase performance in sunny weather."
+    },
+    "Sunny Days ○": {
+        "id": 200212,
+        "englishName": "Sunny Days ○",
+        "englishDescription": "Moderately increase performance in sunny weather."
+    },
+    "Cloudy Days ◎": {
+        "id": 200221,
+        "englishName": "Cloudy Days ◎",
+        "englishDescription": "Increase performance in cloudy weather."
+    },
+    "Cloudy Days ○": {
+        "id": 200222,
+        "englishName": "Cloudy Days ○",
+        "englishDescription": "Moderately increase performance in cloudy weather."
+    },
+    "Rainy Days ◎": {
+        "id": 200231,
+        "englishName": "Rainy Days ◎",
+        "englishDescription": "Increase performance in rainy weather."
+    },
+    "Rainy Days ○": {
+        "id": 200232,
+        "englishName": "Rainy Days ○",
+        "englishDescription": "Moderately increase performance in rainy weather."
+    },
+    "Snowy Days ◎": {
+        "id": 200241,
+        "englishName": "Snowy Days ◎",
+        "englishDescription": "Increase performance in snowy weather."
+    },
+    "Snowy Days ○": {
+        "id": 200242,
+        "englishName": "Snowy Days ○",
+        "englishDescription": "Moderately increase performance in snowy weather."
+    },
+    "Target in Sight ◎": {
+        "id": 200291,
+        "englishName": "Target in Sight ◎",
+        "englishDescription": "Increase performance when the favorite is using the same strategy."
+    },
+    "Target in Sight ○": {
+        "id": 200292,
+        "englishName": "Target in Sight ○",
+        "englishDescription": "Moderately increase performance when the favorite is using the same strategy."
+    },
+    "Rainy Days ×": {
+        "id": 200233,
+        "englishName": "Rainy Days ×",
+        "englishDescription": "Moderately decrease performance in rainy weather."
+    },
+    "Inner Post Proficiency ◎": {
+        "id": 200251,
+        "englishName": "Inner Post Proficiency ◎",
+        "englishDescription": "Increase performance in brackets 1–3."
+    },
+    "Inner Post Proficiency ○": {
+        "id": 200252,
+        "englishName": "Inner Post Proficiency ○",
+        "englishDescription": "Moderately increase performance in brackets 1–3."
+    },
+    "Front Runner Savvy ◎": {
+        "id": 201521,
+        "englishName": "Front Runner Savvy ◎",
+        "englishDescription": "Increase ability to get into a good position. (Front Runner)"
+    },
+    "Front Runner Savvy ○": {
+        "id": 201522,
+        "englishName": "Front Runner Savvy ○",
+        "englishDescription": "Moderately increase ability to get into a good position. (Front Runner)"
+    },
+    "Pace Chaser Savvy ◎": {
+        "id": 201531,
+        "englishName": "Pace Chaser Savvy ◎",
+        "englishDescription": "Increase ability to get into a good position. (Pace Chaser)"
+    },
+    "Pace Chaser Savvy ○": {
+        "id": 201532,
+        "englishName": "Pace Chaser Savvy ○",
+        "englishDescription": "Moderately increase ability to get into a good position. (Pace Chaser)"
+    },
+    "Late Surger Savvy ◎": {
+        "id": 201541,
+        "englishName": "Late Surger Savvy ◎",
+        "englishDescription": "Increase ability to get into a good position. (Late Surger)"
+    },
+    "Late Surger Savvy ○": {
+        "id": 201542,
+        "englishName": "Late Surger Savvy ○",
+        "englishDescription": "Moderately increase ability to get into a good position. (Late Surger)"
+    },
+    "End Closer Savvy ◎": {
+        "id": 201551,
+        "englishName": "End Closer Savvy ◎",
+        "englishDescription": "Increase ability to get into a good position. (End Closer)"
+    },
+    "End Closer Savvy ○": {
+        "id": 201552,
+        "englishName": "End Closer Savvy ○",
+        "englishDescription": "Moderately increase ability to get into a good position. (End Closer)"
+    },
+    "Inner Post Averseness": {
+        "id": 200253,
+        "englishName": "Inner Post Averseness",
+        "englishDescription": "Moderately decrease performance in brackets 1–3."
+    },
+    "Lucky Seven": {
+        "id": 201562,
+        "englishName": "Lucky Seven",
+        "englishDescription": "Moderately good things may happen when in bracket 7."
+    },
+    "Super Lucky Seven": {
+        "id": 201561,
+        "englishName": "Super Lucky Seven",
+        "englishDescription": "Good things may happen when in bracket 7."
+    },
+    "Corner Recovery ○": {
+        "id": 200352,
+        "englishName": "Corner Recovery ○",
+        "englishDescription": "Slightly recover endurance on a corner with efficient turning."
+    },
+    "Straightaway Recovery": {
+        "id": 200382,
+        "englishName": "Straightaway Recovery",
+        "englishDescription": "Slightly recover endurance on a straight."
+    },
+    "Lay Low": {
+        "id": 200442,
+        "englishName": "Lay Low",
+        "englishDescription": "Slightly recover endurance when the way ahead is jammed early-race."
+    },
+    "Pace Strategy": {
+        "id": 200472,
+        "englishName": "Pace Strategy",
+        "englishDescription": "Slightly recover endurance when passed by another runner mid-race."
+    },
+    "Calm in a Crowd": {
+        "id": 200482,
+        "englishName": "Calm in a Crowd",
+        "englishDescription": "Slightly recover endurance when surrounded mid-race."
+    },
+    "Stamina to Spare": {
+        "id": 200562,
+        "englishName": "Stamina to Spare",
+        "englishDescription": "Slightly decrease fatigue early-race. (Pace Chaser)"
+    },
+    "Preferred Position": {
+        "id": 200572,
+        "englishName": "Preferred Position",
+        "englishDescription": "Slightly decrease fatigue mid-race. (Pace Chaser)"
+    },
+    "Standing By": {
+        "id": 200622,
+        "englishName": "Standing By",
+        "englishDescription": "Slightly decrease fatigue mid-race. (End Closer)"
+    },
+    "Wait-and-See": {
+        "id": 200662,
+        "englishName": "Wait-and-See",
+        "englishDescription": "Slightly decrease fatigue when positioned toward the back mid-race. (Sprint)"
+    },
+    "Watchful Eye": {
+        "id": 200692,
+        "englishName": "Watchful Eye",
+        "englishDescription": "Slightly decrease fatigue when positioned toward the back early-race. (Mile)"
+    },
+    "Rosy Outlook": {
+        "id": 200712,
+        "englishName": "Rosy Outlook",
+        "englishDescription": "Slightly decrease fatigue when in the lead mid-race. (Medium)"
+    },
+    "Deep Breaths": {
+        "id": 200742,
+        "englishName": "Deep Breaths",
+        "englishDescription": "Slightly decrease fatigue by taking a breather upon entering a straight. (Long)"
+    },
+    "Extra Tank": {
+        "id": 200762,
+        "englishName": "Extra Tank",
+        "englishDescription": "Slightly regain the energy to run after exhausting strength. (Long)"
+    },
+    "Soft Step": {
+        "id": 201142,
+        "englishName": "Soft Step",
+        "englishDescription": "Slightly decrease fatigue when moving sideways. (Medium)"
+    },
+    "Passing Pro": {
+        "id": 201202,
+        "englishName": "Passing Pro",
+        "englishDescription": "Slightly decrease fatigue when determined to pass another runner. (Long)"
+    },
+    "Moxie": {
+        "id": 201282,
+        "englishName": "Moxie",
+        "englishDescription": "Slightly reduce fatigue on an uphill. (Front Runner)"
+    },
+    "Hydrate": {
+        "id": 201352,
+        "englishName": "Hydrate",
+        "englishDescription": "Slightly recover endurance mid-race. (Pace Chaser)"
+    },
+    "A Small Breather": {
+        "id": 201422,
+        "englishName": "A Small Breather",
+        "englishDescription": "Slightly recover endurance late-race. (Late Surger)"
+    },
+    "After-School Stroll": {
+        "id": 201482,
+        "englishName": "After-School Stroll",
+        "englishDescription": "Slightly reduce fatigue on a downhill. (End Closer)"
+    },
+    "Levelheaded": {
+        "id": 201492,
+        "englishName": "Levelheaded",
+        "englishDescription": "Slightly regain composure by calming down when the way ahead is jammed. (End Closer)"
+    },
+    "Triple 7s": {
+        "id": 201571,
+        "englishName": "Triple 7s",
+        "englishDescription": "Slightly gain energy with 777m remaining."
+    },
+    "Shake It Out": {
+        "id": 201621,
+        "englishName": "Shake It Out",
+        "englishDescription": "Slightly recover endurance after activating many skills late-race."
+    },
+    "Swinging Maestro": {
+        "id": 200351,
+        "englishName": "Swinging Maestro",
+        "englishDescription": "Recover endurance on a corner with efficient turning."
+    },
+    "Breath of Fresh Air": {
+        "id": 200381,
+        "englishName": "Breath of Fresh Air",
+        "englishDescription": "Recover endurance on a straight."
+    },
+    "Iron Will": {
+        "id": 200441,
+        "englishName": "Iron Will",
+        "englishDescription": "Recover endurance when the way ahead is jammed early-race."
+    },
+    "Indomitable": {
+        "id": 200471,
+        "englishName": "Indomitable",
+        "englishDescription": "Recover endurance when passed by another runner mid-race."
+    },
+    "Unruffled": {
+        "id": 200481,
+        "englishName": "Unruffled",
+        "englishDescription": "Recover endurance when surrounded mid-race."
+    },
+    "Calm and Collected": {
+        "id": 200561,
+        "englishName": "Calm and Collected",
+        "englishDescription": "Decrease fatigue early-race. (Pace Chaser)"
+    },
+    "Race Planner": {
+        "id": 200571,
+        "englishName": "Race Planner",
+        "englishDescription": "Decrease fatigue mid-race. (Pace Chaser)"
+    },
+    "Sleeping Lion": {
+        "id": 200621,
+        "englishName": "Sleeping Lion",
+        "englishDescription": "Decrease fatigue mid-race. (End Closer)"
+    },
+    "Keen Eye": {
+        "id": 200691,
+        "englishName": "Keen Eye",
+        "englishDescription": "Decrease fatigue when positioned toward the back early-race. (Mile)"
+    },
+    "Trackblazer": {
+        "id": 200711,
+        "englishName": "Trackblazer",
+        "englishDescription": "Decrease fatigue when in the lead mid-race. (Medium)"
+    },
+    "Cooldown": {
+        "id": 200741,
+        "englishName": "Cooldown",
+        "englishDescription": "Decrease fatigue by taking a breather upon entering a straight. (Long)"
+    },
+    "Adrenaline Rush": {
+        "id": 200761,
+        "englishName": "Adrenaline Rush",
+        "englishDescription": "Regain the energy to run after exhausting strength. (Long)"
+    },
+    "Miraculous Step": {
+        "id": 201141,
+        "englishName": "Miraculous Step",
+        "englishDescription": "Decrease fatigue when moving sideways. (Medium)"
+    },
+    "Restless": {
+        "id": 201281,
+        "englishName": "Restless",
+        "englishDescription": "Reduce fatigue on an uphill. (Front Runner)"
+    },
+    "Gourmand": {
+        "id": 201351,
+        "englishName": "Gourmand",
+        "englishDescription": "Recover endurance mid-race. (Pace Chaser)"
+    },
+    "Relax": {
+        "id": 201421,
+        "englishName": "Relax",
+        "englishDescription": "Recover endurance late-race. (Late Surger)"
+    },
+    "Go-Home Specialist": {
+        "id": 201481,
+        "englishName": "Go-Home Specialist",
+        "englishDescription": "Reduce fatigue on a downhill. (End Closer)"
+    },
+    "Serenity": {
+        "id": 201491,
+        "englishName": "Serenity",
+        "englishDescription": "Regain composure by calming down when the way ahead is jammed. (End Closer)"
+    },
+    "Introduction to Physiology": {
+        "id": 10321,
+        "englishName": "Introduction to Physiology",
+        "englishDescription": "Moderately recover endurance when conserving energy on a corner in the second half of the race."
+    },
+    "Clear Heart": {
+        "id": 10451,
+        "englishName": "Clear Heart",
+        "englishDescription": "Moderately recover endurance when well-positioned mid-race."
+    },
+    "Super-Duper Stoked": {
+        "id": 10521,
+        "englishName": "Super-Duper Stoked",
+        "englishDescription": "Moderately recover endurance with a glance at nearby runners when positioned toward the back on the final corner."
+    },
+    "U=ma2": {
+        "id": 100321,
+        "englishName": "U=ma2",
+        "englishDescription": "Recover endurance when conserving energy on a corner in the second half of the race."
+    },
+    "Pure Heart": {
+        "id": 100451,
+        "englishName": "Pure Heart",
+        "englishDescription": "Recover endurance when well-positioned mid-race."
+    },
+    "Super-Duper Climax": {
+        "id": 100521,
+        "englishName": "Super-Duper Climax",
+        "englishDescription": "Recover endurance with a glance at nearby runners when positioned toward the back on the final corner."
+    },
+    "Superior Heal": {
+        "id": 110111,
+        "englishName": "Superior Heal",
+        "englishDescription": "Recover endurance with a gentle light when dropping down toward the back mid-race."
+    },
+    "Dazzl'n ♪ Diver": {
+        "id": 110011,
+        "englishName": "Dazzl'n ♪ Diver",
+        "englishDescription": "Recover endurance by relaxing after activating 2 skills mid-race."
+    },
+    "Corner Recovery ×": {
+        "id": 200353,
+        "englishName": "Corner Recovery ×",
+        "englishDescription": "Moderately lose endurance on a corner with inefficient turning."
+    },
+    "Ramp Revulsion": {
+        "id": 200391,
+        "englishName": "Ramp Revulsion",
+        "englishDescription": "Moderately increase fatigue on an uphill."
+    },
+    "Packphobia": {
+        "id": 200401,
+        "englishName": "Packphobia",
+        "englishDescription": "Moderately lose endurance when surrounded."
+    },
+    "Running Idle": {
+        "id": 200521,
+        "englishName": "Running Idle",
+        "englishDescription": "Moderately increase fatigue when in the lead by too large of a margin."
+    },
+    "Corner Adept ○": {
+        "id": 200332,
+        "englishName": "Corner Adept ○",
+        "englishDescription": "Slightly increase velocity on a corner with skilled turning."
+    },
+    "Straightaway Adept": {
+        "id": 200362,
+        "englishName": "Straightaway Adept",
+        "englishDescription": "Slightly increase velocity on a straight."
+    },
+    "Ramp Up": {
+        "id": 200462,
+        "englishName": "Ramp Up",
+        "englishDescription": "Slightly increase velocity when passing another runner mid-race."
+    },
+    "Homestretch Haste": {
+        "id": 200512,
+        "englishName": "Homestretch Haste",
+        "englishDescription": "Slightly increase velocity in the last spurt."
+    },
+    "Fast-Paced": {
+        "id": 200542,
+        "englishName": "Fast-Paced",
+        "englishDescription": "Slightly increase ability to go to the front mid-race. (Front Runner)"
+    },
+    "Prepared to Pass": {
+        "id": 200582,
+        "englishName": "Prepared to Pass",
+        "englishDescription": "Slightly increase ability to break out of the pack on the final corner. (Pace Chaser)"
+    },
+    "Position Pilfer": {
+        "id": 200592,
+        "englishName": "Position Pilfer",
+        "englishDescription": "Slightly increase velocity mid-race. (Late Surger)"
+    },
+    "Outer Swell": {
+        "id": 200612,
+        "englishName": "Outer Swell",
+        "englishDescription": "Slightly increase velocity when passing another runner on the outside on the final corner. (Late Surger)"
+    },
+    "Masterful Gambit": {
+        "id": 200632,
+        "englishName": "Masterful Gambit",
+        "englishDescription": "Slightly move up in preparation to close the gap late-race. (End Closer)"
+    },
+    "Gap Closer": {
+        "id": 200672,
+        "englishName": "Gap Closer",
+        "englishDescription": "Slightly increase spurting ability when positioned toward the back late-race. (Sprint)"
+    },
+    "Productive Plan": {
+        "id": 200682,
+        "englishName": "Productive Plan",
+        "englishDescription": "Slightly widen the margin when in the lead early-race. (Mile)"
+    },
+    "Up-Tempo": {
+        "id": 200722,
+        "englishName": "Up-Tempo",
+        "englishDescription": "Slightly increase positioning ability when positioned toward the front mid-race. (Medium)"
+    },
+    "Steadfast": {
+        "id": 200732,
+        "englishName": "Steadfast",
+        "englishDescription": "Slightly increase ability to fight back when passed by another runner on the final corner. (Medium)"
+    },
+    "Inside Scoop": {
+        "id": 200752,
+        "englishName": "Inside Scoop",
+        "englishDescription": "Slightly increase velocity when near the inner rail on the final corner. (Long)"
+    },
+    "Sprint Straightaways ◎": {
+        "id": 200961,
+        "englishName": "Sprint Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Sprint)"
+    },
+    "Sprint Straightaways ○": {
+        "id": 200962,
+        "englishName": "Sprint Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Sprint)"
+    },
+    "Sprint Corners ◎": {
+        "id": 200971,
+        "englishName": "Sprint Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Sprint)"
+    },
+    "Sprint Corners ○": {
+        "id": 200972,
+        "englishName": "Sprint Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Sprint)"
+    },
+    "Huge Lead": {
+        "id": 200982,
+        "englishName": "Huge Lead",
+        "englishDescription": "Slightly increase ability to maintain the lead when leading by a large margin mid-race. (Sprint)"
+    },
+    "Mile Straightaways ◎": {
+        "id": 201031,
+        "englishName": "Mile Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Mile)"
+    },
+    "Mile Straightaways ○": {
+        "id": 201032,
+        "englishName": "Mile Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Mile)"
+    },
+    "Mile Corners ◎": {
+        "id": 201041,
+        "englishName": "Mile Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Mile)"
+    },
+    "Mile Corners ○": {
+        "id": 201042,
+        "englishName": "Mile Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Mile)"
+    },
+    "Shifting Gears": {
+        "id": 201052,
+        "englishName": "Shifting Gears",
+        "englishDescription": "Slightly increase passing ability when positioned toward the front mid-race. (Mile)"
+    },
+    "Unyielding Spirit": {
+        "id": 201072,
+        "englishName": "Unyielding Spirit",
+        "englishDescription": "Slightly increase passing ability. (Mile)"
+    },
+    "Medium Straightaways ◎": {
+        "id": 201101,
+        "englishName": "Medium Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Medium)"
+    },
+    "Medium Straightaways ○": {
+        "id": 201102,
+        "englishName": "Medium Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Medium)"
+    },
+    "Medium Corners ◎": {
+        "id": 201111,
+        "englishName": "Medium Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Medium)"
+    },
+    "Medium Corners ○": {
+        "id": 201112,
+        "englishName": "Medium Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Medium)"
+    },
+    "Long Straightaways ◎": {
+        "id": 201171,
+        "englishName": "Long Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Long)"
+    },
+    "Long Straightaways ○": {
+        "id": 201172,
+        "englishName": "Long Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Long)"
+    },
+    "Long Corners ◎": {
+        "id": 201181,
+        "englishName": "Long Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Long)"
+    },
+    "Long Corners ○": {
+        "id": 201182,
+        "englishName": "Long Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Long)"
+    },
+    "Keeping the Lead": {
+        "id": 201192,
+        "englishName": "Keeping the Lead",
+        "englishDescription": "Slightly increase ability to maintain the lead when leading by a large margin mid-race. (Long)"
+    },
+    "Pressure": {
+        "id": 201212,
+        "englishName": "Pressure",
+        "englishDescription": "Slightly increase velocity when passing another runner late-race. (Long)"
+    },
+    "Front Runner Straightaways ◎": {
+        "id": 201241,
+        "englishName": "Front Runner Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Front Runner)"
+    },
+    "Front Runner Straightaways ○": {
+        "id": 201242,
+        "englishName": "Front Runner Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Front Runner)"
+    },
+    "Front Runner Corners ◎": {
+        "id": 201251,
+        "englishName": "Front Runner Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Front Runner)"
+    },
+    "Front Runner Corners ○": {
+        "id": 201252,
+        "englishName": "Front Runner Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Front Runner)"
+    },
+    "Leader's Pride": {
+        "id": 201272,
+        "englishName": "Leader's Pride",
+        "englishDescription": "Slightly avoid being passed early-race. (Front Runner)"
+    },
+    "Pace Chaser Straightaways ◎": {
+        "id": 201311,
+        "englishName": "Pace Chaser Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Pace Chaser)"
+    },
+    "Pace Chaser Straightaways ○": {
+        "id": 201312,
+        "englishName": "Pace Chaser Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Pace Chaser)"
+    },
+    "Pace Chaser Corners ◎": {
+        "id": 201321,
+        "englishName": "Pace Chaser Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Pace Chaser)"
+    },
+    "Pace Chaser Corners ○": {
+        "id": 201322,
+        "englishName": "Pace Chaser Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Pace Chaser)"
+    },
+    "Late Surger Straightaways ◎": {
+        "id": 201381,
+        "englishName": "Late Surger Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (Late Surger)"
+    },
+    "Late Surger Straightaways ○": {
+        "id": 201382,
+        "englishName": "Late Surger Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (Late Surger)"
+    },
+    "Later Surger Corners ◎": {
+        "id": 201391,
+        "englishName": "Later Surger Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (Late Surger)"
+    },
+    "Late Surger Corners ○": {
+        "id": 201392,
+        "englishName": "Late Surger Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (Late Surger)"
+    },
+    "1,500,000 CC": {
+        "id": 201412,
+        "englishName": "1,500,000 CC",
+        "englishDescription": "Slightly increase velocity on an uphill. (Late Surger)"
+    },
+    "End Closer Straightaways ◎": {
+        "id": 201451,
+        "englishName": "End Closer Straightaways ◎",
+        "englishDescription": "Moderately increase velocity on a straight. (End Closer)"
+    },
+    "End Closer Straightaways ○": {
+        "id": 201452,
+        "englishName": "End Closer Straightaways ○",
+        "englishDescription": "Slightly increase velocity on a straight. (End Closer)"
+    },
+    "End Closer Corners ◎": {
+        "id": 201461,
+        "englishName": "End Closer Corners ◎",
+        "englishDescription": "Moderately increase velocity on a corner. (End Closer)"
+    },
+    "End Closer Corners ○": {
+        "id": 201462,
+        "englishName": "End Closer Corners ○",
+        "englishDescription": "Slightly increase velocity on a corner. (End Closer)"
+    },
+    "Uma Stan": {
+        "id": 201591,
+        "englishName": "Uma Stan",
+        "englishDescription": "Slightly increase velocity when close to many runners."
+    },
+    "Tail Held High": {
+        "id": 201611,
+        "englishName": "Tail Held High",
+        "englishDescription": "Slightly increase velocity after activating many skills mid-race."
+    },
+    "Slipstream": {
+        "id": 201651,
+        "englishName": "Slipstream",
+        "englishDescription": "Slightly decrease wind resistance when following directly behind another runner."
+    },
+    "Playtime's Over!": {
+        "id": 201661,
+        "englishName": "Playtime's Over!",
+        "englishDescription": "Slightly increase velocity when followed by another runner directly behind for a long time."
+    },
+    "Top Pick": {
+        "id": 201672,
+        "englishName": "Top Pick",
+        "englishDescription": "Slightly increase velocity when engaged in a challenge mid-race. (Dirt)"
+    },
+    "Professor of Curvature": {
+        "id": 200331,
+        "englishName": "Professor of Curvature",
+        "englishDescription": "Increase velocity on a corner with skilled turning."
+    },
+    "Beeline Burst": {
+        "id": 200361,
+        "englishName": "Beeline Burst",
+        "englishDescription": "Increase velocity on a straight."
+    },
+    "It's On!": {
+        "id": 200461,
+        "englishName": "It's On!",
+        "englishDescription": "Increase velocity when passing another runner mid-race."
+    },
+    "In Body and Mind": {
+        "id": 200511,
+        "englishName": "In Body and Mind",
+        "englishDescription": "Increase velocity in the last spurt."
+    },
+    "Escape Artist": {
+        "id": 200541,
+        "englishName": "Escape Artist",
+        "englishDescription": "Increase ability to go to the front mid-race. (Front Runner)"
+    },
+    "Speed Star": {
+        "id": 200581,
+        "englishName": "Speed Star",
+        "englishDescription": "Increase ability to break out of the pack on the final corner. (Pace Chaser)"
+    },
+    "Fast & Furious": {
+        "id": 200591,
+        "englishName": "Fast & Furious",
+        "englishDescription": "Increase velocity mid-race. (Late Surger)"
+    },
+    "Rising Dragon": {
+        "id": 200611,
+        "englishName": "Rising Dragon",
+        "englishDescription": "Increase velocity when passing another runner on the outside on the final corner. (Late Surger)"
+    },
+    "Sturm und Drang": {
+        "id": 200631,
+        "englishName": "Sturm und Drang",
+        "englishDescription": "Move up in preparation to close the gap late-race. (End Closer)"
+    },
+    "Blinding Flash": {
+        "id": 200671,
+        "englishName": "Blinding Flash",
+        "englishDescription": "Increase spurting ability when positioned toward the back late-race. (Sprint)"
+    },
+    "Mile Maven": {
+        "id": 200681,
+        "englishName": "Mile Maven",
+        "englishDescription": "Widen the margin when in the lead early-race. (Mile)"
+    },
+    "Killer Tunes": {
+        "id": 200721,
+        "englishName": "Killer Tunes",
+        "englishDescription": "Increase positioning ability when positioned toward the front mid-race. (Medium)"
+    },
+    "Unyielding": {
+        "id": 200731,
+        "englishName": "Unyielding",
+        "englishDescription": "Increase ability to fight back when passed by another runner on the final corner. (Medium)"
+    },
+    "Innate Experience": {
+        "id": 200751,
+        "englishName": "Innate Experience",
+        "englishDescription": "Increase velocity when near the inner rail on the final corner. (Long)"
+    },
+    "Staggering Lead": {
+        "id": 200981,
+        "englishName": "Staggering Lead",
+        "englishDescription": "Increase ability to maintain the lead when leading by a large margin mid-race. (Sprint)"
+    },
+    "Changing Gears": {
+        "id": 201051,
+        "englishName": "Changing Gears",
+        "englishDescription": "Increase passing ability when positioned toward the front mid-race. (Mile)"
+    },
+    "Big-Sisterly": {
+        "id": 201071,
+        "englishName": "Big-Sisterly",
+        "englishDescription": "Increase passing ability. (Mile)"
+    },
+    "Vanguard Spirit": {
+        "id": 201191,
+        "englishName": "Vanguard Spirit",
+        "englishDescription": "Increase ability to maintain the lead when leading by a large margin mid-race. (Long)"
+    },
+    "Overwhelming Pressure": {
+        "id": 201211,
+        "englishName": "Overwhelming Pressure",
+        "englishDescription": "Increase velocity when passing another runner late-race. (Long)"
+    },
+    "15,000,000 CC": {
+        "id": 201411,
+        "englishName": "15,000,000 CC",
+        "englishDescription": "Increase velocity on an uphill. (Late Surger)"
+    },
+    "Trending in the Charts!": {
+        "id": 201671,
+        "englishName": "Trending in the Charts!",
+        "englishDescription": "Increase velocity when engaged in a challenge mid-race. (Dirt)"
+    },
+    "Certain Victory": {
+        "id": 110031,
+        "englishName": "Certain Victory",
+        "englishDescription": "Increase velocity with an indomitable fighting spirit when on the heels of another runner toward the front on the final straight."
+    },
+    "Legacy of the Strong": {
+        "id": 110131,
+        "englishName": "Legacy of the Strong",
+        "englishDescription": "Increase velocity when pressured by another runner and running out of energy toward the front on the final corner or later."
+    },
+    "Warning Shot!": {
+        "id": 10071,
+        "englishName": "Warning Shot!",
+        "englishDescription": "Slightly increase velocity with a long spurt starting halfway through the race."
+    },
+    "Xceleration": {
+        "id": 10081,
+        "englishName": "Xceleration",
+        "englishDescription": "Become stronger at challenging rivals and moderately increase velocity when positioned toward the front with 200m or less remaining."
+    },
+    "Red Ace": {
+        "id": 10091,
+        "englishName": "Red Ace",
+        "englishDescription": "Slightly swell with the determination to stay number one in the second half of the race."
+    },
+    "Focused Mind": {
+        "id": 10111,
+        "englishName": "Focused Mind",
+        "englishDescription": "Moderately increase velocity with a strong turn of foot when passing another runner toward the back on the final straight."
+    },
+    "Corazón ☆ Ardiente": {
+        "id": 10141,
+        "englishName": "Corazón ☆ Ardiente",
+        "englishDescription": "Slightly hang on to the advantage when positioned toward the front with energy to spare on the final straight."
+    },
+    "Empress's Pride": {
+        "id": 10181,
+        "englishName": "Empress's Pride",
+        "englishDescription": "Moderately increase velocity with the stride of an empress when passing another runner toward the back on the final corner."
+    },
+    "1st Place Kiss☆": {
+        "id": 10241,
+        "englishName": "1st Place Kiss☆",
+        "englishDescription": "Slightly increase ability to break out of the pack on the straight after engaging in a challenge toward the front on the final corner."
+    },
+    "V Is for Victory!": {
+        "id": 10351,
+        "englishName": "V Is for Victory!",
+        "englishDescription": "Refuse to back down from a challenge, moderately increasing velocity on the final straight."
+    },
+    "Class Rep + Speed = Bakushin": {
+        "id": 10411,
+        "englishName": "Class Rep + Speed = Bakushin",
+        "englishDescription": "Moderately increase velocity with BAKUSHIN power when engaged in a challenge toward the front in the second half of the race."
+    },
+    "Luck Be with Me!": {
+        "id": 10561,
+        "englishName": "Luck Be with Me!",
+        "englishDescription": "Moderately clear a path forward with the power of divination when the way ahead is jammed late-race."
+    },
+    "I Can Win Sometimes, Right?": {
+        "id": 10601,
+        "englishName": "I Can Win Sometimes, Right?",
+        "englishDescription": "Moderately increase velocity with an arousal of fighting spirit when positioned 3rd and about to lose late-race."
+    },
+    "Call Me King": {
+        "id": 10611,
+        "englishName": "Call Me King",
+        "englishDescription": "Increase velocity in a true display of skill with 200m remaining after racing calmly."
+    },
+    "Shooting Star": {
+        "id": 100011,
+        "englishName": "Shooting Star",
+        "englishDescription": "Ride the momentum and increase velocity after passing another runner toward the front late-race."
+    },
+    "The View from the Lead Is Mine!": {
+        "id": 100021,
+        "englishName": "The View from the Lead Is Mine!",
+        "englishDescription": "Increase velocity by drawing on all remaining strength when in the lead by a fair margin on the final straight."
+    },
+    "Sky-High Teio Step": {
+        "id": 100031,
+        "englishName": "Sky-High Teio Step",
+        "englishDescription": "Greatly increase velocity with flashy footwork when closing the gap to runners ahead on the final straight."
+    },
+    "Triumphant Pulse": {
+        "id": 100061,
+        "englishName": "Triumphant Pulse",
+        "englishDescription": "Greatly increase ability to break out of the pack by opening up a path when positioned toward the front with 200m remaining."
+    },
+    "Anchors Aweigh!": {
+        "id": 100071,
+        "englishName": "Anchors Aweigh!",
+        "englishDescription": "Moderately increase velocity steadily with a long spurt starting halfway through the race."
+    },
+    "Cut and Drive!": {
+        "id": 100081,
+        "englishName": "Cut and Drive!",
+        "englishDescription": "Become stronger at challenging rivals and increase velocity when positioned toward the front with 200m or less remaining."
+    },
+    "Resplendent Red Ace": {
+        "id": 100091,
+        "englishName": "Resplendent Red Ace",
+        "englishDescription": "Swell with the determination to stay number one in the second half of the race."
+    },
+    "Where There's a Will, There's a Way": {
+        "id": 100111,
+        "englishName": "Where There's a Will, There's a Way",
+        "englishDescription": "Increase velocity with a strong turn of foot when passing another runner toward the back on the final straight."
+    },
+    "The Duty of Dignity Calls": {
+        "id": 100131,
+        "englishName": "The Duty of Dignity Calls",
+        "englishDescription": "Increase velocity with the determination to not be overtaken when positioned toward the front on the final corner."
+    },
+    "Victoria por plancha ☆": {
+        "id": 100141,
+        "englishName": "Victoria por plancha ☆",
+        "englishDescription": "Hang onto the advantage when positioned toward the front with energy to spare on the final straight."
+    },
+    "This Dance Is for Vittoria!": {
+        "id": 100151,
+        "englishName": "This Dance Is for Vittoria!",
+        "englishDescription": "Increase velocity with royal brilliance when engaged in a challenge toward the front on the final corner."
+    },
+    "Behold Thine Emperor's Divine Might": {
+        "id": 100171,
+        "englishName": "Behold Thine Emperor's Divine Might",
+        "englishDescription": "Greatly increase velocity on the final straight after passing another runner 3 times late-race."
+    },
+    "Blazing Pride": {
+        "id": 100181,
+        "englishName": "Blazing Pride",
+        "englishDescription": "Increase velocity with the stride of an empress when passing another runner toward the back on the final corner."
+    },
+    "∴win Q.E.D.": {
+        "id": 100231,
+        "englishName": "∴win Q.E.D.",
+        "englishDescription": "Increase velocity by deriving the winning equation when passing another runner toward the front on the final corner."
+    },
+    "Flashy☆Landing": {
+        "id": 100241,
+        "englishName": "Flashy☆Landing",
+        "englishDescription": "Increase ability to break out of the pack on the straight after engaging in a challenge toward the front on the final corner."
+    },
+    "G00 1st. F∞;": {
+        "id": 100261,
+        "englishName": "G00 1st. F∞;",
+        "englishDescription": "Increase velocity when positioned toward the front after making it to the final straight without faltering."
+    },
+    "Blue Rose Closer": {
+        "id": 100301,
+        "englishName": "Blue Rose Closer",
+        "englishDescription": "Increase velocity with strong willpower when breaking out of the pack on the final straight."
+    },
+    "Our Ticket to Win!": {
+        "id": 100351,
+        "englishName": "Our Ticket to Win!",
+        "englishDescription": "Refuse to back down from a challenge, increasing velocity on the final straight."
+    },
+    "Genius x Bakushin = Victory": {
+        "id": 100411,
+        "englishName": "Genius x Bakushin = Victory",
+        "englishDescription": "Increase velocity with BAKUSHIN power when engaged in a challenge toward the front in the second half of the race."
+    },
+    "I See Victory in My Future!": {
+        "id": 100561,
+        "englishName": "I See Victory in My Future!",
+        "englishDescription": "Clear a path forward with the power of divination when the way ahead is jammed late-race."
+    },
+    "Just a Little Farther!": {
+        "id": 100601,
+        "englishName": "Just a Little Farther!",
+        "englishDescription": "Increase velocity with flaring fighting spirit when positioned 3rd and about to lose late-race."
+    },
+    "Prideful King": {
+        "id": 100611,
+        "englishName": "Prideful King",
+        "englishDescription": "Greatly increase velocity in a true display of skill with 200m remaining after racing calmly."
+    },
+    "#LookatCurren": {
+        "id": 100381,
+        "englishName": "#LookatCurren",
+        "englishDescription": "Gain momentum and begin to advance when passing another runner while well-positioned around halfway through the race."
+    },
+    "Nemesis": {
+        "id": 100501,
+        "englishName": "Nemesis",
+        "englishDescription": "Increase velocity with smoldering ambition when moving up from a position toward the back of the pack on the final corner."
+    },
+    "SPARKLY☆STARDOM": {
+        "id": 100461,
+        "englishName": "SPARKLY☆STARDOM",
+        "englishDescription": "Become empowered against ceding the spotlight when about to lose the lead on a straight mid-race."
+    },
+    "Shadow Break": {
+        "id": 100161,
+        "englishName": "Shadow Break",
+        "englishDescription": "Increase velocity with beastly strength when passing another runner on the outside on the final corner or later."
+    },
+    "Eternal Moments": {
+        "id": 110181,
+        "englishName": "Eternal Moments",
+        "englishDescription": "Increase velocity when starting to make a move from a position toward the front mid-race."
+    },
+    "Flowery☆Maneuver": {
+        "id": 110241,
+        "englishName": "Flowery☆Maneuver",
+        "englishDescription": "Increase velocity when passing another runner toward the front on the final corner. If passing toward the back, increase acceleration instead."
+    },
+    "You and Me! One-on-One!": {
+        "id": 100121,
+        "englishName": "You and Me! One-on-One!",
+        "englishDescription": "Increase velocity when passing another runner on the outside toward the back on the final straight."
+    },
+    "Lights of Vaudeville": {
+        "id": 100051,
+        "englishName": "Lights of Vaudeville",
+        "englishDescription": "Greatly increase velocity with a dazzling display when just breaking out of the pack toward the front on the final straight."
+    },
+    "KEEP IT REAL.": {
+        "id": 100401,
+        "englishName": "KEEP IT REAL.",
+        "englishDescription": "Moderately increase acceleration steadily with a captivating performance when starting to make a move from midpack in the second half of the race."
+    },
+    "A Kiss for Courage": {
+        "id": 110041,
+        "englishName": "A Kiss for Courage",
+        "englishDescription": "Increase velocity with an enthusiastic \"Lets go!\" when positioned toward the front in the second half of the race after recovering endurance with a skill."
+    },
+    "I Never Goof Up!": {
+        "id": 100581,
+        "englishName": "I Never Goof Up!",
+        "englishDescription": "Aim for the front with unwavering determination when passing another runner from midpack or further back on a corner late-race."
+    },
+    "Schwarzes Schwert": {
+        "id": 100371,
+        "englishName": "Schwarzes Schwert",
+        "englishDescription": "Increase velocity in a dash for the lead after running calmly and according to plan up until the final straight."
+    },
+    "Bountiful Harvest": {
+        "id": 110561,
+        "englishName": "Bountiful Harvest",
+        "englishDescription": "Increase velocity with a surge of great fortune when pressured by another runner toward the back in the second half of the race."
+    },
+    "Corner Adept ×": {
+        "id": 200333,
+        "englishName": "Corner Adept ×",
+        "englishDescription": "Moderately decrease velocity on a corner with clumsy turning."
+    },
+    "Defeatist": {
+        "id": 200411,
+        "englishName": "Defeatist",
+        "englishDescription": "Moderately increase urge to give up when positioned around the very back on the final straight."
+    },
+    "Reckless": {
+        "id": 200421,
+        "englishName": "Reckless",
+        "englishDescription": "Moderately increase carelessness when in the lead with around 200m remaining."
+    },
+    "Corner Acceleration ○": {
+        "id": 200342,
+        "englishName": "Corner Acceleration ○",
+        "englishDescription": "Slightly increase acceleration on a corner with masterful turning."
+    },
+    "Straightaway Acceleration": {
+        "id": 200372,
+        "englishName": "Straightaway Acceleration",
+        "englishDescription": "Slightly increase acceleration on a straight."
+    },
+    "Nimble Navigator": {
+        "id": 200492,
+        "englishName": "Nimble Navigator",
+        "englishDescription": "Slightly increase maneuverability when the way ahead is blocked in the last spurt."
+    },
+    "Early Lead": {
+        "id": 200532,
+        "englishName": "Early Lead",
+        "englishDescription": "Slightly increase ability to go to the front early-race. (Front Runner)"
+    },
+    "Final Push": {
+        "id": 200552,
+        "englishName": "Final Push",
+        "englishDescription": "Slightly increase ability to keep the lead on the final corner. (Front Runner)"
+    },
+    "Slick Surge": {
+        "id": 200602,
+        "englishName": "Slick Surge",
+        "englishDescription": "Slightly increase acceleration late-race. (Late Surger)"
+    },
+    "Straightaway Spurt": {
+        "id": 200642,
+        "englishName": "Straightaway Spurt",
+        "englishDescription": "Slightly increase acceleration on a straight in the last spurt. (End Closer)"
+    },
+    "Sprinting Gear": {
+        "id": 200652,
+        "englishName": "Sprinting Gear",
+        "englishDescription": "Slightly increase acceleration on a straight. (Sprint)"
+    },
+    "Updrafters": {
+        "id": 200702,
+        "englishName": "Updrafters",
+        "englishDescription": "Slightly increase passing ability when positioned toward the back late-race. (Mile)"
+    },
+    "Countermeasure": {
+        "id": 200992,
+        "englishName": "Countermeasure",
+        "englishDescription": "Slightly increase passing ability when positioned toward the front mid-race. (Sprint)"
+    },
+    "Acceleration": {
+        "id": 201062,
+        "englishName": "Acceleration",
+        "englishDescription": "Slightly increase acceleration when passing another runner mid-race. (Mile)"
+    },
+    "Second Wind": {
+        "id": 201292,
+        "englishName": "Second Wind",
+        "englishDescription": "Slightly increase acceleration when positioned toward the back mid-race. (Front Runner)"
+    },
+    "Shrewd Step": {
+        "id": 201332,
+        "englishName": "Shrewd Step",
+        "englishDescription": "Slightly increase ability to navigate smoothly. (Pace Chaser)"
+    },
+    "Straight Descent": {
+        "id": 201342,
+        "englishName": "Straight Descent",
+        "englishDescription": "Slightly improve running on a downhill. (Pace Chaser)"
+    },
+    "Tactical Tweak": {
+        "id": 201362,
+        "englishName": "Tactical Tweak",
+        "englishDescription": "Slightly increase acceleration when positioned toward the back mid-race. (Pace Chaser)"
+    },
+    "Fighter": {
+        "id": 201402,
+        "englishName": "Fighter",
+        "englishDescription": "Slightly increase passing ability. (Late Surger)"
+    },
+    "Highlander": {
+        "id": 201581,
+        "englishName": "Highlander",
+        "englishDescription": "Slightly improve running on an uphill."
+    },
+    "Groundwork": {
+        "id": 201601,
+        "englishName": "Groundwork",
+        "englishDescription": "Slightly increase acceleration after activating many skills early-race."
+    },
+    "Corner Connoisseur": {
+        "id": 200341,
+        "englishName": "Corner Connoisseur",
+        "englishDescription": "Increase acceleration on a corner with masterful turning."
+    },
+    "Rushing Gale!": {
+        "id": 200371,
+        "englishName": "Rushing Gale!",
+        "englishDescription": "Increase acceleration on a straight."
+    },
+    "No Stopping Me!": {
+        "id": 200491,
+        "englishName": "No Stopping Me!",
+        "englishDescription": "Increase maneuverability when the way ahead is blocked in the last spurt."
+    },
+    "Taking the Lead": {
+        "id": 200531,
+        "englishName": "Taking the Lead",
+        "englishDescription": "Increase ability to go to the front early-race. (Front Runner)"
+    },
+    "Unrestrained": {
+        "id": 200551,
+        "englishName": "Unrestrained",
+        "englishDescription": "Increase ability to keep the lead on the final corner. (Front Runner)"
+    },
+    "On Your Left!": {
+        "id": 200601,
+        "englishName": "On Your Left!",
+        "englishDescription": "Increase acceleration late-race. (Late Surger)"
+    },
+    "Encroaching Shadow": {
+        "id": 200641,
+        "englishName": "Encroaching Shadow",
+        "englishDescription": "Increase acceleration on a straight in the last spurt. (End Closer)"
+    },
+    "Turbo Sprint": {
+        "id": 200651,
+        "englishName": "Turbo Sprint",
+        "englishDescription": "Increase acceleration on a straight. (Sprint)"
+    },
+    "Furious Feat": {
+        "id": 200701,
+        "englishName": "Furious Feat",
+        "englishDescription": "Increase passing ability when positioned toward the back late-race. (Mile)"
+    },
+    "Plan X": {
+        "id": 200991,
+        "englishName": "Plan X",
+        "englishDescription": "Increase passing ability when positioned toward the front mid-race. (Sprint)"
+    },
+    "Step on the Gas!": {
+        "id": 201061,
+        "englishName": "Step on the Gas!",
+        "englishDescription": "Increase acceleration when passing another runner mid-race. (Mile)"
+    },
+    "Reignition": {
+        "id": 201291,
+        "englishName": "Reignition",
+        "englishDescription": "Increase acceleration when positioned toward the back mid-race. (Front Runner)"
+    },
+    "Technician": {
+        "id": 201331,
+        "englishName": "Technician",
+        "englishDescription": "Moderately increase ability to navigate smoothly. (Pace Chaser)"
+    },
+    "Determined Descent": {
+        "id": 201341,
+        "englishName": "Determined Descent",
+        "englishDescription": "Moderately improve running on a downhill. (Pace Chaser)"
+    },
+    "Shatterproof": {
+        "id": 201361,
+        "englishName": "Shatterproof",
+        "englishDescription": "Moderately increase acceleration when positioned toward the back mid-race. (Pace Chaser)"
+    },
+    "Hard Worker": {
+        "id": 201401,
+        "englishName": "Hard Worker",
+        "englishDescription": "Moderately increase passing ability. (Late Surger)"
+    },
+    "Feel the Burn!": {
+        "id": 10271,
+        "englishName": "Feel the Burn!",
+        "englishDescription": "Moderately increase acceleration in an attempt to move up on a corner late-race."
+    },
+    "Red Shift/LP1211-M": {
+        "id": 100041,
+        "englishName": "Red Shift/LP1211-M",
+        "englishDescription": "Increase acceleration by shifting gears when positioned toward the front on the final corner or later."
+    },
+    "Shooting for Victory!": {
+        "id": 100101,
+        "englishName": "Shooting for Victory!",
+        "englishDescription": "Increase acceleration with a pow, a wow, and a bang when well-positioned on the final corner."
+    },
+    "Let's Pump Some Iron!": {
+        "id": 100271,
+        "englishName": "Let's Pump Some Iron!",
+        "englishDescription": "Increase acceleration in an attempt to move up on a corner late-race."
+    },
+    "Angling and Scheming": {
+        "id": 100201,
+        "englishName": "Angling and Scheming",
+        "englishDescription": "Increase acceleration at an opportune moment when in the lead on a corner late-race."
+    },
+    "Condor's Fury": {
+        "id": 110141,
+        "englishName": "Condor's Fury",
+        "englishDescription": "Increase acceleration with blazing passion when aiming for the front from midpack on the final corner."
+    },
+    "Corner Acceleration ×": {
+        "id": 200343,
+        "englishName": "Corner Acceleration ×",
+        "englishDescription": "Moderately decrease acceleration on a corner with awkward turning."
+    },
+    "Prudent Positioning": {
+        "id": 200452,
+        "englishName": "Prudent Positioning",
+        "englishDescription": "Moderately increase navigation early-race."
+    },
+    "Go with the Flow": {
+        "id": 200502,
+        "englishName": "Go with the Flow",
+        "englishDescription": "Moderately increase navigation late-race."
+    },
+    "Meticulous Measures": {
+        "id": 201002,
+        "englishName": "Meticulous Measures",
+        "englishDescription": "Moderately prepare to make for the finish line mid-race. (Sprint)"
+    },
+    "Thunderbolt Step": {
+        "id": 201132,
+        "englishName": "Thunderbolt Step",
+        "englishDescription": "Moderately avoid becoming surrounded when positioned toward the back mid-race. (Medium)"
+    },
+    "Dodging Danger": {
+        "id": 201262,
+        "englishName": "Dodging Danger",
+        "englishDescription": "Moderately avoid becoming surrounded early-race. (Front Runner)"
+    },
+    "Center Stage": {
+        "id": 200451,
+        "englishName": "Center Stage",
+        "englishDescription": "Increase navigation early-race."
+    },
+    "Lane Legerdemain": {
+        "id": 200501,
+        "englishName": "Lane Legerdemain",
+        "englishDescription": "Increase navigation late-race."
+    },
+    "Perfect Prep!": {
+        "id": 201001,
+        "englishName": "Perfect Prep!",
+        "englishDescription": "Prepare to make for the finish line mid-race. (Sprint)"
+    },
+    "Lightning Step": {
+        "id": 201131,
+        "englishName": "Lightning Step",
+        "englishDescription": "Avoid becoming surrounded when positioned toward the back mid-race. (Medium)"
+    },
+    "Sixth Sense": {
+        "id": 201261,
+        "englishName": "Sixth Sense",
+        "englishDescription": "Avoid becoming surrounded early-race. (Front Runner)"
+    },
+    "Focus": {
+        "id": 200432,
+        "englishName": "Focus",
+        "englishDescription": "Slightly decrease time lost to slow starts."
+    },
+    "Concentration": {
+        "id": 200431,
+        "englishName": "Concentration",
+        "englishDescription": "Decrease time lost to slow starts."
+    },
+    "Gatekept": {
+        "id": 200433,
+        "englishName": "Gatekept",
+        "englishDescription": "Moderately increase time lost to slow starts."
+    },
+    "Hawkeye": {
+        "id": 201122,
+        "englishName": "Hawkeye",
+        "englishDescription": "Moderately widen field of view with heightened observation early-race. (Medium)"
+    },
+    "Studious": {
+        "id": 201432,
+        "englishName": "Studious",
+        "englishDescription": "Slightly widen field of view with heightened observation mid-race. (Late Surger)"
+    },
+    "I Can See Right Through You": {
+        "id": 201472,
+        "englishName": "I Can See Right Through You",
+        "englishDescription": "Slightly widen field of view with situational awareness when moving sideways. (End Closer)"
+    },
+    "Strategist": {
+        "id": 201502,
+        "englishName": "Strategist",
+        "englishDescription": "Slightly widen field of view when positioned toward the back late-race. (End Closer)"
+    },
+    "Clairvoyance": {
+        "id": 201121,
+        "englishName": "Clairvoyance",
+        "englishDescription": "Widen field of view with heightened observation early-race. (Medium)"
+    },
+    "The Bigger Picture": {
+        "id": 201431,
+        "englishName": "The Bigger Picture",
+        "englishDescription": "Widen field of view with heightened observation mid-race. (Late Surger)"
+    },
+    "The Coast Is Clear!": {
+        "id": 201471,
+        "englishName": "The Coast Is Clear!",
+        "englishDescription": "Moderately widen field of view with situational awareness when moving sideways. (End Closer)"
+    },
+    "Crusader": {
+        "id": 201501,
+        "englishName": "Crusader",
+        "englishDescription": "Widen field of view when positioned toward the back late-race. (End Closer)"
+    },
+    "Ignited Spirit SPD": {
+        "id": 210012,
+        "englishName": "Ignited Spirit SPD",
+        "englishDescription": "Burn bright with team spirit, slightly increasing velocity in proportion to the total Speed of racing team members mid-race."
+    },
+    "Ignited Spirit GUTS": {
+        "id": 210042,
+        "englishName": "Ignited Spirit GUTS",
+        "englishDescription": "Burn bright with team spirit, very slightly increasing vigor in proportion to the total Guts of racing team members late-race."
+    },
+    "Burning Spirit SPD": {
+        "id": 210011,
+        "englishName": "Burning Spirit SPD",
+        "englishDescription": "Burn bright with team spirit, increasing velocity in proportion to the total Speed of racing team members mid-race."
+    },
+    "Burning Spirit GUTS": {
+        "id": 210041,
+        "englishName": "Burning Spirit GUTS",
+        "englishDescription": "Burn bright with team spirit, increasing vigor in proportion to the total Guts of racing team members late-race."
+    },
+    "Ignited Spirit STA": {
+        "id": 210022,
+        "englishName": "Ignited Spirit STA",
+        "englishDescription": "Burn bright with team spirit, slightly recovering endurance in proportion to the total Stamina of racing team members mid-race."
+    },
+    "Burning Spirit STA": {
+        "id": 210021,
+        "englishName": "Burning Spirit STA",
+        "englishDescription": "Burn bright with team spirit, recovering endurance in proportion to the total Stamina of racing team members mid-race."
+    },
+    "Ignited Spirit PWR": {
+        "id": 210032,
+        "englishName": "Ignited Spirit PWR",
+        "englishDescription": "Burn bright with team spirit, slightly increasing acceleration in proportion to the total Power of racing team members late-race."
+    },
+    "Burning Spirit PWR": {
+        "id": 210031,
+        "englishName": "Burning Spirit PWR",
+        "englishDescription": "Burn bright with team spirit, increasing acceleration in proportion to the total Power of racing team members late-race."
+    },
+    "Ignited Spirit WIT": {
+        "id": 210052,
+        "englishName": "Ignited Spirit WIT",
+        "englishDescription": "Burn bright with team spirit, slightly increasing strategic navigation in proportion to the total Wit of racing team members early-race."
+    },
+    "Burning Spirit WIT": {
+        "id": 210051,
+        "englishName": "Burning Spirit WIT",
+        "englishDescription": "Burn bright with team spirit, increasing strategic navigation in proportion to the total Wit of racing team members early-race."
+    },
+    "Hesitant Front Runners": {
+        "id": 200851,
+        "englishName": "Hesitant Front Runners",
+        "englishDescription": "Slightly decrease velocity of front runners late-race."
+    },
+    "Hesitant Pace Chasers": {
+        "id": 200881,
+        "englishName": "Hesitant Pace Chasers",
+        "englishDescription": "Slightly decrease velocity of pace chasers late-race."
+    },
+    "Hesitant Late Surgers": {
+        "id": 200911,
+        "englishName": "Hesitant Late Surgers",
+        "englishDescription": "Slightly decrease velocity of late surgers late-race."
+    },
+    "Hesitant End Closers": {
+        "id": 200941,
+        "englishName": "Hesitant End Closers",
+        "englishDescription": "Slightly decrease velocity of end closers late-race."
+    },
+    "Intimidate": {
+        "id": 201012,
+        "englishName": "Intimidate",
+        "englishDescription": "Moderately intimidate runners behind when positioned toward the front early-race. (Sprint)"
+    },
+    "Speed Eater": {
+        "id": 201082,
+        "englishName": "Speed Eater",
+        "englishDescription": "Slightly steal velocity from runners behind when in the lead mid-race. (Mile)"
+    },
+    "Tether": {
+        "id": 201152,
+        "englishName": "Tether",
+        "englishDescription": "Slightly decrease velocity of runners ahead when positioned toward the back late-race. (Medium)"
+    },
+    "Intense Gaze": {
+        "id": 201512,
+        "englishName": "Intense Gaze",
+        "englishDescription": "Slightly unnerve runners in focus late-race. (End Closer)"
+    },
+    "Greed for Speed": {
+        "id": 201081,
+        "englishName": "Greed for Speed",
+        "englishDescription": "Moderately steal velocity from runners behind when in the lead mid-race. (Mile)"
+    },
+    "Dominator": {
+        "id": 201151,
+        "englishName": "Dominator",
+        "englishDescription": "Decrease velocity of runners ahead when positioned toward the back late-race. (Medium)"
+    },
+    "Petrifying Gaze": {
+        "id": 201511,
+        "englishName": "Petrifying Gaze",
+        "englishDescription": "Unnerve runners in focus late-race. (End Closer)"
+    },
+    "Adored by All": {
+        "id": 201011,
+        "englishName": "Adored by All",
+        "englishDescription": "Intimidate runners behind when positioned toward the front early-race. (Sprint)"
+    },
+    "Opening Gambit": {
+        "id": 201092,
+        "englishName": "Opening Gambit",
+        "englishDescription": "Slightly dull movement for runners ahead when positioned toward the back early-race. (Mile)"
+    },
+    "Restart": {
+        "id": 201302,
+        "englishName": "Restart",
+        "englishDescription": "Slightly startle runners ahead when failing to get a lead early-race. (Front Runner)"
+    },
+    "Battle Formation": {
+        "id": 201091,
+        "englishName": "Battle Formation",
+        "englishDescription": "Dull movement for runners ahead when positioned toward the back early-race. (Mile)"
+    },
+    "Frenzied Front Runners": {
+        "id": 200791,
+        "englishName": "Frenzied Front Runners",
+        "englishDescription": "Increase time needed for front runners to calm down when they become rushed."
+    },
+    "Frenzied Pace Chasers": {
+        "id": 200801,
+        "englishName": "Frenzied Pace Chasers",
+        "englishDescription": "Increase time needed for pace chasers to calm down when they become rushed."
+    },
+    "Frenzied Late Surgers": {
+        "id": 200811,
+        "englishName": "Frenzied Late Surgers",
+        "englishDescription": "Increase time needed for late surgers to calm down when they become rushed."
+    },
+    "Frenzied End Closers": {
+        "id": 200821,
+        "englishName": "Frenzied End Closers",
+        "englishDescription": "Increase time needed for end closers to calm down when they become rushed."
+    },
+    "Trick (Front)": {
+        "id": 200771,
+        "englishName": "Trick (Front)",
+        "englishDescription": "Slightly increase fatigue for rushed runners behind when positioned toward the front mid-race."
+    },
+    "Trick (Rear)": {
+        "id": 200781,
+        "englishName": "Trick (Rear)",
+        "englishDescription": "Slightly increase fatigue for rushed runners ahead when positioned toward the back mid-race."
+    },
+    "Subdued Front Runners": {
+        "id": 200831,
+        "englishName": "Subdued Front Runners",
+        "englishDescription": "Slightly increase fatigue for front runners early-race."
+    },
+    "Flustered Front Runners": {
+        "id": 200841,
+        "englishName": "Flustered Front Runners",
+        "englishDescription": "Slightly increase fatigue for front runners mid-race."
+    },
+    "Subdued Pace Chasers": {
+        "id": 200861,
+        "englishName": "Subdued Pace Chasers",
+        "englishDescription": "Slightly increase fatigue for pace chasers early-race."
+    },
+    "Flustered Pace Chasers": {
+        "id": 200871,
+        "englishName": "Flustered Pace Chasers",
+        "englishDescription": "Slightly increase fatigue for pace chasers mid-race."
+    },
+    "Subdued Late Surgers": {
+        "id": 200891,
+        "englishName": "Subdued Late Surgers",
+        "englishDescription": "Slightly increase fatigue for late surgers early-race."
+    },
+    "Flustered Late Surgers": {
+        "id": 200901,
+        "englishName": "Flustered Late Surgers",
+        "englishDescription": "Slightly increase fatigue for late surgers mid-race."
+    },
+    "Subdued End Closers": {
+        "id": 200921,
+        "englishName": "Subdued End Closers",
+        "englishDescription": "Slightly increase fatigue for end closers early-race."
+    },
+    "Flustered End Closers": {
+        "id": 200931,
+        "englishName": "Flustered End Closers",
+        "englishDescription": "Slightly increase fatigue for end closers mid-race."
+    },
+    "Stop Right There!": {
+        "id": 201022,
+        "englishName": "Stop Right There!",
+        "englishDescription": "Slightly cause panic in runners ahead when positioned toward the back early-race. (Sprint)"
+    },
+    "Murmur": {
+        "id": 201162,
+        "englishName": "Murmur",
+        "englishDescription": "Slightly disturb runners directly ahead mid-race. (Medium)"
+    },
+    "Stamina Eater": {
+        "id": 201222,
+        "englishName": "Stamina Eater",
+        "englishDescription": "Very slightly steal endurance from runners ahead when positioned toward the back mid-race. (Long)"
+    },
+    "Sharp Gaze": {
+        "id": 201442,
+        "englishName": "Sharp Gaze",
+        "englishDescription": "Slightly startle other runners late-race. (Late Surger)"
+    },
+    "You've Got No Shot": {
+        "id": 201021,
+        "englishName": "You've Got No Shot",
+        "englishDescription": "Cause panic in runners ahead when positioned toward the back early-race. (Sprint)"
+    },
+    "Mystifying Murmur": {
+        "id": 201161,
+        "englishName": "Mystifying Murmur",
+        "englishDescription": "Disturb runners directly ahead mid-race. (Medium)"
+    },
+    "Stamina Siphon": {
+        "id": 201221,
+        "englishName": "Stamina Siphon",
+        "englishDescription": "Moderately steal endurance from runners ahead when positioned toward the back mid-race. (Long)"
+    },
+    "All-Seeing Eyes": {
+        "id": 201441,
+        "englishName": "All-Seeing Eyes",
+        "englishDescription": "Startle other runners late-race. (Late Surger)"
+    },
+    "Smoke Screen": {
+        "id": 201232,
+        "englishName": "Smoke Screen",
+        "englishDescription": "Moderately narrow the field of view for runners ahead late-race. (Long)"
+    },
+    "Disorient": {
+        "id": 201372,
+        "englishName": "Disorient",
+        "englishDescription": "Slightly narrow the field of view for runners behind when positioned toward the front late-race. (Pace Chaser)"
+    },
+    "Illusionist": {
+        "id": 201231,
+        "englishName": "Illusionist",
+        "englishDescription": "Narrow the field of view for runners ahead late-race. (Long)"
+    },
+    "Dazzling Disorientation": {
+        "id": 201371,
+        "englishName": "Dazzling Disorientation",
+        "englishDescription": "Moderately narrow the field of view for runners behind when positioned toward the front late-race. (Pace Chaser)"
+    }
 }

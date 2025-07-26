@@ -33,7 +33,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val decimalFormat = DecimalFormat("#.###")
 	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	private val tessBaseAPI: TessBaseAPI
-	private val tesseractLanguages = arrayListOf("jpn")
+	private val tesseractLanguages = arrayListOf("eng")
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -93,12 +93,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		val matchFilePath: String = myContext.getExternalFilesDir(null)?.absolutePath + "/temp"
 		updateMatchFilePath(matchFilePath)
 		
-		// Initialize Tesseract with the jpn.traineddata model.
+		// Initialize Tesseract with the traineddata model.
 		initTesseract()
 		tessBaseAPI = TessBaseAPI()
 		
 		// Start up Tesseract.
-		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
+		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "eng")
 		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
 	}
 	
@@ -155,7 +155,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		while (scales.isNotEmpty()) {
-			val newScale: Double = decimalFormat.format(scales.removeFirst()).toDouble()
+			val newScale: Double = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
 				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
@@ -296,7 +296,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Set templateMat at whatever scale it found the very first match for the next while loop.
 		while (!matchCheck && scales.isNotEmpty()) {
-			newScale = decimalFormat.format(scales.removeFirst()).toDouble()
+			newScale = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
 				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
@@ -452,7 +452,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		var templateBitmap: Bitmap?
 		
 		// Get the Bitmap from the template image file inside the specified folder.
-		myContext.assets?.open("images/$templateName.webp").use { inputStream ->
+		myContext.assets?.open("images/$templateName.png").use { inputStream ->
 			// Get the Bitmap from the template image file and then start matching.
 			templateBitmap = BitmapFactory.decodeStream(inputStream)
 		}
@@ -683,9 +683,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance")
 		
 		val croppedBitmap: Bitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 75, trainingSelectionLocation.y.toInt() - 25, 120, 50)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() - 65, trainingSelectionLocation.y.toInt() + 23, 130, 50)
 		} else {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 17, 89, 37)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
 		}
 		
 		// Save the cropped image for debugging purposes.
@@ -737,25 +737,25 @@ class ImageUtils(context: Context, private val game: Game) {
 		val numberOfStamina = findAll("stat_stamina_block", region = customRegion).size
 		val numberOfPower = findAll("stat_power_block", region = customRegion).size
 		val numberOfGuts = findAll("stat_guts_block", region = customRegion).size
-		val numberOfIntelligence = findAll("stat_intelligence_block", region = customRegion).size
+		val numberOfWit = findAll("stat_wit_block", region = customRegion).size
 		var totalStatGain = 0
 		
 		// This is assuming Great Mood with +20% stat modifier.
 		when (currentStat) {
 			"Speed" -> {
-				totalStatGain += (numberOfSpeed * 20) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 20) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Stamina" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 20) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 20) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Power" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 20) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 20) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Guts" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 20) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 20) + (numberOfWit * 10) + 10
 			}
-			"Intelligence" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 20) + 10
+			"Wit" -> {
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 20) + 10
 			}
 		}
 		

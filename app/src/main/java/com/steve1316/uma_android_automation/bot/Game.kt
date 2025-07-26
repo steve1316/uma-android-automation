@@ -34,7 +34,7 @@ class Game(val myContext: Context) {
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	// Training
-	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
@@ -229,7 +229,7 @@ class Game(val myContext: Context) {
 	 * @return True if the bot is at the Ending screen. Otherwise false.
 	 */
 	fun checkEndScreen(): Boolean {
-		return if (imageUtils.findImage("end", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
+		return if (imageUtils.findImage("complete_career", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			printToLog("\n[END] Bot has reached the End screen.")
 			true
 		} else {
@@ -666,7 +666,7 @@ class Game(val myContext: Context) {
 			// Confirm the selection and the resultant popup and then wait for the game to load.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
-			afkCheck()
+//			afkCheck()
 			wait(1.0)
 			
 			// Skip the race if possible, otherwise run it manually.
@@ -795,7 +795,7 @@ class Game(val myContext: Context) {
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
-		if (findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)) {
+		if (findAndTapImage("next", tries = 30, region = imageUtils.regionBottomHalf)) {
 			wait(3.0)
 			
 			// Now press the end button to finish the race.
@@ -804,12 +804,12 @@ class Game(val myContext: Context) {
 			if (!isExtra) {
 				// Wait until the popup showing the completion of a Training Goal appears and confirm it.
 				wait(2.0)
-				findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)
+				findAndTapImage("next", tries = 30, region = imageUtils.regionBottomHalf)
 				wait(2.0)
 				
 				// Now confirm the completion of a Training Goal popup.
 				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
-			} else if (findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)) {
+			} else if (findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)) {
 				// Now confirm the completion of a Training Goal popup.
 				wait(2.0)
 				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
@@ -880,8 +880,8 @@ class Game(val myContext: Context) {
 			
 			// Detect what Mood the bot is at.
 			val currentMood: String = when {
-				imageUtils.findImage("mood_above_normal", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
-					"Above Normal"
+				imageUtils.findImage("mood_good", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
+					"Good"
 				}
 				imageUtils.findImage("mood_great", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
 					"Great"
@@ -940,13 +940,14 @@ class Game(val myContext: Context) {
 	fun performMiscChecks(): Boolean {
 		printToLog("\n[INFO] Beginning check for misc cases...")
 		
-		if (afkCheck()) {
-			return true
-		} else if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
+//		if (afkCheck()) {
+//			return true
+//		}
+		if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
 			imageUtils.findImage("recover_mood_date", region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
 			return false
-		} else if (findAndTapImage("race_confirm_result", tries = 1, region = imageUtils.regionBottomHalf)) {
+		} else if (findAndTapImage("next", tries = 1, region = imageUtils.regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
 			wait(2.0)
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
@@ -968,7 +969,7 @@ class Game(val myContext: Context) {
 	fun start(): Boolean {
 		// Set default values for Stat Prioritization if its empty.
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
-			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
 		}
 		
 		// If debug mode is off, then it is necessary to wait a few seconds for the Toast message to disappear from the screen to prevent it obstructing anything beneath it.
