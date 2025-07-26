@@ -48,6 +48,79 @@
         "Body Modification!": [
             "Power +5\nWit +5",
             "Stamina +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Air Groove": {
@@ -111,6 +184,79 @@
         "Smoldering Silently": [
             "Stamina +10",
             "Speed +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Power +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Biwa Hayahide": {
@@ -162,6 +308,203 @@
         "Game Theory": [
             "Wit +10",
             "Power +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Speed +10",
+            "Guts +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ]
+    },
+    "Curren Chan": {
+        "Which Curren Do You Like?": [
+            "Speed +10\nPower +10",
+            "Stamina +10\nGuts +10"
+        ],
+        "How Curren Handles Social Media ♪": [
+            "Speed +20",
+            "Wit +20"
+        ],
+        "Curren's Signature Racewear": [
+            "Speed +10\nStamina +10\n(random) Get Practice Perfect ○ status",
+            "Speed +10\nPower +10\n(random) Get Practice Perfect ○ status"
+        ],
+        "One, Two, Three, Curren Chan!": [
+            "Speed +10",
+            "Wit +10"
+        ],
+        "Ms. Worldwide": [
+            "Power +10",
+            "Speed +10"
+        ],
+        "Thanks for the Lesson ♪": [
+            "Energy -10\nSpeed +20",
+            "Frenzied Late Surgers hint +1"
+        ],
+        "Wanna Eat Together?": [
+            "Energy +10\nSkill points +5",
+            "Randomly either\n----------\nEnergy +30\nSkill points +10\n----------\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Slow Metabolism status"
+        ],
+        "Making Friends": [
+            "Power +10",
+            "Wit +10"
+        ],
+        "Making Connections": [
+            "Guts +10",
+            "Power +10"
+        ],
+        "Universal Cutie": [
+            "Speed +5\nPower +5",
+            "Speed +10",
+            "Speed +5\nWit +5"
+        ],
+        "A Nostalgic Flavor": [
+            "Stamina +10",
+            "Power +10"
+        ],
+        "Rattle, Rattle, Clunk": [
+            "Wit +10",
+            "Stamina +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Speed +10",
+            "Guts +10"
+        ],
+        "New Year's Resolutions": [
+            "Speed +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Daiwa Scarlet": {
@@ -217,6 +560,79 @@
         "How to Spend a Day Off": [
             "Energy +10",
             "Mood +1\nWit +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "El Condor Pasa": {
@@ -268,6 +684,79 @@
         "Flower Language": [
             "Mood +1\nWit +5",
             "Energy +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Power +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Gold Ship": {
@@ -331,6 +820,79 @@
         "After the Takarazuka Kinen: Keyword 2": [
             "All stats +3\nMood +1\nSkill points +45\nThis card bond +4",
             "All stats +3\nMood +1\nSkill points +45\n(random) Get Charming ○ status\n(random) Obtain Gatekept skill\nThis card bond +4"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "New Year's Resolutions": [
+            "Stamina +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Grass Wonder": {
@@ -386,6 +948,79 @@
         "Flower Vase": [
             "Guts +5\nWit +5",
             "Speed +5\nStamina +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Haru Urara": {
@@ -437,6 +1072,79 @@
         "Forgot to Eat!": [
             "Guts +10",
             "Stamina +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Speed +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Guts +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "King Halo": {
@@ -496,6 +1204,79 @@
         "Breaking Curfew is Second-Rate": [
             "Guts +5\nWit +5",
             "Speed +5\nPower +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Guts +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Maruzensky": {
@@ -559,6 +1340,79 @@
         "The Fun Never Stops ♪": [
             "Speed +5\nWit +5",
             "Stamina +5\nPower +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Speed +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Speed +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Matikanefukukitaru": {
@@ -610,6 +1464,79 @@
         "Shrine Visit": [
             "Power +5\nGuts +5",
             "Speed +5\nStamina +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Mayano Top Gun": {
@@ -661,6 +1588,79 @@
         "Wish on a Star": [
             "Wit +10",
             "Speed +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Stamina +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Mejiro McQueen": {
@@ -716,6 +1716,79 @@
         "Three Ramen Bowls' Worth of Temptation": [
             "Skill points +30",
             "Speed +5\nStamina +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Stamina +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ],
         "Resolve and Duty": [
             "Speed +10\nWit +10",
@@ -779,6 +1852,79 @@
         "The Little Fans of the Umadol": [
             "Power +10",
             "Wit +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Power +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Mihono Bourbon": {
@@ -834,6 +1980,79 @@
         "Operation: Festival Fun": [
             "Power +10",
             "Stamina +5\nGuts +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Skill points +20",
+            "Stamina +10"
+        ],
+        "New Year's Resolutions": [
+            "Power +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Nice Nature": {
@@ -885,6 +2104,79 @@
         "Let's Watch the Fish": [
             "Guts +10",
             "Speed +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Speed +10",
+            "Guts +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Oguri Cap": {
@@ -940,6 +2232,79 @@
         "High-Level Rival": [
             "Speed +5\nStamina +5",
             "Power +5\nWit +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Power +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Rice Shower": {
@@ -991,6 +2356,79 @@
         "A Page about Sunsets": [
             "Power +5\nGuts +5",
             "Stamina +5\nWit +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Guts +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Sakura Bakushin O": {
@@ -1042,6 +2480,79 @@
         "The Speed King": [
             "Power +5\nWit +5",
             "Stamina +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Speed +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Silence Suzuka": {
@@ -1093,6 +2604,79 @@
         "Are They Compatible?": [
             "Power +5\nGuts +5",
             "Stamina +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Wit +10",
+            "Guts +10"
+        ],
+        "New Year's Resolutions": [
+            "Speed +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Special Week": {
@@ -1144,6 +2728,79 @@
         "Research Fanatic": [
             "Tokyo Racecourse ○ hint +1",
             "Nakayama Racecourse ○ hint +1"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Stamina +10"
+        ],
+        "New Year's Resolutions": [
+            "Stamina +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Super Creek": {
@@ -1199,6 +2856,79 @@
         "Stargazing is Better Together": [
             "Power +5\nGuts +5",
             "Stamina +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Stamina +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Symboli Rudolf": {
@@ -1262,6 +2992,79 @@
         "The Emperor's Path": [
             "Wit +10",
             "Power +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Wit +10",
+            "Power +10"
+        ],
+        "New Year's Resolutions": [
+            "Wit +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Taiki Shuttle": {
@@ -1321,6 +3124,79 @@
         "Going Home Together": [
             "Mood +1\nSpeed +5",
             "Mood +1\nStamina +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Power +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Speed +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "TM Opera O": {
@@ -1372,6 +3248,79 @@
         "Evening Opera O Theater": [
             "Power +10",
             "Energy +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Speed +10"
+        ],
+        "New Year's Resolutions": [
+            "Power +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Tokai Teio": {
@@ -1431,6 +3380,79 @@
         "Punny Prez": [
             "Stamina +5\nPower +5",
             "Speed +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Stamina +10",
+            "Power +10"
+        ],
+        "New Year's Resolutions": [
+            "Guts +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ],
         "Good Luck Charm": [
             "Stamina +20",
@@ -1494,6 +3516,79 @@
         "Sugar and Spice": [
             "Energy +5/+10",
             "Power +10"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Stamina +10"
+        ],
+        "New Year's Resolutions": [
+            "Speed +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     },
     "Winning Ticket": {
@@ -1545,6 +3640,79 @@
         "Big Girls Cry Too": [
             "Guts +5\nSkill points +15",
             "Mood +1\nPower +5"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Dance Lesson": [
+            "Guts +10",
+            "Wit +10"
+        ],
+        "New Year's Resolutions": [
+            "Guts +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nEnergy -10/-20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ],
+        "G1 (1st)": [
+            "1 random stat +10\nSkill points +45\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +10\nSkill points +45\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (2nd-5th)": [
+            "1 random stat +8\nSkill points +45\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +45\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G1 (6th or worse)": [
+            "1 random stat +4\nSkill points +25\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +4\nSkill points +25\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (1st)": [
+            "1 random stat +8\nSkill points +35\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +8\nSkill points +35\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (2nd-5th)": [
+            "1 random stat +5\nSkill points +35\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +35\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "G2/G3 (6th or worse)": [
+            "1 random stat +3\nSkill points +20\nEnergy -25\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +20\nEnergy -15/-35\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (1st)": [
+            "1 random stat +5\nSkill points +30\nEnergy -15\n(random) Hint for a skill related to the race",
+            "1 random stat +5\nSkill points +30\nEnergy -5/-20\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (2nd-5th)": [
+            "1 random stat +3\nSkill points +30\nEnergy -20\n(random) Hint for a skill related to the race",
+            "1 random stat +3\nSkill points +30\nEnergy -10/-30\n(random) Hint for a skill related to the race"
+        ],
+        "OP/Pre-OP (6th or worse)": [
+            "Skill points +10\nEnergy -25\n(random) Hint for a skill related to the race",
+            "Skill points +10\nEnergy -15/-35\n(random) Hint for a skill related to the race"
         ]
     }
 }
