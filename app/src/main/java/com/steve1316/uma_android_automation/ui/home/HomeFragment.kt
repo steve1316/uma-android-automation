@@ -385,7 +385,7 @@ class HomeFragment : Fragment() {
             To enable Accessibility Service:
             
             1. Tap "Go to App Info".
-            2. Tap the 3-dot menu in the top right.
+            2. Tap the 3-dot menu in the top right. If not available, you can skip to step 4.
             3. Tap "Allow restricted settings".
             4. Return to Accessibility Settings and enable the service.
             """.trimIndent()
