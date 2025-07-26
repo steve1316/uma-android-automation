@@ -683,9 +683,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance")
 		
 		val croppedBitmap: Bitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 75, trainingSelectionLocation.y.toInt() - 25, 120, 50)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() - 65, trainingSelectionLocation.y.toInt() + 23, 130, 50)
 		} else {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 17, 89, 37)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
 		}
 		
 		// Save the cropped image for debugging purposes.
