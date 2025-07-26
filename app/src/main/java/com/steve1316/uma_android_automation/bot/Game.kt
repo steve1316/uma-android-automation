@@ -229,7 +229,7 @@ class Game(val myContext: Context) {
 	 * @return True if the bot is at the Ending screen. Otherwise false.
 	 */
 	fun checkEndScreen(): Boolean {
-		return if (imageUtils.findImage("end", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
+		return if (imageUtils.findImage("complete_career", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			printToLog("\n[END] Bot has reached the End screen.")
 			true
 		} else {
@@ -795,7 +795,7 @@ class Game(val myContext: Context) {
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
-		if (findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)) {
+		if (findAndTapImage("next", tries = 30, region = imageUtils.regionBottomHalf)) {
 			wait(3.0)
 			
 			// Now press the end button to finish the race.
@@ -804,12 +804,12 @@ class Game(val myContext: Context) {
 			if (!isExtra) {
 				// Wait until the popup showing the completion of a Training Goal appears and confirm it.
 				wait(2.0)
-				findAndTapImage("race_confirm_result", tries = 30, region = imageUtils.regionBottomHalf)
+				findAndTapImage("next", tries = 30, region = imageUtils.regionBottomHalf)
 				wait(2.0)
 				
 				// Now confirm the completion of a Training Goal popup.
 				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
-			} else if (findAndTapImage("race_confirm_result", tries = 10, region = imageUtils.regionBottomHalf)) {
+			} else if (findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)) {
 				// Now confirm the completion of a Training Goal popup.
 				wait(2.0)
 				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
@@ -947,7 +947,7 @@ class Game(val myContext: Context) {
 			imageUtils.findImage("recover_mood_date", region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
 			return false
-		} else if (findAndTapImage("race_confirm_result", tries = 1, region = imageUtils.regionBottomHalf)) {
+		} else if (findAndTapImage("next", tries = 1, region = imageUtils.regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
 			wait(2.0)
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
