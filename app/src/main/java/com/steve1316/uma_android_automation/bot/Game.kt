@@ -666,7 +666,7 @@ class Game(val myContext: Context) {
 			// Confirm the selection and the resultant popup and then wait for the game to load.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
-			afkCheck()
+//			afkCheck()
 			wait(1.0)
 			
 			// Skip the race if possible, otherwise run it manually.
@@ -940,9 +940,10 @@ class Game(val myContext: Context) {
 	fun performMiscChecks(): Boolean {
 		printToLog("\n[INFO] Beginning check for misc cases...")
 		
-		if (afkCheck()) {
-			return true
-		} else if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
+//		if (afkCheck()) {
+//			return true
+//		}
+		if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
 			imageUtils.findImage("recover_mood_date", region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
 			return false
