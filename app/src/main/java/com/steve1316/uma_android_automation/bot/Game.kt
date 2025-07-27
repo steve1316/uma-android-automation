@@ -738,11 +738,11 @@ class Game(val myContext: Context) {
 			wait(3.0)
 			
 			// Now tap on the screen to get to the next screen.
-			gestureUtils.tap(500.0, 1000.0, "ok")
+			gestureUtils.tap(350.0, 750.0, "ok")
 			wait(0.3)
 			gestureUtils.tap(500.0, 1000.0, "ok")
 			wait(0.3)
-			gestureUtils.tap(500.0, 1000.0, "ok")
+			gestureUtils.tap(750.0, 1250.0, "ok")
 			wait(2.0)
 			
 			// Check if the race needed to be retried.
