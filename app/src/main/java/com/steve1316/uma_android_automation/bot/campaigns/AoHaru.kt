@@ -1,10 +1,11 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import org.opencv.core.Point
 
-class AoHaru(game: Game) : Normal(game) {
+class AoHaru(game: Game) : Campaign(game) {
 	private val aoHaruTag: String = "[${MainActivity.loggerTag}]AoHaru"
 	private var tutorialChances = 3
 	private var aoHaruRaceFirstTime: Boolean = true

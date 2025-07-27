@@ -1,16 +1,15 @@
-package com.steve1316.uma_android_automation.bot.campaigns
+package com.steve1316.uma_android_automation.bot
 
 import android.util.Log
 import com.steve1316.uma_android_automation.MainActivity
-import com.steve1316.uma_android_automation.bot.Game
 
 /**
  * Base campaign class that contains all shared logic for campaign automation.
  * Campaign-specific logic should be implemented in subclasses by overriding the appropriate methods.
  * By default, URA Finale is handled by this base class.
  */
-open class Normal(val game: Game) {
-	protected val tag: String = "[${MainActivity.loggerTag}]Normal"
+open class Campaign(val game: Game) {
+	protected val tag: String = "[${MainActivity.Companion.loggerTag}]Normal"
 
 	/**
 	 * Campaign-specific training event handling.

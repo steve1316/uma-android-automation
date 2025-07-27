@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.campaigns.AoHaru
-import com.steve1316.uma_android_automation.bot.campaigns.Normal
+import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
@@ -1004,8 +1004,8 @@ class Game(val myContext: Context) {
 			val aoHaruCampaign = AoHaru(this)
 			aoHaruCampaign.start()
 		} else {
-			val normalCampaign = Normal(this)
-			normalCampaign.start()
+			val uraFinaleCampaign = Campaign(this)
+			uraFinaleCampaign.start()
 		}
 		
 		val endTime: Long = System.currentTimeMillis()
