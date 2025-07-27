@@ -214,13 +214,11 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 			
 			if (matchCheck) {
-				if (debugMode) {
+				if (debugMode && matchFilePath != "") {
 					// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for debugging purposes to see if this
 					// algorithm found the match accurately or not.
-					if (matchFilePath != "") {
-						Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
-						Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
-					}
+					Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
+					Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
 				}
 				
 				// Center the coordinates so that any tap gesture would be directed at the center of that match location instead of the default
