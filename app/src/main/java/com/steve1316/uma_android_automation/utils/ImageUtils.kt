@@ -724,11 +724,14 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance")
+		if (trainingSelectionLocation == null) {
+			return -1
+		}
 		
 		val croppedBitmap: Bitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() - 65, trainingSelectionLocation.y.toInt() + 23, 130, 50)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 65, trainingSelectionLocation.y.toInt() + 23, 130, 50)
 		} else {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
 		}
 		
 		// Save the cropped image for debugging purposes.

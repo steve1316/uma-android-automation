@@ -344,6 +344,10 @@ class Game(val myContext: Context) {
 			}
 			
 			var failureChance: Int = imageUtils.findTrainingFailureChance()
+			if (failureChance == -1) {
+				printToLog("[WARNING] Skipping training due to not being able to confirm whether or not the bot is at the Training screen.")
+				return
+			}
 			
 			if (failureChance <= maximumFailureChance) {
 				printToLog("[TRAINING] $failureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases...")
