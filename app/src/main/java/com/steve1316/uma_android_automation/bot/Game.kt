@@ -605,7 +605,7 @@ class Game(val myContext: Context) {
 			// If there is a popup warning about repeating races 3+ times, stop the process and do something else other than racing.
 			if (imageUtils.findImage("race_repeat_warning").first != null) {
 				raceRepeatWarningCheck = true
-				printToLog("\n[RACE] Closing popup of repeat warning and setting flag to prevent racing for now.")
+				printToLog("\n[RACE] Closing popup warning of doing more than 3+ races and setting flag to prevent racing for now.")
 				findAndTapImage("cancel", region = imageUtils.regionBottomHalf)
 				return false
 			}
