@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="campaigns">
-        <item>Normal</item>
+        <item>URA Finale</item>
 <!--        <item>Ao Haru</item>-->
     </string-array>
 
