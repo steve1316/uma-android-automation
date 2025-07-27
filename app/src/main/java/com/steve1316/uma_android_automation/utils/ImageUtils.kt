@@ -22,6 +22,7 @@ import java.io.IOException
 import java.lang.Integer.max
 import java.text.DecimalFormat
 import androidx.core.graphics.scale
+import androidx.core.graphics.get
 
 
 /**
@@ -599,7 +600,47 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return matchLocations
 	}
-	
+
+	/**
+	 * Check if the color at the specified coordinates matches the given RGB value.
+	 *
+	 * @param x X coordinate to check.
+	 * @param y Y coordinate to check.
+	 * @param rgb Expected RGB values as red, blue and green (0-255).
+	 * @param tolerance Tolerance for color matching (0-255). Defaults to 0 for exact match.
+	 * @return True if the color at the coordinates matches the expected RGB values within tolerance, false otherwise.
+	 */
+	fun checkColorAtCoordinates(x: Int, y: Int, rgb: IntArray, tolerance: Int = 0): Boolean {
+		val sourceBitmap = getSourceBitmap()
+
+		// Check if coordinates are within bounds.
+		if (x < 0 || y < 0 || x >= sourceBitmap.width || y >= sourceBitmap.height) {
+			if (debugMode) {
+				game.printToLog("[WARNING] Coordinates ($x, $y) are out of bounds for bitmap size ${sourceBitmap.width}x${sourceBitmap.height}", tag = tag)
+			}
+			return false
+		}
+
+		// Get the pixel color at the specified coordinates.
+		val pixel = sourceBitmap[x, y]
+
+		// Extract RGB values from the pixel.
+		val actualRed = android.graphics.Color.red(pixel)
+		val actualGreen = android.graphics.Color.green(pixel)
+		val actualBlue = android.graphics.Color.blue(pixel)
+
+		// Check if the colors match within the specified tolerance.
+		val redMatch = kotlin.math.abs(actualRed - rgb[0]) <= tolerance
+		val greenMatch = kotlin.math.abs(actualGreen - rgb[1]) <= tolerance
+		val blueMatch = kotlin.math.abs(actualBlue - rgb[2]) <= tolerance
+
+		if (debugMode) {
+			game.printToLog("[DEBUG] Color check at ($x, $y): Expected RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]}), Actual RGB($actualRed, $actualGreen, $actualBlue), Match: ${redMatch && greenMatch && blueMatch}", tag = tag)
+		}
+
+		return redMatch && greenMatch && blueMatch
+	}
+
 	/**
 	 * Perform OCR text detection using Tesseract along with some image manipulation via thresholding to make the cropped screenshot black and white using OpenCV.
 	 *
