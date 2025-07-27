@@ -222,7 +222,6 @@ class HomeFragment : Fragment() {
 		// Update the TextView here based on the information of the SharedPreferences.
 		
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
-		settingsStatusTextView.setTextColor(Color.WHITE)
 		settingsStatusTextView.text =
 				"Campaign Selected: $campaignString Campaign\n\n" +
 				"---------- Training Event Options ----------\n" +
