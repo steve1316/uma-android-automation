@@ -80,7 +80,8 @@ class NotificationUtils {
 				val stopIntent = Intent(context, StopServiceReceiver::class.java)
 				
 				// Create a PendingIntent in order to add a action button to stop the MediaProjection service in the notification.
-				val stopPendingIntent: PendingIntent = PendingIntent.getBroadcast(context, System.currentTimeMillis().toInt(), stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+				val stopPendingIntent: PendingIntent = PendingIntent.getBroadcast(context, System.currentTimeMillis().toInt(), stopIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 				
 				return NotificationCompat.Builder(context, CHANNEL_ID).apply {
 					setSmallIcon(R.drawable.ic_baseline_control_camera_24)
@@ -131,7 +132,8 @@ class NotificationUtils {
 				val stopIntent = Intent(context, StopServiceReceiver::class.java)
 				
 				// Create a PendingIntent in order to add a action button to stop the MediaProjection service in the notification.
-				val stopPendingIntent: PendingIntent = PendingIntent.getBroadcast(context, System.currentTimeMillis().toInt(), stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+				val stopPendingIntent: PendingIntent = PendingIntent.getBroadcast(context, System.currentTimeMillis().toInt(), stopIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 				
 				NotificationCompat.Builder(context, CHANNEL_ID).apply {
 					setSmallIcon(R.drawable.ic_baseline_control_camera_24)

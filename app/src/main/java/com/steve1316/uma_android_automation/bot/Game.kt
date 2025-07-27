@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -77,7 +78,8 @@ class Game(val myContext: Context) {
 	 *
 	 * @return String of HH:MM:SS format of the elapsed time.
 	 */
-	private fun printTime(): String {
+	@SuppressLint("DefaultLocale")
+    private fun printTime(): String {
 		val elapsedMillis: Long = System.currentTimeMillis() - startTime
 		
 		return String.format(
@@ -461,10 +463,7 @@ class Game(val myContext: Context) {
 		
 		if (eventRewards.isNotEmpty() && eventRewards[0] != "") {
 			// Initialize the List.
-			val selectionWeight = mutableListOf<Int>()
-			for (i in 1..(eventRewards.size)) {
-				selectionWeight.add(0)
-			}
+			val selectionWeight = List(eventRewards.size) { 0 }.toMutableList()
 			
 			// Sum up the stat gains with additional weight applied to stats that are prioritized.
 			eventRewards.forEach { reward ->
@@ -481,7 +480,7 @@ class Game(val myContext: Context) {
 								selectionWeight[optionSelected] += try {
 									statCheck = true
 									formattedLine.toInt() * 4
-								} catch (e: NumberFormatException) {
+								} catch (_: NumberFormatException) {
 									statCheck = false
 									0
 								}
@@ -492,14 +491,14 @@ class Game(val myContext: Context) {
 						if (!statCheck) {
 							selectionWeight[optionSelected] += try {
 								formattedLine.toInt() * 2
-							} catch (e: NumberFormatException) {
+							} catch (_: NumberFormatException) {
 								0
 							}
 						}
 					} else if (line.contains("Energy")) {
 						selectionWeight[optionSelected] += try {
 							formattedLine.toInt()
-						} catch (e: NumberFormatException) {
+						} catch (_: NumberFormatException) {
 							10
 						}
 					} else if (line.lowercase().contains("event chain ended")) {
@@ -548,7 +547,7 @@ class Game(val myContext: Context) {
 			// Account for the situation where it could go out of bounds if the detected event options is incorrect and gives too many results.
 			try {
 				trainingOptionLocations[optionSelected]
-			} catch (e: IndexOutOfBoundsException) {
+			} catch (_: IndexOutOfBoundsException) {
 				// Default to the first option.
 				trainingOptionLocations[0]
 			}
@@ -690,7 +689,6 @@ class Game(val myContext: Context) {
 			// Confirm the selection and the resultant popup and then wait for the game to load.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
-//			afkCheck()
 			wait(1.0)
 			
 			// Skip the race if possible, otherwise run it manually.
@@ -957,25 +955,13 @@ class Game(val myContext: Context) {
 	}
 	
 	/**
-	 * Handle the case where the bot took too long to do anything and the AFK check came up.
-	 *
-	 * @return True if the AFK check was completed. Otherwise false if no AFK check is encountered.
-	 */
-	private fun afkCheck(): Boolean {
-		return findAndTapImage("afk_check", tries = 1, region = imageUtils.regionMiddle)
-	}
-	
-	/**
 	 * Perform misc checks to potentially fix instances where the bot is stuck.
 	 *
 	 * @return True if the checks passed. Otherwise false if the bot encountered a warning popup and needs to exit.
 	 */
 	fun performMiscChecks(): Boolean {
 		printToLog("\n[INFO] Beginning check for misc cases...")
-		
-//		if (afkCheck()) {
-//			return true
-//		}
+
 		if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
 			imageUtils.findImage("recover_mood_date", tries = 1, region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")

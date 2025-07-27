@@ -160,7 +160,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			val newScale: Double = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
-				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
+                templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
 			} else {
 				templateBitmap
 			}
@@ -299,7 +299,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			newScale = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
-				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
+                templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
 			} else {
 				templateBitmap
 			}
@@ -740,11 +740,11 @@ class ImageUtils(context: Context, private val game: Game) {
 		// Start the asynchronous operation of text detection.
 		var result = 0
 		textRecognizer.process(inputImage).addOnSuccessListener {
-			if (it.textBlocks.size != 0) {
+			if (it.textBlocks.isNotEmpty()) {
 				for (block in it.textBlocks) {
 					result = try {
 						block.text.replace("%", "").trim().toInt()
-					} catch (e: NumberFormatException) {
+					} catch (_: NumberFormatException) {
 						0
 					}
 				}
@@ -846,12 +846,12 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			// Count up all of the total stat gains for this training selection.
 			textRecognizer.process(inputImage).addOnSuccessListener {
-				if (it.textBlocks.size != 0) {
+				if (it.textBlocks.isNotEmpty()) {
 					for (block in it.textBlocks) {
 						try {
 							Log.d(tag, "Detected Day Number for Extra Race: ${block.text}")
 							result = block.text.toInt()
-						} catch (e: NumberFormatException) {
+						} catch (_: NumberFormatException) {
 						}
 					}
 				}
@@ -941,7 +941,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			try {
 				Log.d(tag, "Converting $result to integer for fans")
 				result.toInt()
-			} catch (e: NumberFormatException) {
+			} catch (_: NumberFormatException) {
 				-1
 			}
 		} else {
@@ -1003,7 +1003,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			try {
 				Log.d(tag, "Converting $result to integer for skill points")
 				result.toInt()
-			} catch (e: NumberFormatException) {
+			} catch (_: NumberFormatException) {
 				-1
 			}
 		} else {

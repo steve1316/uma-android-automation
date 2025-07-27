@@ -31,6 +31,7 @@ import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import java.io.StringReader
+import androidx.core.net.toUri
 
 class HomeFragment : Fragment() {
 	private val logTag: String = "[${MainActivity.loggerTag}]HomeFragment"
@@ -251,8 +252,8 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Force the user to go through the Settings in order to set this required setting.
-		startButton.isEnabled = (campaignString != "Please select one in the Settings" && (characterString != "Please select one in the Settings" || characterString == "All Characters Selected"))
-		
+		startButton.isEnabled = campaignString != "Please select one in the Settings" && characterString != "Please select one in the Settings"
+
 		return homeFragmentView
 	}
 	
@@ -291,8 +292,9 @@ class HomeFragment : Fragment() {
 			.setUpdateXML("https://raw.githubusercontent.com/steve1316/uma-android-automation/master/app/update.xml")
 			.start()
 	}
-	
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+	@Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
 			// Start up the MediaProjection service after the user accepts the onscreen prompt.
 			myContext.startService(data?.let { MediaProjectionService.getStartIntent(myContext, resultCode, data) })
@@ -343,7 +345,7 @@ class HomeFragment : Fragment() {
 				setMessage(R.string.overlay_disabled_message)
 				setPositiveButton(R.string.go_to_settings) { _, _ ->
 					// Send the user to the Overlay Settings.
-					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireContext().packageName}"))
+					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${requireContext().packageName}".toUri())
 					startActivity(intent)
 				}
 				setNegativeButton(android.R.string.cancel, null)
@@ -392,7 +394,7 @@ class HomeFragment : Fragment() {
 			)
 			setPositiveButton("Go to App Info") { _, _ ->
 				val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-					data = Uri.parse("package:${myContext.packageName}")
+					data = "package:${myContext.packageName}".toUri()
 				}
 				startActivity(intent)
 			}

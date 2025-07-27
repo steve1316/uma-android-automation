@@ -14,6 +14,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import org.opencv.android.OpenCVLoader
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var appBarConfiguration: AppBarConfiguration
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 		// Set the Link to the "Go to GitHub" button.
 		val githubTextView: TextView = findViewById(R.id.github_textView)
 		githubTextView.setOnClickListener {
-			val newIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/steve1316/uma-android-automation"))
+			val newIntent = Intent(Intent.ACTION_VIEW, "https://github.com/steve1316/uma-android-automation".toUri())
 			startActivity(newIntent)
 		}
 		
