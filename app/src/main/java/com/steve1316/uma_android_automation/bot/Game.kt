@@ -739,15 +739,10 @@ class Game(val myContext: Context) {
 			// Press the skip button and then wait for your result of the race to show.
 			wait(3.0)
 			findAndTapImage("race_skip", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(3.0)
-			
-			// Now tap on the screen to get to the next screen.
-			gestureUtils.tap(350.0, 750.0, "ok")
-			wait(0.3)
-			gestureUtils.tap(500.0, 1000.0, "ok")
-			wait(0.3)
-			gestureUtils.tap(750.0, 1250.0, "ok")
-			wait(2.0)
+			wait(1.0)
+
+			// Now tap on the screen to get past the Race Result screen.
+			gestureUtils.tap(350.0, 750.0, "ok", taps = 3)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf)) {
@@ -813,14 +808,20 @@ class Game(val myContext: Context) {
 	 * @param isExtra Flag to determine the following actions to finish up this mandatory or extra race.
 	 */
 	private fun finishRace(resultCheck: Boolean, isExtra: Boolean = false) {
+		printToLog("[RACE] Now performing cleanup and finishing the race.")
 		if (!resultCheck) {
 			throw IllegalStateException("Bot has run out of retry attempts for racing. Stopping the bot now...")
 		}
+
+		gestureUtils.tap(450.0, 850.0, "ok", taps = 3)
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
 		if (findAndTapImage("next", tries = 30, region = imageUtils.regionBottomHalf)) {
-			wait(3.0)
+			wait(0.5)
+
+			// Now tap on the screen to get to the next screen.
+			gestureUtils.tap(350.0, 750.0, "ok", taps = 3)
 			
 			// Now press the end button to finish the race.
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
