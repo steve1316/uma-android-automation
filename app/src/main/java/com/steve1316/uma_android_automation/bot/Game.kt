@@ -243,15 +243,21 @@ class Game(val myContext: Context) {
 	 * @return True if the bot has a injury. Otherwise false.
 	 */
 	fun checkInjury(): Boolean {
-		return if (findAndTapImage("recover_injury", tries = 1, region = imageUtils.regionBottomHalf)) {
+		val recoverInjuryLocation = imageUtils.findImage("recover_injury", tries = 1, region = imageUtils.regionBottomHalf).first
+		return if (recoverInjuryLocation != null && imageUtils.checkColorAtCoordinates(
+				recoverInjuryLocation.x.toInt(),
+				recoverInjuryLocation.y.toInt() + 15,
+				intArrayOf(151, 105, 243),
+				10
+		)) {
 			if (imageUtils.confirmLocation("recover_injury", tries = 1, region = imageUtils.regionMiddle)) {
 				printToLog("\n[INFO] Injury detected and attempted to heal.")
 				true
 			} else {
-				printToLog("\n[INFO] No injury detected.")
 				false
 			}
 		} else {
+			printToLog("\n[INFO] No injury detected.")
 			false
 		}
 	}
