@@ -892,11 +892,13 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		return if (predictionCheck) {
+			if (debugMode) game.printToLog("[DEBUG] This race has double predictions. Now checking how many fans this race gives.", tag = tag)
+
 			// Crop the source screenshot to show only the fans.
 			val croppedBitmap2 = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (534 * 1.40).toInt(), extraRaceLocation.y.toInt() - (75 * 1.34).toInt(), 221, 40)
+				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (625 * 1.40).toInt(), extraRaceLocation.y.toInt() - (75 * 1.34).toInt(), 320, 45)
 			} else {
-				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 150, 30)
+				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 625, extraRaceLocation.y.toInt() - 75, 250, 35)
 			}
 			
 			// Make the cropped screenshot grayscale.
