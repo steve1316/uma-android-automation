@@ -605,7 +605,7 @@ class Game(val myContext: Context) {
 				manualRace()
 			}
 			
-			finishRace(resultCheck, isExtra = true)
+			finishRace(resultCheck)
 			
 			printToLog("[RACE] Racing process for Mandatory Race is completed.")
 			return true
