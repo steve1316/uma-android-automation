@@ -217,7 +217,7 @@ class Game(val myContext: Context) {
 	}
 	
 	/**
-	 * Checks if the day number is odd to be eligible to run an extra race.
+	 * Checks if the day number is odd to be eligible to run an extra race, excluding Summer where extra racing is not allowed.
 	 *
 	 * @return True if the day number is odd. Otherwise false.
 	 */
@@ -227,7 +227,8 @@ class Game(val myContext: Context) {
 		
 		return enableFarmingFans && dayNumber % daysToRunExtraRaces == 0 && !raceRepeatWarningCheck &&
 				imageUtils.findImage("race_select_extra_locked_uma_finals", tries = 1, region = imageUtils.regionBottomHalf).first == null &&
-				imageUtils.findImage("race_select_extra_locked", tries = 1, region = imageUtils.regionBottomHalf).first == null
+				imageUtils.findImage("race_select_extra_locked", tries = 1, region = imageUtils.regionBottomHalf).first == null &&
+				imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf).first == null
 	}
 	
 	/**
