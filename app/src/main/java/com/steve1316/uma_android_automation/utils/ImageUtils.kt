@@ -733,12 +733,20 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
 		}
+
+		val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
 		
 		// Save the cropped image for debugging purposes.
 		val tempMat = Mat()
-		Utils.bitmapToMat(croppedBitmap, tempMat)
+		Utils.bitmapToMat(resizedBitmap, tempMat)
 		Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2GRAY)
-		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance.png", tempMat)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterCrop.png", tempMat)
+
+		// Thresh the grayscale cropped image to make it black and white.
+		val bwImage = Mat()
+		val threshold = sharedPreferences.getInt("threshold", 230)
+		Imgproc.threshold(tempMat, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterThreshold.png", bwImage)
 		
 		// Create a InputImage object for Google's ML OCR.
 		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -840,16 +848,23 @@ class ImageUtils(context: Context, private val game: Game) {
 				}
 			}
 			
-			val resizedBitmap = croppedBitmap.scale(croppedBitmap.width / 2, croppedBitmap.height / 2)
+			val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
 
+			// Make the cropped screenshot grayscale.
 			val cvImage = Mat()
 			Utils.bitmapToMat(resizedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace_afterCrop.png", cvImage)
+
+			// Thresh the grayscale cropped image to make it black and white.
+			val bwImage = Mat()
+			val threshold = sharedPreferences.getInt("threshold", 230)
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace_afterThreshold.png", bwImage)
 			
 			// Create a InputImage object for Google's ML OCR.
 			val inputImage: InputImage = InputImage.fromBitmap(resizedBitmap, 0)
-			
+
 			// Count up all of the total stat gains for this training selection.
 			textRecognizer.process(inputImage).addOnSuccessListener {
 				if (it.textBlocks.isNotEmpty()) {
@@ -864,7 +879,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			}.addOnFailureListener {
 				game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
 			}
-			
+
 			// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
 			game.wait(0.25)
 		}
@@ -915,7 +930,14 @@ class ImageUtils(context: Context, private val game: Game) {
 			// Convert the Mat directly to Bitmap and then pass it to the text reader.
 			val resultBitmap = createBitmap(cvImage.cols(), cvImage.rows())
 			Utils.matToBitmap(cvImage, resultBitmap)
-			tessBaseAPI.setImage(resultBitmap)
+
+			// Thresh the grayscale cropped image to make it black and white.
+			val bwImage = Mat()
+			val threshold = sharedPreferences.getInt("threshold", 230)
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterThreshold.png", bwImage)
+
+			tessBaseAPI.setImage(croppedBitmap2)
 			
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
@@ -985,11 +1007,18 @@ class ImageUtils(context: Context, private val game: Game) {
 				val new = Pair(skillPointLocation.x.toInt() - rel(70), skillPointLocation.y.toInt() + rel(28))
 				Bitmap.createBitmap(sourceBitmap!!, new.first, new.second, rel(135), rel(70))
 			}
-			
+
+			// Make the cropped screenshot grayscale.
 			val cvImage = Mat()
 			Utils.bitmapToMat(croppedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints_afterCrop.png", cvImage)
+
+			// Thresh the grayscale cropped image to make it black and white.
+			val bwImage = Mat()
+			val threshold = sharedPreferences.getInt("threshold", 230)
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints_afterThreshold.png", bwImage)
 			
 			tessBaseAPI.setImage(croppedBitmap)
 			
