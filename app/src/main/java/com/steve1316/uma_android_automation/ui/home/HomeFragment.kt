@@ -87,7 +87,7 @@ class HomeFragment : Fragment() {
 		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
 		
 		// Training Event Settings page
-		val character = sharedPreferences.getString("character", "Please select one in the Settings")!!
+		val character = sharedPreferences.getString("character", "Please select one in the Training Event Settings")!!
 		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
 		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", true)
@@ -128,9 +128,9 @@ class HomeFragment : Fragment() {
 		// Construct the Stat Prioritisation string.
 		var count = 1
 		var statPrioritizationString: String = if (defaultCheck) {
-			"Using Default Stat Prioritization:"
+			"📊 Using Default Stat Prioritization:"
 		} else {
-			"Stat Prioritization:"
+			"📊 Stat Prioritization:"
 		}
 		statPrioritization.forEach { stat ->
 			statPrioritizationString += "\n$count. $stat "
@@ -141,81 +141,91 @@ class HomeFragment : Fragment() {
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Now construct the strings to print them.
 		
-		val campaignString: String = if (campaign != "") {
-			campaign
-		} else {
-			"Please select one in the Settings"
-		}
-		
-		val characterString: String = if (selectAllCharacters) {
-			"All Characters Selected"
-		} else if (character == "" || character == "Please select one in the Settings") {
-			"Please select one in the Settings"
-		} else {
-			character
-		}
-		
-		val supportCardListString: String = if (selectAllSupportCards) {
-			"All Support Cards Selected"
-		} else if (supportList.isEmpty() || supportList[0] == "") {
-			"None Selected"
-		} else {
-			supportList.toString()
-		}
-		
-		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
-			"No Trainings blacklisted"
-		} else {
-			trainingBlacklist.joinToString(", ")
-		}
-		
 		val enableAutomaticRetryString: String = if (enableAutomaticRetry) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val skillPointString: String = if (enableSkillPointCheck) {
-			"Skill Point Check: Stop on $skillPointCheck Skill Points or more"
+			"✅ Stop on $skillPointCheck Skill Points or more"
 		} else {
-			"Skill Point Check: Disabled"
+			"❌"
 		}
 		
 		val enableFarmingFansString: String = if (enableFarmingFans) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val daysToRunExtraRacesString: String = if (enableFarmingFans) {
-			daysToRunExtraRaces.toString()
+			"📅 $daysToRunExtraRaces days"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val enablePopupCheckString: String = if (enablePopupCheck) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val enableStopOnMandatoryRaceString: String = if (enableStopOnMandatoryRace) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val debugModeString: String = if (debugMode) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val hideComparisonResultsString: String = if (hideComparisonResults) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
+		
+		// Add visual indicators for character and support card selections
+		val characterString: String = if (selectAllCharacters) {
+			"👥 All Characters Selected"
+		} else if (character == "" || character.contains("Please select")) {
+			"⚠️ Please select one in the Training Event Settings"
+		} else {
+			"👤 $character"
+		}
+		
+		val supportCardListString: String = if (selectAllSupportCards) {
+			"🃏 All Support Cards Selected"
+		} else if (supportList.isEmpty() || supportList[0] == "") {
+			"⚠️ None Selected"
+		} else {
+			"🃏 $supportList"
+		}
+		
+		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
+			"✅ No Trainings blacklisted"
+		} else {
+			// Sort the blacklisted trainings for display according to the default order.
+			val defaultTrainingOrder = listOf("Speed", "Stamina", "Power", "Guts", "Wits")
+			val sortedBlacklist = trainingBlacklist.sortedBy { defaultTrainingOrder.indexOf(it) }
+			
+			"🚫 ${sortedBlacklist.joinToString(", ")}"
+		}
+		
+		// Add visual indicator for campaign selection
+		val campaignString: String = if (campaign != "") {
+			"🎯 $campaign"
+		} else {
+			"⚠️ Please select one in the Select Campaign option"
+		}
+		
+		// Add visual indicators for OCR settings.
+		val thresholdString = "🔍 OCR Threshold: $threshold"
+		val confidenceString = "🎯 Minimum OCR Confidence: $confidence"
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +233,7 @@ class HomeFragment : Fragment() {
 		
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.text =
-				"Campaign Selected: $campaignString Campaign\n\n" +
+				"Campaign Selected: $campaignString\n\n" +
 				"---------- Training Event Options ----------\n" +
 				"Character Selected: $characterString\n" +
 				"Support(s) Selected: $supportCardListString\n\n" +
@@ -232,13 +242,13 @@ class HomeFragment : Fragment() {
 				"$statPrioritizationString\n" +
 				"Maximum Failure Chance Allowed: $maximumFailureChance%\n\n" +
 				"---------- Tesseract OCR Optimization ----------\n" +
-				"OCR Threshold: $threshold\n" +
+				"$thresholdString\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
-				"Minimum OCR Confidence: $confidence\n\n" +
+				"$confidenceString\n\n" +
 				"---------- Misc Options ----------\n" +
 				"Prioritize Farming Fans: $enableFarmingFansString\n" +
 				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
-				"$skillPointString\n" +
+				"Skill Point Check: $skillPointString\n" +
 				"Popup Check: $enablePopupCheckString\n" +
 				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n" +
 				"Debug Mode: $debugModeString\n" +
