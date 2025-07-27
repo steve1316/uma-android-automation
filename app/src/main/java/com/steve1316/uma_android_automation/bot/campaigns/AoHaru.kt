@@ -93,6 +93,7 @@ class AoHaru(private val game: Game) {
 				// If the required skill points has been reached, stop the bot.
 				if (game.enableSkillPointCheck && game.imageUtils.determineSkillPoints() >= game.skillPointsRequired) {
 					game.printToLog("\n[END] Bot has acquired the set amount of skill points. Exiting now...", tag = tag)
+					game.notificationMessage = "Bot has acquired the set amount of skill points."
 					break
 				}
 				
@@ -110,6 +111,7 @@ class AoHaru(private val game: Game) {
 					if (!game.handleRaceEvents()) {
 						if (game.detectedMandatoryRaceCheck) {
 							game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = tag)
+							game.notificationMessage = "Stopping bot due to detection of Mandatory Race."
 							break
 						}
 						
@@ -135,6 +137,7 @@ class AoHaru(private val game: Game) {
 				
 				if (game.detectedMandatoryRaceCheck) {
 					game.printToLog("\n[INFO] Stopping bot due to detection of Mandatory Race.", tag = tag)
+					game.notificationMessage = "Stopping bot due to detection of Mandatory Race."
 					break
 				}
 			} else if (game.imageUtils.findImage("race_change_strategy", tries = 1, region = game.imageUtils.regionBottomHalf).first != null) {
@@ -143,6 +146,7 @@ class AoHaru(private val game: Game) {
 			} else if (!BotService.isRunning || game.checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				game.printToLog("\n[END] Bot has reached the end of the run. Exiting now...", tag = tag)
+				game.notificationMessage = "Bot has reached the end of the run."
 				break
 			}
 			

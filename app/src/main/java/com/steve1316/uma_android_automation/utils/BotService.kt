@@ -135,23 +135,23 @@ class BotService : Service() {
 									
 									// Start with the provided settings from SharedPreferences.
 									game.start()
-									
-									NotificationUtils.updateNotification(myContext, false, "Bot has completed successfully with no errors.")
-									
-									performCleanUp()
+
+									val notificationMessage = if (game.notificationMessage != "") game.notificationMessage else "Bot has completed successfully."
+									NotificationUtils.updateNotification(myContext, false, notificationMessage)
 								} catch (e: Exception) {
 									if (e.toString() == "java.lang.InterruptedException") {
-										NotificationUtils.updateNotification(myContext, false, "Bot has completed successfully with no errors.")
+										NotificationUtils.updateNotification(myContext, false, "Bot was manually stopped.")
 									} else {
 										NotificationUtils.updateNotification(myContext, false, "Encountered an Exception: $e.\nTap me to see more details.")
 										game.printToLog("$appName encountered an Exception: ${e.stackTraceToString()}", tag = tag, isError = true)
 									}
-									
-									performCleanUp(isException = true)
+								} finally {
+									performCleanUp()
 								}
 							}
 						} else {
 							thread.interrupt()
+							NotificationUtils.updateNotification(myContext, false, "Bot was manually stopped.")
 							performCleanUp()
 						}
 						
@@ -280,16 +280,14 @@ class BotService : Service() {
 	
 	/**
 	 * Perform cleanup upon app completion or encountering an Exception.
-	 *
-	 * @param isException Prevents updating the Notification again if the bot stopped due to an Exception.
 	 */
-	private fun performCleanUp(isException: Boolean = false) {
+	private fun performCleanUp() {
 		// Save the message log.
 		MessageLog.saveLogToFile(myContext)
 		
 		Log.d(tag, "Bot Service for $appName is now stopped.")
 		isRunning = false
-		
+
 		// Reset the overlay button's image and animation on a separate UI thread.
 		Handler(Looper.getMainLooper()).post {
 			overlayButton.setImageResource(R.drawable.play_circle_filled)

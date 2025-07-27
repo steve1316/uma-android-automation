@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
  */
 class Game(val myContext: Context) {
 	private val tag: String = "[${MainActivity.loggerTag}]Game"
+	var notificationMessage: String = ""
 	val imageUtils: ImageUtils = ImageUtils(myContext, this)
 	val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
 	private val textDetection: TextDetection = TextDetection(this, imageUtils)
@@ -968,6 +969,7 @@ class Game(val myContext: Context) {
 		if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
 			imageUtils.findImage("recover_mood_date", tries = 1, region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
+			notificationMessage = "Bot may have encountered a warning popup"
 			return false
 		} else if (findAndTapImage("next", tries = 1, region = imageUtils.regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
@@ -977,6 +979,7 @@ class Game(val myContext: Context) {
 		} else if (imageUtils.findImage("crane_game", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			// Stop when the bot has reached the Crane Game Event.
 			printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.")
+			notificationMessage = "Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot."
 			return false
 		}
 		

@@ -116,10 +116,10 @@ class NotificationUtils {
 		 */
 		fun updateNotification(context: Context, isRunning: Boolean, message: String = "") {
 			var contentText = "Bot process is stopped"
-			if (isRunning) {
-				contentText = "Bot process is running"
-			} else if (message != "") {
+			if (message != "") {
 				contentText = message
+			} else if (isRunning) {
+				contentText = "Bot process is running"
 			}
 			
 			// Create a PendingIntent to send the user back to the application if they tap the notification itself.
