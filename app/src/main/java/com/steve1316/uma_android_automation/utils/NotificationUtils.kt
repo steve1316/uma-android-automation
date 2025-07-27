@@ -86,7 +86,7 @@ class NotificationUtils {
 				return NotificationCompat.Builder(context, CHANNEL_ID).apply {
 					setSmallIcon(R.drawable.ic_baseline_control_camera_24)
 					setContentTitle(CONTENT_TITLE)
-					setContentText("Bot is ready to go...")
+					setContentText("Bot is ready to go.")
 					setContentIntent(contentPendingIntent)
 					addAction(R.drawable.stop_circle_filled, context.getString(R.string.stop_process), stopPendingIntent)
 					priority = NotificationManager.IMPORTANCE_HIGH
@@ -98,7 +98,7 @@ class NotificationUtils {
 				return NotificationCompat.Builder(context, CHANNEL_ID).apply {
 					setSmallIcon(R.drawable.ic_baseline_control_camera_24)
 					setContentTitle(CONTENT_TITLE)
-					setContentText("Bot is ready to go...")
+					setContentText("Bot is ready to go.")
 					setContentIntent(contentPendingIntent)
 					priority = NotificationManager.IMPORTANCE_HIGH
 					setCategory(Notification.CATEGORY_SERVICE)
