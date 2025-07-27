@@ -919,7 +919,9 @@ class Game(val myContext: Context) {
 				}
 				
 				// Do the date if it is unlocked.
-				findAndTapImage("recover_mood_date", region = imageUtils.regionMiddle)
+				if (findAndTapImage("recover_mood_date", tries = 1, region = imageUtils.regionMiddle, suppressError = true)) {
+					wait(1.0)
+				}
 				
 				findAndTapImage("ok", region = imageUtils.regionMiddle)
 				raceRepeatWarningCheck = false
