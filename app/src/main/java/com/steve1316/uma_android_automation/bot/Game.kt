@@ -950,7 +950,7 @@ class Game(val myContext: Context) {
 		} else if (findAndTapImage("next", tries = 1, region = imageUtils.regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
 			wait(2.0)
-			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
+			findAndTapImage("next", tries = 1, region = imageUtils.regionBottomHalf)
 			wait(1.0)
 		} else if (imageUtils.findImage("crane_game", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			// Stop when the bot has reached the Crane Game Event.
