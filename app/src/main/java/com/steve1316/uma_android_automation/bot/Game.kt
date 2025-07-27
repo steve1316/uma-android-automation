@@ -832,9 +832,11 @@ class Game(val myContext: Context) {
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
 			
 			if (!isExtra) {
+				printToLog("[RACE] Awaiting the Training Goal popup.")
 				// Wait until the popup showing the completion of a Training Goal appears and confirm it.
-				wait(2.0)
-				findAndTapImage("next", tries = 30, region = imageUtils.regionBottomHalf)
+				// There will be dialog before it so the delay should be longer.
+				wait(5.0)
+				findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)
 				wait(2.0)
 				
 				// Now confirm the completion of a Training Goal popup.
