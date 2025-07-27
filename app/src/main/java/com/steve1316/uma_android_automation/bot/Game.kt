@@ -268,10 +268,16 @@ class Game(val myContext: Context) {
 				intArrayOf(151, 105, 243),
 				10
 		)) {
-			if (imageUtils.confirmLocation("recover_injury", tries = 1, region = imageUtils.regionMiddle)) {
-				printToLog("\n[INFO] Injury detected and attempted to heal.")
-				true
+			if (findAndTapImage("recover_injury", tries = 1, region = imageUtils.regionBottomHalf)) {
+				wait(0.3)
+				if (imageUtils.confirmLocation("recover_injury", tries = 1, region = imageUtils.regionMiddle)) {
+					printToLog("\n[INFO] Injury detected and attempted to heal.")
+					true
+				} else {
+					false
+				}
 			} else {
+				printToLog("\n[WARNING] Injury detected but attempt to rest failed.")
 				false
 			}
 		} else {
