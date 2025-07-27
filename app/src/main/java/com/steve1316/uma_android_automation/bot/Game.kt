@@ -211,6 +211,14 @@ class Game(val myContext: Context) {
 		return if (imageUtils.findImage("race_select_mandatory", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			printToLog("\n[INFO] Current bot location is at the preparatory screen with a mandatory race ready to be completed.")
 			true
+		} else if (imageUtils.findImage("race_select_mandatory_goal", tries = 1, region = imageUtils.regionMiddle).first != null) {
+			// Most likely the user started the bot here so a delay will need to be placed to allow the start banner of the Service to disappear.
+			wait(2.0)
+			printToLog("\n[INFO] Current bot location is at the Race Selection screen with a mandatory race needing to be selected.")
+			// Walk back to the preparatory screen.
+			findAndTapImage("back", tries = 1, region = imageUtils.regionBottomHalf)
+			wait(1.0)
+			true
 		} else {
 			false
 		}
