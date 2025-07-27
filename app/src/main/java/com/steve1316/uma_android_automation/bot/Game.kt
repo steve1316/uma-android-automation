@@ -832,11 +832,10 @@ class Game(val myContext: Context) {
 				wait(2.0)
 				
 				// Now confirm the completion of a Training Goal popup.
-				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
+				findAndTapImage("race_end", tries = 5, region = imageUtils.regionBottomHalf)
 			} else if (findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)) {
-				// Now confirm the completion of a Training Goal popup.
 				wait(2.0)
-				findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
+				findAndTapImage("race_end", tries = 5, region = imageUtils.regionBottomHalf)
 			}
 			
 			wait(1.0)
