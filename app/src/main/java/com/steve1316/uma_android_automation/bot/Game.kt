@@ -768,12 +768,17 @@ class Game(val myContext: Context) {
 			
 			// Press the manual button.
 			findAndTapImage("race_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(2.0)
+			wait(1.0)
+
+			// Confirm the Race Playback popup if it appears.
+			if (findAndTapImage("ok", tries = 5, region = imageUtils.regionMiddle, suppressError = true)) {
+				wait(3.0)
+			}
 			
 			// Now press the confirm button to get past the list of participants.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			wait(1.0)
-			
+
 			// Now skip to the end of the race.
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
