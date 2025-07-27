@@ -21,10 +21,10 @@ class Normal(private val game: Game) {
 				}
 				
 				// If the bot detected a injury, then rest.
-				if (game.checkInjury()) {
+				if (!game.failedFanCheck && game.checkInjury()) {
 					game.findAndTapImage("ok", region = game.imageUtils.regionMiddle)
 					game.wait(3.0)
-				} else if (game.recoverMood()) {
+				} else if (!game.failedFanCheck && game.recoverMood()) {
 					Log.d(tag, "Mood recovered.")
 				} else if (!game.failedFanCheck && !game.checkExtraRaceAvailability()) {
 					Log.d(tag, "Training due to it not being an extra race day.")
