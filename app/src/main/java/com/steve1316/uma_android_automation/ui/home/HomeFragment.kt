@@ -251,7 +251,7 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Force the user to go through the Settings in order to set this required setting.
-		startButton.isEnabled = campaignString != "Please select one in the Settings" && characterString != "Please select one in the Settings"
+		startButton.isEnabled = !campaignString.contains("Please select") && !characterString.contains("Please select")
 
 		return homeFragmentView
 	}
