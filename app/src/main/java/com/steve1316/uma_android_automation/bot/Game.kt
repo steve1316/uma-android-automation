@@ -333,7 +333,7 @@ class Game(val myContext: Context) {
 		
 		if (speedStatTextLocation != null) {
 			// Perform a percentage check of Speed training to see if the bot has enough energy to do training. As a result, Speed training will be the one selected for the rest of the algorithm.
-			if (!imageUtils.confirmLocation("speed_training", tries = 5, region = imageUtils.regionTopHalf)) {
+			if (!imageUtils.confirmLocation("speed_training", tries = 5, region = imageUtils.regionTopHalf, suppressError = true)) {
 				findAndTapImage("training_speed")
 			}
 			
@@ -689,7 +689,7 @@ class Game(val myContext: Context) {
 			// Confirm the selection and the resultant popup and then wait for the game to load.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(1.0)
+			wait(3.0)
 			
 			// Skip the race if possible, otherwise run it manually.
 			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
@@ -743,7 +743,7 @@ class Game(val myContext: Context) {
 			gestureUtils.tap(350.0, 750.0, "ok", taps = 3)
 			
 			// Check if the race needed to be retried.
-			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf)) {
+			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
 				printToLog("[RACE] Skipped race failed. Attempting to retry...")
 				wait(5.0)
 				raceRetries--
@@ -766,15 +766,17 @@ class Game(val myContext: Context) {
 			
 			// Press the manual button.
 			findAndTapImage("race_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(1.0)
+			wait(3.0)
 
 			// Confirm the Race Playback popup if it appears.
 			if (findAndTapImage("ok", tries = 5, region = imageUtils.regionMiddle, suppressError = true)) {
-				wait(3.0)
+				wait(5.0)
 			}
 			
 			// Now press the confirm button to get past the list of participants.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
+			wait(1.0)
+			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)
 			wait(1.0)
 
 			// Now skip to the end of the race.
@@ -787,7 +789,7 @@ class Game(val myContext: Context) {
 			wait(2.0)
 			
 			// Check if the race needed to be retried.
-			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf)) {
+			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
 				printToLog("[RACE] Manual race failed. Attempting to retry...")
 				wait(2.0)
 				raceRetries--
