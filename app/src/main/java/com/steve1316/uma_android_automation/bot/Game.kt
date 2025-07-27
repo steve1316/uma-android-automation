@@ -49,6 +49,7 @@ class Game(val myContext: Context) {
 	private val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 	private var raceRetries = 3
 	private var raceRepeatWarningCheck = false
+	var failedFanCheck = false
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -175,6 +176,11 @@ class Game(val myContext: Context) {
 		return if (imageUtils.findImage("tazuna", tries = 5, region = imageUtils.regionTopHalf).first != null &&
 			imageUtils.findImage("race_select_mandatory", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
 			printToLog("\n[INFO] Current bot location is at Main screen.")
+			true
+		} else if (!enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first != null) {
+			// This popup is most likely the insufficient fans popup. Force an extra race to catch up on the required fans.
+			printToLog("[INFO] There is a possible insufficient fans popup.")
+			failedFanCheck = true
 			true
 		} else {
 			false
@@ -558,8 +564,16 @@ class Game(val myContext: Context) {
 	 */
 	fun handleRaceEvents(): Boolean {
 		printToLog("\n[RACE] Starting Racing process...")
+		if (failedFanCheck) {
+			// Dismiss the insufficient fans popup here and head to the Race Selection screen.
+			findAndTapImage("race_confirm", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
+			failedFanCheck = false
+			wait(1.0)
+		}
 		
 		// First, check if there is a mandatory or a extra race available. If so, head into the Race Selection screen.
+		// Note: If there is a mandatory race, the bot would be on the Home screen.
+		// Otherwise, it would have found itself at the Race Selection screen already (by way of the insufficient fans popup).
 		if (findAndTapImage("race_select_mandatory", tries = 1, region = imageUtils.regionBottomHalf)) {
 			printToLog("\n[RACE] Detected mandatory race.")
 			

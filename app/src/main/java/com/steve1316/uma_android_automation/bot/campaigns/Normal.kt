@@ -25,8 +25,8 @@ class Normal(private val game: Game) {
 					game.wait(3.0)
 				} else if (game.recoverMood()) {
 					Log.d(tag, "Mood recovered.")
-				} else if (!game.checkExtraRaceAvailability()) {
-					Log.d(tag, "Training due to not extra race day.")
+				} else if (!game.failedFanCheck && !game.checkExtraRaceAvailability()) {
+					Log.d(tag, "Training due to it not being an extra race day.")
 					game.handleTraining()
 				} else {
 					Log.d(tag, "Racing by default.")
