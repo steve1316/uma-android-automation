@@ -173,8 +173,8 @@ class Game(val myContext: Context) {
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	fun checkMainScreen(): Boolean {
-		return if (imageUtils.findImage("tazuna", tries = 5, region = imageUtils.regionTopHalf).first != null &&
-			imageUtils.findImage("race_select_mandatory", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
+		return if (imageUtils.findImage("tazuna", tries = 2, region = imageUtils.regionTopHalf, suppressError = true).first != null &&
+			imageUtils.findImage("race_select_mandatory", tries = 2, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("\n[INFO] Current bot location is at Main screen.")
 			true
 		} else if (!enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first != null) {
@@ -599,7 +599,7 @@ class Game(val myContext: Context) {
 			
 			printToLog("[RACE] Racing process for Mandatory Race is completed.")
 			return true
-		} else if (findAndTapImage("race_select_extra", region = imageUtils.regionBottomHalf)) {
+		} else if (findAndTapImage("race_select_extra", tries = 1, region = imageUtils.regionBottomHalf)) {
 			printToLog("\n[RACE] Detected extra race eligibility.")
 			
 			// If there is a popup warning about repeating races 3+ times, stop the process and do something else other than racing.
@@ -712,7 +712,7 @@ class Game(val myContext: Context) {
 		printToLog("[RACE] Starting Standalone Racing process...")
 		
 		// Skip the race if possible, otherwise run it manually.
-		val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 10, region = imageUtils.regionBottomHalf).first == null) {
+		val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
 			skipRace()
 		} else {
 			manualRace()
@@ -746,7 +746,7 @@ class Game(val myContext: Context) {
 			wait(2.0)
 			
 			// Check if the race needed to be retried.
-			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf)) {
+			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf)) {
 				printToLog("[RACE] Skipped race failed. Attempting to retry...")
 				wait(5.0)
 				raceRetries--
@@ -785,7 +785,7 @@ class Game(val myContext: Context) {
 			wait(2.0)
 			
 			// Check if the race needed to be retried.
-			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf)) {
+			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf)) {
 				printToLog("[RACE] Manual race failed. Attempting to retry...")
 				wait(2.0)
 				raceRetries--
@@ -900,10 +900,10 @@ class Game(val myContext: Context) {
 			
 			// Detect what Mood the bot is at.
 			val currentMood: String = when {
-				imageUtils.findImage("mood_good", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
+				imageUtils.findImage("mood_good", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
 					"Good"
 				}
-				imageUtils.findImage("mood_great", tries = 1, region = imageUtils.regionTopHalf).first != null -> {
+				imageUtils.findImage("mood_great", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
 					"Great"
 				}
 				else -> {
@@ -912,10 +912,10 @@ class Game(val myContext: Context) {
 			}
 			
 			// Only recover mood if its below Good mood and its not Summer.
-			return if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf).first == null) {
+			return if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 				printToLog("[MOOD] Current mood is not good. Recovering mood now.")
-				if (!findAndTapImage("recover_mood", tries = 5, region = imageUtils.regionBottomHalf)) {
-					findAndTapImage("recover_energy_summer", tries = 5, region = imageUtils.regionBottomHalf)
+				if (!findAndTapImage("recover_mood", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
+					findAndTapImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
 				}
 				
 				// Do the date if it is unlocked.
@@ -923,7 +923,7 @@ class Game(val myContext: Context) {
 					wait(1.0)
 				}
 				
-				findAndTapImage("ok", region = imageUtils.regionMiddle)
+				findAndTapImage("ok", region = imageUtils.regionMiddle, suppressError = true)
 				raceRepeatWarningCheck = false
 				true
 			} else {
@@ -966,7 +966,7 @@ class Game(val myContext: Context) {
 //			return true
 //		}
 		if (enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf).first != null &&
-			imageUtils.findImage("recover_mood_date", region = imageUtils.regionMiddle).first == null) {
+			imageUtils.findImage("recover_mood_date", tries = 1, region = imageUtils.regionMiddle).first == null) {
 			printToLog("\n[END] Bot may have encountered a warning popup. Exiting now...")
 			return false
 		} else if (findAndTapImage("next", tries = 1, region = imageUtils.regionBottomHalf)) {

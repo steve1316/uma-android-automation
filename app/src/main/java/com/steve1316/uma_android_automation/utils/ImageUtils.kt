@@ -970,7 +970,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return Number of skill points or -1 if not found.
 	 */
 	fun determineSkillPoints(): Int {
-		val (skillPointLocation, sourceBitmap) = findImage("skill_points")
+		val (skillPointLocation, sourceBitmap) = findImage("skill_points", tries = 1)
 		
 		return if (skillPointLocation != null) {
 			val croppedBitmap = if (isTablet) {
