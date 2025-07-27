@@ -659,8 +659,8 @@ class ImageUtils(context: Context, private val game: Game) {
 		val newX: Int
 		val newY: Int
 		var croppedBitmap: Bitmap = if (isTablet) {
-			newX = max(0, matchLocation.x.toInt() - (250).toInt())
-			newY = max(0, matchLocation.y.toInt() + (154).toInt())
+			newX = max(0, matchLocation.x.toInt() - (250))
+			newY = max(0, matchLocation.y.toInt() + (154))
 			Bitmap.createBitmap(sourceBitmap, newX, newY, 746, 85)
 		} else {
 			newX = max(0, matchLocation.x.toInt() - 125)
@@ -689,7 +689,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
 		
-		// Thresh the grayscale cropped image to make black and white.
+		// Thresh the grayscale cropped image to make it black and white.
 		val bwImage = Mat()
 		val threshold = sharedPreferences.getInt("threshold", 230)
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
