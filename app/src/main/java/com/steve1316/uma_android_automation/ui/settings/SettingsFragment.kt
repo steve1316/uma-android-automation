@@ -20,7 +20,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 			when (key) {
 				"campaign" -> {
 					val campaignListPreference = findPreference<ListPreference>("campaign")!!
-					campaignListPreference.summary = "Selected: ${campaignListPreference.value} Campaign"
+					campaignListPreference.summary = "Selected: ${campaignListPreference.value}"
 					sharedPreferences.edit {
 						putString("campaign", campaignListPreference.value)
 						commit()
@@ -144,7 +144,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		// Now set the following values from the shared preferences.
 		campaignListPreference.value = campaign
 		if (campaign != "") {
-			campaignListPreference.summary = "Selected: ${campaignListPreference.value} Campaign"
+			campaignListPreference.summary = "Selected: ${campaignListPreference.value}"
 		}
 		enableFarmingFansPreference.isChecked = enableFarmingFans
 		daysToRunExtraRacesPreference.isEnabled = enableFarmingFansPreference.isChecked
