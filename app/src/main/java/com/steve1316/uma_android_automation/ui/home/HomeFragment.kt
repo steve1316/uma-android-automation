@@ -224,7 +224,7 @@ class HomeFragment : Fragment() {
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
 		settingsStatusTextView.setTextColor(Color.WHITE)
 		settingsStatusTextView.text =
-				"Campaign Selected: $campaignString Campaign\n" +
+				"Campaign Selected: $campaignString Campaign\n\n" +
 				"---------- Training Event Options ----------\n" +
 				"Character Selected: $characterString\n" +
 				"Support(s) Selected: $supportCardListString\n\n" +
