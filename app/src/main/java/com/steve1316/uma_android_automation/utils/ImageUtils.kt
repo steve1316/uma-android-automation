@@ -21,6 +21,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Integer.max
 import java.text.DecimalFormat
+import androidx.core.graphics.scale
 
 
 /**
@@ -790,17 +791,19 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (isTablet) {
 					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
 				} else {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 100, 140, 100)
 				}
 			}
 			
+			val resizedBitmap = croppedBitmap.scale(croppedBitmap.width / 2, croppedBitmap.height / 2)
+
 			val cvImage = Mat()
-			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Utils.bitmapToMat(resizedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 			Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
 			
 			// Create a InputImage object for Google's ML OCR.
-			val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
+			val inputImage: InputImage = InputImage.fromBitmap(resizedBitmap, 0)
 			
 			// Count up all of the total stat gains for this training selection.
 			textRecognizer.process(inputImage).addOnSuccessListener {
@@ -818,7 +821,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 			
 			// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
-			game.wait(0.1)
+			game.wait(0.25)
 		}
 		
 		return result
