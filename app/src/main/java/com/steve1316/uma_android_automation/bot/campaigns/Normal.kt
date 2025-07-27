@@ -61,7 +61,7 @@ class Normal(private val game: Game) {
 			} else if (game.imageUtils.findImage("race_change_strategy", tries = 1, region = game.imageUtils.regionBottomHalf).first != null) {
 				// If the bot is already at the Racing screen, then complete this standalone race.
 				game.handleStandaloneRace()
-			} else if (!BotService.isRunning || game.checkEndScreen()) {
+			} else if (game.checkEndScreen()) {
 				// Stop when the bot has reached the screen where it details the overall result of the run.
 				game.printToLog("\n[END] Bot has reached the end of the run. Exiting now...", tag = tag)
 				game.notificationMessage = "Bot has reached the end of the run"
