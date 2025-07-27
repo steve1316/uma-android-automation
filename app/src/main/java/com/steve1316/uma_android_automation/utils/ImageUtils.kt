@@ -628,7 +628,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		val tempImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, tempImage)
-		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
 		
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
@@ -645,13 +645,13 @@ class ImageUtils(context: Context, private val game: Game) {
 		Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 		
 		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
 		
 		// Thresh the grayscale cropped image to make black and white.
 		val bwImage = Mat()
 		val threshold = sharedPreferences.getInt("threshold", 230)
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
 		
 		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugEventTitleText_afterThreshold.png")
 		tessBaseAPI.setImage(resultBitmap)
@@ -691,7 +691,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		val tempMat = Mat()
 		Utils.bitmapToMat(croppedBitmap, tempMat)
 		Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2GRAY)
-		Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance.png", tempMat)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance.png", tempMat)
 		
 		// Create a InputImage object for Google's ML OCR.
 		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -775,7 +775,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun determineDayForExtraRace(): Int {
 		var result = -1
-		val (energyTextLocation, sourceBitmap) = findImage("energy")
+		val (energyTextLocation, sourceBitmap) = findImage("energy", tries = 1, region = regionTopHalf)
 		
 		if (energyTextLocation != null) {
 			// Crop the source screenshot to only contain the day number.
@@ -798,7 +798,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			val cvImage = Mat()
 			Utils.bitmapToMat(resizedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
 			
 			// Create a InputImage object for Google's ML OCR.
 			val inputImage: InputImage = InputImage.fromBitmap(resizedBitmap, 0)
@@ -842,7 +842,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		val cvImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, cvImage)
-		Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
 		
 		// Determine if the extra race has double star prediction.
 		var predictionCheck = false
@@ -863,7 +863,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 			
 			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-			Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans.png", cvImage)
 			
 			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugExtraRaceFans.png")
 			tessBaseAPI.setImage(resultBitmap)
@@ -933,7 +933,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			val cvImage = Mat()
 			Utils.bitmapToMat(croppedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			Imgcodecs.imwrite("$matchFilePath/debugSkillPoints.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints.png", cvImage)
 			
 			tessBaseAPI.setImage(croppedBitmap)
 			
