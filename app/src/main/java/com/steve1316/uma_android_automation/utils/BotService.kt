@@ -14,6 +14,8 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageButton
 import android.widget.Toast
 import com.steve1316.uma_android_automation.MainActivity
@@ -34,7 +36,20 @@ class BotService : Service() {
 	private lateinit var myContext: Context
 	private lateinit var overlayView: View
 	private lateinit var overlayButton: ImageButton
-	
+
+	private lateinit var playButtonAnimation: Animation
+	private lateinit var playButtonAnimationAlt: Animation
+	private lateinit var stopButtonAnimation: Animation
+	private var currentPlayButtonAnimationType = PlayButtonAnimationType.PULSE_FADE
+
+	/**
+	 * Enum to track which play button animation is currently active.
+	 */
+	private enum class PlayButtonAnimationType {
+		PULSE_FADE,
+		BOUNCE_FADE
+	}
+
 	companion object {
 		private lateinit var thread: Thread
 		private lateinit var windowManager: WindowManager
@@ -62,7 +77,10 @@ class BotService : Service() {
 		
 		myContext = this
 		appName = myContext.getString(R.string.app_name)
-		
+
+		// Initialize the animations for the floating overlay button.
+		initializeAnimations()
+
 		// Display the overlay view layout on the screen.
 		overlayView = LayoutInflater.from(this).inflate(R.layout.bot_actions, null)
 		windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -70,6 +88,10 @@ class BotService : Service() {
 		
 		// This button is able to be moved around the screen and clicking it will start/stop the game automation.
 		overlayButton = overlayView.findViewById(R.id.bot_actions_overlay_button)
+
+		// Start the initial animations for the floating overlay button.
+		startAnimations()
+
 		overlayButton.setOnTouchListener(object : View.OnTouchListener {
 			private var initialX: Int = 0
 			private var initialY: Int = 0
@@ -99,7 +121,10 @@ class BotService : Service() {
 							isRunning = true
 							NotificationUtils.updateNotification(myContext, isRunning)
 							overlayButton.setImageResource(R.drawable.stop_circle_filled)
-							
+
+							// Switch animations from the play to the stop button animations.
+							startAnimations()
+
 							val game = Game(myContext)
 							
 							thread = thread {
@@ -150,7 +175,87 @@ class BotService : Service() {
 			}
 		})
 	}
-	
+
+	/**
+	 * Initialize the animations for the floating overlay button.
+	 */
+	private fun initializeAnimations() {
+		playButtonAnimation = AnimationUtils.loadAnimation(this, R.anim.play_button_animation)
+		playButtonAnimationAlt = AnimationUtils.loadAnimation(this, R.anim.play_button_animation_alt)
+		stopButtonAnimation = AnimationUtils.loadAnimation(this, R.anim.stop_button_animation)
+
+		// Set up animation listeners for continuous cycling.
+		setupPlayButtonAnimationListener()
+		setupPlayButtonAltAnimationListener()
+		setupStopButtonAnimationListener()
+	}
+
+	/**
+	 * Set up the initial animation listener for the play button animation.
+	 */
+	private fun setupPlayButtonAnimationListener() {
+		playButtonAnimation.setAnimationListener(object : Animation.AnimationListener {
+			override fun onAnimationStart(animation: Animation?) {}
+			override fun onAnimationEnd(animation: Animation?) {
+				if (!isRunning) {
+					// Switch animations.
+					currentPlayButtonAnimationType = PlayButtonAnimationType.BOUNCE_FADE
+					overlayButton.startAnimation(playButtonAnimation)
+				}
+			}
+			override fun onAnimationRepeat(animation: Animation?) {}
+		})
+	}
+
+	/**
+	 * Set up the other animation listener for the play button animation.
+	 */
+	private fun setupPlayButtonAltAnimationListener() {
+		playButtonAnimationAlt.setAnimationListener(object : Animation.AnimationListener {
+			override fun onAnimationStart(animation: Animation?) {}
+			override fun onAnimationEnd(animation: Animation?) {
+				if (!isRunning) {
+					// Switch animations.
+					currentPlayButtonAnimationType = PlayButtonAnimationType.PULSE_FADE
+					overlayButton.startAnimation(playButtonAnimationAlt)
+				}
+			}
+			override fun onAnimationRepeat(animation: Animation?) {}
+		})
+	}
+
+	/**
+	 * Set up the animation listener for the stop button animation.
+	 */
+	private fun setupStopButtonAnimationListener() {
+		stopButtonAnimation.setAnimationListener(object : Animation.AnimationListener {
+			override fun onAnimationStart(animation: Animation?) {}
+			override fun onAnimationEnd(animation: Animation?) {
+				if (isRunning) {
+					// Restart the animation.
+					overlayButton.startAnimation(stopButtonAnimation)
+				}
+			}
+			override fun onAnimationRepeat(animation: Animation?) {}
+		})
+	}
+
+	/**
+	 * Start the appropriate animations for the floating overlay button based on the bot state.
+	 */
+	private fun startAnimations() {
+		// Clear any existing animation.
+		overlayButton.clearAnimation()
+
+		// Start the appropriate animation based on bot state.
+		if (isRunning) {
+			overlayButton.startAnimation(stopButtonAnimation)
+		} else {
+			currentPlayButtonAnimationType = PlayButtonAnimationType.PULSE_FADE
+			overlayButton.startAnimation(playButtonAnimationAlt)
+		}
+	}
+
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		// Do not attempt to restart the bot service if it crashes.
 		return START_NOT_STICKY
@@ -162,7 +267,10 @@ class BotService : Service() {
 	
 	override fun onDestroy() {
 		super.onDestroy()
-		
+
+		// Stop animations before removing the view.
+		overlayButton.clearAnimation()
+
 		// Remove the overlay View that holds the overlay button.
 		windowManager.removeView(overlayView)
 		
@@ -182,14 +290,10 @@ class BotService : Service() {
 		Log.d(tag, "Bot Service for $appName is now stopped.")
 		isRunning = false
 		
-		// Update the app's notification with the status.
-		if (!isException) {
-			NotificationUtils.updateNotification(myContext, false, "Bot has completed successfully with no errors.")
-		}
-		
-		// Reset the overlay button's image on a separate UI thread.
+		// Reset the overlay button's image and animation on a separate UI thread.
 		Handler(Looper.getMainLooper()).post {
 			overlayButton.setImageResource(R.drawable.play_circle_filled)
+			startAnimations()
 		}
 	}
 }

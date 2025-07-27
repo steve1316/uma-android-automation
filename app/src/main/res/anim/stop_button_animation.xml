@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/accelerate_decelerate">
+
+    <!-- Opacity fade -->
+    <alpha
+        android:duration="2500"
+        android:fromAlpha="0.8"
+        android:repeatCount="infinite"
+        android:repeatMode="reverse"
+        android:toAlpha="0.5" />
+
+    <!-- Rotation -->
+    <rotate
+        android:duration="4000"
+        android:fromDegrees="0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:repeatCount="infinite"
+        android:toDegrees="360" />
+
+</set>
