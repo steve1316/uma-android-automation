@@ -911,7 +911,7 @@ class Game(val myContext: Context) {
 				}
 			}
 			
-			// Only recover mood if its below Above Normal mood.
+			// Only recover mood if its below Good mood and its not Summer.
 			return if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf).first == null) {
 				printToLog("[MOOD] Current mood is not good. Recovering mood now.")
 				if (!findAndTapImage("recover_mood", tries = 5, region = imageUtils.regionBottomHalf)) {
