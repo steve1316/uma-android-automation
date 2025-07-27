@@ -883,10 +883,17 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			// Format the string to be converted to an integer.
 			Log.d(tag, "Detected number of fans before formatting: $result")
-			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "")
-				.replace(">", "").replace("<", "")
+			result = result
+				.replace(",", "")
+				.replace(".", "")
+				.replace("+", "")
+				.replace("-", "")
+				.replace(">", "")
+				.replace("<", "")
 				.replace("(", "")
-				.replace("人", "").replace("ォ", "").trim()
+				.replace("人", "")
+				.replace("ォ", "")
+				.replace("fans", "").trim()
 			
 			try {
 				Log.d(tag, "Converting $result to integer for fans")
