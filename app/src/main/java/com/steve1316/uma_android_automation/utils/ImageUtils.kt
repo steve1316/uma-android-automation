@@ -23,6 +23,7 @@ import java.lang.Integer.max
 import java.text.DecimalFormat
 import androidx.core.graphics.scale
 import androidx.core.graphics.get
+import androidx.core.graphics.createBitmap
 
 
 /**
@@ -694,7 +695,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
 		
-		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugEventTitleText_afterThreshold.png")
+		// Convert the Mat directly to Bitmap and then pass it to the text reader.
+		val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
+		Utils.matToBitmap(bwImage, resultBitmap)
 		tessBaseAPI.setImage(resultBitmap)
 		
 		// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
@@ -904,11 +907,11 @@ class ImageUtils(context: Context, private val game: Game) {
 			// Make the cropped screenshot grayscale.
 			Utils.bitmapToMat(croppedBitmap2, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			
-			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans.png", cvImage)
-			
-			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugExtraRaceFans.png")
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterCrop.png", cvImage)
+
+			// Convert the Mat directly to Bitmap and then pass it to the text reader.
+			val resultBitmap = createBitmap(cvImage.cols(), cvImage.rows())
+			Utils.matToBitmap(cvImage, resultBitmap)
 			tessBaseAPI.setImage(resultBitmap)
 			
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
