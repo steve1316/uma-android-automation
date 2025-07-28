@@ -880,7 +880,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (isTablet) {
 					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
 				} else {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 100, 140, 100)
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 100, 140, 95)
 				}
 			}
 			
