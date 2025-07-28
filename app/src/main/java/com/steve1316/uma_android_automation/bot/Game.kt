@@ -180,9 +180,10 @@ class Game(val myContext: Context) {
 			imageUtils.findImage("race_select_mandatory", tries = 2, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("\n[INFO] Current bot location is at Main screen.")
 			true
-		} else if (!enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first != null) {
+		} else if (!enablePopupCheck && imageUtils.findImage("cancel", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first != null &&
+			imageUtils.findImage("race_confirm", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			// This popup is most likely the insufficient fans popup. Force an extra race to catch up on the required fans.
-			printToLog("[INFO] There is a possible insufficient fans popup.")
+			printToLog("[INFO] There is a possible insufficient fans or maiden race popup.")
 			failedFanCheck = true
 			true
 		} else {
