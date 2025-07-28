@@ -643,34 +643,38 @@ class Game(val myContext: Context) {
 			// Now determine the best extra race with the following parameters: highest fans and double star prediction.
 			// First find the fans of only the extra races on the screen that match the double star prediction. Read only 3 extra races.
 			var count = 0
-			val maxCount = if (imageUtils.isTablet) 2 else 3 // Do not bother with checking for the 3rd extra race. Easier to just check the first two if on tablet.
+			val maxCount = imageUtils.findAll("race_selection_fans", region = imageUtils.regionBottomHalf).size
+			if (maxCount == 0) {
+				printToLog("[WARNING] Was unable to find any extra races to select. Moving on...")
+				return false
+			} else {
+				printToLog("[RACE] There are $maxCount extra race options currently on screen.")
+			}
 			val listOfFans = mutableListOf<Int>()
 			val extraRaceLocation = mutableListOf<Point>()
 			val (sourceBitmap, templateBitmap) = imageUtils.getBitmaps("race_extra_double_prediction")
-			while (count < maxCount) {
+			while (count < maxCount - 1) {
 				// Save the location of the selected extra race.
 				extraRaceLocation.add(imageUtils.findImage("race_extra_selection", region = imageUtils.regionBottomHalf).first!!)
 				
 				// Determine its fan gain and save it.
 				val fans = imageUtils.determineExtraRaceFans(extraRaceLocation[count], sourceBitmap!!, templateBitmap!!)
-				listOfFans.add(fans)
-				
-				if (imageUtils.isTablet && count == 1) {
+				if (count == 0 && fans == -1) {
+					// If the fans were unable to be fetched or the race does not have double predictions for the first attempt, skip racing altogether.
 					break
 				}
+				listOfFans.add(fans)
 				
 				// Select the next extra race.
-				if (count != 2) {
-					if (imageUtils.isTablet) {
-						gestureUtils.tap(extraRaceLocation[count].x - (100 * 1.36), extraRaceLocation[count].y + (150 * 1.50), "race_extra_selection")
-					} else {
-						gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "race_extra_selection")
-					}
-					
-					wait(0.5)
-				}
-				
-				count++
+                if (imageUtils.isTablet) {
+                    gestureUtils.tap(extraRaceLocation[count].x - (100 * 1.36), extraRaceLocation[count].y + (150 * 1.50), "race_extra_selection")
+                } else {
+                    gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "race_extra_selection")
+                }
+
+                wait(0.5)
+
+                count++
 			}
 			
 			val fansList = listOfFans.joinToString(", ") { it.toString() }
@@ -691,11 +695,11 @@ class Game(val myContext: Context) {
 				printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.")
 				
 				// Select the extra race that matches the double star prediction and the most fan gain.
-				gestureUtils.tap(extraRaceLocation[index].x - (100 * 1.36), extraRaceLocation[index].y, "race_extra_selection")
+				gestureUtils.tap(extraRaceLocation[index].x - (100 * 1.36), extraRaceLocation[index].y - 70, "race_extra_selection")
 			} else {
 				// If no maximum is determined, select the very first extra race.
 				printToLog("[RACE] Selecting the first Extra Race by default.")
-				gestureUtils.tap(extraRaceLocation[0].x - (100 * 1.36), extraRaceLocation[0].y, "race_extra_selection")
+				gestureUtils.tap(extraRaceLocation[0].x - (100 * 1.36), extraRaceLocation[0].y - 70, "race_extra_selection")
 			}
 			
 			// Confirm the selection and the resultant popup and then wait for the game to load.
