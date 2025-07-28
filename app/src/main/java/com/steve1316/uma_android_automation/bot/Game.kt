@@ -7,8 +7,8 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.campaigns.AoHaru
-import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.utils.ImageUtils
+import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import kotlinx.coroutines.delay
@@ -1015,6 +1015,11 @@ class Game(val myContext: Context) {
 		if (!debugMode) {
 			wait(3.0)
 		}
+
+		// Print device and version information.
+		printToLog("[INFO] Device Information: ${MediaProjectionService.displayWidth}x${MediaProjectionService.displayHeight}, DPI ${MediaProjectionService.displayDPI}")
+		val packageInfo = myContext.packageManager.getPackageInfo(myContext.packageName, 0)
+		printToLog("[INFO] Bot version: ${packageInfo.versionName} (${packageInfo.versionCode})\n\n")
 		
 		val startTime: Long = System.currentTimeMillis()
 		
