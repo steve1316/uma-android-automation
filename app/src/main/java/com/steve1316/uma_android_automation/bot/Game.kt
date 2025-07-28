@@ -286,6 +286,13 @@ class Game(val myContext: Context) {
 			false
 		}
 	}
+
+	/**
+	 * Checks if the bot is at a "Now Loading..." screen. This may cause significant delays in normal bot processes.
+	 */
+	fun checkLoading(): Boolean {
+		return imageUtils.findImage("now_loading", tries = 5, region = imageUtils.regionBottomHalf, suppressError = true).first != null
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -789,11 +796,15 @@ class Game(val myContext: Context) {
 			if (findAndTapImage("ok", tries = 5, region = imageUtils.regionMiddle, suppressError = true)) {
 				wait(5.0)
 			}
+
+			if (checkLoading()) wait(10.0)
 			
 			// Now press the confirm button to get past the list of participants.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
+			if (checkLoading()) wait(5.0)
 			wait(1.0)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)
+			if (checkLoading()) wait(5.0)
 			wait(1.0)
 
 			// Now skip to the end of the race.
