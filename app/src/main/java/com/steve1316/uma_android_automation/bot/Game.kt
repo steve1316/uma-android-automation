@@ -1007,7 +1007,7 @@ class Game(val myContext: Context) {
 		
 		// If debug mode is off, then it is necessary to wait a few seconds for the Toast message to disappear from the screen to prevent it obstructing anything beneath it.
 		if (!debugMode) {
-			wait(2.0)
+			wait(3.0)
 		}
 		
 		val startTime: Long = System.currentTimeMillis()
