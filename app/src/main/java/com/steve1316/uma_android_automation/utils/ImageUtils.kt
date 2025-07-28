@@ -909,7 +909,6 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			textRecognizer.process(inputImage)
 				.addOnSuccessListener { text ->
-					Log.d(tag, "[DEBUG] TESTING STARTS")
 					if (text.textBlocks.isNotEmpty()) {
 						for (block in text.textBlocks) {
 							try {
@@ -918,7 +917,6 @@ class ImageUtils(context: Context, private val game: Game) {
 							} catch (_: NumberFormatException) {
 							}
 						}
-						Log.d(tag, "[DEBUG] TESTING ENDS")
 					}
 					latch.countDown()
 				}
