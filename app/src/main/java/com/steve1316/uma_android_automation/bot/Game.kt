@@ -673,11 +673,8 @@ class Game(val myContext: Context) {
 				count++
 			}
 			
-			if (imageUtils.isTablet) {
-				printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}")
-			} else {
-				printToLog("[RACE] Number of fans detected for each extra race are: Extra 1. ${listOfFans[0]}, Extra 2. ${listOfFans[1]}, Extra 3. ${listOfFans[2]}")
-			}
+			val fansList = listOfFans.joinToString(", ") { it.toString() }
+			printToLog("[RACE] Number of fans detected for each extra race are: $fansList")
 			
 			// Next determine the maximum fans and select the extra race.
 			val maxFans: Int? = listOfFans.maxOrNull()
