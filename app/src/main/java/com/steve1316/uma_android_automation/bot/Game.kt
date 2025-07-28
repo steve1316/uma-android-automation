@@ -631,7 +631,11 @@ class Game(val myContext: Context) {
 			
 			// There is a extra race.
 			// Swipe up the list to get to the top and then select the first option.
-			val statusLocation = imageUtils.findImage("race_status").first!!
+			val statusLocation = imageUtils.findImage("race_status").first
+			if (statusLocation == null) {
+				printToLog("[WARNING] Unable to determine existence of list of extra races.")
+				return false
+			}
 			gestureUtils.swipe(statusLocation.x.toFloat(), statusLocation.y.toFloat() + 300, statusLocation.x.toFloat(), statusLocation.y.toFloat() + 888)
 			wait(0.5)
 			
