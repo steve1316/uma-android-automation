@@ -24,6 +24,8 @@ import java.text.DecimalFormat
 import androidx.core.graphics.scale
 import androidx.core.graphics.get
 import androidx.core.graphics.createBitmap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -707,6 +709,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		try {
 			// Finally, detect text on the cropped region.
 			result = tessBaseAPI.utF8Text
+			Log.d(tag, "[DEBUG] Detected text with Tesseract: $result")
 		} catch (e: Exception) {
 			game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 		}
@@ -744,32 +747,65 @@ class ImageUtils(context: Context, private val game: Game) {
 
 		// Thresh the grayscale cropped image to make it black and white.
 		val bwImage = Mat()
-		val threshold = sharedPreferences.getInt("threshold", 230)
-		Imgproc.threshold(tempMat, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+		Imgproc.threshold(tempMat, bwImage, 230.0, 255.0, Imgproc.THRESH_BINARY)
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterThreshold.png", bwImage)
-		
+
 		// Create a InputImage object for Google's ML OCR.
-		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
+		val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
+		Utils.matToBitmap(bwImage, resultBitmap)
+		val inputImage: InputImage = InputImage.fromBitmap(resultBitmap, 0)
 		
-		// Start the asynchronous operation of text detection.
-		var result = 0
-		textRecognizer.process(inputImage).addOnSuccessListener {
-			if (it.textBlocks.isNotEmpty()) {
-				for (block in it.textBlocks) {
-					result = try {
-						block.text.replace("%", "").trim().toInt()
-					} catch (_: NumberFormatException) {
-						0
+		// Use CountDownLatch to make the async operation synchronous.
+		val latch = CountDownLatch(1)
+		var result = -1
+		var mlkitFailed = false
+		
+		textRecognizer.process(inputImage)
+			.addOnSuccessListener { text ->
+				if (text.textBlocks.isNotEmpty()) {
+					for (block in text.textBlocks) {
+						try {
+							game.printToLog("[INFO] Detected Training failure chance with Google MLKit: ${block.text}", tag = tag)
+							result = block.text.replace("%", "").trim().toInt()
+						} catch (_: NumberFormatException) {
+						}
 					}
 				}
+				latch.countDown()
 			}
-		}.addOnFailureListener {
-			game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
+			.addOnFailureListener {
+				game.printToLog("[ERROR] Failed to do text detection via Google's MLKit. Falling back to Tesseract.", tag = tag, isError = true)
+				mlkitFailed = true
+				latch.countDown()
+			}
+		
+		// Wait for the async operation to complete.
+		try {
+			latch.await(5, TimeUnit.SECONDS)
+		} catch (_: InterruptedException) {
+			game.printToLog("[ERROR] MLKit operation timed out", tag = tag, isError = true)
 		}
 		
-		// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
-		game.wait(0.1)
-		
+		// Fallback to Tesseract if ML Kit failed or didn't find result.
+		if (mlkitFailed || result == -1) {
+			tessBaseAPI.setImage(resultBitmap)
+			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+
+			try {
+				val detectedText = tessBaseAPI.utF8Text.replace("%", "")
+				game.printToLog("[INFO] Detected training failure chance with Tesseract: $detectedText", tag = tag)
+				result = detectedText.toInt()
+			} catch (_: NumberFormatException) {
+				game.printToLog("[ERROR] Could not convert \"${tessBaseAPI.utF8Text.replace("%", "")}\" to integer.", tag = tag, isError = true)
+				result = -1
+			} catch (e: Exception) {
+				game.printToLog("[ERROR] Cannot perform OCR using Tesseract: ${e.stackTraceToString()}", tag = tag, isError = true)
+				result = -1
+			}
+
+			tessBaseAPI.clear()
+		}
+
 		if (debugMode) {
 			game.printToLog("[DEBUG] Failure chance detected to be at $result%.")
 		} else {
@@ -861,27 +897,63 @@ class ImageUtils(context: Context, private val game: Game) {
 			val threshold = sharedPreferences.getInt("threshold", 230)
 			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
 			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace_afterThreshold.png", bwImage)
-			
+
 			// Create a InputImage object for Google's ML OCR.
-			val inputImage: InputImage = InputImage.fromBitmap(resizedBitmap, 0)
+			val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
+			Utils.matToBitmap(bwImage, resultBitmap)
+			val inputImage: InputImage = InputImage.fromBitmap(resultBitmap, 0)
 
-			// Count up all of the total stat gains for this training selection.
-			textRecognizer.process(inputImage).addOnSuccessListener {
-				if (it.textBlocks.isNotEmpty()) {
-					for (block in it.textBlocks) {
-						try {
-							Log.d(tag, "Detected Day Number for Extra Race: ${block.text}")
-							result = block.text.toInt()
-						} catch (_: NumberFormatException) {
+			// Use CountDownLatch to make the async operation synchronous.
+			val latch = CountDownLatch(1)
+			var mlkitFailed = false
+			
+			textRecognizer.process(inputImage)
+				.addOnSuccessListener { text ->
+					Log.d(tag, "[DEBUG] TESTING STARTS")
+					if (text.textBlocks.isNotEmpty()) {
+						for (block in text.textBlocks) {
+							try {
+								game.printToLog("[INFO] Detected Day Number for Extra Race with Google MLKit: ${block.text}", tag = tag)
+								result = block.text.toInt()
+							} catch (_: NumberFormatException) {
+							}
 						}
+						Log.d(tag, "[DEBUG] TESTING ENDS")
 					}
+					latch.countDown()
 				}
-			}.addOnFailureListener {
-				game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
+				.addOnFailureListener {
+					game.printToLog("[ERROR] Failed to do text detection via Google's MLKit. Falling back to Tesseract.", tag = tag, isError = true)
+					mlkitFailed = true
+					latch.countDown()
+				}
+			
+			// Wait for the async operation to complete.
+			try {
+				latch.await(5, TimeUnit.SECONDS)
+			} catch (_: InterruptedException) {
+				game.printToLog("[ERROR] MLKit operation timed out", tag = tag, isError = true)
 			}
+			
+			// Fallback to Tesseract if ML Kit failed or didn't find result.
+			if (mlkitFailed || result == -1) {
+				tessBaseAPI.setImage(resultBitmap)
+				tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
 
-			// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
-			game.wait(0.25)
+				try {
+					val detectedText = tessBaseAPI.utF8Text.replace("%", "")
+					game.printToLog("[INFO] Detected day for extra racing with Tesseract: $detectedText", tag = tag)
+					result = detectedText.toInt()
+				} catch (_: NumberFormatException) {
+					game.printToLog("[ERROR] Could not convert \"${tessBaseAPI.utF8Text.replace("%", "")}\" to integer.", tag = tag, isError = true)
+					result = -1
+				} catch (e: Exception) {
+					game.printToLog("[ERROR] Cannot perform OCR using Tesseract: ${e.stackTraceToString()}", tag = tag, isError = true)
+					result = -1
+				}
+
+				tessBaseAPI.clear()
+			}
 		}
 		
 		return result
@@ -928,7 +1000,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterCrop.png", cvImage)
 
 			// Convert the Mat directly to Bitmap and then pass it to the text reader.
-			val resultBitmap = createBitmap(cvImage.cols(), cvImage.rows())
+			var resultBitmap = createBitmap(cvImage.cols(), cvImage.rows())
 			Utils.matToBitmap(cvImage, resultBitmap)
 
 			// Thresh the grayscale cropped image to make it black and white.
@@ -937,7 +1009,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
 			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterThreshold.png", bwImage)
 
-			tessBaseAPI.setImage(croppedBitmap2)
+			resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
+			Utils.matToBitmap(bwImage, resultBitmap)
+			tessBaseAPI.setImage(resultBitmap)
 			
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
@@ -1019,8 +1093,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			val threshold = sharedPreferences.getInt("threshold", 230)
 			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
 			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints_afterThreshold.png", bwImage)
-			
-			tessBaseAPI.setImage(croppedBitmap)
+
+			val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
+			Utils.matToBitmap(bwImage, resultBitmap)
+			tessBaseAPI.setImage(resultBitmap)
 			
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
