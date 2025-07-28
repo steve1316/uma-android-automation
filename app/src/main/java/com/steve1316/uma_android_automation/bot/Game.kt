@@ -603,13 +603,13 @@ class Game(val myContext: Context) {
 			}
 			
 			// There is a mandatory race. Now confirm the selection and the resultant popup and then wait for the game to load.
-			wait(1.0)
+			wait(2.0)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 5, region = imageUtils.regionBottomHalf)
-			wait(5.0)
+			wait(6.0)
 			
 			// Skip the race if possible, otherwise run it manually.
-			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", region = imageUtils.regionBottomHalf).first == null) {
+			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
 				skipRace()
 			} else {
 				manualRace()
@@ -704,7 +704,7 @@ class Game(val myContext: Context) {
 			// Confirm the selection and the resultant popup and then wait for the game to load.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(3.0)
+			wait(5.0)
 			
 			// Skip the race if possible, otherwise run it manually.
 			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
@@ -750,12 +750,13 @@ class Game(val myContext: Context) {
 			printToLog("[RACE] Skipping race...")
 			
 			// Press the skip button and then wait for your result of the race to show.
-			wait(3.0)
+			wait(5.0)
 			findAndTapImage("race_skip", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(1.0)
+			wait(2.0)
 
 			// Now tap on the screen to get past the Race Result screen.
-			gestureUtils.tap(350.0, 750.0, "ok", taps = 3)
+			gestureUtils.tap(350.0, 450.0, "ok", taps = 3)
+			wait(2.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
