@@ -31,6 +31,7 @@ import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import java.io.StringReader
+import androidx.core.net.toUri
 
 class HomeFragment : Fragment() {
 	private val logTag: String = "[${MainActivity.loggerTag}]HomeFragment"
@@ -86,7 +87,7 @@ class HomeFragment : Fragment() {
 		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
 		
 		// Training Event Settings page
-		val character = sharedPreferences.getString("character", "Please select one in the Settings")!!
+		val character = sharedPreferences.getString("character", "Please select one in the Training Event Settings")!!
 		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
 		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
 		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", true)
@@ -120,16 +121,16 @@ class HomeFragment : Fragment() {
 		// Set default values if this is the user's first time.
 		
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
-			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Intelligence")
+			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
 			defaultCheck = true
 		}
 		
 		// Construct the Stat Prioritisation string.
 		var count = 1
 		var statPrioritizationString: String = if (defaultCheck) {
-			"Using Default Stat Prioritization:"
+			"📊 Using Default Stat Prioritization:"
 		} else {
-			"Stat Prioritization:"
+			"📊 Stat Prioritization:"
 		}
 		statPrioritization.forEach { stat ->
 			statPrioritizationString += "\n$count. $stat "
@@ -140,90 +141,99 @@ class HomeFragment : Fragment() {
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Now construct the strings to print them.
 		
-		val campaignString: String = if (campaign != "") {
-			campaign
-		} else {
-			"Please select one in the Settings"
-		}
-		
-		val characterString: String = if (selectAllCharacters) {
-			"All Characters Selected"
-		} else if (character == "" || character == "Please select one in the Settings") {
-			"Please select one in the Settings"
-		} else {
-			character
-		}
-		
-		val supportCardListString: String = if (selectAllSupportCards) {
-			"All Support Cards Selected"
-		} else if (supportList.isEmpty() || supportList[0] == "") {
-			"None Selected"
-		} else {
-			supportList.toString()
-		}
-		
-		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
-			"No Trainings blacklisted"
-		} else {
-			trainingBlacklist.joinToString(", ")
-		}
-		
 		val enableAutomaticRetryString: String = if (enableAutomaticRetry) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val skillPointString: String = if (enableSkillPointCheck) {
-			"Skill Point Check: Stop on $skillPointCheck Skill Points or more"
+			"✅ Stop on $skillPointCheck Skill Points or more"
 		} else {
-			"Skill Point Check: Disabled"
+			"❌"
 		}
 		
 		val enableFarmingFansString: String = if (enableFarmingFans) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val daysToRunExtraRacesString: String = if (enableFarmingFans) {
-			daysToRunExtraRaces.toString()
+			"📅 $daysToRunExtraRaces days"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val enablePopupCheckString: String = if (enablePopupCheck) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val enableStopOnMandatoryRaceString: String = if (enableStopOnMandatoryRace) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val debugModeString: String = if (debugMode) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
 		
 		val hideComparisonResultsString: String = if (hideComparisonResults) {
-			"Enabled"
+			"✅"
 		} else {
-			"Disabled"
+			"❌"
 		}
+		
+		// Add visual indicators for character and support card selections
+		val characterString: String = if (selectAllCharacters) {
+			"👥 All Characters Selected"
+		} else if (character == "" || character.contains("Please select")) {
+			"⚠️ Please select one in the Training Event Settings"
+		} else {
+			"👤 $character"
+		}
+		
+		val supportCardListString: String = if (selectAllSupportCards) {
+			"🃏 All Support Cards Selected"
+		} else if (supportList.isEmpty() || supportList[0] == "") {
+			"⚠️ None Selected"
+		} else {
+			"🃏 $supportList"
+		}
+		
+		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
+			"✅ No Trainings blacklisted"
+		} else {
+			// Sort the blacklisted trainings for display according to the default order.
+			val defaultTrainingOrder = listOf("Speed", "Stamina", "Power", "Guts", "Wits")
+			val sortedBlacklist = trainingBlacklist.sortedBy { defaultTrainingOrder.indexOf(it) }
+			
+			"🚫 ${sortedBlacklist.joinToString(", ")}"
+		}
+		
+		// Add visual indicator for campaign selection
+		val campaignString: String = if (campaign != "") {
+			"🎯 $campaign"
+		} else {
+			"⚠️ Please select one in the Select Campaign option"
+		}
+		
+		// Add visual indicators for OCR settings.
+		val thresholdString = "🔍 OCR Threshold: $threshold"
+		val confidenceString = "🎯 Minimum OCR Confidence: $confidence"
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Update the TextView here based on the information of the SharedPreferences.
 		
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
-		settingsStatusTextView.setTextColor(Color.WHITE)
 		settingsStatusTextView.text =
-				"Campaign Selected: $campaignString Campaign\n" +
+				"Campaign Selected: $campaignString\n\n" +
 				"---------- Training Event Options ----------\n" +
 				"Character Selected: $characterString\n" +
 				"Support(s) Selected: $supportCardListString\n\n" +
@@ -232,13 +242,13 @@ class HomeFragment : Fragment() {
 				"$statPrioritizationString\n" +
 				"Maximum Failure Chance Allowed: $maximumFailureChance%\n\n" +
 				"---------- Tesseract OCR Optimization ----------\n" +
-				"OCR Threshold: $threshold\n" +
+				"$thresholdString\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
-				"Minimum OCR Confidence: $confidence\n\n" +
+				"$confidenceString\n\n" +
 				"---------- Misc Options ----------\n" +
 				"Prioritize Farming Fans: $enableFarmingFansString\n" +
 				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
-				"$skillPointString\n" +
+				"Skill Point Check: $skillPointString\n" +
 				"Popup Check: $enablePopupCheckString\n" +
 				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n" +
 				"Debug Mode: $debugModeString\n" +
@@ -251,8 +261,8 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Force the user to go through the Settings in order to set this required setting.
-		startButton.isEnabled = (campaignString != "Please select one in the Settings" && (characterString != "Please select one in the Settings" || characterString == "All Characters Selected"))
-		
+		startButton.isEnabled = !campaignString.contains("Please select") && !characterString.contains("Please select")
+
 		return homeFragmentView
 	}
 	
@@ -291,8 +301,9 @@ class HomeFragment : Fragment() {
 			.setUpdateXML("https://raw.githubusercontent.com/steve1316/uma-android-automation/master/app/update.xml")
 			.start()
 	}
-	
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+	@Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
 			// Start up the MediaProjection service after the user accepts the onscreen prompt.
 			myContext.startService(data?.let { MediaProjectionService.getStartIntent(myContext, resultCode, data) })
@@ -343,7 +354,7 @@ class HomeFragment : Fragment() {
 				setMessage(R.string.overlay_disabled_message)
 				setPositiveButton(R.string.go_to_settings) { _, _ ->
 					// Send the user to the Overlay Settings.
-					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireContext().packageName}"))
+					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${requireContext().packageName}".toUri())
 					startActivity(intent)
 				}
 				setNegativeButton(android.R.string.cancel, null)
@@ -375,29 +386,9 @@ class HomeFragment : Fragment() {
 				return true
 			}
 		}
-		
-		// Moves the user to the Accessibility Settings if the service is not detected.
-		AlertDialog.Builder(myContext).apply {
-			setTitle(R.string.accessibility_disabled)
-			setMessage(R.string.accessibility_disabled_message)
-			setPositiveButton(R.string.go_to_settings) { _, _ ->
-				Log.d(logTag, "Accessibility Service is not detected. Moving user to Accessibility Settings.")
-				val accessibilitySettingsIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-				myContext.startActivity(accessibilitySettingsIntent)
-			}
-			setNegativeButton(android.R.string.cancel, null)
-			show()
-		}
 
-		showRestrictedSettingsDialog()
-		return false
-	}
-
-	/**
-	 * Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
-	 * The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
-	 */
-	private fun showRestrictedSettingsDialog() {
+		// Shows a dialog explaining how to enable Accessibility Service when restricted settings are detected.
+		// The dialog provides options to navigate to App Info or Accessibility Settings to complete the setup.
 		AlertDialog.Builder(myContext).apply {
 			setTitle(R.string.accessibility_disabled)
 			setMessage(
@@ -405,14 +396,14 @@ class HomeFragment : Fragment() {
             To enable Accessibility Service:
             
             1. Tap "Go to App Info".
-            2. Tap the 3-dot menu in the top right.
+            2. Tap the 3-dot menu in the top right. If not available, you can skip to step 4.
             3. Tap "Allow restricted settings".
             4. Return to Accessibility Settings and enable the service.
             """.trimIndent()
 			)
 			setPositiveButton("Go to App Info") { _, _ ->
 				val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-					data = Uri.parse("package:${myContext.packageName}")
+					data = "package:${myContext.packageName}".toUri()
 				}
 				startActivity(intent)
 			}
@@ -422,6 +413,8 @@ class HomeFragment : Fragment() {
 			}
 			setNegativeButton(android.R.string.cancel, null)
 		}.show()
+
+		return false
 	}
 	
 	/**

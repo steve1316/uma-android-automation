@@ -1,14 +1,37 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.1.2</latestVersion>
+    <latestVersion>2.2.0</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.1.2 - Changelog 
+v2.2.0 - Changelog 
  
 New 
---- 
-- Updated character data from 11/19/21 to 12/31/21 including Tamamo Cross, Haru Urara (New Year) and TM Opera O (New Year).
-- Updated support card data from 11/19/21 to 12/31/21.
+---
+- Migrated image assets and bot logic from JP to Global for URA Finale. As a result, many parts of the bot were changed and fixed for the changes made to the Global version.
+- Added detection and handling for New Year and Summer Camp events.
+- Introduced color-checking for detecting injuries more reliably.
+- Added emojis and clearer formatting to in-app settings log.
+- Floating overlay button now includes animations.
+- New script to scrape GameTora for Global data.
+
+Improvements
+---
+- Improved OCR accuracy by switching to English-trained model and doubling image resolution.
+- Clarified logs, UI descriptions, and instructions for better user understanding.
+- Enhanced handling of race-related popups and mood recovery flow.
+- Updated UI to support light and dark modes correctly.
+- More reliable skipping through race screens and event dialogs.
+- Campaign system refactored for easier extension in the future i.e. Ao Haru.
+
+Fixed
+---
+- Fans gained from races now correctly detected.
+- Training failure chances are now accurately read.
+- Fixed race flow issues during Summer and mandatory races.
+- Resolved issue where OCR failed due to missing or unreadable images.
+- Corrected improper bot behavior when starting on restricted screens.
+- Addressed bugs with Training Goal popups and unnecessary taps.
+- Fixed theme bug making logs unreadable when the system theme was set to light mode.
     </releaseNotes>
   </update>
 </AppUpdater>

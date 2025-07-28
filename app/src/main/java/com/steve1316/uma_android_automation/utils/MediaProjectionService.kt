@@ -30,6 +30,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.*
+import androidx.core.graphics.createBitmap
 
 /**
  * The MediaProjection service that will control taking screenshots.
@@ -80,7 +81,7 @@ class MediaProjectionService : Service() {
 				val rowPadding: Int = rowStride - pixelStride * displayWidth
 				
 				// Create the Bitmap.
-				sourceBitmap = Bitmap.createBitmap(displayWidth + rowPadding / pixelStride, displayHeight, Bitmap.Config.ARGB_8888)
+				sourceBitmap = createBitmap(displayWidth + rowPadding / pixelStride, displayHeight)
 				sourceBitmap.copyPixelsFromBuffer(buffer)
 				
 				// Now write the Bitmap to the specified file inside the /files/temp/ folder. This adds about 500-600ms to runtime every time this is called when Debug Mode is on.
@@ -251,7 +252,7 @@ class MediaProjectionService : Service() {
 		private val tagOrientationChangeCallback: String = "[${MainActivity.loggerTag}]OrientationChangeCallback"
 		
 		override fun onOrientationChanged(orientation: Int) {
-			val newRotation: Int = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+			val newRotation: Int = (getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
 			if (newRotation != oldRotation) {
 				Log.d(tagOrientationChangeCallback, "Device was rotated. Reconstructing the Virtual Display now...")
 				oldRotation = newRotation
@@ -261,7 +262,7 @@ class MediaProjectionService : Service() {
 					
 					// Now re-create the VirtualDisplay based on the new width and height of the rotated screen.
 					createVirtualDisplay()
-				} catch (e: Exception) {
+				} catch (_: Exception) {
 					Log.e(tagOrientationChangeCallback, "Failed to perform cleanup and recreating the VirtualDisplay after device rotation.")
 					Toast.makeText(
 						myContext, "Failed to perform cleanup and recreating the VirtualDisplay after device rotation.",
@@ -313,11 +314,11 @@ class MediaProjectionService : Service() {
 	private fun startMediaProjection(resultCode: Int, data: Intent) {
 		// Retrieve the MediaProjection object.
 		if (mediaProjection == null) {
-			mediaProjection = (getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).getMediaProjection(resultCode, data)
+			mediaProjection = (getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).getMediaProjection(resultCode, data)
 		}
 		
 		// Get the WindowManager object.
-		windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+		windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 		
 		// Get the DefaultDisplay object.
 		defaultDisplay = windowManager.defaultDisplay

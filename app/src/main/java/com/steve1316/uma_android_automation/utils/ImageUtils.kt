@@ -21,6 +21,9 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Integer.max
 import java.text.DecimalFormat
+import androidx.core.graphics.scale
+import androidx.core.graphics.get
+import androidx.core.graphics.createBitmap
 
 
 /**
@@ -33,7 +36,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val decimalFormat = DecimalFormat("#.###")
 	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	private val tessBaseAPI: TessBaseAPI
-	private val tesseractLanguages = arrayListOf("jpn")
+	private val tesseractLanguages = arrayListOf("eng")
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -93,12 +96,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		val matchFilePath: String = myContext.getExternalFilesDir(null)?.absolutePath + "/temp"
 		updateMatchFilePath(matchFilePath)
 		
-		// Initialize Tesseract with the jpn.traineddata model.
+		// Initialize Tesseract with the traineddata model.
 		initTesseract()
 		tessBaseAPI = TessBaseAPI()
 		
 		// Start up Tesseract.
-		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "jpn")
+		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "eng")
 		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
 	}
 	
@@ -155,10 +158,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		while (scales.isNotEmpty()) {
-			val newScale: Double = decimalFormat.format(scales.removeFirst()).toDouble()
+			val newScale: Double = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
-				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
+                templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
 			} else {
 				templateBitmap
 			}
@@ -213,13 +216,11 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 			
 			if (matchCheck) {
-				if (debugMode) {
+				if (debugMode && matchFilePath != "") {
 					// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for debugging purposes to see if this
 					// algorithm found the match accurately or not.
-					if (matchFilePath != "") {
-						Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
-						Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
-					}
+					Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
+					Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
 				}
 				
 				// Center the coordinates so that any tap gesture would be directed at the center of that match location instead of the default
@@ -296,10 +297,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Set templateMat at whatever scale it found the very first match for the next while loop.
 		while (!matchCheck && scales.isNotEmpty()) {
-			newScale = decimalFormat.format(scales.removeFirst()).toDouble()
+			newScale = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
 			val tmp: Bitmap = if (newScale != 1.0) {
-				Bitmap.createScaledBitmap(templateBitmap, (templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt(), true)
+                templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
 			} else {
 				templateBitmap
 			}
@@ -452,7 +453,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		var templateBitmap: Bitmap?
 		
 		// Get the Bitmap from the template image file inside the specified folder.
-		myContext.assets?.open("images/$templateName.webp").use { inputStream ->
+		myContext.assets?.open("images/$templateName.png").use { inputStream ->
 			// Get the Bitmap from the template image file and then start matching.
 			templateBitmap = BitmapFactory.decodeStream(inputStream)
 		}
@@ -600,7 +601,47 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return matchLocations
 	}
-	
+
+	/**
+	 * Check if the color at the specified coordinates matches the given RGB value.
+	 *
+	 * @param x X coordinate to check.
+	 * @param y Y coordinate to check.
+	 * @param rgb Expected RGB values as red, blue and green (0-255).
+	 * @param tolerance Tolerance for color matching (0-255). Defaults to 0 for exact match.
+	 * @return True if the color at the coordinates matches the expected RGB values within tolerance, false otherwise.
+	 */
+	fun checkColorAtCoordinates(x: Int, y: Int, rgb: IntArray, tolerance: Int = 0): Boolean {
+		val sourceBitmap = getSourceBitmap()
+
+		// Check if coordinates are within bounds.
+		if (x < 0 || y < 0 || x >= sourceBitmap.width || y >= sourceBitmap.height) {
+			if (debugMode) {
+				game.printToLog("[WARNING] Coordinates ($x, $y) are out of bounds for bitmap size ${sourceBitmap.width}x${sourceBitmap.height}", tag = tag)
+			}
+			return false
+		}
+
+		// Get the pixel color at the specified coordinates.
+		val pixel = sourceBitmap[x, y]
+
+		// Extract RGB values from the pixel.
+		val actualRed = android.graphics.Color.red(pixel)
+		val actualGreen = android.graphics.Color.green(pixel)
+		val actualBlue = android.graphics.Color.blue(pixel)
+
+		// Check if the colors match within the specified tolerance.
+		val redMatch = kotlin.math.abs(actualRed - rgb[0]) <= tolerance
+		val greenMatch = kotlin.math.abs(actualGreen - rgb[1]) <= tolerance
+		val blueMatch = kotlin.math.abs(actualBlue - rgb[2]) <= tolerance
+
+		if (debugMode) {
+			game.printToLog("[DEBUG] Color check at ($x, $y): Expected RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]}), Actual RGB($actualRed, $actualGreen, $actualBlue), Match: ${redMatch && greenMatch && blueMatch}", tag = tag)
+		}
+
+		return redMatch && greenMatch && blueMatch
+	}
+
 	/**
 	 * Perform OCR text detection using Tesseract along with some image manipulation via thresholding to make the cropped screenshot black and white using OpenCV.
 	 *
@@ -618,8 +659,8 @@ class ImageUtils(context: Context, private val game: Game) {
 		val newX: Int
 		val newY: Int
 		var croppedBitmap: Bitmap = if (isTablet) {
-			newX = max(0, matchLocation.x.toInt() - (250).toInt())
-			newY = max(0, matchLocation.y.toInt() + (154).toInt())
+			newX = max(0, matchLocation.x.toInt() - (250))
+			newY = max(0, matchLocation.y.toInt() + (154))
 			Bitmap.createBitmap(sourceBitmap, newX, newY, 746, 85)
 		} else {
 			newX = max(0, matchLocation.x.toInt() - 125)
@@ -629,7 +670,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		val tempImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, tempImage)
-		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
 		
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
@@ -646,15 +687,17 @@ class ImageUtils(context: Context, private val game: Game) {
 		Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 		
 		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
 		
-		// Thresh the grayscale cropped image to make black and white.
+		// Thresh the grayscale cropped image to make it black and white.
 		val bwImage = Mat()
 		val threshold = sharedPreferences.getInt("threshold", 230)
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-		Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
 		
-		val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugEventTitleText_afterThreshold.png")
+		// Convert the Mat directly to Bitmap and then pass it to the text reader.
+		val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
+		Utils.matToBitmap(bwImage, resultBitmap)
 		tessBaseAPI.setImage(resultBitmap)
 		
 		// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
@@ -681,18 +724,29 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun findTrainingFailureChance(): Int {
 		// Crop the source screenshot to hold the success percentage only.
 		val (trainingSelectionLocation, sourceBitmap) = findImage("training_failure_chance")
+		if (trainingSelectionLocation == null) {
+			return -1
+		}
 		
 		val croppedBitmap: Bitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 75, trainingSelectionLocation.y.toInt() - 25, 120, 50)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 65, trainingSelectionLocation.y.toInt() + 23, 130, 50)
 		} else {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation!!.x.toInt() + 55, trainingSelectionLocation.y.toInt() - 17, 89, 37)
+			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
 		}
+
+		val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
 		
 		// Save the cropped image for debugging purposes.
 		val tempMat = Mat()
-		Utils.bitmapToMat(croppedBitmap, tempMat)
+		Utils.bitmapToMat(resizedBitmap, tempMat)
 		Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2GRAY)
-		Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance.png", tempMat)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterCrop.png", tempMat)
+
+		// Thresh the grayscale cropped image to make it black and white.
+		val bwImage = Mat()
+		val threshold = sharedPreferences.getInt("threshold", 230)
+		Imgproc.threshold(tempMat, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterThreshold.png", bwImage)
 		
 		// Create a InputImage object for Google's ML OCR.
 		val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
@@ -700,11 +754,11 @@ class ImageUtils(context: Context, private val game: Game) {
 		// Start the asynchronous operation of text detection.
 		var result = 0
 		textRecognizer.process(inputImage).addOnSuccessListener {
-			if (it.textBlocks.size != 0) {
+			if (it.textBlocks.isNotEmpty()) {
 				for (block in it.textBlocks) {
 					result = try {
 						block.text.replace("%", "").trim().toInt()
-					} catch (e: NumberFormatException) {
+					} catch (_: NumberFormatException) {
 						0
 					}
 				}
@@ -737,25 +791,25 @@ class ImageUtils(context: Context, private val game: Game) {
 		val numberOfStamina = findAll("stat_stamina_block", region = customRegion).size
 		val numberOfPower = findAll("stat_power_block", region = customRegion).size
 		val numberOfGuts = findAll("stat_guts_block", region = customRegion).size
-		val numberOfIntelligence = findAll("stat_intelligence_block", region = customRegion).size
+		val numberOfWit = findAll("stat_wit_block", region = customRegion).size
 		var totalStatGain = 0
 		
 		// This is assuming Great Mood with +20% stat modifier.
 		when (currentStat) {
 			"Speed" -> {
-				totalStatGain += (numberOfSpeed * 20) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 20) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Stamina" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 20) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 20) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Power" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 20) + (numberOfGuts * 10) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 20) + (numberOfGuts * 10) + (numberOfWit * 10) + 10
 			}
 			"Guts" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 20) + (numberOfIntelligence * 10) + 10
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 20) + (numberOfWit * 10) + 10
 			}
-			"Intelligence" -> {
-				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfIntelligence * 20) + 10
+			"Wit" -> {
+				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 20) + 10
 			}
 		}
 		
@@ -776,7 +830,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun determineDayForExtraRace(): Int {
 		var result = -1
-		val (energyTextLocation, sourceBitmap) = findImage("energy")
+		val (energyTextLocation, sourceBitmap) = findImage("energy", tries = 1, region = regionTopHalf)
 		
 		if (energyTextLocation != null) {
 			// Crop the source screenshot to only contain the day number.
@@ -790,35 +844,44 @@ class ImageUtils(context: Context, private val game: Game) {
 				if (isTablet) {
 					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
 				} else {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 96, 147, 88)
+					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 100, 140, 100)
 				}
 			}
 			
+			val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
+
+			// Make the cropped screenshot grayscale.
 			val cvImage = Mat()
-			Utils.bitmapToMat(croppedBitmap, cvImage)
+			Utils.bitmapToMat(resizedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace_afterCrop.png", cvImage)
+
+			// Thresh the grayscale cropped image to make it black and white.
+			val bwImage = Mat()
+			val threshold = sharedPreferences.getInt("threshold", 230)
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugDayForExtraRace_afterThreshold.png", bwImage)
 			
 			// Create a InputImage object for Google's ML OCR.
-			val inputImage: InputImage = InputImage.fromBitmap(croppedBitmap, 0)
-			
+			val inputImage: InputImage = InputImage.fromBitmap(resizedBitmap, 0)
+
 			// Count up all of the total stat gains for this training selection.
 			textRecognizer.process(inputImage).addOnSuccessListener {
-				if (it.textBlocks.size != 0) {
+				if (it.textBlocks.isNotEmpty()) {
 					for (block in it.textBlocks) {
 						try {
 							Log.d(tag, "Detected Day Number for Extra Race: ${block.text}")
 							result = block.text.toInt()
-						} catch (e: NumberFormatException) {
+						} catch (_: NumberFormatException) {
 						}
 					}
 				}
 			}.addOnFailureListener {
 				game.printToLog("[ERROR] Failed to do text detection via Google's ML Kit on Bitmap.", tag = tag, isError = true)
 			}
-			
+
 			// Wait a little bit for the asynchronous operations of Google's OCR to finish. Since the cropped region is really small, the asynchronous operations should be really fast.
-			game.wait(0.1)
+			game.wait(0.25)
 		}
 		
 		return result
@@ -841,7 +904,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		val cvImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, cvImage)
-		Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
+		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
 		
 		// Determine if the extra race has double star prediction.
 		var predictionCheck = false
@@ -850,22 +913,31 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		return if (predictionCheck) {
+			if (debugMode) game.printToLog("[DEBUG] This race has double predictions. Now checking how many fans this race gives.", tag = tag)
+
 			// Crop the source screenshot to show only the fans.
 			val croppedBitmap2 = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (534 * 1.40).toInt(), extraRaceLocation.y.toInt() - (75 * 1.34).toInt(), 221, 40)
+				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (625 * 1.40).toInt(), extraRaceLocation.y.toInt() - (75 * 1.34).toInt(), 320, 45)
 			} else {
-				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 534, extraRaceLocation.y.toInt() - 75, 150, 30)
+				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 625, extraRaceLocation.y.toInt() - 75, 250, 35)
 			}
 			
 			// Make the cropped screenshot grayscale.
 			Utils.bitmapToMat(croppedBitmap2, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			
-			// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-			Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans.png", cvImage)
-			
-			val resultBitmap = BitmapFactory.decodeFile("$matchFilePath/debugExtraRaceFans.png")
-			tessBaseAPI.setImage(resultBitmap)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterCrop.png", cvImage)
+
+			// Convert the Mat directly to Bitmap and then pass it to the text reader.
+			val resultBitmap = createBitmap(cvImage.cols(), cvImage.rows())
+			Utils.matToBitmap(cvImage, resultBitmap)
+
+			// Thresh the grayscale cropped image to make it black and white.
+			val bwImage = Mat()
+			val threshold = sharedPreferences.getInt("threshold", 230)
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterThreshold.png", bwImage)
+
+			tessBaseAPI.setImage(croppedBitmap2)
 			
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
@@ -882,15 +954,22 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			// Format the string to be converted to an integer.
 			Log.d(tag, "Detected number of fans before formatting: $result")
-			result = result.replace(",", "").replace(".", "").replace("+", "").replace("-", "")
-				.replace(">", "").replace("<", "")
+			result = result
+				.replace(",", "")
+				.replace(".", "")
+				.replace("+", "")
+				.replace("-", "")
+				.replace(">", "")
+				.replace("<", "")
 				.replace("(", "")
-				.replace("人", "").replace("ォ", "").trim()
+				.replace("人", "")
+				.replace("ォ", "")
+				.replace("fans", "").trim()
 			
 			try {
 				Log.d(tag, "Converting $result to integer for fans")
 				result.toInt()
-			} catch (e: NumberFormatException) {
+			} catch (_: NumberFormatException) {
 				-1
 			}
 		} else {
@@ -919,7 +998,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 * @return Number of skill points or -1 if not found.
 	 */
 	fun determineSkillPoints(): Int {
-		val (skillPointLocation, sourceBitmap) = findImage("skill_points")
+		val (skillPointLocation, sourceBitmap) = findImage("skill_points", tries = 1)
 		
 		return if (skillPointLocation != null) {
 			val croppedBitmap = if (isTablet) {
@@ -928,11 +1007,18 @@ class ImageUtils(context: Context, private val game: Game) {
 				val new = Pair(skillPointLocation.x.toInt() - rel(70), skillPointLocation.y.toInt() + rel(28))
 				Bitmap.createBitmap(sourceBitmap!!, new.first, new.second, rel(135), rel(70))
 			}
-			
+
+			// Make the cropped screenshot grayscale.
 			val cvImage = Mat()
 			Utils.bitmapToMat(croppedBitmap, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-			Imgcodecs.imwrite("$matchFilePath/debugSkillPoints.png", cvImage)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints_afterCrop.png", cvImage)
+
+			// Thresh the grayscale cropped image to make it black and white.
+			val bwImage = Mat()
+			val threshold = sharedPreferences.getInt("threshold", 230)
+			Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
+			if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugSkillPoints_afterThreshold.png", bwImage)
 			
 			tessBaseAPI.setImage(croppedBitmap)
 			
@@ -952,7 +1038,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			try {
 				Log.d(tag, "Converting $result to integer for skill points")
 				result.toInt()
-			} catch (e: NumberFormatException) {
+			} catch (_: NumberFormatException) {
 				-1
 			}
 		} else {
