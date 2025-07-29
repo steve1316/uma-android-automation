@@ -1102,8 +1102,7 @@ class Game(val myContext: Context) {
 		return if (firstTrainingCheck && currentMood == "Normal" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("[MOOD] Current mood is Normal. Not recovering mood due to firstTrainingCheck flag being active. Will need to complete a training first before being allowed to recover mood.")
 			false
-
-		} else if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
+		} else if ((currentMood == "Bad" || currentMood == "Normal") && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("[MOOD] Current mood is not good. Recovering mood now.")
 			if (!findAndTapImage("recover_mood", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
 				findAndTapImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
