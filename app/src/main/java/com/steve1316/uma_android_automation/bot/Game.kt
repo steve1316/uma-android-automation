@@ -742,6 +742,7 @@ class Game(val myContext: Context) {
 				val fans = imageUtils.determineExtraRaceFans(extraRaceLocation[count], sourceBitmap!!, templateBitmap!!)
 				if (count == 0 && fans == -1) {
 					// If the fans were unable to be fetched or the race does not have double predictions for the first attempt, skip racing altogether.
+					listOfFans.add(fans)
 					break
 				}
 				listOfFans.add(fans)
