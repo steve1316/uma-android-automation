@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.campaigns.AoHaru
+import com.steve1316.uma_android_automation.utils.BotService
 import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
@@ -1080,6 +1081,8 @@ class Game(val myContext: Context) {
 			printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.")
 			notificationMessage = "Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot."
 			return false
+		} else if (!BotService.isRunning) {
+			throw InterruptedException()
 		}
 		
 		return true
