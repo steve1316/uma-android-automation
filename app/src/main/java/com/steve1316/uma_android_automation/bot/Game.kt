@@ -248,7 +248,7 @@ class Game(val myContext: Context) {
 	 * @return True if the bot is at the Main screen. Otherwise false.
 	 */
 	fun checkMainScreen(): Boolean {
-		return if (imageUtils.findImage("tazuna", tries = 2, region = imageUtils.regionTopHalf, suppressError = true).first != null &&
+		return if (imageUtils.findImage("tazuna", tries = 2, region = imageUtils.regionTopHalf).first != null &&
 			imageUtils.findImage("race_select_mandatory", tries = 2, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("\n[INFO] Current bot location is at Main screen.")
 			true
