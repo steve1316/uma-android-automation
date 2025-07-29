@@ -167,10 +167,30 @@ class Game(val myContext: Context) {
 		
 		return if (tempLocation != null) {
 			Log.d(tag, "Found and going to tap: $imageName")
-			gestureUtils.tap(tempLocation.x, tempLocation.y, imageName, taps = taps)
+			tap(tempLocation.x, tempLocation.y, imageName, taps = taps)
 			true
 		} else {
 			false
+		}
+	}
+
+	/**
+	 * Performs a tap on the screen at the coordinates and then will wait until the game processes the server request and gets a response back.
+	 *
+	 * @param x The x-coordinate.
+	 * @param y The y-coordinate.
+	 * @param imageName The template image name to use for tap location randomization.
+	 * @param taps The number of taps.
+	 */
+	fun tap(x: Double, y: Double, imageName: String, taps: Int = 1) {
+		// Perform the tap.
+		gestureUtils.tap(x, y, imageName, taps = taps)
+
+		// Now check if the game is waiting for a server response and wait if necessary.
+		wait(0.20)
+		while (imageUtils.findImage("connecting", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null) {
+			printToLog("[INFO] Detected that the game is awaiting a response from the server from the \"Connecting\" text at the top of the screen. Waiting a few seconds...")
+			wait(1.0)
 		}
 	}
 
@@ -474,12 +494,12 @@ class Game(val myContext: Context) {
 						
 						if (imageUtils.isTablet) {
 							if (training == "Stamina") {
-								gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.05).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
+								tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.05).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
 							} else {
-								gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.36).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
+								tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.36).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
 							}
 						} else {
-							gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth(newX.toInt()), speedStatTextLocation.y + imageUtils.relHeight(newY), "training_option_circular")
+							tap(speedStatTextLocation.x + imageUtils.relWidth(newX.toInt()), speedStatTextLocation.y + imageUtils.relHeight(newY), "training_option_circular")
 						}
 						
 						failureChance = imageUtils.findTrainingFailureChance()
@@ -719,7 +739,7 @@ class Game(val myContext: Context) {
 		}
 		
 		if (selectedLocation != null) {
-			gestureUtils.tap(selectedLocation.x + imageUtils.relWidth(100), selectedLocation.y, "training_event_active")
+			tap(selectedLocation.x + imageUtils.relWidth(100), selectedLocation.y, "training_event_active")
 		}
 		
 		printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.")
@@ -820,9 +840,9 @@ class Game(val myContext: Context) {
 				
 				// Select the next extra race.
                 if (imageUtils.isTablet) {
-                    gestureUtils.tap(extraRaceLocation[count].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[count].y + imageUtils.relHeight((150 * 1.50).toInt()), "race_extra_selection")
+                    tap(extraRaceLocation[count].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[count].y + imageUtils.relHeight((150 * 1.50).toInt()), "race_extra_selection")
                 } else {
-                    gestureUtils.tap(extraRaceLocation[count].x - imageUtils.relWidth(100), extraRaceLocation[count].y + imageUtils.relHeight(150), "race_extra_selection")
+                    tap(extraRaceLocation[count].x - imageUtils.relWidth(100), extraRaceLocation[count].y + imageUtils.relHeight(150), "race_extra_selection")
                 }
 
                 wait(0.5)
@@ -848,11 +868,11 @@ class Game(val myContext: Context) {
 				printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.")
 
 				// Select the extra race that matches the double star prediction and the most fan gain.
-				gestureUtils.tap(extraRaceLocation[index].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[index].y - imageUtils.relHeight(70), "race_extra_selection")
+				tap(extraRaceLocation[index].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[index].y - imageUtils.relHeight(70), "race_extra_selection")
 			} else {
 				// If no maximum is determined, select the very first extra race.
 				printToLog("[RACE] Selecting the first Extra Race by default.")
-				gestureUtils.tap(extraRaceLocation[0].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[0].y - imageUtils.relHeight(70), "race_extra_selection")
+				tap(extraRaceLocation[0].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[0].y - imageUtils.relHeight(70), "race_extra_selection")
 			}
 			
 			// Confirm the selection and the resultant popup and then wait for the game to load.
@@ -909,7 +929,7 @@ class Game(val myContext: Context) {
 			wait(2.0)
 
 			// Now tap on the screen to get past the Race Result screen.
-			gestureUtils.tap(350.0, 450.0, "ok", taps = 3)
+			tap(350.0, 450.0, "ok", taps = 3)
 			wait(4.0)
 			
 			// Check if the race needed to be retried.
@@ -992,7 +1012,7 @@ class Game(val myContext: Context) {
 			throw IllegalStateException("Bot has run out of retry attempts for racing. Stopping the bot now...")
 		}
 
-		gestureUtils.tap(450.0, 850.0, "ok", taps = 3)
+		tap(450.0, 850.0, "ok", taps = 3)
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
@@ -1000,7 +1020,7 @@ class Game(val myContext: Context) {
 			wait(0.5)
 
 			// Now tap on the screen to get to the next screen.
-			gestureUtils.tap(350.0, 750.0, "ok", taps = 3)
+			tap(350.0, 750.0, "ok", taps = 3)
 			
 			// Now press the end button to finish the race.
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
