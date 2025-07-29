@@ -910,7 +910,7 @@ class Game(val myContext: Context) {
 
 			// Now tap on the screen to get past the Race Result screen.
 			gestureUtils.tap(350.0, 450.0, "ok", taps = 3)
-			wait(3.0)
+			wait(4.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
@@ -960,7 +960,7 @@ class Game(val myContext: Context) {
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(3.0)
+			wait(4.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
@@ -969,7 +969,7 @@ class Game(val myContext: Context) {
 				raceRetries--
 			} else {
 				// Check if a Trophy was acquired.
-				if (findAndTapImage("race_accept_trophy", tries = 5, region = imageUtils.regionBottomHalf)) {
+				if (findAndTapImage("race_accept_trophy", tries = 10, region = imageUtils.regionBottomHalf)) {
 					printToLog("[RACE] Closing popup to claim trophy...")
 				}
 				
@@ -1158,6 +1158,9 @@ class Game(val myContext: Context) {
 		} else if (findAndTapImage("race_retry", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
 			printToLog("[INFO] There is a race retry popup.")
 			wait(5.0)
+		} else if (findAndTapImage("race_accept_trophy", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
+			printToLog("[INFO] There is a possible popup to accept a trophy.")
+			finishRace(true, isExtra = true)
 		} else if (!BotService.isRunning) {
 			throw InterruptedException()
 		}
