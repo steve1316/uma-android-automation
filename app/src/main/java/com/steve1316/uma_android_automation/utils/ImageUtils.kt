@@ -45,6 +45,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	// SharedPreferences
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	private val campaign: String = sharedPreferences.getString("campaign", "")!!
+	private var confidence: Double = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
 	private var customScale: Double = sharedPreferences.getString("customScale", "1.0")!!.toDouble()
 	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 	
@@ -179,7 +180,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		val setConfidence: Double = if (customConfidence == 0.0) {
-			0.8
+			confidence
 		} else {
 			customConfidence
 		}
@@ -342,7 +343,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		val setConfidence: Double = if (customConfidence == 0.0) {
-			0.8
+			confidence
 		} else {
 			customConfidence
 		}
