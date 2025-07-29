@@ -1008,44 +1008,47 @@ class Game(val myContext: Context) {
 	 * @return True if the bot successfully recovered mood. Otherwise false.
 	 */
 	fun recoverMood(): Boolean {
-		if (!firstTrainingCheck) {
-			printToLog("\n[MOOD] Detecting current mood.")
-			
-			// Detect what Mood the bot is at.
-			val currentMood: String = when {
-				imageUtils.findImage("mood_good", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
-					"Good"
-				}
-				imageUtils.findImage("mood_great", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
-					"Great"
-				}
-				else -> {
-					"Bad"
-				}
+		printToLog("\n[MOOD] Detecting current mood.")
+
+		// Detect what Mood the bot is at.
+		val currentMood: String = when {
+			imageUtils.findImage("mood_normal", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
+				"Normal"
 			}
-			
-			// Only recover mood if its below Good mood and its not Summer.
-			return if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
-				printToLog("[MOOD] Current mood is not good. Recovering mood now.")
-				if (!findAndTapImage("recover_mood", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
-					findAndTapImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
-				}
-				
-				// Do the date if it is unlocked.
-				if (findAndTapImage("recover_mood_date", tries = 1, region = imageUtils.regionMiddle, suppressError = true)) {
-					wait(1.0)
-				}
-				
-				findAndTapImage("ok", region = imageUtils.regionMiddle, suppressError = true)
-				raceRepeatWarningCheck = false
-				true
-			} else {
-				printToLog("[MOOD] Current mood is good enough. Moving on...")
-				false
+			imageUtils.findImage("mood_good", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
+				"Good"
+			}
+			imageUtils.findImage("mood_great", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null -> {
+				"Great"
+			}
+			else -> {
+				"Bad"
 			}
 		}
-		
-		return false
+
+		// Only recover mood if its below Good mood and its not Summer.
+		return if (firstTrainingCheck && currentMood == "Normal" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
+			printToLog("[MOOD] Current mood is Normal. Not recovering mood due to firstTrainingCheck flag being active. Will need to complete a training first before being allowed to recover mood.")
+			false
+
+		} else if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
+			printToLog("[MOOD] Current mood is not good. Recovering mood now.")
+			if (!findAndTapImage("recover_mood", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
+				findAndTapImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
+			}
+
+			// Do the date if it is unlocked.
+			if (findAndTapImage("recover_mood_date", tries = 1, region = imageUtils.regionMiddle, suppressError = true)) {
+				wait(1.0)
+			}
+
+			findAndTapImage("ok", region = imageUtils.regionMiddle, suppressError = true)
+			raceRepeatWarningCheck = false
+			true
+		} else {
+			printToLog("[MOOD] Current mood is good enough or its the Summer event. Moving on...")
+			false
+		}
 	}
 	
 	/**
