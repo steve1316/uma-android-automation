@@ -166,12 +166,14 @@ class ImageUtils(context: Context, private val game: Game) {
 	 *
 	 * @param sourceBitmap Bitmap from the /files/temp/ folder.
 	 * @param templateBitmap Bitmap from the assets folder.
+	 * @param templateName Name of the template image to use in debugging log messages.
 	 * @param region Specify the region consisting of (x, y, width, height) of the source screenshot to template match. Defaults to (0, 0, 0, 0) which is equivalent to searching the full image.
 	 * @param useSingleScale Whether to use only the single custom scale or to use a range based off of it.
 	 * @param customConfidence Specify a custom confidence. Defaults to the confidence set in the app's settings.
+	 * @param testScale Scale used by testing. Defaults to 0.0 which will fallback to the other scale conditions.
 	 * @return True if a match was found. False otherwise.
 	 */
-	private fun match(sourceBitmap: Bitmap, templateBitmap: Bitmap, region: IntArray = intArrayOf(0, 0, 0, 0), useSingleScale: Boolean = false, customConfidence: Double = 0.0): Boolean {
+	private fun match(sourceBitmap: Bitmap, templateBitmap: Bitmap, templateName: String, region: IntArray = intArrayOf(0, 0, 0, 0), useSingleScale: Boolean = false, customConfidence: Double = 0.0, testScale: Double = 0.0): Boolean {
 		// If a custom region was specified, crop the source screenshot.
 		val srcBitmap = if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
 			Bitmap.createBitmap(sourceBitmap, region[0], region[1], region[2], region[3])
@@ -215,7 +217,7 @@ class ImageUtils(context: Context, private val game: Game) {
 				mutableListOf(1.0)
 			}
 		}
-		
+
 		while (scales.isNotEmpty()) {
 			val newScale: Double = decimalFormat.format(scales.removeAt(0)).toDouble()
 			
@@ -256,20 +258,20 @@ class ImageUtils(context: Context, private val game: Game) {
 				matchLocation = mmr.minLoc
 				matchCheck = true
 				if (debugMode) {
-					game.printToLog("[DEBUG] Match found with $minVal <= ${1.0 - setConfidence} at Point $matchLocation using scale: $newScale.", tag = tag)
+					game.printToLog("[DEBUG] Match found for \"$templateName\" with $minVal <= ${1.0 - setConfidence} at Point $matchLocation using scale: $newScale.", tag = tag)
 				}
 			} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= setConfidence) {
 				matchLocation = mmr.maxLoc
 				matchCheck = true
 				if (debugMode) {
-					game.printToLog("[DEBUG] Match found with $maxVal >= $setConfidence at Point $matchLocation using scale: $newScale.", tag = tag)
+					game.printToLog("[DEBUG] Match found for \"$templateName\" with $maxVal >= $setConfidence at Point $matchLocation using scale: $newScale.", tag = tag)
 				}
 			} else {
 				if (debugMode) {
 					if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED)) {
-						game.printToLog("[DEBUG] Match not found with $maxVal not >= $setConfidence at Point ${mmr.maxLoc} using scale $newScale.", tag = tag)
+						game.printToLog("[DEBUG] Match not found for \"$templateName\" with $maxVal not >= $setConfidence at Point ${mmr.maxLoc} using scale $newScale.", tag = tag)
 					} else {
-						game.printToLog("[DEBUG] Match not found with $minVal not <= ${1.0 - setConfidence} at Point ${mmr.minLoc} using scale $newScale.", tag = tag)
+						game.printToLog("[DEBUG] Match not found for \"$templateName\" with $minVal not <= ${1.0 - setConfidence} at Point ${mmr.minLoc} using scale $newScale.", tag = tag)
 					}
 				}
 			}
@@ -494,7 +496,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return matchLocations
 	}
-	
+
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Open the source and template image files and return Bitmaps for them.
@@ -562,7 +566,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		while (numberOfTries > 0) {
 			if (sourceBitmap != null && templateBitmap != null) {
-				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, region, useSingleScale = true)
+				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, templateName, region)
 				if (!resultFlag) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
@@ -606,7 +610,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		while (numberOfTries > 0) {
 			if (sourceBitmap != null && templateBitmap != null) {
-				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, region)
+				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, templateName, region)
 				if (!resultFlag) {
 					numberOfTries -= 1
 					if (numberOfTries <= 0) {
@@ -701,6 +705,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		return redMatch && greenMatch && blueMatch
 	}
 
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Perform OCR text detection using Tesseract along with some image manipulation via thresholding to make the cropped screenshot black and white using OpenCV.
 	 *
@@ -712,7 +719,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Acquire the location of the energy text image.
 		val (_, energyTemplateBitmap) = getBitmaps("energy")
-		match(sourceBitmap!!, energyTemplateBitmap!!)
+		match(sourceBitmap!!, energyTemplateBitmap!!, "energy")
 		
 		// Use the match location acquired from finding the energy text image and acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
 		val newX: Int
@@ -732,7 +739,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
 		
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
-		croppedBitmap = if (match(croppedBitmap, templateBitmap!!)) {
+		croppedBitmap = if (match(croppedBitmap, templateBitmap!!, "shift")) {
 			Log.d(tag, "Shifting the region over by 70 pixels!")
 			Bitmap.createBitmap(sourceBitmap, newX + 70, newY, 645 - 70, 65)
 		} else {
@@ -1035,7 +1042,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Determine if the extra race has double star prediction.
 		var predictionCheck = false
-		if (match(croppedBitmap, doubleStarPredictionBitmap)) {
+		if (match(croppedBitmap, doubleStarPredictionBitmap, "race_extra_double_prediction")) {
 			predictionCheck = true
 		}
 		
