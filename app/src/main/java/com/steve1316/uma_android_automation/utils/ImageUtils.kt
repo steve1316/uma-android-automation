@@ -181,7 +181,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			sourceBitmap
 		}
 		
-		val setConfidence: Double = if (customConfidence == 0.0) {
+		val setConfidence: Double = if (templateName == "training_rainbow") {
+			game.printToLog("[INFO] For detection of rainbow training, confidence will be forcibly set to 0.9 to avoid false positives.", tag = tag)
+			0.9
+		} else if (customConfidence == 0.0) {
 			confidence
 		} else {
 			customConfidence

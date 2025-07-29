@@ -910,7 +910,7 @@ class Game(val myContext: Context) {
 
 			// Now tap on the screen to get past the Race Result screen.
 			gestureUtils.tap(350.0, 450.0, "ok", taps = 3)
-			wait(3.0)
+			wait(4.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
@@ -960,7 +960,7 @@ class Game(val myContext: Context) {
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(3.0)
+			wait(4.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
@@ -969,7 +969,7 @@ class Game(val myContext: Context) {
 				raceRetries--
 			} else {
 				// Check if a Trophy was acquired.
-				if (findAndTapImage("race_accept_trophy", tries = 5, region = imageUtils.regionBottomHalf)) {
+				if (findAndTapImage("race_accept_trophy", tries = 10, region = imageUtils.regionBottomHalf)) {
 					printToLog("[RACE] Closing popup to claim trophy...")
 				}
 				
@@ -1102,8 +1102,7 @@ class Game(val myContext: Context) {
 		return if (firstTrainingCheck && currentMood == "Normal" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("[MOOD] Current mood is Normal. Not recovering mood due to firstTrainingCheck flag being active. Will need to complete a training first before being allowed to recover mood.")
 			false
-
-		} else if (currentMood == "Bad" && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
+		} else if ((currentMood == "Bad" || currentMood == "Normal") && imageUtils.findImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first == null) {
 			printToLog("[MOOD] Current mood is not good. Recovering mood now.")
 			if (!findAndTapImage("recover_mood", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
 				findAndTapImage("recover_energy_summer", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
@@ -1159,6 +1158,9 @@ class Game(val myContext: Context) {
 		} else if (findAndTapImage("race_retry", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
 			printToLog("[INFO] There is a race retry popup.")
 			wait(5.0)
+		} else if (findAndTapImage("race_accept_trophy", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
+			printToLog("[INFO] There is a possible popup to accept a trophy.")
+			finishRace(true, isExtra = true)
 		} else if (!BotService.isRunning) {
 			throw InterruptedException()
 		}
