@@ -1,42 +1,18 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.3.0</latestVersion>
+    <latestVersion>2.3.1</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.3.0 - Changelog 
- 
-New
----
-- Introduced a new function to check if the game is still loading when starting.
-- Added tests for Settings page related to template matching and OCR.
-- Now prints device information and current app version in logs at startup.
-- Included option to prioritize Energy recovery during Training Event options.
-- Added new setting for template match confidence.
-- Implemented basic relative conversion of coordinates and scaling for non-1080p devices.
-- GameTora text data updated up to Curren Chan.
+v2.3.1 - Changelog 
 
 Improvements
 ---
-- Forced locale to English.
-- Enforced synchronous operations for Google MLKit and forced Tesseract usage in fallback.
-- Adjusted cropping logic to better detect day numbers.
-- Increased delay before bot startup to allow for stable initialization.
-- Minor rework to Training Event option selection logic.
-- Mood recovery logic now includes Normal mood and improved condition detection.
-- Adjusted race retry logic to be more resilient.
-- Adjusted timing delays during race-related actions.
-- Improved handling of insufficient fans and maiden race popups.
-- Adjusted fallback logic to avoid running extra races with no suitable conditions.
+- Minor adjustments to handle accepting race trophies
+- Minor improvement to rainbow training detection
 
 Fixed
 ---
-- Bot no longer falsely detects lists of extra races when none exist.
-- Fixed bug where race selection accidentally triggered the race prematurely.
-- Resolved issue with OCR misreading training failure chances due to different background colors.
-- Corrected confidence fetching from `SharedPreferences` for more consistent detection.
-- Clamp template image scaling to avoid oversized or undersized matching targets.
-- Minor bug fixes and log message improvements.
-- Training goal screen tap issues and extra popup misbehaviors resolved.
+- Fix mood recovery not executing on Normal mood
     </releaseNotes>
   </update>
 </AppUpdater>
