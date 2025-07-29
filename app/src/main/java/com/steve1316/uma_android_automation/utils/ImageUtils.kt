@@ -912,6 +912,12 @@ class ImageUtils(context: Context, private val game: Game) {
 				totalStatGain += (numberOfSpeed * 10) + (numberOfStamina * 10) + (numberOfPower * 10) + (numberOfGuts * 10) + (numberOfWit * 20) + 10
 			}
 		}
+
+		// Check if this is a rainbow training.
+		if (findImage("training_rainbow", tries = 1, regionBottomHalf, suppressError = true).first != null) {
+			game.printToLog("[INFO] Training is detected to be a rainbow.", tag = tag)
+			totalStatGain += 50
+		}
 		
 		// TODO: Have an option to have skill hints factor into the weight.
 		
