@@ -24,6 +24,10 @@ class MyAccessibilityService : AccessibilityService() {
 	private var appName: String = ""
 	private val tag: String = "[${MainActivity.loggerTag}]MyAccessibilityService"
 	private lateinit var myContext: Context
+
+	// Define the baseline screen dimensions that the template images were made from for tap location randomization.
+	private val baselineWidth = 1080
+	private val baselineHeight = 2340
 	
 	companion object {
 		// Other classes need this static reference to this service as calling dispatchGesture() would not work.
@@ -89,27 +93,32 @@ class MyAccessibilityService : AccessibilityService() {
 			templateBitmap = BitmapFactory.decodeStream(inputStream)
 		}
 		
-		val width = templateBitmap.width
-		val height = templateBitmap.height
+		// Calculate scaling factors.
+		val scaleX = MediaProjectionService.displayWidth.toDouble() / baselineWidth.toDouble()
+		val scaleY = MediaProjectionService.displayHeight.toDouble() / baselineHeight.toDouble()
 		
-		// Randomize the tapping location.
-		val x0: Int = (x - (width / 2)).toInt()
-		val x1: Int = (x + (width / 2)).toInt()
-		val y0: Int = (y - (height / 2)).toInt()
-		val y1: Int = (y + (height / 2)).toInt()
+		// Scale the template dimensions to match current screen resolution.
+		val scaledWidth = (templateBitmap.width * scaleX).toInt()
+		val scaledHeight = (templateBitmap.height * scaleY).toInt()
+		
+		// Randomize the tapping location using scaled dimensions.
+		val x0: Int = (x - (scaledWidth / 2)).toInt()
+		val x1: Int = (x + (scaledWidth / 2)).toInt()
+		val y0: Int = (y - (scaledHeight / 2)).toInt()
+		val y1: Int = (y + (scaledHeight / 2)).toInt()
 		
 		var newX: Int
 		var newY: Int
 		
 		while (true) {
-			// Start acquiring randomized coordinates at least 20% and at most 80% of the width and height until a valid set of coordinates has been acquired.
-			val newWidth: Int = ((width * 0.2).toInt()..(width * 0.8).toInt()).random()
-			val newHeight: Int = ((height * 0.2).toInt()..(height * 0.8).toInt()).random()
+			// Start acquiring randomized coordinates at least 20% and at most 80% of the scaled width and height until a valid set of coordinates has been acquired.
+			val newWidth: Int = ((scaledWidth * 0.2).toInt()..(scaledWidth * 0.8).toInt()).random()
+			val newHeight: Int = ((scaledHeight * 0.2).toInt()..(scaledHeight * 0.8).toInt()).random()
 			
 			newX = x0 + newWidth
 			newY = y0 + newHeight
 			
-			// If the new coordinates are within the bounds of the template image, break out of the loop.
+			// If the new coordinates are within the bounds of the scaled template image, break out of the loop.
 			if (newX > x0 || newX < x1 || newY > y0 || newY < y1) {
 				break
 			}
