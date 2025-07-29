@@ -1106,6 +1106,8 @@ class Game(val myContext: Context) {
 
 		// Print device and version information.
 		printToLog("[INFO] Device Information: ${MediaProjectionService.displayWidth}x${MediaProjectionService.displayHeight}, DPI ${MediaProjectionService.displayDPI}")
+		if (MediaProjectionService.displayWidth != 1080) printToLog("[WARNING] ⚠️ Bot performance will be severely degraded since display width is not 1080p unless an appropriate scale is set for your device.")
+		if (debugMode) printToLog("[WARNING] ⚠️ Debug Mode is enabled. All bot operations will be significantly slower as a result.")
 		if (sharedPreferences.getString("customScale", "1.0")?.toDouble() != 1.0) printToLog("[INFO] Manual scale has been set to ${sharedPreferences.getString("customScale", "1.0")?.toDouble()}")
 		val packageInfo = myContext.packageManager.getPackageInfo(myContext.packageName, 0)
 		printToLog("[INFO] Bot version: ${packageInfo.versionName} (${packageInfo.versionCode})\n\n")
