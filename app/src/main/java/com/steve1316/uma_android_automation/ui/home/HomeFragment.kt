@@ -91,10 +91,11 @@ class HomeFragment : Fragment() {
 		// OCR Optimization Settings page
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
 		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
-		val confidence: Int = sharedPreferences.getInt("confidence", 80)
+		val ocrConfidence: Int = sharedPreferences.getInt("ocrConfidence", 80)
 		
 		// Debug Options page
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val confidence: Int = sharedPreferences.getInt("confidence", 80)
 		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
 		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
 		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
@@ -116,6 +117,7 @@ class HomeFragment : Fragment() {
 			putInt("maximumFailureChance", maximumFailureChance)
 			putInt("threshold", threshold)
 			putInt("confidence", confidence)
+			putInt("ocrConfidence", ocrConfidence)
 			putInt("daysToRunExtraRaces", daysToRunExtraRaces)
 			putString("customScale", customScale)
 			putBoolean("debugMode_startTemplateMatchingTest", debugModeStartTemplateMatchingTest)
@@ -251,8 +253,9 @@ class HomeFragment : Fragment() {
 		
 		// Add visual indicators for OCR settings.
 		val thresholdString = "🔍 OCR Threshold: $threshold"
-		val confidenceString = "🎯 Minimum OCR Confidence: $confidence"
-		
+		val confidenceString = "🎯 Minimum Template Match Confidence: $confidence"
+		val ocrConfidenceString = "🎯 Minimum OCR Confidence: $ocrConfidence"
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Update the TextView here based on the information of the SharedPreferences.
@@ -270,7 +273,7 @@ class HomeFragment : Fragment() {
 				"---------- Tesseract OCR Optimization ----------\n" +
 				"$thresholdString\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
-				"$confidenceString\n\n" +
+				"$ocrConfidenceString\n\n" +
 				"---------- Misc Options ----------\n" +
 				"Prioritize Farming Fans: $enableFarmingFansString\n" +
 				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
@@ -279,6 +282,7 @@ class HomeFragment : Fragment() {
 				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n\n" +
 				"---------- Debug Options ----------\n" +
 				"Debug Mode: $debugModeString\n" +
+				"$confidenceString\n" +
 				"$customScaleString\n" +
 				"Start Template Matching Test: $debugModeStartTemplateMatchingTestString\n" +
 				"Start Single Training Failure OCR Test: $debugModeStartSingleTrainingFailureOCRTestString\n" +

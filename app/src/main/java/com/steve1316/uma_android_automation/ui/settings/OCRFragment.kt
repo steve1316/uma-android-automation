@@ -26,17 +26,17 @@ class OCRFragment : PreferenceFragmentCompat() {
 		// Grab the saved preferences from the previous time the user used the app.
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
 		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
-		val confidence: Int = sharedPreferences.getInt("confidence", 80)
+		val ocrConfidence: Int = sharedPreferences.getInt("ocrConfidence", 80)
 		
 		// Get references to the Preference components.
 		val thresholdPreference = findPreference<SeekBarPreference>("threshold")!!
 		val enableAutomaticRetryPreference = findPreference<CheckBoxPreference>("enableAutomaticRetry")!!
-		val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
+		val ocrConfidencePreference = findPreference<SeekBarPreference>("ocrConfidence")!!
 		
 		// Now set the following values from the SharedPreferences.
 		thresholdPreference.value = threshold
 		enableAutomaticRetryPreference.isChecked = enableAutomaticRetry
-		confidencePreference.value = confidence
+		ocrConfidencePreference.value = ocrConfidence
 		
 		Log.d(logTag, "OCR Preferences created successfully.")
 	}
@@ -61,11 +61,11 @@ class OCRFragment : PreferenceFragmentCompat() {
 						commit()
 					}
 				}
-				"confidence" -> {
-					val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
+				"ocrConfidence" -> {
+					val ocrConfidencePreference = findPreference<SeekBarPreference>("ocrConfidence")!!
 					
 					sharedPreferences.edit {
-						putInt("confidence", confidencePreference.value)
+						putInt("ocrConfidence", ocrConfidencePreference.value)
 						commit()
 					}
 				}

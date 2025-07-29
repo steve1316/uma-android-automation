@@ -20,10 +20,10 @@
         <SeekBarPreference
             android:defaultValue="80"
             android:max="100"
-            app:key="confidence"
+            app:key="ocrConfidence"
             app:min="10"
             app:showSeekBarValue="true"
-            app:summary="Set the minimum confidence percentage required for OCR to succeed and display the result. Default is 80%."
-            app:title="Adjust Minimum Confidence" />
+            app:summary="Set the minimum confidence percentage required for OCR to succeed and display the result. Default is 80% at 1080p."
+            app:title="Adjust OCR Confidence" />
     </PreferenceCategory>
 </PreferenceScreen>

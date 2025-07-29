@@ -87,6 +87,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 						commit()
 					}
 				}
+				"confidence" -> {
+					val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
+
+					sharedPreferences.edit {
+						putInt("confidence", confidencePreference.value)
+						commit()
+					}
+				}
 				"customScale" -> {
 					val customScalePreference = findPreference<EditTextPreference>("customScale")!!
 
@@ -163,6 +171,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val confidence: Int = sharedPreferences.getInt("confidence", 80)
 		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
 		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
 		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
@@ -178,6 +187,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val enablePopupCheckPreference = findPreference<CheckBoxPreference>("enablePopupCheck")!!
 		val enableStopOnMandatoryRacePreference = findPreference<CheckBoxPreference>("enableStopOnMandatoryRace")!!
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
+		val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
 		val customScalePreference = findPreference<EditTextPreference>("customScale")!!
 		val debugModeStartTemplateMatchingTestPreference = findPreference<CheckBoxPreference>("debugMode_startTemplateMatchingTest")!!
 		val debugModeStartSingleTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startSingleTrainingFailureOCRTest")!!
@@ -197,6 +207,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		enablePopupCheckPreference.isChecked = enablePopupCheck
 		enableStopOnMandatoryRacePreference.isChecked = enableStopOnMandatoryRace
 		debugModePreference.isChecked = debugMode
+		confidencePreference.value = confidence
 		customScalePreference.summary = String.format(customScalePreference.summary.toString(), customScale)
 		customScalePreference.text = customScale
 		debugModeStartTemplateMatchingTestPreference.isChecked = debugModeStartTemplateMatchingTest

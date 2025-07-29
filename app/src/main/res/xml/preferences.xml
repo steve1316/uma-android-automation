@@ -80,6 +80,15 @@
             app:summary="Allows debugging messages in the log and test images to be created in the /temp/ folder.\n\nIncreases the average runtime of the bot due to constant IO operations."
             app:title="Enable Debug Mode" />
 
+        <SeekBarPreference
+            android:defaultValue="80"
+            android:max="100"
+            app:key="confidence"
+            app:min="10"
+            app:showSeekBarValue="true"
+            app:summary="Set the confidence percentage for template matching. Default is 80% at 1080p. Consider lowering this to something like 70% at lower resolutions."
+            app:title="Adjust Confidence for Template Matching" />
+
         <EditTextPreference
             app:key="customScale"
             app:summary="Manually set the scale to do template matching with which is the ratio of your screen width versus the baseline 1080p. The Basic Template Matching Test can help find your recommended scale. Default is 1.0 based on 1080p.\n\nScale is currently set to %s"
