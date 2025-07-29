@@ -1,18 +1,17 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.3.1</latestVersion>
+    <latestVersion>2.3.2</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.3.1 - Changelog 
+v2.3.2 - Changelog 
+
+New
+---
+- Add a way to wait for server response and wait after each executed tap
 
 Improvements
 ---
-- Minor adjustments to handle accepting race trophies
-- Minor improvement to rainbow training detection
-
-Fixed
----
-- Fix mood recovery not executing on Normal mood
+- Improved Training Event option selection including having more logging
     </releaseNotes>
   </update>
 </AppUpdater>

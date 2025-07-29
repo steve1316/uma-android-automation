@@ -152,6 +152,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 		} else {
 			game.printToLog("[TEXT-DETECTION] Finished process to find similar string.", tag = tag)
 		}
+		game.printToLog("[TEXT-DETECTION] Event data fetched for \"${eventTitle}\".")
 	}
 	
 	fun start(): Pair<ArrayList<String>, Double> {

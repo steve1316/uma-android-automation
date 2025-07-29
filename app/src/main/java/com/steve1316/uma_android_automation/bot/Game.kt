@@ -167,10 +167,30 @@ class Game(val myContext: Context) {
 		
 		return if (tempLocation != null) {
 			Log.d(tag, "Found and going to tap: $imageName")
-			gestureUtils.tap(tempLocation.x, tempLocation.y, imageName, taps = taps)
+			tap(tempLocation.x, tempLocation.y, imageName, taps = taps)
 			true
 		} else {
 			false
+		}
+	}
+
+	/**
+	 * Performs a tap on the screen at the coordinates and then will wait until the game processes the server request and gets a response back.
+	 *
+	 * @param x The x-coordinate.
+	 * @param y The y-coordinate.
+	 * @param imageName The template image name to use for tap location randomization.
+	 * @param taps The number of taps.
+	 */
+	fun tap(x: Double, y: Double, imageName: String, taps: Int = 1) {
+		// Perform the tap.
+		gestureUtils.tap(x, y, imageName, taps = taps)
+
+		// Now check if the game is waiting for a server response and wait if necessary.
+		wait(0.20)
+		while (imageUtils.findImage("connecting", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null) {
+			printToLog("[INFO] Detected that the game is awaiting a response from the server from the \"Connecting\" text at the top of the screen. Waiting a few seconds...")
+			wait(1.0)
 		}
 	}
 
@@ -474,12 +494,12 @@ class Game(val myContext: Context) {
 						
 						if (imageUtils.isTablet) {
 							if (training == "Stamina") {
-								gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.05).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
+								tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.05).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
 							} else {
-								gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.36).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
+								tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.36).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
 							}
 						} else {
-							gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth(newX.toInt()), speedStatTextLocation.y + imageUtils.relHeight(newY), "training_option_circular")
+							tap(speedStatTextLocation.x + imageUtils.relWidth(newX.toInt()), speedStatTextLocation.y + imageUtils.relHeight(newY), "training_option_circular")
 						}
 						
 						failureChance = imageUtils.findTrainingFailureChance()
@@ -570,67 +590,12 @@ class Game(val myContext: Context) {
 						.trim()
 						.lowercase()
 
-					Log.d(tag, "[DEBUG] Original line is \"$line\".")
-					Log.d(tag, "[DEBUG] Formatted line is \"$formattedLine\".")
-					
-					var statCheck = false
-					if (!line.contains("skill")) {
-						// Apply inflated weights to the prioritized stats.
-						statPrioritization.forEach { stat ->
-							if (line.contains(stat)) {
-								Log.d(tag, "[DEBUG] Adding weight for $stat by priority.")
-								selectionWeight[optionSelected] += try {
-									statCheck = true
-									if (formattedLine.contains("/")) {
-										val splits = formattedLine.split("/")
-										var sum = 0
-										for (split in splits) {
-											sum += try {
-												split.trim().toInt()
-											} catch (_: NumberFormatException) {
-												Log.w(tag, "Could not convert $formattedLine to a number for a priority stat with a forward slash.")
-												10
-											}
-										}
-										sum * 2
-									} else {
-										formattedLine.toInt() * 2
-									}
-								} catch (_: NumberFormatException) {
-									Log.w(tag, "Could not convert $formattedLine to a number for a priority stat.")
-									statCheck = false
-									10
-								}
-							}
-						}
-						
-						// Apply normal weights to the rest of the stats.
-						if (!statCheck) {
-							selectionWeight[optionSelected] += try {
-								Log.d(tag, "[DEBUG] Adding weight for option #$optionSelected for generic stats.")
-								if (formattedLine.contains("/")) {
-									val splits = formattedLine.split("/")
-									var sum = 0
-									for (split in splits) {
-										sum += try {
-											split.trim().toInt()
-										} catch (_: NumberFormatException) {
-											Log.w(tag, "Could not convert $formattedLine to a number for generic stats with a forward slash.")
-											10
-										}
-									}
-									sum
-								} else {
-									formattedLine.toInt()
-								}
-							} catch (_: NumberFormatException) {
-								Log.w(tag, "Could not convert $formattedLine to a number for generic stats.")
-								10
-							}
-						}
-					} else if (line.contains("energy")) {
-						Log.d(tag, "[DEBUG] Adding weight for energy.")
-						selectionWeight[optionSelected] += try {
+					printToLog("[TRAINING-EVENT] Original line is \"$line\".")
+					printToLog("[TRAINING-EVENT] Formatted line is \"$formattedLine\".")
+
+					var priorityStatCheck = false
+					if (line.lowercase().contains("energy")) {
+						val finalEnergyValue = try {
 							val energyValue = if (formattedLine.contains("/")) {
 								val splits = formattedLine.split("/")
 								var sum = 0
@@ -638,7 +603,7 @@ class Game(val myContext: Context) {
 									sum += try {
 										split.trim().toInt()
 									} catch (_: NumberFormatException) {
-										Log.w(tag, "Could not convert $formattedLine to a number for energy with a forward slash.")
+										printToLog("[WARNING] Could not convert $formattedLine to a number for energy with a forward slash.")
 										20
 									}
 								}
@@ -650,25 +615,115 @@ class Game(val myContext: Context) {
 							if (enablePrioritizeEnergyOptions) {
 								energyValue * 100
 							} else {
-								energyValue * 2
+								energyValue * 3
 							}
 						} catch (_: NumberFormatException) {
-							Log.w(tag, "Could not convert $formattedLine to a number for energy.")
+							printToLog("[WARNING] Could not convert $formattedLine to a number for energy.")
 							20
 						}
-					} else if (line.contains("event chain ended")) {
-						Log.d(tag, "[DEBUG] Adding weight for event chain ending.")
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalEnergyValue for energy.")
+						selectionWeight[optionSelected] += finalEnergyValue
+					} else if (line.lowercase().contains("bond")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 20 for bond.")
+						selectionWeight[optionSelected] += 20
+					} else if (line.lowercase().contains("event chain ended")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of -50 for event chain ending.")
 						selectionWeight[optionSelected] += -50
-					} else if (line.contains("(random)")) {
-						Log.d(tag, "[DEBUG] Adding weight for random reward.")
+					} else if (line.lowercase().contains("(random)")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of -50 for random reward.")
 						selectionWeight[optionSelected] += -50
-					} else if (line.contains("randomly")) {
-						Log.d(tag, "[DEBUG] Adding weight for random options.")
+					} else if (line.lowercase().contains("randomly")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 50 for random options.")
 						selectionWeight[optionSelected] += 50
-					} else if (line.contains("hint")) {
-						Log.d(tag, "[DEBUG] Adding weight for skill hint(s).")
+					} else if (line.lowercase().contains("hint")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 25 for skill hint(s).")
 						selectionWeight[optionSelected] += 25
+					} else if (line.lowercase().contains("skill")) {
+						val finalSkillPoints = if (formattedLine.contains("/")) {
+							val splits = formattedLine.split("/")
+							var sum = 0
+							for (split in splits) {
+								sum += try {
+									split.trim().toInt()
+								} catch (_: NumberFormatException) {
+									printToLog("[WARNING] Could not convert $formattedLine to a number for skill points with a forward slash.")
+									10
+								}
+							}
+							sum
+						} else {
+							formattedLine.toInt()
+						}
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalSkillPoints for skill points.")
+						selectionWeight[optionSelected] += finalSkillPoints
+					} else {
+						// Apply inflated weights to the prioritized stats based on their order.
+						statPrioritization.forEachIndexed { index, stat ->
+							if (line.contains(stat)) {
+								// Calculate weight bonus based on position (higher priority = higher bonus).
+								val priorityBonus = when (index) {
+									0 -> 50
+									1 -> 40
+									2 -> 30
+									3 -> 20
+									else -> 10
+								}
+
+								val finalStatValue = try {
+									priorityStatCheck = true
+									if (formattedLine.contains("/")) {
+										val splits = formattedLine.split("/")
+										var sum = 0
+										for (split in splits) {
+											sum += try {
+												split.trim().toInt()
+											} catch (_: NumberFormatException) {
+												printToLog("[WARNING] Could not convert $formattedLine to a number for a priority stat with a forward slash.")
+												10
+											}
+										}
+										sum + priorityBonus
+									} else {
+										formattedLine.toInt() + priorityBonus
+									}
+								} catch (_: NumberFormatException) {
+									printToLog("[WARNING] Could not convert $formattedLine to a number for a priority stat.")
+									priorityStatCheck = false
+									10
+								}
+								printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalStatValue for prioritized stat.")
+								selectionWeight[optionSelected] += finalStatValue
+							}
+						}
+						
+						// Apply normal weights to the rest of the stats.
+						if (!priorityStatCheck) {
+							val finalStatValue = try {
+								if (formattedLine.contains("/")) {
+									val splits = formattedLine.split("/")
+									var sum = 0
+									for (split in splits) {
+										sum += try {
+											split.trim().toInt()
+										} catch (_: NumberFormatException) {
+											printToLog("[WARNING] Could not convert $formattedLine to a number for non-prioritized stat with a forward slash.")
+											10
+										}
+									}
+									sum
+								} else {
+									formattedLine.toInt()
+								}
+							} catch (_: NumberFormatException) {
+								printToLog("[WARNING] Could not convert $formattedLine to a number for non-prioritized stat.")
+								10
+							}
+							printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalStatValue for non-prioritized stat.")
+							selectionWeight[optionSelected] += finalStatValue
+						}
 					}
+
+					printToLog("[TRAINING-EVENT] Final weight for option #${optionSelected + 1} is: ${selectionWeight[optionSelected]}.")
 				}
 				
 				optionSelected++
@@ -681,6 +736,12 @@ class Game(val myContext: Context) {
 				optionSelected = 0
 			} else {
 				optionSelected = selectionWeight.indexOf(max)
+			}
+
+			// Print the selection weights.
+			printToLog("[TRAINING-EVENT] Selection weights for each option:")
+			selectionWeight.forEachIndexed { index, weight ->
+				printToLog("Option ${index + 1}: $weight")
 			}
 			
 			// Format the string to display each option's rewards.
@@ -719,7 +780,7 @@ class Game(val myContext: Context) {
 		}
 		
 		if (selectedLocation != null) {
-			gestureUtils.tap(selectedLocation.x + imageUtils.relWidth(100), selectedLocation.y, "training_event_active")
+			tap(selectedLocation.x + imageUtils.relWidth(100), selectedLocation.y, "training_event_active")
 		}
 		
 		printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.")
@@ -820,9 +881,9 @@ class Game(val myContext: Context) {
 				
 				// Select the next extra race.
                 if (imageUtils.isTablet) {
-                    gestureUtils.tap(extraRaceLocation[count].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[count].y + imageUtils.relHeight((150 * 1.50).toInt()), "race_extra_selection")
+                    tap(extraRaceLocation[count].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[count].y + imageUtils.relHeight((150 * 1.50).toInt()), "race_extra_selection")
                 } else {
-                    gestureUtils.tap(extraRaceLocation[count].x - imageUtils.relWidth(100), extraRaceLocation[count].y + imageUtils.relHeight(150), "race_extra_selection")
+                    tap(extraRaceLocation[count].x - imageUtils.relWidth(100), extraRaceLocation[count].y + imageUtils.relHeight(150), "race_extra_selection")
                 }
 
                 wait(0.5)
@@ -848,11 +909,11 @@ class Game(val myContext: Context) {
 				printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.")
 
 				// Select the extra race that matches the double star prediction and the most fan gain.
-				gestureUtils.tap(extraRaceLocation[index].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[index].y - imageUtils.relHeight(70), "race_extra_selection")
+				tap(extraRaceLocation[index].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[index].y - imageUtils.relHeight(70), "race_extra_selection")
 			} else {
 				// If no maximum is determined, select the very first extra race.
 				printToLog("[RACE] Selecting the first Extra Race by default.")
-				gestureUtils.tap(extraRaceLocation[0].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[0].y - imageUtils.relHeight(70), "race_extra_selection")
+				tap(extraRaceLocation[0].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[0].y - imageUtils.relHeight(70), "race_extra_selection")
 			}
 			
 			// Confirm the selection and the resultant popup and then wait for the game to load.
@@ -909,7 +970,7 @@ class Game(val myContext: Context) {
 			wait(2.0)
 
 			// Now tap on the screen to get past the Race Result screen.
-			gestureUtils.tap(350.0, 450.0, "ok", taps = 3)
+			tap(350.0, 450.0, "ok", taps = 3)
 			wait(4.0)
 			
 			// Check if the race needed to be retried.
@@ -992,7 +1053,7 @@ class Game(val myContext: Context) {
 			throw IllegalStateException("Bot has run out of retry attempts for racing. Stopping the bot now...")
 		}
 
-		gestureUtils.tap(450.0, 850.0, "ok", taps = 3)
+		tap(450.0, 850.0, "ok", taps = 3)
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
@@ -1000,7 +1061,7 @@ class Game(val myContext: Context) {
 			wait(0.5)
 
 			// Now tap on the screen to get to the next screen.
-			gestureUtils.tap(350.0, 750.0, "ok", taps = 3)
+			tap(350.0, 750.0, "ok", taps = 3)
 			
 			// Now press the end button to finish the race.
 			findAndTapImage("race_end", tries = 30, region = imageUtils.regionBottomHalf)
