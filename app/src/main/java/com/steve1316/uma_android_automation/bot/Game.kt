@@ -123,13 +123,26 @@ class Game(val myContext: Context) {
 	}
 	
 	/**
-	 * Wait the specified seconds to account for ping or loading.
+	 * Wait the specified seconds to account for ping or loading. It also checks for interruption every 100ms to allow faster interruption.
 	 *
 	 * @param seconds Number of seconds to pause execution.
 	 */
 	fun wait(seconds: Double) {
-		runBlocking {
-			delay((seconds * 1000).toLong())
+		val totalMillis = (seconds * 1000).toLong()
+		// Check for interruption every 100ms.
+		val checkInterval = 100L 
+		
+		var remainingMillis = totalMillis
+		while (remainingMillis > 0) {
+			if (!BotService.isRunning) {
+				throw InterruptedException()
+			}
+			
+			val sleepTime = minOf(checkInterval, remainingMillis)
+			runBlocking {
+				delay(sleepTime)
+			}
+			remainingMillis -= sleepTime
 		}
 	}
 	
