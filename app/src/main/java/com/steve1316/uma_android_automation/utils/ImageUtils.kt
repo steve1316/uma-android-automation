@@ -725,13 +725,13 @@ class ImageUtils(context: Context, private val game: Game) {
 		val newX: Int
 		val newY: Int
 		var croppedBitmap: Bitmap = if (isTablet) {
-			newX = max(0, matchLocation.x.toInt() - (250))
-			newY = max(0, matchLocation.y.toInt() + (154))
-			Bitmap.createBitmap(sourceBitmap, newX, newY, 746, 85)
+			newX = max(0, matchLocation.x.toInt() - relWidth(250))
+			newY = max(0, matchLocation.y.toInt() + relHeight(154))
+			Bitmap.createBitmap(sourceBitmap, newX, newY, relWidth(746), relHeight(85))
 		} else {
-			newX = max(0, matchLocation.x.toInt() - 125)
-			newY = max(0, matchLocation.y.toInt() + 116)
-			Bitmap.createBitmap(sourceBitmap, newX, newY, 645, 65)
+			newX = max(0, matchLocation.x.toInt() - relWidth(125))
+			newY = max(0, matchLocation.y.toInt() + relHeight(116))
+			Bitmap.createBitmap(sourceBitmap, newX, newY, relWidth(645), relHeight(65))
 		}
 		
 		val tempImage = Mat()
@@ -796,9 +796,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 		
 		val croppedBitmap: Bitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 65, trainingSelectionLocation.y.toInt() + 23, 130, 50)
+			Bitmap.createBitmap(sourceBitmap!!, relX(trainingSelectionLocation.x, -65), relY(trainingSelectionLocation.y, 23), relWidth(130), relHeight(50))
 		} else {
-			Bitmap.createBitmap(sourceBitmap!!, trainingSelectionLocation.x.toInt() - 45, trainingSelectionLocation.y.toInt() + 15, 100, 37)
+			Bitmap.createBitmap(sourceBitmap!!, relX(trainingSelectionLocation.x, -45), relY(trainingSelectionLocation.y, 15), relWidth(100), relHeight(37))
 		}
 
 		val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
@@ -937,15 +937,15 @@ class ImageUtils(context: Context, private val game: Game) {
 			// Crop the source screenshot to only contain the day number.
 			val croppedBitmap: Bitmap = if (campaign == "Ao Haru") {
 				if (isTablet) {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (260 * 1.32).toInt(), energyTextLocation.y.toInt() - (140 * 1.32).toInt(), 135, 100)
+					Bitmap.createBitmap(sourceBitmap!!, relX(energyTextLocation.x, -(260 * 1.32).toInt()), relY(energyTextLocation.y, -(140 * 1.32).toInt()), relWidth(135), relHeight(100))
 				} else {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 260, energyTextLocation.y.toInt() - 140, 105, 75)
+					Bitmap.createBitmap(sourceBitmap!!, relX(energyTextLocation.x, -260), relY(energyTextLocation.y, -140), relWidth(105), relHeight(75))
 				}
 			} else {
 				if (isTablet) {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - (246 * 1.32).toInt(), energyTextLocation.y.toInt() - (96 * 1.32).toInt(), 175, 116)
+					Bitmap.createBitmap(sourceBitmap!!, relX(energyTextLocation.x, -(246 * 1.32).toInt()), relY(energyTextLocation.y, -(96 * 1.32).toInt()), relWidth(175), relHeight(116))
 				} else {
-					Bitmap.createBitmap(sourceBitmap!!, energyTextLocation.x.toInt() - 246, energyTextLocation.y.toInt() - 100, 140, 95)
+					Bitmap.createBitmap(sourceBitmap!!, relX(energyTextLocation.x, -246), relY(energyTextLocation.y, -100), relWidth(140), relHeight(95))
 				}
 			}
 			
@@ -1033,9 +1033,9 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun determineExtraRaceFans(extraRaceLocation: Point, sourceBitmap: Bitmap, doubleStarPredictionBitmap: Bitmap): Int {
 		// Crop the source screenshot to show only the fan amount and the predictions.
 		val croppedBitmap = if (isTablet) {
-			Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (173 * 1.34).toInt(), extraRaceLocation.y.toInt() - (106 * 1.34).toInt(), 220, 125)
+			Bitmap.createBitmap(sourceBitmap, relX(extraRaceLocation.x, -(173 * 1.34).toInt()), relY(extraRaceLocation.y, -(106 * 1.34).toInt()), relWidth(220), relHeight(125))
 		} else {
-			Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 173, extraRaceLocation.y.toInt() - 106, 163, 96)
+			Bitmap.createBitmap(sourceBitmap, relX(extraRaceLocation.x, -173), relY(extraRaceLocation.y, -106), relWidth(163), relHeight(96))
 		}
 		val cvImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, cvImage)
@@ -1052,9 +1052,9 @@ class ImageUtils(context: Context, private val game: Game) {
 
 			// Crop the source screenshot to show only the fans.
 			val croppedBitmap2 = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - (625 * 1.40).toInt(), extraRaceLocation.y.toInt() - (75 * 1.34).toInt(), 320, 45)
+				Bitmap.createBitmap(sourceBitmap, relX(extraRaceLocation.x, -(625 * 1.40).toInt()), relY(extraRaceLocation.y, -(75 * 1.34).toInt()), relWidth(320), relHeight(45))
 			} else {
-				Bitmap.createBitmap(sourceBitmap, extraRaceLocation.x.toInt() - 625, extraRaceLocation.y.toInt() - 75, 250, 35)
+				Bitmap.createBitmap(sourceBitmap, relX(extraRaceLocation.x, -625), relY(extraRaceLocation.y, -75), relWidth(250), relHeight(35))
 			}
 			
 			// Make the cropped screenshot grayscale.
@@ -1175,10 +1175,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		return if (skillPointLocation != null) {
 			val croppedBitmap = if (isTablet) {
-				Bitmap.createBitmap(sourceBitmap!!, skillPointLocation.x.toInt() - 75, skillPointLocation.y.toInt() + 45, 150, 70)
+				Bitmap.createBitmap(sourceBitmap!!, relX(skillPointLocation.x, -75), relY(skillPointLocation.y, 45), relWidth(150), relHeight(70))
 			} else {
-				val new = Pair(skillPointLocation.x.toInt() - rel(70), skillPointLocation.y.toInt() + rel(28))
-				Bitmap.createBitmap(sourceBitmap!!, new.first, new.second, rel(135), rel(70))
+				Bitmap.createBitmap(sourceBitmap!!, relX(skillPointLocation.x, -70), relY(skillPointLocation.y, 28), relWidth(135), relHeight(70))
 			}
 
 			// Make the cropped screenshot grayscale.

@@ -473,12 +473,12 @@ class Game(val myContext: Context) {
 						
 						if (imageUtils.isTablet) {
 							if (training == "Stamina") {
-								gestureUtils.tap(speedStatTextLocation.x + (newX * 1.05), speedStatTextLocation.y + (newY * 1.50), "training_option_circular")
+								gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.05).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
 							} else {
-								gestureUtils.tap(speedStatTextLocation.x + (newX * 1.36), speedStatTextLocation.y + (newY * 1.50), "training_option_circular")
+								gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth((newX * 1.36).toInt()), speedStatTextLocation.y + imageUtils.relHeight((newY * 1.50).toInt()), "training_option_circular")
 							}
 						} else {
-							gestureUtils.tap(speedStatTextLocation.x + newX, speedStatTextLocation.y + newY, "training_option_circular")
+							gestureUtils.tap(speedStatTextLocation.x + imageUtils.relWidth(newX.toInt()), speedStatTextLocation.y + imageUtils.relHeight(newY), "training_option_circular")
 						}
 						
 						failureChance = imageUtils.findTrainingFailureChance()
@@ -648,7 +648,7 @@ class Game(val myContext: Context) {
 		}
 		
 		if (selectedLocation != null) {
-			gestureUtils.tap(selectedLocation.x + 100, selectedLocation.y, "training_event_active")
+			gestureUtils.tap(selectedLocation.x + imageUtils.relWidth(100), selectedLocation.y, "training_event_active")
 		}
 		
 		printToLog("[TRAINING-EVENT] Process to handle detected Training Event completed.")
@@ -748,9 +748,9 @@ class Game(val myContext: Context) {
 				
 				// Select the next extra race.
                 if (imageUtils.isTablet) {
-                    gestureUtils.tap(extraRaceLocation[count].x - (100 * 1.36), extraRaceLocation[count].y + (150 * 1.50), "race_extra_selection")
+                    gestureUtils.tap(extraRaceLocation[count].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[count].y + imageUtils.relHeight((150 * 1.50).toInt()), "race_extra_selection")
                 } else {
-                    gestureUtils.tap(extraRaceLocation[count].x - 100, extraRaceLocation[count].y + 150, "race_extra_selection")
+                    gestureUtils.tap(extraRaceLocation[count].x - imageUtils.relWidth(100), extraRaceLocation[count].y + imageUtils.relHeight(150), "race_extra_selection")
                 }
 
                 wait(0.5)
@@ -774,13 +774,13 @@ class Game(val myContext: Context) {
 				val index = listOfFans.indexOf(maxFans)
 				
 				printToLog("[RACE] Selecting the Option ${index + 1} Extra Race.")
-				
+
 				// Select the extra race that matches the double star prediction and the most fan gain.
-				gestureUtils.tap(extraRaceLocation[index].x - (100 * 1.36), extraRaceLocation[index].y - 70, "race_extra_selection")
+				gestureUtils.tap(extraRaceLocation[index].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[index].y - imageUtils.relHeight(70), "race_extra_selection")
 			} else {
 				// If no maximum is determined, select the very first extra race.
 				printToLog("[RACE] Selecting the first Extra Race by default.")
-				gestureUtils.tap(extraRaceLocation[0].x - (100 * 1.36), extraRaceLocation[0].y - 70, "race_extra_selection")
+				gestureUtils.tap(extraRaceLocation[0].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[0].y - imageUtils.relHeight(70), "race_extra_selection")
 			}
 			
 			// Confirm the selection and the resultant popup and then wait for the game to load.
