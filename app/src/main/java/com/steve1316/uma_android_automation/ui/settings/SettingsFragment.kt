@@ -79,6 +79,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 						commit()
 					}
 				}
+				"enablePrioritizeEnergyOptions" -> {
+					val enablePrioritizeEnergyOptionsPreference = findPreference<CheckBoxPreference>("enablePrioritizeEnergyOptions")!!
+
+					sharedPreferences.edit {
+						putBoolean("enablePrioritizeEnergyOptions", enablePrioritizeEnergyOptionsPreference.isChecked)
+						commit()
+					}
+				}
 				"debugMode" -> {
 					val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 					
@@ -170,6 +178,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
+		val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val confidence: Int = sharedPreferences.getInt("confidence", 80)
 		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
@@ -186,6 +195,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
 		val enablePopupCheckPreference = findPreference<CheckBoxPreference>("enablePopupCheck")!!
 		val enableStopOnMandatoryRacePreference = findPreference<CheckBoxPreference>("enableStopOnMandatoryRace")!!
+		val enablePrioritizeEnergyOptionsPreference = findPreference<CheckBoxPreference>("enablePrioritizeEnergyOptions")!!
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 		val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
 		val customScalePreference = findPreference<EditTextPreference>("customScale")!!
@@ -206,6 +216,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		skillPointCheckPreference.value = skillPointCheck
 		enablePopupCheckPreference.isChecked = enablePopupCheck
 		enableStopOnMandatoryRacePreference.isChecked = enableStopOnMandatoryRace
+		enablePrioritizeEnergyOptionsPreference.isChecked = enablePrioritizeEnergyOptions
 		debugModePreference.isChecked = debugMode
 		confidencePreference.value = confidence
 		customScalePreference.summary = String.format(customScalePreference.summary.toString(), customScale)

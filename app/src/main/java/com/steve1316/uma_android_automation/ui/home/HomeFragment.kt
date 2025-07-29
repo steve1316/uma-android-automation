@@ -76,6 +76,7 @@ class HomeFragment : Fragment() {
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
+		val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
 		
 		// Training Settings page
 		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
@@ -186,6 +187,12 @@ class HomeFragment : Fragment() {
 		} else {
 			"❌"
 		}
+
+		val enablePrioritizeEnergyOptionsString: String = if (enablePrioritizeEnergyOptions) {
+			"✅"
+		} else {
+			"❌"
+		}
 		
 		val debugModeString: String = if (debugMode) {
 			"✅"
@@ -279,7 +286,8 @@ class HomeFragment : Fragment() {
 				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
 				"Skill Point Check: $skillPointString\n" +
 				"Popup Check: $enablePopupCheckString\n" +
-				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n\n" +
+				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n" +
+				"Prioritize Energy Options: $enablePrioritizeEnergyOptionsString\n\n" +
 				"---------- Debug Options ----------\n" +
 				"Debug Mode: $debugModeString\n" +
 				"$confidenceString\n" +

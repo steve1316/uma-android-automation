@@ -41,6 +41,7 @@ class Game(val myContext: Context) {
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
+	private val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
 	private val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
 	private var firstTrainingCheck = true
 	private var previouslySelectedTraining = ""
@@ -646,7 +647,11 @@ class Game(val myContext: Context) {
 								formattedLine.toInt()
 							}
 
-							energyValue * 2
+							if (enablePrioritizeEnergyOptions) {
+								energyValue * 100
+							} else {
+								energyValue * 2
+							}
 						} catch (_: NumberFormatException) {
 							Log.w(tag, "Could not convert $formattedLine to a number for energy.")
 							20

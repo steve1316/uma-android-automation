@@ -71,6 +71,11 @@
             app:summary="Enables check to automatically stop the bot when reaching a mandatory race."
             app:title="Enable Stop on Mandatory Race" />
 
+        <CheckBoxPreference
+            app:key="enablePrioritizeEnergyOptions"
+            app:summary="Overrides all stat weight prioritization settings and have the bot pick options that give the highest Energy. Will fallback to the current stat weight prioritization settings if no option for that is available."
+            app:title="Prioritize Energy Above All Else" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Debug Options">
