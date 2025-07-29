@@ -590,67 +590,12 @@ class Game(val myContext: Context) {
 						.trim()
 						.lowercase()
 
-					Log.d(tag, "[DEBUG] Original line is \"$line\".")
-					Log.d(tag, "[DEBUG] Formatted line is \"$formattedLine\".")
-					
-					var statCheck = false
-					if (!line.contains("skill")) {
-						// Apply inflated weights to the prioritized stats.
-						statPrioritization.forEach { stat ->
-							if (line.contains(stat)) {
-								Log.d(tag, "[DEBUG] Adding weight for $stat by priority.")
-								selectionWeight[optionSelected] += try {
-									statCheck = true
-									if (formattedLine.contains("/")) {
-										val splits = formattedLine.split("/")
-										var sum = 0
-										for (split in splits) {
-											sum += try {
-												split.trim().toInt()
-											} catch (_: NumberFormatException) {
-												Log.w(tag, "Could not convert $formattedLine to a number for a priority stat with a forward slash.")
-												10
-											}
-										}
-										sum * 2
-									} else {
-										formattedLine.toInt() * 2
-									}
-								} catch (_: NumberFormatException) {
-									Log.w(tag, "Could not convert $formattedLine to a number for a priority stat.")
-									statCheck = false
-									10
-								}
-							}
-						}
-						
-						// Apply normal weights to the rest of the stats.
-						if (!statCheck) {
-							selectionWeight[optionSelected] += try {
-								Log.d(tag, "[DEBUG] Adding weight for option #$optionSelected for generic stats.")
-								if (formattedLine.contains("/")) {
-									val splits = formattedLine.split("/")
-									var sum = 0
-									for (split in splits) {
-										sum += try {
-											split.trim().toInt()
-										} catch (_: NumberFormatException) {
-											Log.w(tag, "Could not convert $formattedLine to a number for generic stats with a forward slash.")
-											10
-										}
-									}
-									sum
-								} else {
-									formattedLine.toInt()
-								}
-							} catch (_: NumberFormatException) {
-								Log.w(tag, "Could not convert $formattedLine to a number for generic stats.")
-								10
-							}
-						}
-					} else if (line.contains("energy")) {
-						Log.d(tag, "[DEBUG] Adding weight for energy.")
-						selectionWeight[optionSelected] += try {
+					printToLog("[TRAINING-EVENT] Original line is \"$line\".")
+					printToLog("[TRAINING-EVENT] Formatted line is \"$formattedLine\".")
+
+					var priorityStatCheck = false
+					if (line.lowercase().contains("energy")) {
+						val finalEnergyValue = try {
 							val energyValue = if (formattedLine.contains("/")) {
 								val splits = formattedLine.split("/")
 								var sum = 0
@@ -658,7 +603,7 @@ class Game(val myContext: Context) {
 									sum += try {
 										split.trim().toInt()
 									} catch (_: NumberFormatException) {
-										Log.w(tag, "Could not convert $formattedLine to a number for energy with a forward slash.")
+										printToLog("[WARNING] Could not convert $formattedLine to a number for energy with a forward slash.")
 										20
 									}
 								}
@@ -670,25 +615,115 @@ class Game(val myContext: Context) {
 							if (enablePrioritizeEnergyOptions) {
 								energyValue * 100
 							} else {
-								energyValue * 2
+								energyValue * 3
 							}
 						} catch (_: NumberFormatException) {
-							Log.w(tag, "Could not convert $formattedLine to a number for energy.")
+							printToLog("[WARNING] Could not convert $formattedLine to a number for energy.")
 							20
 						}
-					} else if (line.contains("event chain ended")) {
-						Log.d(tag, "[DEBUG] Adding weight for event chain ending.")
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalEnergyValue for energy.")
+						selectionWeight[optionSelected] += finalEnergyValue
+					} else if (line.lowercase().contains("bond")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 20 for bond.")
+						selectionWeight[optionSelected] += 20
+					} else if (line.lowercase().contains("event chain ended")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of -50 for event chain ending.")
 						selectionWeight[optionSelected] += -50
-					} else if (line.contains("(random)")) {
-						Log.d(tag, "[DEBUG] Adding weight for random reward.")
+					} else if (line.lowercase().contains("(random)")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of -50 for random reward.")
 						selectionWeight[optionSelected] += -50
-					} else if (line.contains("randomly")) {
-						Log.d(tag, "[DEBUG] Adding weight for random options.")
+					} else if (line.lowercase().contains("randomly")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 50 for random options.")
 						selectionWeight[optionSelected] += 50
-					} else if (line.contains("hint")) {
-						Log.d(tag, "[DEBUG] Adding weight for skill hint(s).")
+					} else if (line.lowercase().contains("hint")) {
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 25 for skill hint(s).")
 						selectionWeight[optionSelected] += 25
+					} else if (line.lowercase().contains("skill")) {
+						val finalSkillPoints = if (formattedLine.contains("/")) {
+							val splits = formattedLine.split("/")
+							var sum = 0
+							for (split in splits) {
+								sum += try {
+									split.trim().toInt()
+								} catch (_: NumberFormatException) {
+									printToLog("[WARNING] Could not convert $formattedLine to a number for skill points with a forward slash.")
+									10
+								}
+							}
+							sum
+						} else {
+							formattedLine.toInt()
+						}
+						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalSkillPoints for skill points.")
+						selectionWeight[optionSelected] += finalSkillPoints
+					} else {
+						// Apply inflated weights to the prioritized stats based on their order.
+						statPrioritization.forEachIndexed { index, stat ->
+							if (line.contains(stat)) {
+								// Calculate weight bonus based on position (higher priority = higher bonus).
+								val priorityBonus = when (index) {
+									0 -> 50
+									1 -> 40
+									2 -> 30
+									3 -> 20
+									else -> 10
+								}
+
+								val finalStatValue = try {
+									priorityStatCheck = true
+									if (formattedLine.contains("/")) {
+										val splits = formattedLine.split("/")
+										var sum = 0
+										for (split in splits) {
+											sum += try {
+												split.trim().toInt()
+											} catch (_: NumberFormatException) {
+												printToLog("[WARNING] Could not convert $formattedLine to a number for a priority stat with a forward slash.")
+												10
+											}
+										}
+										sum + priorityBonus
+									} else {
+										formattedLine.toInt() + priorityBonus
+									}
+								} catch (_: NumberFormatException) {
+									printToLog("[WARNING] Could not convert $formattedLine to a number for a priority stat.")
+									priorityStatCheck = false
+									10
+								}
+								printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalStatValue for prioritized stat.")
+								selectionWeight[optionSelected] += finalStatValue
+							}
+						}
+						
+						// Apply normal weights to the rest of the stats.
+						if (!priorityStatCheck) {
+							val finalStatValue = try {
+								if (formattedLine.contains("/")) {
+									val splits = formattedLine.split("/")
+									var sum = 0
+									for (split in splits) {
+										sum += try {
+											split.trim().toInt()
+										} catch (_: NumberFormatException) {
+											printToLog("[WARNING] Could not convert $formattedLine to a number for non-prioritized stat with a forward slash.")
+											10
+										}
+									}
+									sum
+								} else {
+									formattedLine.toInt()
+								}
+							} catch (_: NumberFormatException) {
+								printToLog("[WARNING] Could not convert $formattedLine to a number for non-prioritized stat.")
+								10
+							}
+							printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalStatValue for non-prioritized stat.")
+							selectionWeight[optionSelected] += finalStatValue
+						}
 					}
+
+					printToLog("[TRAINING-EVENT] Final weight for option #${optionSelected + 1} is: ${selectionWeight[optionSelected]}.")
 				}
 				
 				optionSelected++
