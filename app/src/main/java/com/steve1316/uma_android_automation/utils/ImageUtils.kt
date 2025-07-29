@@ -809,14 +809,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2GRAY)
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterCrop.png", tempMat)
 
-		// Thresh the grayscale cropped image to make it black and white.
-		val bwImage = Mat()
-		Imgproc.threshold(tempMat, bwImage, 230.0, 255.0, Imgproc.THRESH_BINARY)
-		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugTrainingFailureChance_afterThreshold.png", bwImage)
-
 		// Create a InputImage object for Google's ML OCR.
-		val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
-		Utils.matToBitmap(bwImage, resultBitmap)
+		val resultBitmap = createBitmap(tempMat.cols(), tempMat.rows())
+		Utils.matToBitmap(tempMat, resultBitmap)
 		val inputImage: InputImage = InputImage.fromBitmap(resultBitmap, 0)
 		
 		// Use CountDownLatch to make the async operation synchronous.
