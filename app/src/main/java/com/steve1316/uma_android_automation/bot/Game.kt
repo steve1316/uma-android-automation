@@ -737,6 +737,12 @@ class Game(val myContext: Context) {
 			} else {
 				optionSelected = selectionWeight.indexOf(max)
 			}
+
+			// Print the selection weights.
+			printToLog("[TRAINING-EVENT] Selection weights for each option:")
+			selectionWeight.forEachIndexed { index, weight ->
+				printToLog("Option ${index + 1}: $weight")
+			}
 			
 			// Format the string to display each option's rewards.
 			var eventRewardsString = ""
