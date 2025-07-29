@@ -233,17 +233,29 @@ class ImageUtils(context: Context, private val game: Game) {
 			Utils.bitmapToMat(srcBitmap, sourceMat)
 			Utils.bitmapToMat(tmp, templateMat)
 			
+			// Clamp template dimensions to source dimensions if template is too large.
+			val clampedTemplateMat = if (templateMat.cols() > sourceMat.cols() || templateMat.rows() > sourceMat.rows()) {
+				Log.d(tag, "Image sizes for match assertion failed - sourceMat: ${sourceMat.size()}, templateMat: ${templateMat.size()}")
+				// Create a new Mat with clamped dimensions.
+				val clampedWidth = minOf(templateMat.cols(), sourceMat.cols())
+				val clampedHeight = minOf(templateMat.rows(), sourceMat.rows())
+				val clampedMat = Mat(templateMat, Rect(0, 0, clampedWidth, clampedHeight))
+				clampedMat
+			} else {
+				templateMat
+			}
+			
 			// Make the Mats grayscale for the source and the template.
 			Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
-			Imgproc.cvtColor(templateMat, templateMat, Imgproc.COLOR_BGR2GRAY)
+			Imgproc.cvtColor(clampedTemplateMat, clampedTemplateMat, Imgproc.COLOR_BGR2GRAY)
 			
 			// Create the result matrix.
-			val resultColumns: Int = sourceMat.cols() - templateMat.cols() + 1
-			val resultRows: Int = sourceMat.rows() - templateMat.rows() + 1
+			val resultColumns: Int = sourceMat.cols() - clampedTemplateMat.cols() + 1
+			val resultRows: Int = sourceMat.rows() - clampedTemplateMat.rows() + 1
 			val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
 			
 			// Now perform the matching and localize the result.
-			Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
+			Imgproc.matchTemplate(sourceMat, clampedTemplateMat, resultMat, matchMethod)
 			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
 			
 			matchLocation = Point()
@@ -370,13 +382,25 @@ class ImageUtils(context: Context, private val game: Game) {
 			Utils.bitmapToMat(srcBitmap, sourceMat)
 			Utils.bitmapToMat(tmp, templateMat)
 			
+			// Clamp template dimensions to source dimensions if template is too large.
+			val clampedTemplateMat = if (templateMat.cols() > sourceMat.cols() || templateMat.rows() > sourceMat.rows()) {
+				Log.d(tag, "Image sizes for matchAll assertion failed - sourceMat: ${sourceMat.size()}, templateMat: ${templateMat.size()}")
+				// Create a new Mat with clamped dimensions.
+				val clampedWidth = minOf(templateMat.cols(), sourceMat.cols())
+				val clampedHeight = minOf(templateMat.rows(), sourceMat.rows())
+				val clampedMat = Mat(templateMat, Rect(0, 0, clampedWidth, clampedHeight))
+				clampedMat
+			} else {
+				templateMat
+			}
+			
 			// Make the Mats grayscale for the source and the template.
 			Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
-			Imgproc.cvtColor(templateMat, templateMat, Imgproc.COLOR_BGR2GRAY)
+			Imgproc.cvtColor(clampedTemplateMat, clampedTemplateMat, Imgproc.COLOR_BGR2GRAY)
 			
 			// Create the result matrix.
-			val resultColumns: Int = sourceMat.cols() - templateMat.cols() + 1
-			val resultRows: Int = sourceMat.rows() - templateMat.rows() + 1
+			val resultColumns: Int = sourceMat.cols() - clampedTemplateMat.cols() + 1
+			val resultRows: Int = sourceMat.rows() - clampedTemplateMat.rows() + 1
 			if (resultColumns < 0 || resultRows < 0) {
 				break
 			}
@@ -384,7 +408,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
 			
 			// Now perform the matching and localize the result.
-			Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
+			Imgproc.matchTemplate(sourceMat, clampedTemplateMat, resultMat, matchMethod)
 			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
 			
 			matchLocation = Point()
@@ -395,11 +419,11 @@ class ImageUtils(context: Context, private val game: Game) {
 				matchCheck = true
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
-				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
+				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + clampedTemplateMat.cols(), matchLocation.y + clampedTemplateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
 				
 				// Center the location coordinates and then save it.
-				matchLocation.x += (templateMat.cols() / 2)
-				matchLocation.y += (templateMat.rows() / 2)
+				matchLocation.x += (clampedTemplateMat.cols() / 2)
+				matchLocation.y += (clampedTemplateMat.rows() / 2)
 				
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
@@ -413,11 +437,11 @@ class ImageUtils(context: Context, private val game: Game) {
 				matchCheck = true
 				
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
-				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
+				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + clampedTemplateMat.cols(), matchLocation.y + clampedTemplateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
 				
 				// Center the location coordinates and then save it.
-				matchLocation.x += (templateMat.cols() / 2)
-				matchLocation.y += (templateMat.rows() / 2)
+				matchLocation.x += (clampedTemplateMat.cols() / 2)
+				matchLocation.y += (clampedTemplateMat.rows() / 2)
 				
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
