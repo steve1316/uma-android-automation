@@ -562,19 +562,43 @@ class Game(val myContext: Context) {
 				val formattedReward: List<String> = reward.split("\n")
 				
 				formattedReward.forEach { line ->
-					val formattedLine: String = regex.replace(line, "").replace("+", "").replace("(", "").replace(")", "").trim()
+					val formattedLine: String = regex
+						.replace(line, "")
+						.replace("(", "")
+						.replace(")", "")
+						.trim()
+						.lowercase()
+
+					Log.d(tag, "[DEBUG] Original line is \"$line\".")
+					Log.d(tag, "[DEBUG] Formatted line is \"$formattedLine\".")
 					
 					var statCheck = false
-					if (!line.contains("Skill")) {
+					if (!line.contains("skill")) {
 						// Apply inflated weights to the prioritized stats.
 						statPrioritization.forEach { stat ->
 							if (line.contains(stat)) {
+								Log.d(tag, "[DEBUG] Adding weight for $stat by priority.")
 								selectionWeight[optionSelected] += try {
 									statCheck = true
-									formattedLine.toInt() * 4
+									if (formattedLine.contains("/")) {
+										val splits = formattedLine.split("/")
+										var sum = 0
+										for (split in splits) {
+											sum += try {
+												split.trim().toInt()
+											} catch (_: NumberFormatException) {
+												Log.w(tag, "Could not convert $formattedLine to a number for a priority stat with a forward slash.")
+												10
+											}
+										}
+										sum * 2
+									} else {
+										formattedLine.toInt() * 2
+									}
 								} catch (_: NumberFormatException) {
+									Log.w(tag, "Could not convert $formattedLine to a number for a priority stat.")
 									statCheck = false
-									0
+									10
 								}
 							}
 						}
@@ -582,21 +606,63 @@ class Game(val myContext: Context) {
 						// Apply normal weights to the rest of the stats.
 						if (!statCheck) {
 							selectionWeight[optionSelected] += try {
-								formattedLine.toInt() * 2
+								Log.d(tag, "[DEBUG] Adding weight for option #$optionSelected for generic stats.")
+								if (formattedLine.contains("/")) {
+									val splits = formattedLine.split("/")
+									var sum = 0
+									for (split in splits) {
+										sum += try {
+											split.trim().toInt()
+										} catch (_: NumberFormatException) {
+											Log.w(tag, "Could not convert $formattedLine to a number for generic stats with a forward slash.")
+											10
+										}
+									}
+									sum
+								} else {
+									formattedLine.toInt()
+								}
 							} catch (_: NumberFormatException) {
-								0
+								Log.w(tag, "Could not convert $formattedLine to a number for generic stats.")
+								10
 							}
 						}
-					} else if (line.contains("Energy")) {
+					} else if (line.contains("energy")) {
+						Log.d(tag, "[DEBUG] Adding weight for energy.")
 						selectionWeight[optionSelected] += try {
-							formattedLine.toInt()
+							val energyValue = if (formattedLine.contains("/")) {
+								val splits = formattedLine.split("/")
+								var sum = 0
+								for (split in splits) {
+									sum += try {
+										split.trim().toInt()
+									} catch (_: NumberFormatException) {
+										Log.w(tag, "Could not convert $formattedLine to a number for energy with a forward slash.")
+										20
+									}
+								}
+								sum
+							} else {
+								formattedLine.toInt()
+							}
+
+							energyValue * 2
 						} catch (_: NumberFormatException) {
-							10
+							Log.w(tag, "Could not convert $formattedLine to a number for energy.")
+							20
 						}
-					} else if (line.lowercase().contains("event chain ended")) {
+					} else if (line.contains("event chain ended")) {
+						Log.d(tag, "[DEBUG] Adding weight for event chain ending.")
 						selectionWeight[optionSelected] += -50
-					} else if (line.lowercase().contains("one of these will be selected at random")) {
+					} else if (line.contains("(random)")) {
+						Log.d(tag, "[DEBUG] Adding weight for random reward.")
+						selectionWeight[optionSelected] += -50
+					} else if (line.contains("randomly")) {
+						Log.d(tag, "[DEBUG] Adding weight for random options.")
 						selectionWeight[optionSelected] += 50
+					} else if (line.contains("hint")) {
+						Log.d(tag, "[DEBUG] Adding weight for skill hint(s).")
+						selectionWeight[optionSelected] += 25
 					}
 				}
 				
