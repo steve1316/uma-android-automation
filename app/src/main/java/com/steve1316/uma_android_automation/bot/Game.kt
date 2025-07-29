@@ -158,6 +158,64 @@ class Game(val myContext: Context) {
 			false
 		}
 	}
+
+	/**
+	 * Handles the test to perform template matching to determine what the best scale will be for the device.
+	 */
+	fun startTemplateMatchingTest() {
+		printToLog("\n[DEBUG] Now beginning basic template match test on the Home screen.")
+		printToLog("[DEBUG] Forcing confidence setting to be 0.8 for the test.\n")
+		val results = imageUtils.startTemplateMatchingTest()
+		printToLog("\n[INFO] Basic template match test complete.")
+
+		// Print all scales that worked for each template.
+		for ((templateName, scales) in results) {
+			if (scales.isNotEmpty()) {
+				printToLog("[INFO] All working scales for $templateName: $scales", tag = tag)
+			} else {
+				printToLog("[WARNING] No working scales found for $templateName", tag = tag)
+			}
+		}
+
+		// Then print the median scales.
+		val medianScales = mutableListOf<Double>()
+		for ((templateName, scales) in results) {
+			if (scales.isNotEmpty()) {
+				val sortedScales = scales.sorted()
+				val medianScale = sortedScales[sortedScales.size / 2]
+				medianScales.add(medianScale)
+				printToLog("[INFO] Median scale for $templateName: $medianScale", tag = tag)
+			}
+		}
+		if (medianScales.isNotEmpty()) printToLog("\n[INFO] The following is the recommended scale to set (pick one): $medianScales.")
+		else printToLog("\n[ERROR] No median scale can be found.", isError = true)
+	}
+
+	/**
+	 * Handles the test to perform OCR on the training failure chance for the current training on display.
+	 */
+	fun startSingleTrainingFailureOCRTest() {
+		printToLog("\n[DEBUG] Now beginning Single Training Failure OCR test on the Training screen for the current training on display.")
+		printToLog("[DEBUG] Note that this test is dependent on having the correct scale.")
+		printToLog("[DEBUG] Forcing confidence setting to be 0.8 for the test.\n")
+		val failureChance: Int = imageUtils.findTrainingFailureChance()
+		if (failureChance == -1) {
+			printToLog("[ERROR] Training Failure Chance detection failed.", isError = true)
+		} else {
+			printToLog("[INFO] Training Failure Chance: $failureChance")
+		}
+	}
+
+	/**
+	 * Handles the test to perform OCR on training failure chances for all 5 of the trainings on display.
+	 */
+	fun startComprehensiveTrainingFailureOCRTest() {
+		printToLog("\n[DEBUG] Now beginning Comprehensive Training Failure OCR test on the Training screen for all 5 trainings on display.")
+		printToLog("[DEBUG] Note that this test is dependent on having the correct scale.")
+		printToLog("[DEBUG] Forcing confidence setting to be 0.8 for the test.\n")
+		findStatsAndPercentages(test = true)
+		printMap()
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,8 +392,10 @@ class Game(val myContext: Context) {
 	
 	/**
 	 * Find the success percentages and stat gain for each training and assign them to the MutableMap object to be shared across the whole class.
+	 *
+	 * @param test Flag that forces the failure chance through even if it is not in the acceptable range for testing purposes.
 	 */
-	private fun findStatsAndPercentages() {
+	private fun findStatsAndPercentages(test: Boolean = false) {
 		printToLog("\n[TRAINING] Checking for success percentages and total stat increases for training selection...")
 		
 		// Acquire the position of the speed stat text.
@@ -357,7 +417,7 @@ class Game(val myContext: Context) {
 				return
 			}
 			
-			if (failureChance <= maximumFailureChance) {
+			if (test || failureChance <= maximumFailureChance) {
 				printToLog("[TRAINING] $failureChance% within acceptable range of ${maximumFailureChance}%. Proceeding to acquire all other percentages and total stat increases...")
 				
 				var initialStatWeight: Int = imageUtils.findInitialStatWeight("Speed")
@@ -1030,12 +1090,22 @@ class Game(val myContext: Context) {
 
 		// Print device and version information.
 		printToLog("[INFO] Device Information: ${MediaProjectionService.displayWidth}x${MediaProjectionService.displayHeight}, DPI ${MediaProjectionService.displayDPI}")
+		if (sharedPreferences.getString("customScale", "1.0")?.toDouble() != 1.0) printToLog("[INFO] Manual scale has been set to ${sharedPreferences.getString("customScale", "1.0")?.toDouble()}")
 		val packageInfo = myContext.packageManager.getPackageInfo(myContext.packageName, 0)
 		printToLog("[INFO] Bot version: ${packageInfo.versionName} (${packageInfo.versionCode})\n\n")
 		
 		val startTime: Long = System.currentTimeMillis()
-		
-		if (campaign == "Ao Haru") {
+
+		// Start debug tests here if enabled.
+		if (sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)) {
+			startTemplateMatchingTest()
+		} else if (sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)) {
+			startSingleTrainingFailureOCRTest()
+		} else if (sharedPreferences.getBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", false)) {
+			startComprehensiveTrainingFailureOCRTest()
+		}
+		// Otherwise, proceed with regular bot operations.
+		else if (campaign == "Ao Haru") {
 			val aoHaruCampaign = AoHaru(this)
 			aoHaruCampaign.start()
 		} else {

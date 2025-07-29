@@ -106,6 +106,59 @@ class ImageUtils(context: Context, private val game: Game) {
 		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "eng")
 		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
 	}
+
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Starts a test to determine what scales are working on this device by looping through some template images.
+	 *
+	 * @return A mapping of template image names used to test and their lists of working scales.
+	 */
+	fun startTemplateMatchingTest(): MutableMap<String, MutableList<Double>> {
+		val results = mutableMapOf(
+			"energy" to mutableListOf(0.0),
+			"tazuna" to mutableListOf(0.0),
+			"skill_points" to mutableListOf(0.0)
+		)
+
+		val defaultConfidence = 0.8
+		for ((key, _) in results) {
+			val (sourceBitmap, templateBitmap) = getBitmaps(key)
+
+			if (match(sourceBitmap!!, templateBitmap!!, key, useSingleScale = true, customConfidence = defaultConfidence, testScale = 1.0)) {
+				results[key] = mutableListOf(1.0)
+			}
+		}
+
+		// Return early if all the results came back positive at the default scale.
+		if (results.values.all { it[0] == 1.0 }) {
+			return results
+		} else {
+			// If the default scale does not match any of the templates, begin the process of going from 0.5 to 3.0 to try to find the best scale for each of the templates by comparing the results.
+			val scalesToTest = mutableListOf<Double>()
+			var scale = 0.5
+			while (scale <= 3.0) {
+				scalesToTest.add(scale)
+				scale += 0.01
+			}
+
+			for ((key, _) in results) {
+				val (sourceBitmap, templateBitmap) = getBitmaps(key)
+				results[key] = mutableListOf()
+				for (testScale in scalesToTest) {
+					if (match(sourceBitmap!!, templateBitmap!!, key, useSingleScale = true, customConfidence = defaultConfidence, testScale = testScale)) {
+						results[key]?.add(testScale)
+					}
+				}
+			}
+		}
+
+		return results
+	}
+
+	////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Match between the source Bitmap from /files/temp/ and the template Bitmap from the assets folder.
@@ -133,6 +186,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		
 		// Scale images if the device is not 1080p which is supported by default.
 		val scales: MutableList<Double> = when {
+			testScale != 0.0 -> {
+				mutableListOf(testScale)
+			}
 			customScale != 1.0 && !useSingleScale -> {
 				mutableListOf(customScale - 0.02, customScale - 0.01, customScale, customScale + 0.01, customScale + 0.02, customScale + 0.03, customScale + 0.04)
 			}
