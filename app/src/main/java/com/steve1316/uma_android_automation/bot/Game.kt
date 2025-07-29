@@ -131,7 +131,7 @@ class Game(val myContext: Context) {
 	fun wait(seconds: Double) {
 		val totalMillis = (seconds * 1000).toLong()
 		// Check for interruption every 100ms.
-		val checkInterval = 100L 
+		val checkInterval = 100L
 		
 		var remainingMillis = totalMillis
 		while (remainingMillis > 0) {
@@ -839,7 +839,7 @@ class Game(val myContext: Context) {
 
 			// Now tap on the screen to get past the Race Result screen.
 			gestureUtils.tap(350.0, 450.0, "ok", taps = 3)
-			wait(2.0)
+			wait(3.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
@@ -889,12 +889,12 @@ class Game(val myContext: Context) {
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(2.0)
+			wait(3.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
 				printToLog("[RACE] Manual race failed. Attempting to retry...")
-				wait(2.0)
+				wait(5.0)
 				raceRetries--
 			} else {
 				// Check if a Trophy was acquired.
@@ -1085,6 +1085,9 @@ class Game(val myContext: Context) {
 			printToLog("\n[END] Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot.")
 			notificationMessage = "Bot will stop due to the detection of the Crane Game Event. Please complete it and restart the bot."
 			return false
+		} else if (findAndTapImage("race_retry", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
+			printToLog("[INFO] There is a race retry popup.")
+			wait(5.0)
 		} else if (!BotService.isRunning) {
 			throw InterruptedException()
 		}
