@@ -47,7 +47,7 @@ class BaseScraper:
         """
         if not self.cookie_accepted:
             try:
-                cookie_consent_button = driver.find_element(By.XPATH, "//button[contains(@class, 'legal_cookie_banner_button__Oy_Qr')]")
+                cookie_consent_button = driver.find_element(By.XPATH, "//button[contains(@class, 'legal_cookie_banner_button')]")
                 if cookie_consent_button:
                     cookie_consent_button.click()
                     time.sleep(0.1)
@@ -68,7 +68,7 @@ class BaseScraper:
         """
         options = []
         for tooltip_row in tooltip_rows:
-            td = tooltip_row.find_elements(By.XPATH, ".//td[contains(@class, 'tooltips_ttable_cell___3NMF')]")[1]
+            td = tooltip_row.find_elements(By.XPATH, ".//td[contains(@class, 'tooltips_ttable_cell')]")[1]
             td_divs = td.find_elements(By.XPATH, ".//div")
             text_fragments = [div.text.strip() for div in td_divs]
 
@@ -104,7 +104,7 @@ class BaseScraper:
             item_name (str): The name of the item.
             data_dict (Dict[str, List[str]]): The data dictionary to modify.
         """
-        all_training_events = driver.find_elements(By.XPATH, "//div[contains(@class, 'compatibility_viewer_item__SWULM')]")
+        all_training_events = driver.find_elements(By.XPATH, "//div[contains(@class, 'compatibility_viewer_item')]")
         logging.info(f"Found {len(all_training_events)} training events for {item_name}.")
 
         for j, training_event in enumerate(all_training_events):
@@ -113,7 +113,7 @@ class BaseScraper:
 
             tooltip = driver.find_element(By.XPATH, "//div[@data-tippy-root]")
             try:
-                tooltip_title = tooltip.find_element(By.XPATH, ".//div[contains(@class, 'tooltips_ttable_heading__jlJcE')]").text
+                tooltip_title = tooltip.find_element(By.XPATH, ".//div[contains(@class, 'tooltips_ttable_heading')]").text
             except NoSuchElementException:
                 logging.info(f"No tooltip title found for training event ({j + 1}/{len(all_training_events)}).")
                 continue
@@ -138,10 +138,12 @@ class SkillScraper(BaseScraper):
         """Starts the scraping process."""
         driver = create_chromedriver()
         driver.get(self.url)
-        time.sleep(3)
+        time.sleep(5)
+        
+        self.handle_cookie_consent(driver)
 
         # Show the Settings dropdown and toggle "Show skill IDs" and "For character-specific skills..."
-        show_settings_button = driver.find_element(By.XPATH, "//div[contains(@class, 'utils_padbottom_half__VUTlR')]//button[contains(@class, 'filters_button_moreless__u5k7N')]")
+        show_settings_button = driver.find_element(By.XPATH, "//div[contains(@class, 'utils_padbottom_half')]//button[contains(@class, 'filters_button_moreless')]")
         show_settings_button.click()
         time.sleep(0.1)
         show_skill_ids_checkbox = driver.find_element(By.XPATH, "//input[contains(@id, 'showIdCheckbox')]")
@@ -151,13 +153,13 @@ class SkillScraper(BaseScraper):
         show_character_specific_checkbox.click()
         time.sleep(0.1)
 
-        all_skill_rows = driver.find_elements(By.CSS_SELECTOR, "div.skills_table_row_ja__pAfOT")
+        all_skill_rows = driver.find_elements(By.XPATH, "//div[contains(@class, 'skills_table_row_ja')]")
         logging.info(f"Found {len(all_skill_rows)} non-hidden and hidden skill rows.")
 
         # Scrape all skill rows.
         for i, skill_row in enumerate(all_skill_rows):
-            skill_name = skill_row.find_element(By.XPATH, ".//div[contains(@class, 'skills_table_jpname__ga5DL')]").text
-            skill_description = skill_row.find_element(By.XPATH, ".//div[contains(@class, 'skills_table_desc__i63a8')]").text
+            skill_name = skill_row.find_element(By.XPATH, ".//div[contains(@class, 'skills_table_jpname')]").text
+            skill_description = skill_row.find_element(By.XPATH, ".//div[contains(@class, 'skills_table_desc')]").text
 
             # Strip the skill ID from the description.
             skill_id_match = re.search(r'\((\d+)\)$', skill_description)
@@ -184,14 +186,17 @@ class CharacterScraper(BaseScraper):
         """Starts the scraping process."""
         driver = create_chromedriver()
         driver.get(self.url)
-        time.sleep(3)
+        time.sleep(5)
+        
+        self.handle_cookie_consent(driver)
 
         # Sort the characters by ascending order.
         self._sort_by_name(driver)
 
         # Get all character links.
-        character_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-70f2d7f-0 dSgCQa')]")
-        character_items = character_grid.find_elements(By.XPATH, ".//a[contains(@class, 'sc-73e3e686-1 iAslZY')]")
+        character_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-70f2d7f-0')]")
+        character_items = character_grid.find_elements(By.XPATH, ".//a[contains(@class, 'sc-73e3e686-1')]")
+
         logging.info(f"Found {len(character_items)} characters.")
         character_links = [item.get_attribute("href") for item in character_items]
 
@@ -201,9 +206,7 @@ class CharacterScraper(BaseScraper):
             driver.get(link)
             time.sleep(3)
 
-            self.handle_cookie_consent(driver)
-
-            character_name = driver.find_element(By.XPATH, "//h1[contains(@class, 'utils_headingXl__vl546')]").text
+            character_name = driver.find_element(By.XPATH, "//h1[contains(@class, 'utils_headingXl')]").text
             character_name = character_name.replace("(Original)", "").strip()
             # Remove any other parentheses that denote different forms of the character like "Wedding" or "Swimsuit".
             character_name = re.sub(r'\s*\(.*?\)', '', character_name).strip()
@@ -225,7 +228,7 @@ class CharacterScraper(BaseScraper):
             driver (uc.Chrome): The Chrome driver.
         """
         # Click on the "Sort by" dropdown and select "Name".
-        sort_by_dropdown = driver.find_element(By.XPATH, "//div[contains(@class, 'filters_sort_row__2mli0')]")
+        sort_by_dropdown = driver.find_element(By.XPATH, "//div[contains(@class, 'filters_sort_row')]")
         first_select = sort_by_dropdown.find_element(By.XPATH, ".//select[1]")
         first_select.click()
         time.sleep(0.1)
@@ -250,13 +253,16 @@ class SupportCardScraper(BaseScraper):
         """Starts the scraping process."""
         driver = create_chromedriver()
         driver.get(self.url)
-        time.sleep(3)
+        time.sleep(5)
+
+        self.handle_cookie_consent(driver)
 
         # Get all support card links.
-        support_card_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-70f2d7f-0 dSgCQa')]")
-        support_card_items = support_card_grid.find_elements(By.XPATH, ".//a[contains(@class, 'sc-73e3e686-1 iAslZY')]")
+        support_card_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-70f2d7f-0')]")
+        support_card_items = support_card_grid.find_elements(By.XPATH, ".//div[contains(@class, 'sc-73e3e686-3')]")
+
         logging.info(f"Found {len(support_card_items)} support cards.")
-        support_card_links = [item.get_attribute("href") for item in support_card_items]
+        support_card_links = [item.find_element(By.XPATH, "./..").get_attribute("href") for item in support_card_items]
 
         # Iterate through each support card.
         for i, link in enumerate(support_card_links):
@@ -264,9 +270,7 @@ class SupportCardScraper(BaseScraper):
             driver.get(link)
             time.sleep(3)
 
-            self.handle_cookie_consent(driver)
-
-            support_card_name = driver.find_element(By.XPATH, "//h1[contains(@class, 'utils_headingXl__vl546')]").text
+            support_card_name = driver.find_element(By.XPATH, "//h1[contains(@class, 'utils_headingXl')]").text
             support_card_name = support_card_name.replace("Support Card", "").strip()
             # Remove any other parentheses that denote different forms of the support card.
             support_card_name = re.sub(r'\s*\(.*?\)', '', support_card_name).strip()
