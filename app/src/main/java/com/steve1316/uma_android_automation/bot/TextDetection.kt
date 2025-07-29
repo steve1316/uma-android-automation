@@ -27,7 +27,7 @@ class TextDetection(private val game: Game, private val imageUtils: ImageUtils) 
 	private val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", false)
 	private val selectAllCharacters: Boolean = sharedPreferences.getBoolean("selectAllCharacters", true)
 	private val selectAllSupportCards: Boolean = sharedPreferences.getBoolean("selectAllSupportCards", true)
-	private var minimumConfidence = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
+	private var minimumConfidence = sharedPreferences.getInt("ocrConfidence", 80).toDouble() / 100.0
 	private val threshold = sharedPreferences.getInt("threshold", 230).toDouble()
 	private val enableAutomaticRetry = sharedPreferences.getBoolean("enableAutomaticRetry", false)
 	

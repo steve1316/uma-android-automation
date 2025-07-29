@@ -72,15 +72,56 @@
             app:title="Enable Stop on Mandatory Race" />
 
         <CheckBoxPreference
+            app:key="enablePrioritizeEnergyOptions"
+            app:summary="Overrides all stat weight prioritization settings and have the bot pick options that give the highest Energy. Will fallback to the current stat weight prioritization settings if no option for that is available."
+            app:title="Prioritize Energy Above All Else" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Debug Options">
+
+        <CheckBoxPreference
             app:key="debugMode"
             app:summary="Allows debugging messages in the log and test images to be created in the /temp/ folder.\n\nIncreases the average runtime of the bot due to constant IO operations."
             app:title="Enable Debug Mode" />
+
+        <SeekBarPreference
+            android:defaultValue="80"
+            android:max="100"
+            app:key="confidence"
+            app:min="10"
+            app:showSeekBarValue="true"
+            app:summary="Set the confidence percentage for template matching. Default is 80% at 1080p. Consider lowering this to something like 70% at lower resolutions."
+            app:title="Adjust Confidence for Template Matching" />
+
+        <EditTextPreference
+            app:key="customScale"
+            app:summary="Manually set the scale to do template matching with which is the ratio of your screen width versus the baseline 1080p. The Basic Template Matching Test can help find your recommended scale. Default is 1.0 based on 1080p.\n\nScale is currently set to %s"
+            app:title="Set Scale for Template Matching"
+            app:defaultValue="1.0"
+            android:inputType="number" />
+
+        <CheckBoxPreference
+            app:key="debugMode_startTemplateMatchingTest"
+            app:summary="Disables normal bot operations and starts the template match test. Only on the Home screen and will check if it can find various buttons on the screen. It will also output what scale it had the most success with.\n\nRecommended to enable Debug Mode as well."
+            app:title="Start Basic Template Matching Test" />
+
+        <CheckBoxPreference
+            app:key="debugMode_startSingleTrainingFailureOCRTest"
+            app:summary="Disables normal bot operations and starts the training failure OCR test. Only on the Training screen and only tests on the training currently on display for their failure chance.\n\nRecommended to enable Debug Mode as well."
+            app:title="Training Failure Chance OCR Test" />
+
+        <CheckBoxPreference
+            app:key="debugMode_startComprehensiveTrainingFailureOCRTest"
+            app:summary="Disables normal bot operations and starts the comprehensive training OCR test. Only on the Training screen and tests all 5 trainings for their stat gain weights and failure chances.\n\nRecommended to enable Debug Mode as well."
+            app:title="Comprehensive Training OCR Test" />
 
         <CheckBoxPreference
             app:defaultValue="true"
             app:key="hideComparisonResults"
             app:summary="Hides the log messages regarding the string comparison process."
             app:title="Hide String Comparison Results" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

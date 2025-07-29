@@ -5,9 +5,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.media.projection.MediaProjectionManager
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -78,8 +76,7 @@ class HomeFragment : Fragment() {
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
-		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
-		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
+		val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
 		
 		// Training Settings page
 		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
@@ -95,8 +92,17 @@ class HomeFragment : Fragment() {
 		// OCR Optimization Settings page
 		val threshold: Int = sharedPreferences.getInt("threshold", 230)
 		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
-		val confidence: Int = sharedPreferences.getInt("confidence", 80)
+		val ocrConfidence: Int = sharedPreferences.getInt("ocrConfidence", 80)
 		
+		// Debug Options page
+		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val confidence: Int = sharedPreferences.getInt("confidence", 80)
+		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
+		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
+		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
+		val debugModeStartComprehensiveTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", false)
+		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
+
 		var defaultCheck = false
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +118,12 @@ class HomeFragment : Fragment() {
 			putInt("maximumFailureChance", maximumFailureChance)
 			putInt("threshold", threshold)
 			putInt("confidence", confidence)
+			putInt("ocrConfidence", ocrConfidence)
 			putInt("daysToRunExtraRaces", daysToRunExtraRaces)
+			putString("customScale", customScale)
+			putBoolean("debugMode_startTemplateMatchingTest", debugModeStartTemplateMatchingTest)
+			putBoolean("debugMode_startSingleTrainingFailureOCRTest", debugModeStartSingleTrainingFailureOCRTest)
+			putBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", debugModeStartComprehensiveTrainingFailureOCRTest)
 			commit()
 		}
 		
@@ -176,6 +187,12 @@ class HomeFragment : Fragment() {
 		} else {
 			"❌"
 		}
+
+		val enablePrioritizeEnergyOptionsString: String = if (enablePrioritizeEnergyOptions) {
+			"✅"
+		} else {
+			"❌"
+		}
 		
 		val debugModeString: String = if (debugMode) {
 			"✅"
@@ -189,6 +206,24 @@ class HomeFragment : Fragment() {
 			"❌"
 		}
 		
+		// Add visual indicators for debug settings
+		val customScaleString = "Custom Scale: $customScale"
+		val debugModeStartTemplateMatchingTestString: String = if (debugModeStartTemplateMatchingTest) {
+			"✅"
+		} else {
+			"❌"
+		}
+		val debugModeStartSingleTrainingFailureOCRTestString: String = if (debugModeStartSingleTrainingFailureOCRTest) {
+			"✅"
+		} else {
+			"❌"
+		}
+		val debugModeStartComprehensiveTrainingFailureOCRTestString: String = if (debugModeStartComprehensiveTrainingFailureOCRTest) {
+			"✅"
+		} else {
+			"❌"
+		}
+
 		// Add visual indicators for character and support card selections
 		val characterString: String = if (selectAllCharacters) {
 			"👥 All Characters Selected"
@@ -225,8 +260,9 @@ class HomeFragment : Fragment() {
 		
 		// Add visual indicators for OCR settings.
 		val thresholdString = "🔍 OCR Threshold: $threshold"
-		val confidenceString = "🎯 Minimum OCR Confidence: $confidence"
-		
+		val confidenceString = "🎯 Minimum Template Match Confidence: $confidence"
+		val ocrConfidenceString = "🎯 Minimum OCR Confidence: $ocrConfidence"
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Update the TextView here based on the information of the SharedPreferences.
@@ -244,15 +280,22 @@ class HomeFragment : Fragment() {
 				"---------- Tesseract OCR Optimization ----------\n" +
 				"$thresholdString\n" +
 				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
-				"$confidenceString\n\n" +
+				"$ocrConfidenceString\n\n" +
 				"---------- Misc Options ----------\n" +
 				"Prioritize Farming Fans: $enableFarmingFansString\n" +
 				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
 				"Skill Point Check: $skillPointString\n" +
 				"Popup Check: $enablePopupCheckString\n" +
 				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n" +
+				"Prioritize Energy Options: $enablePrioritizeEnergyOptionsString\n\n" +
+				"---------- Debug Options ----------\n" +
 				"Debug Mode: $debugModeString\n" +
-				"Hide String Comparison Results: $hideComparisonResultsString"
+				"$confidenceString\n" +
+				"$customScaleString\n" +
+				"Start Template Matching Test: $debugModeStartTemplateMatchingTestString\n" +
+				"Start Single Training Failure OCR Test: $debugModeStartSingleTrainingFailureOCRTestString\n" +
+				"Start Comprehensive Training Failure OCR Test: $debugModeStartComprehensiveTrainingFailureOCRTestString\n" +
+				"Hide String Comparison Results: $hideComparisonResultsString\n\n"
 		
 		// Now construct the data files if this is the first time.
 		if (firstRun) {

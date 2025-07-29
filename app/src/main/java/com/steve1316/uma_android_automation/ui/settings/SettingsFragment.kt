@@ -79,11 +79,62 @@ class SettingsFragment : PreferenceFragmentCompat() {
 						commit()
 					}
 				}
+				"enablePrioritizeEnergyOptions" -> {
+					val enablePrioritizeEnergyOptionsPreference = findPreference<CheckBoxPreference>("enablePrioritizeEnergyOptions")!!
+
+					sharedPreferences.edit {
+						putBoolean("enablePrioritizeEnergyOptions", enablePrioritizeEnergyOptionsPreference.isChecked)
+						commit()
+					}
+				}
 				"debugMode" -> {
 					val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 					
 					sharedPreferences.edit {
 						putBoolean("debugMode", debugModePreference.isChecked)
+						commit()
+					}
+				}
+				"confidence" -> {
+					val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
+
+					sharedPreferences.edit {
+						putInt("confidence", confidencePreference.value)
+						commit()
+					}
+				}
+				"customScale" -> {
+					val customScalePreference = findPreference<EditTextPreference>("customScale")!!
+
+					sharedPreferences.edit {
+						putString("customScale", customScalePreference.text)
+						commit()
+					}
+
+					// Use the original summary template from the XML
+					customScalePreference.summary = String.format("Manually set the scale to do template matching with which is the ratio of your screen width versus the baseline 1080p. The Basic Template Matching Test can help find your recommended scale. Default is 1.0 based on 1080p.\n\nScale is currently set to %s", customScalePreference.text)
+				}
+				"debugMode_startTemplateMatchingTest" -> {
+					val debugModeStartTemplateMatchingTestPreference = findPreference<CheckBoxPreference>("debugMode_startTemplateMatchingTest")!!
+
+					sharedPreferences.edit {
+						putBoolean("debugMode_startTemplateMatchingTest", debugModeStartTemplateMatchingTestPreference.isChecked)
+						commit()
+					}
+				}
+				"debugMode_startSingleTrainingFailureOCRTest" -> {
+					val debugModeStartSingleTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startSingleTrainingFailureOCRTest")!!
+
+					sharedPreferences.edit {
+						putBoolean("debugMode_startSingleTrainingFailureOCRTest", debugModeStartSingleTrainingFailureOCRTestPreference.isChecked)
+						commit()
+					}
+				}
+				"debugMode_startComprehensiveTrainingFailureOCRTest" -> {
+					val debugModeStartComprehensiveTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startComprehensiveTrainingFailureOCRTest")!!
+
+					sharedPreferences.edit {
+						putBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", debugModeStartComprehensiveTrainingFailureOCRTestPreference.isChecked)
 						commit()
 					}
 				}
@@ -127,7 +178,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
 		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
 		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
+		val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
+		val confidence: Int = sharedPreferences.getInt("confidence", 80)
+		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
+		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
+		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
+		val debugModeStartComprehensiveTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", false)
 		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
 		
 		// Get references to the Preference components.
@@ -138,7 +195,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val skillPointCheckPreference = findPreference<SeekBarPreference>("skillPointCheck")!!
 		val enablePopupCheckPreference = findPreference<CheckBoxPreference>("enablePopupCheck")!!
 		val enableStopOnMandatoryRacePreference = findPreference<CheckBoxPreference>("enableStopOnMandatoryRace")!!
+		val enablePrioritizeEnergyOptionsPreference = findPreference<CheckBoxPreference>("enablePrioritizeEnergyOptions")!!
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
+		val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
+		val customScalePreference = findPreference<EditTextPreference>("customScale")!!
+		val debugModeStartTemplateMatchingTestPreference = findPreference<CheckBoxPreference>("debugMode_startTemplateMatchingTest")!!
+		val debugModeStartSingleTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startSingleTrainingFailureOCRTest")!!
+		val debugModeStartComprehensiveTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startComprehensiveTrainingFailureOCRTest")!!
 		val hideComparisonResultsPreference = findPreference<CheckBoxPreference>("hideComparisonResults")!!
 		
 		// Now set the following values from the shared preferences.
@@ -153,7 +216,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		skillPointCheckPreference.value = skillPointCheck
 		enablePopupCheckPreference.isChecked = enablePopupCheck
 		enableStopOnMandatoryRacePreference.isChecked = enableStopOnMandatoryRace
+		enablePrioritizeEnergyOptionsPreference.isChecked = enablePrioritizeEnergyOptions
 		debugModePreference.isChecked = debugMode
+		confidencePreference.value = confidence
+		customScalePreference.summary = String.format(customScalePreference.summary.toString(), customScale)
+		customScalePreference.text = customScale
+		debugModeStartTemplateMatchingTestPreference.isChecked = debugModeStartTemplateMatchingTest
+		debugModeStartSingleTrainingFailureOCRTestPreference.isChecked = debugModeStartSingleTrainingFailureOCRTest
+		debugModeStartComprehensiveTrainingFailureOCRTestPreference.isChecked = debugModeStartComprehensiveTrainingFailureOCRTest
 		hideComparisonResultsPreference.isChecked = hideComparisonResults
 		skillPointCheckPreference.isEnabled = enableSkillPointCheckPreference.isChecked
 		
