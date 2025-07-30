@@ -129,8 +129,9 @@ class Game(val myContext: Context) {
 	 * It also checks for interruption every 100ms to allow faster interruption and checks if the game is still in the middle of loading.
 	 *
 	 * @param seconds Number of seconds to pause execution.
+	 * @param skipWaitingForLoading If true, then it will skip the loading check. Defaults to false.
 	 */
-	fun wait(seconds: Double) {
+	fun wait(seconds: Double, skipWaitingForLoading: Boolean = false) {
 		val totalMillis = (seconds * 1000).toLong()
 		// Check for interruption every 100ms.
 		val checkInterval = 100L
@@ -148,8 +149,10 @@ class Game(val myContext: Context) {
 			remainingMillis -= sleepTime
 		}
 
-		// Check if the game is still loading as well.
-		waitForLoading()
+		if (!skipWaitingForLoading) {
+			// Check if the game is still loading as well.
+			waitForLoading()
+		}
 	}
 
 	/**
@@ -157,7 +160,8 @@ class Game(val myContext: Context) {
 	 */
 	fun waitForLoading() {
 		while (checkLoading()) {
-			wait(1.0)
+			// Avoid an infinite loop by setting the flag to true.
+			wait(1.0, skipWaitingForLoading = true)
 		}
 	}
 	
