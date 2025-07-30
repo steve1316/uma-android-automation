@@ -926,7 +926,12 @@ class Game(val myContext: Context) {
 			val (sourceBitmap, templateBitmap) = imageUtils.getBitmaps("race_extra_double_prediction")
 			while (count < maxCount - 1) {
 				// Save the location of the selected extra race.
-				extraRaceLocation.add(imageUtils.findImage("race_extra_selection", region = imageUtils.regionBottomHalf).first!!)
+				val selectedExtraRace = imageUtils.findImage("race_extra_selection", region = imageUtils.regionBottomHalf).first
+				if (selectedExtraRace == null) {
+					printToLog("[ERROR] Unable to find the location of the selected extra race. Will skip racing...", isError = true)
+					break
+				}
+				extraRaceLocation.add(selectedExtraRace)
 				
 				// Determine its fan gain and save it.
 				val fans = imageUtils.determineExtraRaceFans(extraRaceLocation[count], sourceBitmap!!, templateBitmap!!)
@@ -968,10 +973,14 @@ class Game(val myContext: Context) {
 
 				// Select the extra race that matches the double star prediction and the most fan gain.
 				tap(extraRaceLocation[index].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[index].y - imageUtils.relHeight(70), "race_extra_selection")
-			} else {
+			} else if (extraRaceLocation.isNotEmpty()) {
 				// If no maximum is determined, select the very first extra race.
 				printToLog("[RACE] Selecting the first extra race on the list by default.")
 				tap(extraRaceLocation[0].x - imageUtils.relWidth((100 * 1.36).toInt()), extraRaceLocation[0].y - imageUtils.relHeight(70), "race_extra_selection")
+			} else {
+				printToLog("[WARNING] No extra races detected and thus no fan maximums were calculated.")
+				findAndTapImage("back", tries = 5, region = imageUtils.regionBottomHalf)
+				return false
 			}
 			
 			// Confirm the selection and the resultant popup and then wait for the game to load.
