@@ -209,31 +209,44 @@ class Game(val myContext: Context) {
 	 */
 	fun startTemplateMatchingTest() {
 		printToLog("\n[DEBUG] Now beginning basic template match test on the Home screen.")
-		printToLog("[DEBUG] Forcing confidence setting to be 0.8 for the test.\n")
+		printToLog("[DEBUG] Template match confidence setting will be overridden for the test.\n")
 		val results = imageUtils.startTemplateMatchingTest()
 		printToLog("\n[INFO] Basic template match test complete.")
 
-		// Print all scales that worked for each template.
-		for ((templateName, scales) in results) {
-			if (scales.isNotEmpty()) {
-				printToLog("[INFO] All working scales for $templateName: $scales", tag = tag)
+		// Print all scale/confidence combinations that worked for each template.
+		for ((templateName, scaleConfidenceResults) in results) {
+			if (scaleConfidenceResults.isNotEmpty()) {
+				printToLog("[INFO] All working scale/confidence combinations for $templateName:")
+				for (result in scaleConfidenceResults) {
+					printToLog("[INFO]	Scale: ${result.scale}, Confidence: ${result.confidence}")
+				}
 			} else {
-				printToLog("[WARNING] No working scales found for $templateName", tag = tag)
+				printToLog("[WARNING] No working scale/confidence combinations found for $templateName")
 			}
 		}
 
-		// Then print the median scales.
+		// Then print the median scales and confidences.
 		val medianScales = mutableListOf<Double>()
-		for ((templateName, scales) in results) {
-			if (scales.isNotEmpty()) {
-				val sortedScales = scales.sorted()
+		val medianConfidences = mutableListOf<Double>()
+		for ((templateName, scaleConfidenceResults) in results) {
+			if (scaleConfidenceResults.isNotEmpty()) {
+				val sortedScales = scaleConfidenceResults.map { it.scale }.sorted()
+				val sortedConfidences = scaleConfidenceResults.map { it.confidence }.sorted()
 				val medianScale = sortedScales[sortedScales.size / 2]
+				val medianConfidence = sortedConfidences[sortedConfidences.size / 2]
 				medianScales.add(medianScale)
-				printToLog("[INFO] Median scale for $templateName: $medianScale", tag = tag)
+				medianConfidences.add(medianConfidence)
+				printToLog("[INFO] Median scale for $templateName: $medianScale")
+				printToLog("[INFO] Median confidence for $templateName: $medianConfidence")
 			}
 		}
-		if (medianScales.isNotEmpty()) printToLog("\n[INFO] The following is the recommended scale to set (pick one): $medianScales.")
-		else printToLog("\n[ERROR] No median scale can be found.", isError = true)
+		
+		if (medianScales.isNotEmpty()) {
+			printToLog("\n[INFO] The following are the recommended scales to set (pick one as a whole number value): $medianScales.")
+			printToLog("[INFO] The following are the recommended confidences to set (pick one as a whole number value): $medianConfidences.")
+		} else {
+			printToLog("\n[ERROR] No median scale/confidence can be found.", isError = true)
+		}
 	}
 
 	/**
