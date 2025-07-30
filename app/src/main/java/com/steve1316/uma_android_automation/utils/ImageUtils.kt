@@ -176,7 +176,18 @@ class ImageUtils(context: Context, private val game: Game) {
 	private fun match(sourceBitmap: Bitmap, templateBitmap: Bitmap, templateName: String, region: IntArray = intArrayOf(0, 0, 0, 0), useSingleScale: Boolean = false, customConfidence: Double = 0.0, testScale: Double = 0.0): Boolean {
 		// If a custom region was specified, crop the source screenshot.
 		val srcBitmap = if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
-			Bitmap.createBitmap(sourceBitmap, region[0], region[1], region[2], region[3])
+			// Validate region bounds to prevent IllegalArgumentException with creating a crop area that goes beyond the source Bitmap.
+			val x = max(0, region[0].coerceAtMost(sourceBitmap.width))
+			val y = max(0, region[1].coerceAtMost(sourceBitmap.height))
+			val width = region[2].coerceAtMost(sourceBitmap.width - x)
+			val height = region[3].coerceAtMost(sourceBitmap.height - y)
+			
+			if (width > 0 && height > 0) {
+				Bitmap.createBitmap(sourceBitmap, x, y, width, height)
+			} else {
+				game.printToLog("[ERROR] Invalid region bounds for $templateName: region=$region, bitmap=${sourceBitmap.width}x${sourceBitmap.height}", tag = tag, isError = true)
+				sourceBitmap
+			}
 		} else {
 			sourceBitmap
 		}
@@ -329,7 +340,18 @@ class ImageUtils(context: Context, private val game: Game) {
 	private fun matchAll(sourceBitmap: Bitmap, templateBitmap: Bitmap, region: IntArray = intArrayOf(0, 0, 0, 0), customConfidence: Double = 0.0): java.util.ArrayList<Point> {
 		// If a custom region was specified, crop the source screenshot.
 		val srcBitmap = if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
-			Bitmap.createBitmap(sourceBitmap, region[0], region[1], region[2], region[3])
+			// Validate region bounds to prevent IllegalArgumentException with creating a crop area that goes beyond the source Bitmap.
+			val x = max(0, region[0].coerceAtMost(sourceBitmap.width))
+			val y = max(0, region[1].coerceAtMost(sourceBitmap.height))
+			val width = region[2].coerceAtMost(sourceBitmap.width - x)
+			val height = region[3].coerceAtMost(sourceBitmap.height - y)
+			
+			if (width > 0 && height > 0) {
+				Bitmap.createBitmap(sourceBitmap, x, y, width, height)
+			} else {
+				game.printToLog("[ERROR] Invalid region bounds: region=$region, bitmap=${sourceBitmap.width}x${sourceBitmap.height}", tag = tag, isError = true)
+				sourceBitmap
+			}
 		} else {
 			sourceBitmap
 		}
