@@ -104,15 +104,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 					}
 				}
 				"customScale" -> {
-					val customScalePreference = findPreference<EditTextPreference>("customScale")!!
+					val customScalePreference = findPreference<SeekBarPreference>("customScale")!!
 
 					sharedPreferences.edit {
-						putString("customScale", customScalePreference.text)
+						putInt("customScale", customScalePreference.value)
 						commit()
 					}
-
-					// Use the original summary template from the XML
-					customScalePreference.summary = String.format("Manually set the scale to do template matching with which is the ratio of your screen width versus the baseline 1080p. The Basic Template Matching Test can help find your recommended scale. Default is 1.0 based on 1080p.\n\nScale is currently set to %s", customScalePreference.text)
 				}
 				"debugMode_startTemplateMatchingTest" -> {
 					val debugModeStartTemplateMatchingTestPreference = findPreference<CheckBoxPreference>("debugMode_startTemplateMatchingTest")!!
@@ -181,7 +178,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val confidence: Int = sharedPreferences.getInt("confidence", 80)
-		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
+		val customScale: Int = sharedPreferences.getInt("customScale", 100)
 		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
 		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
 		val debugModeStartComprehensiveTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", false)
@@ -198,7 +195,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		val enablePrioritizeEnergyOptionsPreference = findPreference<CheckBoxPreference>("enablePrioritizeEnergyOptions")!!
 		val debugModePreference = findPreference<CheckBoxPreference>("debugMode")!!
 		val confidencePreference = findPreference<SeekBarPreference>("confidence")!!
-		val customScalePreference = findPreference<EditTextPreference>("customScale")!!
+		val customScalePreference = findPreference<SeekBarPreference>("customScale")!!
 		val debugModeStartTemplateMatchingTestPreference = findPreference<CheckBoxPreference>("debugMode_startTemplateMatchingTest")!!
 		val debugModeStartSingleTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startSingleTrainingFailureOCRTest")!!
 		val debugModeStartComprehensiveTrainingFailureOCRTestPreference = findPreference<CheckBoxPreference>("debugMode_startComprehensiveTrainingFailureOCRTest")!!
@@ -219,8 +216,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 		enablePrioritizeEnergyOptionsPreference.isChecked = enablePrioritizeEnergyOptions
 		debugModePreference.isChecked = debugMode
 		confidencePreference.value = confidence
-		customScalePreference.summary = String.format(customScalePreference.summary.toString(), customScale)
-		customScalePreference.text = customScale
+		customScalePreference.value = customScale
 		debugModeStartTemplateMatchingTestPreference.isChecked = debugModeStartTemplateMatchingTest
 		debugModeStartSingleTrainingFailureOCRTestPreference.isChecked = debugModeStartSingleTrainingFailureOCRTest
 		debugModeStartComprehensiveTrainingFailureOCRTestPreference.isChecked = debugModeStartComprehensiveTrainingFailureOCRTest

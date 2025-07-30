@@ -1,17 +1,22 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.3.2</latestVersion>
+    <latestVersion>2.3.3</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v2.3.2 - Changelog 
+v2.3.3 - Changelog 
 
 New
 ---
-- Add a way to wait for server response and wait after each executed tap
+- Add much more logging to clarify most actions that the bot takes
+- Add checks to see if the bot is at the screen to end a race and for connection errors during the misc checks
 
 Improvements
 ---
-- Improved Training Event option selection including having more logging
+- Converted the custom scale setting from a EditTextPreference to a SeekBarPreference
+- Set the minimum confidence in the settings to 0.5 or 50%
+- Improved areas of the code that may lead to crashes
+- Further changes have been made to the racing process in terms of waiting for server response and for the game to finish loading
+- Adjusted the Template Match test to check for confidences together with scales
     </releaseNotes>
   </update>
 </AppUpdater>

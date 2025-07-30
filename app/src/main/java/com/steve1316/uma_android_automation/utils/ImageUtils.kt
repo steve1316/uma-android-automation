@@ -46,7 +46,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	private val campaign: String = sharedPreferences.getString("campaign", "")!!
 	private var confidence: Double = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
-	private var customScale: Double = sharedPreferences.getString("customScale", "1.0")!!.toDouble()
+	private var customScale: Double = sharedPreferences.getInt("customScale", 100).toDouble() / 100.0
 	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 	
 	////////////////////////////////////////////////////////////////////
@@ -108,6 +108,11 @@ class ImageUtils(context: Context, private val game: Game) {
 		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
 	}
 
+	data class ScaleConfidenceResult(
+		val scale: Double,
+		val confidence: Double
+	)
+
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 
@@ -116,41 +121,42 @@ class ImageUtils(context: Context, private val game: Game) {
 	 *
 	 * @return A mapping of template image names used to test and their lists of working scales.
 	 */
-	fun startTemplateMatchingTest(): MutableMap<String, MutableList<Double>> {
-		val results = mutableMapOf(
-			"energy" to mutableListOf(0.0),
-			"tazuna" to mutableListOf(0.0),
-			"skill_points" to mutableListOf(0.0)
+	fun startTemplateMatchingTest(): MutableMap<String, MutableList<ScaleConfidenceResult>> {
+		val results = mutableMapOf<String, MutableList<ScaleConfidenceResult>>(
+			"energy" to mutableListOf(),
+			"tazuna" to mutableListOf(),
+			"skill_points" to mutableListOf()
 		)
 
 		val defaultConfidence = 0.8
-		for ((key, _) in results) {
+		val testScaleDecimalFormat = DecimalFormat("#.##")
+		val testConfidenceDecimalFormat = DecimalFormat("#.##")
+
+		for (key in results.keys) {
 			val (sourceBitmap, templateBitmap) = getBitmaps(key)
 
+			// First, try the default values of 1.0 for scale and 0.8 for confidence.
 			if (match(sourceBitmap!!, templateBitmap!!, key, useSingleScale = true, customConfidence = defaultConfidence, testScale = 1.0)) {
-				results[key] = mutableListOf(1.0)
+				results[key]?.add(ScaleConfidenceResult(1.0, defaultConfidence))
+				continue // If it works, skip to the next template.
 			}
-		}
 
-		// Return early if all the results came back positive at the default scale.
-		if (results.values.all { it[0] == 1.0 }) {
-			return results
-		} else {
-			// If the default scale does not match any of the templates, begin the process of going from 0.5 to 3.0 to try to find the best scale for each of the templates by comparing the results.
+			// If not, try all scale/confidence combinations.
 			val scalesToTest = mutableListOf<Double>()
 			var scale = 0.5
 			while (scale <= 3.0) {
-				scalesToTest.add(scale)
-				scale += 0.01
+				scalesToTest.add(testScaleDecimalFormat.format(scale).toDouble())
+				scale += 0.1
 			}
 
-			for ((key, _) in results) {
-				val (sourceBitmap, templateBitmap) = getBitmaps(key)
-				results[key] = mutableListOf()
-				for (testScale in scalesToTest) {
-					if (match(sourceBitmap!!, templateBitmap!!, key, useSingleScale = true, customConfidence = defaultConfidence, testScale = testScale)) {
-						results[key]?.add(testScale)
+			for (testScale in scalesToTest) {
+				var confidence = 0.5
+				while (confidence <= 1.0) {
+					val formattedConfidence = testConfidenceDecimalFormat.format(confidence).toDouble()
+					if (match(sourceBitmap, templateBitmap, key, useSingleScale = true, customConfidence = formattedConfidence, testScale = testScale)) {
+						results[key]?.add(ScaleConfidenceResult(testScale, formattedConfidence))
 					}
+					confidence += 0.1
 				}
 			}
 		}
@@ -176,7 +182,18 @@ class ImageUtils(context: Context, private val game: Game) {
 	private fun match(sourceBitmap: Bitmap, templateBitmap: Bitmap, templateName: String, region: IntArray = intArrayOf(0, 0, 0, 0), useSingleScale: Boolean = false, customConfidence: Double = 0.0, testScale: Double = 0.0): Boolean {
 		// If a custom region was specified, crop the source screenshot.
 		val srcBitmap = if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
-			Bitmap.createBitmap(sourceBitmap, region[0], region[1], region[2], region[3])
+			// Validate region bounds to prevent IllegalArgumentException with creating a crop area that goes beyond the source Bitmap.
+			val x = max(0, region[0].coerceAtMost(sourceBitmap.width))
+			val y = max(0, region[1].coerceAtMost(sourceBitmap.height))
+			val width = region[2].coerceAtMost(sourceBitmap.width - x)
+			val height = region[3].coerceAtMost(sourceBitmap.height - y)
+			
+			if (width > 0 && height > 0) {
+				Bitmap.createBitmap(sourceBitmap, x, y, width, height)
+			} else {
+				game.printToLog("[ERROR] Invalid region bounds for $templateName: region=$region, bitmap=${sourceBitmap.width}x${sourceBitmap.height}", tag = tag, isError = true)
+				sourceBitmap
+			}
 		} else {
 			sourceBitmap
 		}
@@ -329,7 +346,18 @@ class ImageUtils(context: Context, private val game: Game) {
 	private fun matchAll(sourceBitmap: Bitmap, templateBitmap: Bitmap, region: IntArray = intArrayOf(0, 0, 0, 0), customConfidence: Double = 0.0): java.util.ArrayList<Point> {
 		// If a custom region was specified, crop the source screenshot.
 		val srcBitmap = if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
-			Bitmap.createBitmap(sourceBitmap, region[0], region[1], region[2], region[3])
+			// Validate region bounds to prevent IllegalArgumentException with creating a crop area that goes beyond the source Bitmap.
+			val x = max(0, region[0].coerceAtMost(sourceBitmap.width))
+			val y = max(0, region[1].coerceAtMost(sourceBitmap.height))
+			val width = region[2].coerceAtMost(sourceBitmap.width - x)
+			val height = region[3].coerceAtMost(sourceBitmap.height - y)
+			
+			if (width > 0 && height > 0) {
+				Bitmap.createBitmap(sourceBitmap, x, y, width, height)
+			} else {
+				game.printToLog("[ERROR] Invalid region bounds: region=$region, bitmap=${sourceBitmap.width}x${sourceBitmap.height}", tag = tag, isError = true)
+				sourceBitmap
+			}
 		} else {
 			sourceBitmap
 		}
