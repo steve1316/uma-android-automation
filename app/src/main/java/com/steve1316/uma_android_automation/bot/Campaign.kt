@@ -85,7 +85,7 @@ open class Campaign(val game: Game) {
 					game.notificationMessage = "Stopping bot due to detection of Mandatory Race."
 					break
 				}
-			} else if (game.imageUtils.findImage("race_change_strategy", tries = 1, region = game.imageUtils.regionBottomHalf).first != null) {
+			} else if (game.checkRacingScreen()) {
 				// If the bot is already at the Racing screen, then complete this standalone race.
 				game.printToLog("[INFO] There is a standalone race ready to be run.", tag = tag)
 				game.handleStandaloneRace()

@@ -344,6 +344,21 @@ class Game(val myContext: Context) {
 			false
 		}
 	}
+
+	/**
+	 * Checks if the bot is at the Racing screen waiting to be skipped or done manually.
+	 *
+	 * @return True if the bot is at the Racing screen. Otherwise, false.
+	 */
+	fun checkRacingScreen(): Boolean {
+		printToLog("[INFO] Checking if the bot is sitting on the Racing screen.")
+		return if (imageUtils.findImage("race_change_strategy", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
+			printToLog("\n[INFO] Current bot location is at the Racing screen waiting to be skipped or done manually.")
+			true
+		} else {
+			false
+		}
+	}
 	
 	/**
 	 * Checks if the day number is odd to be eligible to run an extra race, excluding Summer where extra racing is not allowed.
