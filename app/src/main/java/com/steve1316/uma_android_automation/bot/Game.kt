@@ -125,7 +125,8 @@ class Game(val myContext: Context) {
 	}
 	
 	/**
-	 * Wait the specified seconds to account for ping or loading. It also checks for interruption every 100ms to allow faster interruption.
+	 * Wait the specified seconds to account for ping or loading.
+	 * It also checks for interruption every 100ms to allow faster interruption and checks if the game is still in the middle of loading.
 	 *
 	 * @param seconds Number of seconds to pause execution.
 	 */
@@ -145,6 +146,18 @@ class Game(val myContext: Context) {
 				delay(sleepTime)
 			}
 			remainingMillis -= sleepTime
+		}
+
+		// Check if the game is still loading as well.
+		waitForLoading()
+	}
+
+	/**
+	 * Wait for the game to finish loading.
+	 */
+	fun waitForLoading() {
+		while (checkLoading()) {
+			wait(1.0)
 		}
 	}
 	
@@ -186,12 +199,9 @@ class Game(val myContext: Context) {
 		// Perform the tap.
 		gestureUtils.tap(x, y, imageName, taps = taps)
 
-		// Now check if the game is waiting for a server response and wait if necessary.
+		// Now check if the game is waiting for a server response from the tap and wait if necessary.
 		wait(0.20)
-		while (imageUtils.findImage("connecting", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null) {
-			printToLog("[INFO] Detected that the game is awaiting a response from the server from the \"Connecting\" text at the top of the screen. Waiting a few seconds...")
-			wait(1.0)
-		}
+		waitForLoading()
 	}
 
 	/**
@@ -381,10 +391,21 @@ class Game(val myContext: Context) {
 	}
 
 	/**
-	 * Checks if the bot is at a "Now Loading..." screen. This may cause significant delays in normal bot processes.
+	 * Checks if the bot is at a "Now Loading..." screen or if the game is awaiting for a server response. This may cause significant delays in normal bot processes.
+	 *
+	 * @return True if the game is still loading or is awaiting for a server response. Otherwise, false.
 	 */
 	fun checkLoading(): Boolean {
-		return imageUtils.findImage("now_loading", tries = 5, region = imageUtils.regionBottomHalf, suppressError = true).first != null
+		printToLog("[INFO] Now checking if the game is still loading...")
+		return if (imageUtils.findImage("connecting", tries = 1, region = imageUtils.regionTopHalf, suppressError = true).first != null) {
+			printToLog("[INFO] Detected that the game is awaiting a response from the server from the \"Connecting\" text at the top of the screen. Waiting...")
+			true
+		} else if (imageUtils.findImage("now_loading", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true).first != null) {
+			printToLog("[INFO] Detected that the game is still loading from the \"Now Loading\" text at the bottom of the screen. Waiting...")
+			true
+		} else {
+			false
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
