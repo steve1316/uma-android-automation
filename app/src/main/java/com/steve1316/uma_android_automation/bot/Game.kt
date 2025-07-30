@@ -1319,6 +1319,12 @@ class Game(val myContext: Context) {
 		} else if (findAndTapImage("race_accept_trophy", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
 			printToLog("[INFO] There is a possible popup to accept a trophy.")
 			finishRace(true, isExtra = true)
+		} else if (findAndTapImage("race_end", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)) {
+			printToLog("[INFO] Ended a leftover race.")
+		} else if (imageUtils.findImage("connection_error", tries = 1, region = imageUtils.regionMiddle, suppressError = true).first != null) {
+			printToLog("\n[END] Bot will stop due to detecting a connection error.")
+			notificationMessage = "Bot will stop due to detecting a connection error."
+			return false
 		} else if (!BotService.isRunning) {
 			throw InterruptedException()
 		} else {
