@@ -89,7 +89,8 @@
             android:defaultValue="80"
             android:max="100"
             app:key="confidence"
-            app:min="10"
+            app:min="50"
+            app:seekBarIncrement="1"
             app:showSeekBarValue="true"
             app:summary="Set the confidence percentage for template matching. Default is 80% at 1080p. Consider lowering this to something like 70% at lower resolutions."
             app:title="Adjust Confidence for Template Matching" />
