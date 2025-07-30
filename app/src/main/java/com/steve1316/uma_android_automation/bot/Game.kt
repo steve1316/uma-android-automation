@@ -986,7 +986,7 @@ class Game(val myContext: Context) {
 			// Confirm the selection and the resultant popup and then wait for the game to load.
 			findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)
 			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf)
-			wait(5.0)
+			wait(2.0)
 			
 			// Skip the race if possible, otherwise run it manually.
 			val resultCheck: Boolean = if (imageUtils.findImage("race_skip_locked", tries = 5, region = imageUtils.regionBottomHalf).first == null) {
@@ -1040,7 +1040,6 @@ class Game(val myContext: Context) {
 
 			// Now tap on the screen to get past the Race Result screen.
 			tap(350.0, 450.0, "ok", taps = 3)
-			wait(4.0)
 			
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf, suppressError = true)) {
@@ -1076,15 +1075,15 @@ class Game(val myContext: Context) {
 				wait(5.0)
 			}
 
-			if (checkLoading()) wait(10.0)
+			waitForLoading()
 			
 			// Now press the confirm button to get past the list of participants.
 			if (findAndTapImage("race_confirm", tries = 30, region = imageUtils.regionBottomHalf)) {
 				printToLog("[RACE] Dismissed the list of participants.")
 			}
+			waitForLoading()
 			wait(1.0)
-			findAndTapImage("race_confirm", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)
-			if (checkLoading()) wait(5.0)
+			waitForLoading()
 			wait(1.0)
 
 			// Skip the part where it reveals the name of the race.
@@ -1110,20 +1109,18 @@ class Game(val myContext: Context) {
 				printToLog("[RACE] Skipped the results screen.")
 			}
 			wait(2.0)
+
+			waitForLoading()
 			wait(1.0)
-			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			findAndTapImage("race_skip_manual", tries = 30, region = imageUtils.regionBottomHalf)
-			wait(4.0)
 			
 			// Check if the race needed to be retried.
-			if (findAndTapImage("race_retry", tries = 10, region = imageUtils.regionBottomHalf, suppressError = true)) {
-				printToLog("[RACE] Manual race failed. Attempting to retry...")
+			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf, suppressError = true)) {
+				printToLog("[RACE] Manual race failed and needs to be run again. Attempting to retry...")
 				wait(5.0)
 				raceRetries--
 			} else {
 				// Check if a Trophy was acquired.
-				if (findAndTapImage("race_accept_trophy", tries = 10, region = imageUtils.regionBottomHalf)) {
+				if (findAndTapImage("race_accept_trophy", tries = 5, region = imageUtils.regionBottomHalf)) {
 					printToLog("[RACE] Closing popup to claim trophy...")
 				}
 				
@@ -1166,17 +1163,18 @@ class Game(val myContext: Context) {
 				// Wait until the popup showing the completion of a Training Goal appears and confirm it.
 				// There will be dialog before it so the delay should be longer.
 				wait(5.0)
-				findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)
-				wait(2.0)
-				
-				// Now confirm the completion of a Training Goal popup.
-				findAndTapImage("race_end", tries = 5, region = imageUtils.regionBottomHalf)
+				if (findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)) {
+					wait(2.0)
+
+					// Now confirm the completion of a Training Goal popup.
+					printToLog("[RACE] There was a Training Goal popup. Confirming it now.")
+					findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
+				}
 			} else if (findAndTapImage("next", tries = 10, region = imageUtils.regionBottomHalf)) {
+				// Same as above but without the longer delay.
 				wait(2.0)
-				findAndTapImage("race_end", tries = 5, region = imageUtils.regionBottomHalf)
+				findAndTapImage("race_end", tries = 10, region = imageUtils.regionBottomHalf)
 			}
-			
-			wait(1.0)
 		} else {
 			printToLog("[ERROR] Cannot start the cleanup process for finishing the race. Moving on...", isError = true)
 		}
