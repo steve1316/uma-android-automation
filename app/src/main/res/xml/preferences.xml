@@ -94,12 +94,15 @@
             app:summary="Set the confidence percentage for template matching. Default is 80% at 1080p. Consider lowering this to something like 70% at lower resolutions."
             app:title="Adjust Confidence for Template Matching" />
 
-        <EditTextPreference
+        <SeekBarPreference
+            android:defaultValue="100"
+            android:max="300"
             app:key="customScale"
-            app:summary="Manually set the scale to do template matching with which is the ratio of your screen width versus the baseline 1080p. The Basic Template Matching Test can help find your recommended scale. Default is 1.0 based on 1080p.\n\nScale is currently set to %s"
-            app:title="Set Scale for Template Matching"
-            app:defaultValue="1.0"
-            android:inputType="number" />
+            app:min="50"
+            app:seekBarIncrement="1"
+            app:showSeekBarValue="true"
+            app:summary="Manually set the scale as a whole number value to do template matching. The Basic Template Matching Test can help find your recommended scale. Default is 100 or 1.00 based on 1080p."
+            app:title="Set Scale for Template Matching" />
 
         <CheckBoxPreference
             app:key="debugMode_startTemplateMatchingTest"

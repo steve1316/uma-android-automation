@@ -46,7 +46,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	private val campaign: String = sharedPreferences.getString("campaign", "")!!
 	private var confidence: Double = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
-	private var customScale: Double = sharedPreferences.getString("customScale", "1.0")!!.toDouble()
+	private var customScale: Double = sharedPreferences.getInt("customScale", 100).toDouble() / 100.0
 	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 	
 	////////////////////////////////////////////////////////////////////

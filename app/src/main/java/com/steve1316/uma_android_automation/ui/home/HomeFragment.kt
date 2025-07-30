@@ -97,7 +97,7 @@ class HomeFragment : Fragment() {
 		// Debug Options page
 		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
 		val confidence: Int = sharedPreferences.getInt("confidence", 80)
-		val customScale: String = sharedPreferences.getString("customScale", "1.0")!!
+		val customScale: Int = sharedPreferences.getInt("customScale", 100)
 		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
 		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
 		val debugModeStartComprehensiveTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", false)
@@ -120,7 +120,7 @@ class HomeFragment : Fragment() {
 			putInt("confidence", confidence)
 			putInt("ocrConfidence", ocrConfidence)
 			putInt("daysToRunExtraRaces", daysToRunExtraRaces)
-			putString("customScale", customScale)
+			putInt("customScale", customScale)
 			putBoolean("debugMode_startTemplateMatchingTest", debugModeStartTemplateMatchingTest)
 			putBoolean("debugMode_startSingleTrainingFailureOCRTest", debugModeStartSingleTrainingFailureOCRTest)
 			putBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", debugModeStartComprehensiveTrainingFailureOCRTest)
@@ -207,7 +207,7 @@ class HomeFragment : Fragment() {
 		}
 		
 		// Add visual indicators for debug settings
-		val customScaleString = "Custom Scale: $customScale"
+		val customScaleString = "Custom Scale: ${customScale.toDouble() / 100.0}"
 		val debugModeStartTemplateMatchingTestString: String = if (debugModeStartTemplateMatchingTest) {
 			"✅"
 		} else {
