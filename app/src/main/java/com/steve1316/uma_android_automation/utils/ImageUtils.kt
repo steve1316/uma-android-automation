@@ -344,6 +344,10 @@ class ImageUtils(context: Context, private val game: Game) {
 				
 				return true
 			}
+
+			if (!BotService.isRunning) {
+				throw InterruptedException()
+			}
 		}
 		
 		return false
@@ -497,6 +501,10 @@ class ImageUtils(context: Context, private val game: Game) {
 				
 				matchLocations.add(matchLocation)
 			}
+
+			if (!BotService.isRunning) {
+				throw InterruptedException()
+			}
 		}
 		
 		// Loop until all other matches are found and break out when there are no more to be found.
@@ -561,6 +569,10 @@ class ImageUtils(context: Context, private val game: Game) {
 				}
 			} else {
 				break
+			}
+
+			if (!BotService.isRunning) {
+				throw InterruptedException()
 			}
 		}
 		
