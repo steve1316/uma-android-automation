@@ -150,6 +150,7 @@ class ImageUtils(context: Context, private val game: Game) {
 
 			// First, try the default values of 1.0 for scale and 0.8 for confidence.
 			if (match(sourceBitmap!!, templateBitmap!!, key, useSingleScale = true, customConfidence = defaultConfidence, testScale = 1.0)) {
+				game.printToLog("[TEST] Initial test for $key succeeded at the default values.", tag = tag)
 				results[key]?.add(ScaleConfidenceResult(1.0, defaultConfidence))
 				continue // If it works, skip to the next template.
 			}
@@ -163,10 +164,11 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 
 			for (testScale in scalesToTest) {
-				var confidence = 0.5
+				var confidence = 0.6
 				while (confidence <= 1.0) {
 					val formattedConfidence = testConfidenceDecimalFormat.format(confidence).toDouble()
 					if (match(sourceBitmap, templateBitmap, key, useSingleScale = true, customConfidence = formattedConfidence, testScale = testScale)) {
+						game.printToLog("[TEST] Test for $key succeeded at scale $testScale and confidence $formattedConfidence.", tag = tag)
 						results[key]?.add(ScaleConfidenceResult(testScale, formattedConfidence))
 					}
 					confidence += 0.1
