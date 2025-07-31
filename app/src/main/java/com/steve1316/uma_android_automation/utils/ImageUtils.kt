@@ -61,15 +61,28 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val isSplitScreen: Boolean = false // Uma Musume Pretty Derby is only playable in Portrait mode.
 	
 	// Scales
-	private val lowerEndScales: MutableList<Double> = mutableListOf(0.60, 0.61, 0.62, 0.63, 0.64, 0.65, 0.67, 0.68, 0.69, 0.70)
-	private val middleEndScales: MutableList<Double> = mutableListOf(
-		0.70, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83, 0.84, 0.85, 0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99
-	)
-	private val tabletSplitPortraitScales: MutableList<Double> = mutableListOf(0.70, 0.71, 0.72, 0.73, 0.74, 0.75)
-	private val tabletSplitLandscapeScales: MutableList<Double> = mutableListOf(0.55, 0.56, 0.57, 0.58, 0.59, 0.60)
-	
+	private val lowerEndScales: MutableList<Double> = generateSequence(0.50) { it + 0.01 }
+		.takeWhile { it <= 0.70 }
+		.toMutableList()
+
+	private val middleEndScales: MutableList<Double> = generateSequence(0.50) { it + 0.01 }
+		.takeWhile { it <= 3.00 }
+		.toMutableList()
+
+	private val tabletSplitPortraitScales: MutableList<Double> = generateSequence(0.50) { it + 0.01 }
+		.takeWhile { it <= 1.00 }
+		.toMutableList()
+
+	private val tabletSplitLandscapeScales: MutableList<Double> = generateSequence(0.50) { it + 0.01 }
+		.takeWhile { it <= 1.00 }
+		.toMutableList()
+
+	private val tabletPortraitScales: MutableList<Double> = generateSequence(1.00) { it + 0.01 }
+		.takeWhile { it <= 2.00 }
+		.toMutableList()
+
 	// TODO: Separate tablet landscape scale to non-splitscreen and splitscreen scales.
-	private val tabletPortraitScales: MutableList<Double> = mutableListOf(1.28, 1.29, 1.30, 1.31, 1.32, 1.33)
+
 	
 	// Define template matching regions of the screen.
 	val regionTopHalf: IntArray = intArrayOf(0, 0, displayWidth, displayHeight / 2)
