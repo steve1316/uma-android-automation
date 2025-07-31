@@ -40,7 +40,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 	private val tessBaseAPI: TessBaseAPI
 	private val tesseractLanguages = arrayListOf("eng")
-	
+
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	// SharedPreferences
@@ -49,7 +49,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	private var confidence: Double = sharedPreferences.getInt("confidence", 80).toDouble() / 100.0
 	private var customScale: Double = sharedPreferences.getInt("customScale", 100).toDouble() / 100.0
 	private val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
-	
+
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
 	// Device configuration
@@ -60,7 +60,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	val isTablet: Boolean = (displayWidth == 1600 && displayHeight == 2560) || (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Portrait Mode
 	private val isLandscape: Boolean = (displayWidth == 2560 && displayHeight == 1600) // Galaxy Tab S7 1600x2560 Landscape Mode
 	private val isSplitScreen: Boolean = false // Uma Musume Pretty Derby is only playable in Portrait mode.
-	
+
 	// Scales
 	private val lowerEndScales: MutableList<Double> = generateSequence(0.50) { it + 0.01 }
 		.takeWhile { it <= 0.70 }
@@ -84,20 +84,19 @@ class ImageUtils(context: Context, private val game: Game) {
 
 	// TODO: Separate tablet landscape scale to non-splitscreen and splitscreen scales.
 
-	
 	// Define template matching regions of the screen.
 	val regionTopHalf: IntArray = intArrayOf(0, 0, displayWidth, displayHeight / 2)
 	val regionBottomHalf: IntArray = intArrayOf(0, displayHeight / 2, displayWidth, displayHeight / 2)
 	val regionMiddle: IntArray = intArrayOf(0, displayHeight / 4, displayWidth, displayHeight / 2)
-	
+
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	
+
 	companion object {
 		private var matchFilePath: String = ""
 		private lateinit var matchLocation: Point
 		private var matchLocations: ArrayList<Point> = arrayListOf()
-		
+
 		/**
 		 * Saves the file path to the saved match image file for debugging purposes.
 		 *
@@ -107,16 +106,16 @@ class ImageUtils(context: Context, private val game: Game) {
 			matchFilePath = filePath
 		}
 	}
-	
+
 	init {
 		// Set the file path to the /files/temp/ folder.
 		val matchFilePath: String = myContext.getExternalFilesDir(null)?.absolutePath + "/temp"
 		updateMatchFilePath(matchFilePath)
-		
+
 		// Initialize Tesseract with the traineddata model.
 		initTesseract()
 		tessBaseAPI = TessBaseAPI()
-		
+
 		// Start up Tesseract.
 		tessBaseAPI.init(myContext.getExternalFilesDir(null)?.absolutePath + "/tesseract/", "eng")
 		game.printToLog("[INFO] Training file loaded.\n", tag = tag)
@@ -182,7 +181,7 @@ class ImageUtils(context: Context, private val game: Game) {
 
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	
+
 	/**
 	 * Match between the source Bitmap from /files/temp/ and the template Bitmap from the assets folder.
 	 *
@@ -203,7 +202,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			val y = max(0, region[1].coerceAtMost(sourceBitmap.height))
 			val width = region[2].coerceAtMost(sourceBitmap.width - x)
 			val height = region[3].coerceAtMost(sourceBitmap.height - y)
-			
+
 			if (width > 0 && height > 0) {
 				Bitmap.createBitmap(sourceBitmap, x, y, width, height)
 			} else {
@@ -213,7 +212,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			sourceBitmap
 		}
-		
+
 		val setConfidence: Double = if (templateName == "training_rainbow") {
 			game.printToLog("[INFO] For detection of rainbow training, confidence will be forcibly set to 0.9 to avoid false positives.", tag = tag)
 			0.9
@@ -222,7 +221,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			customConfidence
 		}
-		
+
 		// Scale images if the device is not 1080p which is supported by default.
 		val scales: MutableList<Double> = when {
 			testScale != 0.0 -> {
@@ -256,19 +255,19 @@ class ImageUtils(context: Context, private val game: Game) {
 
 		while (scales.isNotEmpty()) {
 			val newScale: Double = decimalFormat.format(scales.removeAt(0)).toDouble()
-			
+
 			val tmp: Bitmap = if (newScale != 1.0) {
-                templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
+				templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
 			} else {
 				templateBitmap
 			}
-			
+
 			// Create the Mats of both source and template images.
 			val sourceMat = Mat()
 			val templateMat = Mat()
 			Utils.bitmapToMat(srcBitmap, sourceMat)
 			Utils.bitmapToMat(tmp, templateMat)
-			
+
 			// Clamp template dimensions to source dimensions if template is too large.
 			val clampedTemplateMat = if (templateMat.cols() > sourceMat.cols() || templateMat.rows() > sourceMat.rows()) {
 				Log.d(tag, "Image sizes for match assertion failed - sourceMat: ${sourceMat.size()}, templateMat: ${templateMat.size()}")
@@ -280,27 +279,27 @@ class ImageUtils(context: Context, private val game: Game) {
 			} else {
 				templateMat
 			}
-			
+
 			// Make the Mats grayscale for the source and the template.
 			Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
 			Imgproc.cvtColor(clampedTemplateMat, clampedTemplateMat, Imgproc.COLOR_BGR2GRAY)
-			
+
 			// Create the result matrix.
 			val resultColumns: Int = sourceMat.cols() - clampedTemplateMat.cols() + 1
 			val resultRows: Int = sourceMat.rows() - clampedTemplateMat.rows() + 1
 			val resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
-			
+
 			// Now perform the matching and localize the result.
 			Imgproc.matchTemplate(sourceMat, clampedTemplateMat, resultMat, matchMethod)
 			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
-			
+
 			matchLocation = Point()
 			var matchCheck = false
-			
+
 			// Format minVal or maxVal.
 			val minVal: Double = decimalFormat.format(mmr.minVal).toDouble()
 			val maxVal: Double = decimalFormat.format(mmr.maxVal).toDouble()
-			
+
 			// Depending on which matching method was used, the algorithms determine which location was the best.
 			if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= (1.0 - setConfidence)) {
 				matchLocation = mmr.minLoc
@@ -323,7 +322,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					}
 				}
 			}
-			
+
 			if (matchCheck) {
 				if (debugMode && matchFilePath != "") {
 					// Draw a rectangle around the supposed best matching location and then save the match into a file in /files/temp/ directory. This is for debugging purposes to see if this
@@ -331,18 +330,18 @@ class ImageUtils(context: Context, private val game: Game) {
 					Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + templateMat.cols(), matchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 10)
 					Imgcodecs.imwrite("$matchFilePath/match.png", sourceMat)
 				}
-				
+
 				// Center the coordinates so that any tap gesture would be directed at the center of that match location instead of the default
 				// position of the top left corner of the match location.
 				matchLocation.x += (templateMat.cols() / 2)
 				matchLocation.y += (templateMat.rows() / 2)
-				
+
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
 					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
 					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
 				}
-				
+
 				return true
 			}
 
@@ -350,10 +349,10 @@ class ImageUtils(context: Context, private val game: Game) {
 				throw InterruptedException()
 			}
 		}
-		
+
 		return false
 	}
-	
+
 	/**
 	 * Search through the whole source screenshot for all matches to the template image.
 	 *
@@ -371,7 +370,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			val y = max(0, region[1].coerceAtMost(sourceBitmap.height))
 			val width = region[2].coerceAtMost(sourceBitmap.width - x)
 			val height = region[3].coerceAtMost(sourceBitmap.height - y)
-			
+
 			if (width > 0 && height > 0) {
 				Bitmap.createBitmap(sourceBitmap, x, y, width, height)
 			} else {
@@ -381,7 +380,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			sourceBitmap
 		}
-		
+
 		// Scale images if the device is not 1080p which is supported by default.
 		val scales: MutableList<Double> = when {
 			customScale != 1.0 -> {
@@ -406,33 +405,33 @@ class ImageUtils(context: Context, private val game: Game) {
 				mutableListOf(1.0)
 			}
 		}
-		
+
 		val setConfidence: Double = if (customConfidence == 0.0) {
 			confidence
 		} else {
 			customConfidence
 		}
-		
+
 		var matchCheck = false
 		var newScale = 0.0
 		val sourceMat = Mat()
 		val templateMat = Mat()
 		var resultMat = Mat()
-		
+
 		// Set templateMat at whatever scale it found the very first match for the next while loop.
 		while (!matchCheck && scales.isNotEmpty()) {
 			newScale = decimalFormat.format(scales.removeAt(0)).toDouble()
-			
+
 			val tmp: Bitmap = if (newScale != 1.0) {
-                templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
+				templateBitmap.scale((templateBitmap.width * newScale).toInt(), (templateBitmap.height * newScale).toInt())
 			} else {
 				templateBitmap
 			}
-			
+
 			// Create the Mats of both source and template images.
 			Utils.bitmapToMat(srcBitmap, sourceMat)
 			Utils.bitmapToMat(tmp, templateMat)
-			
+
 			// Clamp template dimensions to source dimensions if template is too large.
 			val clampedTemplateMat = if (templateMat.cols() > sourceMat.cols() || templateMat.rows() > sourceMat.rows()) {
 				Log.d(tag, "Image sizes for matchAll assertion failed - sourceMat: ${sourceMat.size()}, templateMat: ${templateMat.size()}")
@@ -444,62 +443,62 @@ class ImageUtils(context: Context, private val game: Game) {
 			} else {
 				templateMat
 			}
-			
+
 			// Make the Mats grayscale for the source and the template.
 			Imgproc.cvtColor(sourceMat, sourceMat, Imgproc.COLOR_BGR2GRAY)
 			Imgproc.cvtColor(clampedTemplateMat, clampedTemplateMat, Imgproc.COLOR_BGR2GRAY)
-			
+
 			// Create the result matrix.
 			val resultColumns: Int = sourceMat.cols() - clampedTemplateMat.cols() + 1
 			val resultRows: Int = sourceMat.rows() - clampedTemplateMat.rows() + 1
 			if (resultColumns < 0 || resultRows < 0) {
 				break
 			}
-			
+
 			resultMat = Mat(resultRows, resultColumns, CvType.CV_32FC1)
-			
+
 			// Now perform the matching and localize the result.
 			Imgproc.matchTemplate(sourceMat, clampedTemplateMat, resultMat, matchMethod)
 			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
-			
+
 			matchLocation = Point()
-			
+
 			// Depending on which matching method was used, the algorithms determine which location was the best.
 			if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= (1.0 - setConfidence)) {
 				matchLocation = mmr.minLoc
 				matchCheck = true
-				
+
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
 				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + clampedTemplateMat.cols(), matchLocation.y + clampedTemplateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
-				
+
 				// Center the location coordinates and then save it.
 				matchLocation.x += (clampedTemplateMat.cols() / 2)
 				matchLocation.y += (clampedTemplateMat.rows() / 2)
-				
+
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
 					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
 					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
 				}
-				
+
 				matchLocations.add(matchLocation)
 			} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= setConfidence) {
 				matchLocation = mmr.maxLoc
 				matchCheck = true
-				
+
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
 				Imgproc.rectangle(sourceMat, matchLocation, Point(matchLocation.x + clampedTemplateMat.cols(), matchLocation.y + clampedTemplateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
-				
+
 				// Center the location coordinates and then save it.
 				matchLocation.x += (clampedTemplateMat.cols() / 2)
 				matchLocation.y += (clampedTemplateMat.rows() / 2)
-				
+
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
 					matchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + matchLocation.x))
 					matchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + matchLocation.y))
 				}
-				
+
 				matchLocations.add(matchLocation)
 			}
 
@@ -507,63 +506,63 @@ class ImageUtils(context: Context, private val game: Game) {
 				throw InterruptedException()
 			}
 		}
-		
+
 		// Loop until all other matches are found and break out when there are no more to be found.
 		while (matchCheck) {
 			// Now perform the matching and localize the result.
 			Imgproc.matchTemplate(sourceMat, templateMat, resultMat, matchMethod)
 			val mmr: Core.MinMaxLocResult = Core.minMaxLoc(resultMat)
-			
+
 			// Format minVal or maxVal.
 			val minVal: Double = decimalFormat.format(mmr.minVal).toDouble()
 			val maxVal: Double = decimalFormat.format(mmr.maxVal).toDouble()
-			
+
 			if ((matchMethod == Imgproc.TM_SQDIFF || matchMethod == Imgproc.TM_SQDIFF_NORMED) && mmr.minVal <= (1.0 - setConfidence)) {
 				val tempMatchLocation: Point = mmr.minLoc
-				
+
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
 				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
-				
+
 				if (debugMode) {
 					game.printToLog("[DEBUG] Match All found with $minVal <= ${1.0 - setConfidence} at Point $matchLocation with scale: $newScale.", tag = tag)
 					Imgcodecs.imwrite("$matchFilePath/matchAll.png", sourceMat)
 				}
-				
+
 				// Center the location coordinates and then save it.
 				tempMatchLocation.x += (templateMat.cols() / 2)
 				tempMatchLocation.y += (templateMat.rows() / 2)
-				
+
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
 					tempMatchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + tempMatchLocation.x))
 					tempMatchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + tempMatchLocation.y))
 				}
-				
+
 				if (!matchLocations.contains(tempMatchLocation) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y)) &&
 					!matchLocations.contains(Point(tempMatchLocation.x, tempMatchLocation.y + 1.0)) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y + 1.0))) {
 					matchLocations.add(tempMatchLocation)
 				}
 			} else if ((matchMethod != Imgproc.TM_SQDIFF && matchMethod != Imgproc.TM_SQDIFF_NORMED) && mmr.maxVal >= setConfidence) {
 				val tempMatchLocation: Point = mmr.maxLoc
-				
+
 				// Draw a rectangle around the match on the source Mat. This will prevent false positives and infinite looping on subsequent matches.
 				Imgproc.rectangle(sourceMat, tempMatchLocation, Point(tempMatchLocation.x + templateMat.cols(), tempMatchLocation.y + templateMat.rows()), Scalar(0.0, 0.0, 0.0), 20)
-				
+
 				if (debugMode) {
 					game.printToLog("[DEBUG] Match All found with $maxVal >= $setConfidence at Point $matchLocation with scale: $newScale.", tag = tag)
 					Imgcodecs.imwrite("$matchFilePath/matchAll.png", sourceMat)
 				}
-				
+
 				// Center the location coordinates and then save it.
 				tempMatchLocation.x += (templateMat.cols() / 2)
 				tempMatchLocation.y += (templateMat.rows() / 2)
-				
+
 				// If a custom region was specified, readjust the coordinates to reflect the fullscreen source screenshot.
 				if (!region.contentEquals(intArrayOf(0, 0, 0, 0))) {
 					tempMatchLocation.x = sourceBitmap.width - (sourceBitmap.width - (region[0] + tempMatchLocation.x))
 					tempMatchLocation.y = sourceBitmap.height - (sourceBitmap.height - (region[1] + tempMatchLocation.y))
 				}
-				
+
 				if (!matchLocations.contains(tempMatchLocation) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y)) &&
 					!matchLocations.contains(Point(tempMatchLocation.x, tempMatchLocation.y + 1.0)) && !matchLocations.contains(Point(tempMatchLocation.x + 1.0, tempMatchLocation.y + 1.0))) {
 					matchLocations.add(tempMatchLocation)
@@ -582,7 +581,7 @@ class ImageUtils(context: Context, private val game: Game) {
 
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
-	
+
 	/**
 	 * Open the source and template image files and return Bitmaps for them.
 	 *
@@ -591,30 +590,30 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun getBitmaps(templateName: String): Pair<Bitmap?, Bitmap?> {
 		var sourceBitmap: Bitmap? = null
-		
+
 		while (sourceBitmap == null) {
 			sourceBitmap = MediaProjectionService.takeScreenshotNow(saveImage = debugMode)
 		}
-		
+
 		var templateBitmap: Bitmap?
-		
+
 		// Get the Bitmap from the template image file inside the specified folder.
 		myContext.assets?.open("images/$templateName.png").use { inputStream ->
 			// Get the Bitmap from the template image file and then start matching.
 			templateBitmap = BitmapFactory.decodeStream(inputStream)
 		}
-		
+
 		return if (templateBitmap != null) {
 			Pair(sourceBitmap, templateBitmap)
 		} else {
 			if (debugMode) {
 				game.printToLog("[ERROR] One or more of the Bitmaps are null.", tag = tag, isError = true)
 			}
-			
+
 			Pair(sourceBitmap, templateBitmap)
 		}
 	}
-	
+
 	/**
 	 * Acquire the Bitmap for only the source screenshot.
 	 *
@@ -625,10 +624,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		while (sourceBitmap == null) {
 			sourceBitmap = MediaProjectionService.takeScreenshotNow(saveImage = debugMode)
 		}
-		
+
 		return sourceBitmap
 	}
-	
+
 	/**
 	 * Finds the location of the specified image from the /images/ folder inside assets.
 	 *
@@ -640,13 +639,13 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun findImage(templateName: String, tries: Int = 5, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Pair<Point?, Bitmap?> {
 		var numberOfTries = tries
-		
+
 		if (debugMode) {
 			game.printToLog("\n[DEBUG] Starting process to find the ${templateName.uppercase()} button image...", tag = tag)
 		}
-		
+
 		var (sourceBitmap, templateBitmap) = getBitmaps(templateName)
-		
+
 		while (numberOfTries > 0) {
 			if (sourceBitmap != null && templateBitmap != null) {
 				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, templateName, region)
@@ -656,10 +655,10 @@ class ImageUtils(context: Context, private val game: Game) {
 						if (debugMode && !suppressError) {
 							game.printToLog("[WARNING] Failed to find the ${templateName.uppercase()} button.", tag = tag)
 						}
-						
+
 						break
 					}
-					
+
 					Log.d(tag, "Failed to find the ${templateName.uppercase()} button. Trying again...")
 					game.wait(0.1)
 					sourceBitmap = getSourceBitmap()
@@ -669,10 +668,10 @@ class ImageUtils(context: Context, private val game: Game) {
 				}
 			}
 		}
-		
+
 		return Pair(null, sourceBitmap)
 	}
-	
+
 	/**
 	 * Confirms whether or not the bot is at the specified location from the /headers/ folder inside assets.
 	 *
@@ -684,13 +683,13 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun confirmLocation(templateName: String, tries: Int = 5, region: IntArray = intArrayOf(0, 0, 0, 0), suppressError: Boolean = false): Boolean {
 		var numberOfTries = tries
-		
+
 		if (debugMode) {
 			game.printToLog("\n[DEBUG] Starting process to find the ${templateName.uppercase()} header image...", tag = tag)
 		}
-		
+
 		var (sourceBitmap, templateBitmap) = getBitmaps(templateName + "_header")
-		
+
 		while (numberOfTries > 0) {
 			if (sourceBitmap != null && templateBitmap != null) {
 				val resultFlag: Boolean = match(sourceBitmap, templateBitmap, templateName, region)
@@ -699,7 +698,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					if (numberOfTries <= 0) {
 						break
 					}
-					
+
 					game.wait(0.1)
 					sourceBitmap = getSourceBitmap()
 				} else {
@@ -710,14 +709,14 @@ class ImageUtils(context: Context, private val game: Game) {
 				break
 			}
 		}
-		
+
 		if (debugMode && !suppressError) {
 			game.printToLog("[WARNING] Failed to confirm the bot location at ${templateName.uppercase()}.", tag = tag)
 		}
-		
+
 		return false
 	}
-	
+
 	/**
 	 * Finds all occurrences of the specified image in the images folder.
 	 *
@@ -727,24 +726,24 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun findAll(templateName: String, region: IntArray = intArrayOf(0, 0, 0, 0)): ArrayList<Point> {
 		val (sourceBitmap, templateBitmap) = getBitmaps(templateName)
-		
+
 		// Clear the ArrayList first before attempting to find all matches.
 		matchLocations.clear()
-		
+
 		if (sourceBitmap != null && templateBitmap != null) {
 			matchAll(sourceBitmap, templateBitmap, region = region)
 		}
-		
+
 		// Sort the match locations by ascending x and y coordinates.
 		matchLocations.sortBy { it.x }
 		matchLocations.sortBy { it.y }
-		
+
 		if (debugMode) {
 			game.printToLog("[DEBUG] Found match locations for $templateName: $matchLocations.", tag = tag)
 		} else {
 			Log.d(tag, "[DEBUG] Found match locations for $templateName: $matchLocations.")
 		}
-		
+
 		return matchLocations
 	}
 
@@ -799,11 +798,11 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun findText(increment: Double = 0.0): String {
 		val (sourceBitmap, templateBitmap) = getBitmaps("shift")
-		
+
 		// Acquire the location of the energy text image.
 		val (_, energyTemplateBitmap) = getBitmaps("energy")
 		match(sourceBitmap!!, energyTemplateBitmap!!, "energy")
-		
+
 		// Use the match location acquired from finding the energy text image and acquire the (x, y) coordinates of the event title container right below the location of the energy text image.
 		val newX: Int
 		val newY: Int
@@ -816,11 +815,11 @@ class ImageUtils(context: Context, private val game: Game) {
 			newY = max(0, matchLocation.y.toInt() + relHeight(116))
 			Bitmap.createBitmap(sourceBitmap, newX, newY, relWidth(645), relHeight(65))
 		}
-		
+
 		val tempImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, tempImage)
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
-		
+
 		// Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
 		croppedBitmap = if (match(croppedBitmap, templateBitmap!!, "shift")) {
 			Log.d(tag, "Shifting the region over by 70 pixels!")
@@ -829,29 +828,29 @@ class ImageUtils(context: Context, private val game: Game) {
 			Log.d(tag, "Do not need to shift.")
 			croppedBitmap
 		}
-		
+
 		// Make the cropped screenshot grayscale.
 		val cvImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, cvImage)
 		Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-		
+
 		// Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
-		
+
 		// Thresh the grayscale cropped image to make it black and white.
 		val bwImage = Mat()
 		val threshold = sharedPreferences.getInt("threshold", 230)
 		Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
-		
+
 		// Convert the Mat directly to Bitmap and then pass it to the text reader.
 		val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
 		Utils.matToBitmap(bwImage, resultBitmap)
 		tessBaseAPI.setImage(resultBitmap)
-		
+
 		// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 		tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
-		
+
 		var result = "empty!"
 		try {
 			// Finally, detect text on the cropped region.
@@ -860,12 +859,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		} catch (e: Exception) {
 			game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 		}
-		
+
 		tessBaseAPI.clear()
-		
+
 		return result
 	}
-	
+
 	/**
 	 * Find the success percentage chance on the currently selected stat.
 	 *
@@ -877,7 +876,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		if (trainingSelectionLocation == null) {
 			return -1
 		}
-		
+
 		val croppedBitmap: Bitmap = if (isTablet) {
 			Bitmap.createBitmap(sourceBitmap!!, relX(trainingSelectionLocation.x, -65), relY(trainingSelectionLocation.y, 23), relWidth(130), relHeight(50))
 		} else {
@@ -885,7 +884,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 
 		val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
-		
+
 		// Save the cropped image for debugging purposes.
 		val tempMat = Mat()
 		Utils.bitmapToMat(resizedBitmap, tempMat)
@@ -896,12 +895,12 @@ class ImageUtils(context: Context, private val game: Game) {
 		val resultBitmap = createBitmap(tempMat.cols(), tempMat.rows())
 		Utils.matToBitmap(tempMat, resultBitmap)
 		val inputImage: InputImage = InputImage.fromBitmap(resultBitmap, 0)
-		
+
 		// Use CountDownLatch to make the async operation synchronous.
 		val latch = CountDownLatch(1)
 		var result = -1
 		var mlkitFailed = false
-		
+
 		textRecognizer.process(inputImage)
 			.addOnSuccessListener { text ->
 				if (text.textBlocks.isNotEmpty()) {
@@ -920,14 +919,14 @@ class ImageUtils(context: Context, private val game: Game) {
 				mlkitFailed = true
 				latch.countDown()
 			}
-		
+
 		// Wait for the async operation to complete.
 		try {
 			latch.await(5, TimeUnit.SECONDS)
 		} catch (_: InterruptedException) {
 			game.printToLog("[ERROR] MLKit operation timed out", tag = tag, isError = true)
 		}
-		
+
 		// Fallback to Tesseract if ML Kit failed or didn't find result.
 		if (mlkitFailed || result == -1) {
 			tessBaseAPI.setImage(resultBitmap)
@@ -936,7 +935,8 @@ class ImageUtils(context: Context, private val game: Game) {
 			try {
 				val detectedText = tessBaseAPI.utF8Text.replace("%", "")
 				game.printToLog("[INFO] Detected training failure chance with Tesseract: $detectedText", tag = tag)
-				result = detectedText.toInt()
+				val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
+				result = cleanedResult.toInt()
 			} catch (_: NumberFormatException) {
 				game.printToLog("[ERROR] Could not convert \"${tessBaseAPI.utF8Text.replace("%", "")}\" to integer.", tag = tag, isError = true)
 				result = -1
@@ -953,10 +953,10 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			Log.d(tag, "Failure chance detected to be at $result%.")
 		}
-		
+
 		return result
 	}
-	
+
 	/**
 	 * Determine the initial stat weight by factoring in estimated stat gains and others like Ao Haru's modifiers for the selected Training option.
 	 *
@@ -971,7 +971,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		val numberOfGuts = findAll("stat_guts_block", region = customRegion).size
 		val numberOfWit = findAll("stat_wit_block", region = customRegion).size
 		var totalStatGain = 0
-		
+
 		// This is assuming Great Mood with +20% stat modifier.
 		when (currentStat) {
 			"Speed" -> {
@@ -996,17 +996,17 @@ class ImageUtils(context: Context, private val game: Game) {
 			game.printToLog("[INFO] Training is detected to be a rainbow.", tag = tag)
 			totalStatGain += 50
 		}
-		
+
 		// TODO: Have an option to have skill hints factor into the weight.
-		
+
 		if (campaign == "Ao Haru") {
 			totalStatGain += (findAll("aoharu_special_training", region = customRegion).size * 10)
 			totalStatGain += (findAll("aoharu_spirit_explosion", region = customRegion).size * 20)
 		}
-		
+
 		return totalStatGain
 	}
-	
+
 	/**
 	 * Determines the day number to see if today is eligible for doing an extra race.
 	 *
@@ -1015,7 +1015,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun determineDayForExtraRace(): Int {
 		var result = -1
 		val (energyTextLocation, sourceBitmap) = findImage("energy", tries = 1, region = regionTopHalf)
-		
+
 		if (energyTextLocation != null) {
 			// Crop the source screenshot to only contain the day number.
 			val croppedBitmap: Bitmap = if (campaign == "Ao Haru") {
@@ -1031,7 +1031,7 @@ class ImageUtils(context: Context, private val game: Game) {
 					Bitmap.createBitmap(sourceBitmap!!, relX(energyTextLocation.x, -246), relY(energyTextLocation.y, -100), relWidth(140), relHeight(95))
 				}
 			}
-			
+
 			val resizedBitmap = croppedBitmap.scale(croppedBitmap.width * 2, croppedBitmap.height * 2)
 
 			// Make the cropped screenshot grayscale.
@@ -1054,7 +1054,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			// Use CountDownLatch to make the async operation synchronous.
 			val latch = CountDownLatch(1)
 			var mlkitFailed = false
-			
+
 			textRecognizer.process(inputImage)
 				.addOnSuccessListener { text ->
 					if (text.textBlocks.isNotEmpty()) {
@@ -1073,14 +1073,14 @@ class ImageUtils(context: Context, private val game: Game) {
 					mlkitFailed = true
 					latch.countDown()
 				}
-			
+
 			// Wait for the async operation to complete.
 			try {
 				latch.await(5, TimeUnit.SECONDS)
 			} catch (_: InterruptedException) {
 				game.printToLog("[ERROR] MLKit operation timed out", tag = tag, isError = true)
 			}
-			
+
 			// Fallback to Tesseract if ML Kit failed or didn't find result.
 			if (mlkitFailed || result == -1) {
 				tessBaseAPI.setImage(resultBitmap)
@@ -1102,10 +1102,10 @@ class ImageUtils(context: Context, private val game: Game) {
 				tessBaseAPI.clear()
 			}
 		}
-		
+
 		return result
 	}
-	
+
 	/**
 	 * Determine the amount of fans that the extra race will give only if it matches the double star prediction.
 	 *
@@ -1124,13 +1124,13 @@ class ImageUtils(context: Context, private val game: Game) {
 		val cvImage = Mat()
 		Utils.bitmapToMat(croppedBitmap, cvImage)
 		if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
-		
+
 		// Determine if the extra race has double star prediction.
 		var predictionCheck = false
 		if (match(croppedBitmap, doubleStarPredictionBitmap, "race_extra_double_prediction")) {
 			predictionCheck = true
 		}
-		
+
 		return if (predictionCheck) {
 			if (debugMode) game.printToLog("[DEBUG] This race has double predictions. Now checking how many fans this race gives.", tag = tag)
 
@@ -1140,7 +1140,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			} else {
 				Bitmap.createBitmap(sourceBitmap, relX(extraRaceLocation.x, -625), relY(extraRaceLocation.y, -75), relWidth(250), relHeight(35))
 			}
-			
+
 			// Make the cropped screenshot grayscale.
 			Utils.bitmapToMat(croppedBitmap2, cvImage)
 			Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
@@ -1159,10 +1159,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
 			Utils.matToBitmap(bwImage, resultBitmap)
 			tessBaseAPI.setImage(resultBitmap)
-			
+
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
-			
+
 			var result = "empty!"
 			try {
 				// Finally, detect text on the cropped region.
@@ -1170,9 +1170,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			} catch (e: Exception) {
 				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 			}
-			
+
 			tessBaseAPI.clear()
-			
+
 			// Format the string to be converted to an integer.
 			Log.d(tag, "Detected number of fans before formatting: $result")
 			result = result
@@ -1186,10 +1186,11 @@ class ImageUtils(context: Context, private val game: Game) {
 				.replace("人", "")
 				.replace("ォ", "")
 				.replace("fans", "").trim()
-			
+
 			try {
 				Log.d(tag, "Converting $result to integer for fans")
 				val cleanedResult = result.replace(Regex("[^0-9]"), "")
+				cleanedResult.toInt()
 			} catch (_: NumberFormatException) {
 				-1
 			}
@@ -1248,7 +1249,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	fun relY(baseY: Double, offset: Int): Int {
 		return baseY.toInt() + relHeight(offset)
 	}
-	
+
 	/**
 	 * Determine the number of skill points.
 	 *
@@ -1256,7 +1257,7 @@ class ImageUtils(context: Context, private val game: Game) {
 	 */
 	fun determineSkillPoints(): Int {
 		val (skillPointLocation, sourceBitmap) = findImage("skill_points", tries = 1)
-		
+
 		return if (skillPointLocation != null) {
 			val croppedBitmap = if (isTablet) {
 				Bitmap.createBitmap(sourceBitmap!!, relX(skillPointLocation.x, -75), relY(skillPointLocation.y, 45), relWidth(150), relHeight(70))
@@ -1279,10 +1280,10 @@ class ImageUtils(context: Context, private val game: Game) {
 			val resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
 			Utils.matToBitmap(bwImage, resultBitmap)
 			tessBaseAPI.setImage(resultBitmap)
-			
+
 			// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
 			tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
-			
+
 			var result = "empty!"
 			try {
 				// Finally, detect text on the cropped region.
@@ -1290,9 +1291,9 @@ class ImageUtils(context: Context, private val game: Game) {
 			} catch (e: Exception) {
 				game.printToLog("[ERROR] Cannot perform OCR: ${e.stackTraceToString()}", tag = tag, isError = true)
 			}
-			
+
 			tessBaseAPI.clear()
-			
+
 			try {
 				Log.d(tag, "Converting $result to integer for skill points")
 				val cleanedResult = result.replace(Regex("[^0-9]"), "")
@@ -1313,11 +1314,11 @@ class ImageUtils(context: Context, private val game: Game) {
 		val externalFilesDir: File? = myContext.getExternalFilesDir(null)
 		val tempDirectory: String = externalFilesDir?.absolutePath + "/tesseract/tessdata/"
 		val newTempDirectory = File(tempDirectory)
-		
+
 		// If the /files/temp/ folder does not exist, create it.
 		if (!newTempDirectory.exists()) {
 			val successfullyCreated: Boolean = newTempDirectory.mkdirs()
-			
+
 			// If the folder was not able to be created for some reason, log the error and stop the MediaProjection Service.
 			if (!successfullyCreated) {
 				game.printToLog("[ERROR] Failed to create the /files/tesseract/tessdata/ folder.", tag = tag, isError = true)
@@ -1327,7 +1328,7 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			game.printToLog("[INFO] /files/tesseract/tessdata/ folder already exists.", tag = tag)
 		}
-		
+
 		// If the traineddata is not in the application folder, copy it there from assets.
 		tesseractLanguages.forEach { lang ->
 			val trainedDataPath = File(tempDirectory, "$lang.traineddata")
@@ -1335,15 +1336,15 @@ class ImageUtils(context: Context, private val game: Game) {
 				try {
 					game.printToLog("[INFO] Starting Tesseract initialization.", tag = tag)
 					val input = myContext.assets.open("$lang.traineddata")
-					
+
 					val output = FileOutputStream("$tempDirectory/$lang.traineddata")
-					
+
 					val buffer = ByteArray(1024)
 					var read: Int
 					while (input.read(buffer).also { read = it } != -1) {
 						output.write(buffer, 0, read)
 					}
-					
+
 					input.close()
 					output.flush()
 					output.close()
