@@ -26,6 +26,7 @@ import androidx.core.graphics.get
 import androidx.core.graphics.createBitmap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.text.replace
 
 
 /**
@@ -1088,7 +1089,8 @@ class ImageUtils(context: Context, private val game: Game) {
 				try {
 					val detectedText = tessBaseAPI.utF8Text.replace("%", "")
 					game.printToLog("[INFO] Detected day for extra racing with Tesseract: $detectedText", tag = tag)
-					result = detectedText.toInt()
+					val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
+					result = cleanedResult.toInt()
 				} catch (_: NumberFormatException) {
 					game.printToLog("[ERROR] Could not convert \"${tessBaseAPI.utF8Text.replace("%", "")}\" to integer.", tag = tag, isError = true)
 					result = -1
@@ -1187,7 +1189,7 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			try {
 				Log.d(tag, "Converting $result to integer for fans")
-				result.toInt()
+				val cleanedResult = result.replace(Regex("[^0-9]"), "")
 			} catch (_: NumberFormatException) {
 				-1
 			}
@@ -1293,7 +1295,8 @@ class ImageUtils(context: Context, private val game: Game) {
 			
 			try {
 				Log.d(tag, "Converting $result to integer for skill points")
-				result.toInt()
+				val cleanedResult = result.replace(Regex("[^0-9]"), "")
+				cleanedResult.toInt()
 			} catch (_: NumberFormatException) {
 				-1
 			}
