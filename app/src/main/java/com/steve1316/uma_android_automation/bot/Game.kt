@@ -12,6 +12,7 @@ import com.steve1316.uma_android_automation.utils.ImageUtils
 import com.steve1316.uma_android_automation.utils.MediaProjectionService
 import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
+import com.steve1316.uma_android_automation.utils.SettingsPrinter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.opencv.core.Point
@@ -1347,6 +1348,11 @@ class Game(val myContext: Context) {
 		// Set default values for Stat Prioritization if its empty.
 		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
 			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
+		}
+		
+		// Print current app settings at the start of the run.
+		SettingsPrinter.printCurrentSettings(myContext) { message ->
+			printToLog(message)
 		}
 		
 		// If debug mode is off, then it is necessary to wait a few seconds for the Toast message to disappear from the screen to prevent it obstructing anything beneath it.
