@@ -1042,7 +1042,6 @@ class Game(val myContext: Context) {
 			printToLog("[RACE] Skipping race...")
 			
 			// Press the skip button and then wait for your result of the race to show.
-			wait(2.0)
 			if (findAndTapImage("race_skip", tries = 30, region = imageUtils.regionBottomHalf)) {
 				printToLog("[RACE] Race was able to be skipped.")
 			}
@@ -1054,7 +1053,7 @@ class Game(val myContext: Context) {
 			// Check if the race needed to be retried.
 			if (findAndTapImage("race_retry", tries = 5, region = imageUtils.regionBottomHalf, suppressError = true)) {
 				printToLog("[RACE] The skipped race failed and needs to be run again. Attempting to retry...")
-				wait(5.0)
+				wait(3.0)
 				raceRetries--
 			} else {
 				return true
@@ -1153,8 +1152,6 @@ class Game(val myContext: Context) {
 			notificationMessage = "Bot has run out of retry attempts for racing. Stopping the bot now..."
 			throw IllegalStateException()
 		}
-
-		tap(450.0, 850.0, "ok", taps = 3)
 		
 		// Bot will be at the screen where it shows the final positions of all participants.
 		// Press the confirm button and wait to see the triangle of fans.
