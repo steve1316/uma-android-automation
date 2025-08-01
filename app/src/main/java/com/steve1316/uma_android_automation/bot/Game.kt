@@ -54,7 +54,7 @@ class Game(val myContext: Context) {
 	private val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
 	private var raceRetries = 3
 	private var raceRepeatWarningCheck = false
-	var failedFanCheck = false
+	var encounteredRacingPopup = false
 	
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -304,7 +304,7 @@ class Game(val myContext: Context) {
 			imageUtils.findImage("race_confirm", tries = 1, region = imageUtils.regionBottomHalf).first != null) {
 			// This popup is most likely the insufficient fans popup. Force an extra race to catch up on the required fans.
 			printToLog("[INFO] There is a possible insufficient fans or maiden race popup.")
-			failedFanCheck = true
+			encounteredRacingPopup = true
 			true
 		} else {
 			false
@@ -860,10 +860,10 @@ class Game(val myContext: Context) {
 	 */
 	fun handleRaceEvents(): Boolean {
 		printToLog("\n[RACE] Starting Racing process...")
-		if (failedFanCheck) {
+		if (encounteredRacingPopup) {
 			// Dismiss the insufficient fans popup here and head to the Race Selection screen.
-			findAndTapImage("race_confirm", tries = 1, region = imageUtils.regionBottomHalf, suppressError = true)
-			failedFanCheck = false
+			findAndTapImage("race_confirm", tries = 1, region = imageUtils.regionBottomHalf)
+			encounteredRacingPopup = false
 			wait(1.0)
 		}
 		
