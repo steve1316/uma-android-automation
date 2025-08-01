@@ -213,17 +213,17 @@ class Game(val myContext: Context) {
 	 * Handles the test to perform template matching to determine what the best scale will be for the device.
 	 */
 	fun startTemplateMatchingTest() {
-		printToLog("\n[DEBUG] Now beginning basic template match test on the Home screen.")
-		printToLog("[DEBUG] Template match confidence setting will be overridden for the test.\n")
+		printToLog("\n[TEST] Now beginning basic template match test on the Home screen.")
+		printToLog("[TEST] Template match confidence setting will be overridden for the test.\n")
 		val results = imageUtils.startTemplateMatchingTest()
-		printToLog("\n[INFO] Basic template match test complete.")
+		printToLog("\n[TEST] Basic template match test complete.")
 
 		// Print all scale/confidence combinations that worked for each template.
 		for ((templateName, scaleConfidenceResults) in results) {
 			if (scaleConfidenceResults.isNotEmpty()) {
-				printToLog("[INFO] All working scale/confidence combinations for $templateName:")
+				printToLog("[TEST] All working scale/confidence combinations for $templateName:")
 				for (result in scaleConfidenceResults) {
-					printToLog("[INFO]	Scale: ${result.scale}, Confidence: ${result.confidence}")
+					printToLog("[TEST]	Scale: ${result.scale}, Confidence: ${result.confidence}")
 				}
 			} else {
 				printToLog("[WARNING] No working scale/confidence combinations found for $templateName")
@@ -241,14 +241,14 @@ class Game(val myContext: Context) {
 				val medianConfidence = sortedConfidences[sortedConfidences.size / 2]
 				medianScales.add(medianScale)
 				medianConfidences.add(medianConfidence)
-				printToLog("[INFO] Median scale for $templateName: $medianScale")
-				printToLog("[INFO] Median confidence for $templateName: $medianConfidence")
+				printToLog("[TEST] Median scale for $templateName: $medianScale")
+				printToLog("[TEST] Median confidence for $templateName: $medianConfidence")
 			}
 		}
 		
 		if (medianScales.isNotEmpty()) {
-			printToLog("\n[INFO] The following are the recommended scales to set (pick one as a whole number value): $medianScales.")
-			printToLog("[INFO] The following are the recommended confidences to set (pick one as a whole number value): $medianConfidences.")
+			printToLog("\n[TEST] The following are the recommended scales to set (pick one as a whole number value): $medianScales.")
+			printToLog("[TEST] The following are the recommended confidences to set (pick one as a whole number value): $medianConfidences.")
 		} else {
 			printToLog("\n[ERROR] No median scale/confidence can be found.", isError = true)
 		}
@@ -258,14 +258,13 @@ class Game(val myContext: Context) {
 	 * Handles the test to perform OCR on the training failure chance for the current training on display.
 	 */
 	fun startSingleTrainingFailureOCRTest() {
-		printToLog("\n[DEBUG] Now beginning Single Training Failure OCR test on the Training screen for the current training on display.")
-		printToLog("[DEBUG] Note that this test is dependent on having the correct scale.")
-		printToLog("[DEBUG] Forcing confidence setting to be 0.8 for the test.\n")
+		printToLog("\n[TEST] Now beginning Single Training Failure OCR test on the Training screen for the current training on display.")
+		printToLog("[TEST] Note that this test is dependent on having the correct scale.")
 		val failureChance: Int = imageUtils.findTrainingFailureChance()
 		if (failureChance == -1) {
 			printToLog("[ERROR] Training Failure Chance detection failed.", isError = true)
 		} else {
-			printToLog("[INFO] Training Failure Chance: $failureChance")
+			printToLog("[TEST] Training Failure Chance: $failureChance")
 		}
 	}
 
@@ -273,9 +272,8 @@ class Game(val myContext: Context) {
 	 * Handles the test to perform OCR on training failure chances for all 5 of the trainings on display.
 	 */
 	fun startComprehensiveTrainingFailureOCRTest() {
-		printToLog("\n[DEBUG] Now beginning Comprehensive Training Failure OCR test on the Training screen for all 5 trainings on display.")
-		printToLog("[DEBUG] Note that this test is dependent on having the correct scale.")
-		printToLog("[DEBUG] Forcing confidence setting to be 0.8 for the test.\n")
+		printToLog("\n[TEST] Now beginning Comprehensive Training Failure OCR test on the Training screen for all 5 trainings on display.")
+		printToLog("[TEST] Note that this test is dependent on having the correct scale.")
 		findStatsAndPercentages(test = true)
 		printMap()
 	}
@@ -604,6 +602,8 @@ class Game(val myContext: Context) {
 			printMap()
 			printToLog("[TRAINING] Executing the $trainingSelected Training.")
 			findAndTapImage("training_${trainingSelected.lowercase()}", region = imageUtils.regionBottomHalf, taps = 3)
+		} else {
+			printToLog("[TRAINING] Conditions have not been met so training will not be done.")
 		}
 		
 		// Now reset the Training map.
