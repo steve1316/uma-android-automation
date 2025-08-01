@@ -682,6 +682,10 @@ class Game(val myContext: Context) {
 						}
 						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of $finalEnergyValue for energy.")
 						selectionWeight[optionSelected] += finalEnergyValue
+					} else if (line.lowercase().contains("mood")) {
+						val moodWeight = if (formattedLine.contains("-")) -50 else 50
+						printToLog("[TRAINING-EVENT Adding weight for option#${optionSelected + 1} of $moodWeight for ${if (moodWeight > 0) "positive" else "negative"} mood gain.")
+						selectionWeight[optionSelected] += moodWeight
 					} else if (line.lowercase().contains("bond")) {
 						printToLog("[TRAINING-EVENT] Adding weight for option #${optionSelected + 1} of 20 for bond.")
 						selectionWeight[optionSelected] += 20
