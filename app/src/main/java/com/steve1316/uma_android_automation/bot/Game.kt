@@ -162,7 +162,7 @@ class Game(val myContext: Context) {
 	fun waitForLoading() {
 		while (checkLoading()) {
 			// Avoid an infinite loop by setting the flag to true.
-			wait(1.0, skipWaitingForLoading = true)
+			wait(0.5, skipWaitingForLoading = true)
 		}
 	}
 	
