@@ -347,6 +347,11 @@ class ImageUtils(context: Context, private val game: Game) {
 			if (!BotService.isRunning) {
 				throw InterruptedException()
 			}
+
+			sourceMat.release()
+			templateMat.release()
+			clampedTemplateMat.release()
+			resultMat.release()
 		}
 
 		return false
@@ -574,6 +579,11 @@ class ImageUtils(context: Context, private val game: Game) {
 				throw InterruptedException()
 			}
 		}
+
+		sourceMat.release()
+		templateMat.release()
+		clampedTemplateMat?.release()
+		resultMat.release()
 		
 		return matchLocations
 	}
@@ -858,6 +868,9 @@ class ImageUtils(context: Context, private val game: Game) {
 		}
 
 		tessBaseAPI.clear()
+		tempImage.release()
+		cvImage.release()
+		bwImage.release()
 
 		return result
 	}
@@ -950,6 +963,8 @@ class ImageUtils(context: Context, private val game: Game) {
 		} else {
 			Log.d(tag, "Failure chance detected to be at $result%.")
 		}
+
+		tempMat.release()
 
 		return result
 	}
@@ -1098,6 +1113,9 @@ class ImageUtils(context: Context, private val game: Game) {
 
 				tessBaseAPI.clear()
 			}
+
+			cvImage.release()
+			bwImage.release()
 		}
 
 		return result
@@ -1169,6 +1187,8 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 
 			tessBaseAPI.clear()
+			cvImage.release()
+			bwImage.release()
 
 			// Format the string to be converted to an integer.
 			game.printToLog("[INFO] Detected number of fans from Tesseract before formatting: $result", tag = tag)
@@ -1290,6 +1310,8 @@ class ImageUtils(context: Context, private val game: Game) {
 			}
 
 			tessBaseAPI.clear()
+			cvImage.release()
+			bwImage.release()
 
 			game.printToLog("[INFO] Detected number of skill points from Tesseract before formatting: $result", tag = tag)
 			try {
