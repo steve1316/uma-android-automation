@@ -1,6 +1,5 @@
 package com.steve1316.uma_android_automation.bot
 
-import android.util.Log
 import com.steve1316.uma_android_automation.MainActivity
 
 /**
@@ -40,24 +39,34 @@ open class Campaign(val game: Game) {
 			////////////////////////////////////////////////
 			// Most bot operations start at the Main screen.
 			if (game.checkMainScreen()) {
-				// If the required skill points has been reached, stop the bot.
-				if (game.enableSkillPointCheck && game.imageUtils.determineSkillPoints() >= game.skillPointsRequired) {
-					game.printToLog("\n[END] Bot has acquired the set amount of skill points. Exiting now...", tag = tag)
-					game.notificationMessage = "Bot has acquired the set amount of skill points."
-					break
+				var needToRace = false
+				if (!game.encounteredRacingPopup) {
+					// Refresh the stat values in memory.
+					game.updateStatValueMapping()
+
+					// If the required skill points has been reached, stop the bot.
+					if (game.enableSkillPointCheck && game.imageUtils.determineSkillPoints() >= game.skillPointsRequired) {
+						game.printToLog("\n[END] Bot has acquired the set amount of skill points. Exiting now...", tag = tag)
+						game.notificationMessage = "Bot has acquired the set amount of skill points."
+						break
+					}
+
+					// If the bot detected a injury, then rest.
+					if (game.checkInjury()) {
+						game.printToLog("[INFO] A infirmary visit was attempted in order to heal an injury.", tag = tag)
+						game.findAndTapImage("ok", region = game.imageUtils.regionMiddle)
+						game.wait(3.0)
+					} else if (game.recoverMood()) {
+						game.printToLog("[INFO] Mood has recovered.", tag = tag)
+					} else if (!game.checkExtraRaceAvailability()) {
+						game.printToLog("[INFO] Training due to it not being an extra race day.", tag = tag)
+						game.handleTraining()
+					} else {
+						needToRace = true
+					}
 				}
 
-				// If the bot detected a injury, then rest.
-				if (!game.failedFanCheck && game.checkInjury()) {
-					game.printToLog("[INFO] A infirmary visit was attempted in order to heal an injury.", tag = tag)
-					game.findAndTapImage("ok", region = game.imageUtils.regionMiddle)
-					game.wait(3.0)
-				} else if (!game.failedFanCheck && game.recoverMood()) {
-					game.printToLog("[INFO] Mood has recovered.", tag = tag)
-				} else if (!game.failedFanCheck && !game.checkExtraRaceAvailability()) {
-					game.printToLog("[INFO] Training due to it not being an extra race day.", tag = tag)
-					game.handleTraining()
-				} else {
+				 if (game.encounteredRacingPopup || needToRace) {
 					game.printToLog("[INFO] Racing by default.", tag = tag)
 					if (!handleRaceEvents()) {
 						if (game.detectedMandatoryRaceCheck) {

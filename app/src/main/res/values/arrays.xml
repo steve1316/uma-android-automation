@@ -10,7 +10,7 @@
         <item>Stamina</item>
         <item>Power</item>
         <item>Guts</item>
-        <item>Wits</item>
+        <item>Wit</item>
     </string-array>
 
     <string-array name="character_list">

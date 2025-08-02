@@ -30,6 +30,7 @@ import com.steve1316.uma_android_automation.utils.MessageLog
 import com.steve1316.uma_android_automation.utils.MyAccessibilityService
 import java.io.StringReader
 import androidx.core.net.toUri
+import com.steve1316.uma_android_automation.utils.SettingsPrinter
 
 class HomeFragment : Fragment() {
 	private val logTag: String = "[${MainActivity.loggerTag}]HomeFragment"
@@ -70,159 +71,14 @@ class HomeFragment : Fragment() {
 		
 		// Main Settings page
 		val campaign: String = sharedPreferences.getString("campaign", "")!!
-		val enableFarmingFans = sharedPreferences.getBoolean("enableFarmingFans", false)
-		val daysToRunExtraRaces: Int = sharedPreferences.getInt("daysToRunExtraRaces", 4)
-		val enableSkillPointCheck: Boolean = sharedPreferences.getBoolean("enableSkillPointCheck", false)
-		val skillPointCheck: Int = sharedPreferences.getInt("skillPointCheck", 750)
-		val enablePopupCheck: Boolean = sharedPreferences.getBoolean("enablePopupCheck", false)
-		val enableStopOnMandatoryRace: Boolean = sharedPreferences.getBoolean("enableStopOnMandatoryRace", false)
-		val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
-		
-		// Training Settings page
-		val trainingBlacklist: Set<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf<String>()) as Set<String>
-		var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
-		val maximumFailureChance: Int = sharedPreferences.getInt("maximumFailureChance", 15)
 		
 		// Training Event Settings page
 		val character = sharedPreferences.getString("character", "Please select one in the Training Event Settings")!!
 		val selectAllCharacters = sharedPreferences.getBoolean("selectAllCharacters", true)
-		val supportList = sharedPreferences.getString("supportList", "")?.split("|")!!
-		val selectAllSupportCards = sharedPreferences.getBoolean("selectAllSupportCards", true)
-		
-		// OCR Optimization Settings page
-		val threshold: Int = sharedPreferences.getInt("threshold", 230)
-		val enableAutomaticRetry: Boolean = sharedPreferences.getBoolean("enableAutomaticRetry", true)
-		val ocrConfidence: Int = sharedPreferences.getInt("ocrConfidence", 80)
-		
-		// Debug Options page
-		val debugMode: Boolean = sharedPreferences.getBoolean("debugMode", false)
-		val confidence: Int = sharedPreferences.getInt("confidence", 80)
-		val customScale: Int = sharedPreferences.getInt("customScale", 100)
-		val debugModeStartTemplateMatchingTest: Boolean = sharedPreferences.getBoolean("debugMode_startTemplateMatchingTest", false)
-		val debugModeStartSingleTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startSingleTrainingFailureOCRTest", false)
-		val debugModeStartComprehensiveTrainingFailureOCRTest: Boolean = sharedPreferences.getBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", false)
-		val hideComparisonResults: Boolean = sharedPreferences.getBoolean("hideComparisonResults", true)
-
-		var defaultCheck = false
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Set these values in SharedPreferences just in case these keys do not exist yet as they have different default values from the rest of the settings.
-		
-		sharedPreferences.edit {
-			putBoolean("hideComparisonResults", hideComparisonResults)
-			putBoolean("selectAllCharacters", selectAllCharacters)
-			putBoolean("selectAllSupportCards", selectAllSupportCards)
-			putBoolean("enableAutomaticRetry", enableAutomaticRetry)
-			putInt("skillPointCheck", skillPointCheck)
-			putInt("maximumFailureChance", maximumFailureChance)
-			putInt("threshold", threshold)
-			putInt("confidence", confidence)
-			putInt("ocrConfidence", ocrConfidence)
-			putInt("daysToRunExtraRaces", daysToRunExtraRaces)
-			putInt("customScale", customScale)
-			putBoolean("debugMode_startTemplateMatchingTest", debugModeStartTemplateMatchingTest)
-			putBoolean("debugMode_startSingleTrainingFailureOCRTest", debugModeStartSingleTrainingFailureOCRTest)
-			putBoolean("debugMode_startComprehensiveTrainingFailureOCRTest", debugModeStartComprehensiveTrainingFailureOCRTest)
-			commit()
-		}
-		
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Set default values if this is the user's first time.
-		
-		if (statPrioritization.isEmpty() || statPrioritization[0] == "") {
-			statPrioritization = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
-			defaultCheck = true
-		}
-		
-		// Construct the Stat Prioritisation string.
-		var count = 1
-		var statPrioritizationString: String = if (defaultCheck) {
-			"📊 Using Default Stat Prioritization:"
-		} else {
-			"📊 Stat Prioritization:"
-		}
-		statPrioritization.forEach { stat ->
-			statPrioritizationString += "\n$count. $stat "
-			count++
-		}
-		
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Now construct the strings to print them.
-		
-		val enableAutomaticRetryString: String = if (enableAutomaticRetry) {
-			"✅"
-		} else {
-			"❌"
-		}
-		
-		val skillPointString: String = if (enableSkillPointCheck) {
-			"✅ Stop on $skillPointCheck Skill Points or more"
-		} else {
-			"❌"
-		}
-		
-		val enableFarmingFansString: String = if (enableFarmingFans) {
-			"✅"
-		} else {
-			"❌"
-		}
-		
-		val daysToRunExtraRacesString: String = if (enableFarmingFans) {
-			"📅 $daysToRunExtraRaces days"
-		} else {
-			"❌"
-		}
-		
-		val enablePopupCheckString: String = if (enablePopupCheck) {
-			"✅"
-		} else {
-			"❌"
-		}
-		
-		val enableStopOnMandatoryRaceString: String = if (enableStopOnMandatoryRace) {
-			"✅"
-		} else {
-			"❌"
-		}
-
-		val enablePrioritizeEnergyOptionsString: String = if (enablePrioritizeEnergyOptions) {
-			"✅"
-		} else {
-			"❌"
-		}
-		
-		val debugModeString: String = if (debugMode) {
-			"✅"
-		} else {
-			"❌"
-		}
-		
-		val hideComparisonResultsString: String = if (hideComparisonResults) {
-			"✅"
-		} else {
-			"❌"
-		}
-		
-		// Add visual indicators for debug settings
-		val customScaleString = "Custom Scale: ${customScale.toDouble() / 100.0}"
-		val debugModeStartTemplateMatchingTestString: String = if (debugModeStartTemplateMatchingTest) {
-			"✅"
-		} else {
-			"❌"
-		}
-		val debugModeStartSingleTrainingFailureOCRTestString: String = if (debugModeStartSingleTrainingFailureOCRTest) {
-			"✅"
-		} else {
-			"❌"
-		}
-		val debugModeStartComprehensiveTrainingFailureOCRTestString: String = if (debugModeStartComprehensiveTrainingFailureOCRTest) {
-			"✅"
-		} else {
-			"❌"
-		}
+		// Update the TextView here based on the information of the SharedPreferences.
 
 		// Add visual indicators for character and support card selections
 		val characterString: String = if (selectAllCharacters) {
@@ -233,24 +89,6 @@ class HomeFragment : Fragment() {
 			"👤 $character"
 		}
 		
-		val supportCardListString: String = if (selectAllSupportCards) {
-			"🃏 All Support Cards Selected"
-		} else if (supportList.isEmpty() || supportList[0] == "") {
-			"⚠️ None Selected"
-		} else {
-			"🃏 $supportList"
-		}
-		
-		val trainingBlacklistString: String = if (trainingBlacklist.isEmpty()) {
-			"✅ No Trainings blacklisted"
-		} else {
-			// Sort the blacklisted trainings for display according to the default order.
-			val defaultTrainingOrder = listOf("Speed", "Stamina", "Power", "Guts", "Wits")
-			val sortedBlacklist = trainingBlacklist.sortedBy { defaultTrainingOrder.indexOf(it) }
-			
-			"🚫 ${sortedBlacklist.joinToString(", ")}"
-		}
-		
 		// Add visual indicator for campaign selection
 		val campaignString: String = if (campaign != "") {
 			"🎯 $campaign"
@@ -258,44 +96,8 @@ class HomeFragment : Fragment() {
 			"⚠️ Please select one in the Select Campaign option"
 		}
 		
-		// Add visual indicators for OCR settings.
-		val thresholdString = "🔍 OCR Threshold: $threshold"
-		val confidenceString = "🎯 Minimum Template Match Confidence: $confidence"
-		val ocrConfidenceString = "🎯 Minimum OCR Confidence: $ocrConfidence"
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Update the TextView here based on the information of the SharedPreferences.
-		
 		val settingsStatusTextView: TextView = homeFragmentView.findViewById(R.id.settings_status)
-		settingsStatusTextView.text =
-				"Campaign Selected: $campaignString\n\n" +
-				"---------- Training Event Options ----------\n" +
-				"Character Selected: $characterString\n" +
-				"Support(s) Selected: $supportCardListString\n\n" +
-				"---------- Training Options ----------\n" +
-				"Training Blacklist: $trainingBlacklistString\n" +
-				"$statPrioritizationString\n" +
-				"Maximum Failure Chance Allowed: $maximumFailureChance%\n\n" +
-				"---------- Tesseract OCR Optimization ----------\n" +
-				"$thresholdString\n" +
-				"Enable Automatic OCR retry: $enableAutomaticRetryString\n" +
-				"$ocrConfidenceString\n\n" +
-				"---------- Misc Options ----------\n" +
-				"Prioritize Farming Fans: $enableFarmingFansString\n" +
-				"Modulo Days to Farm Fans: $daysToRunExtraRacesString\n" +
-				"Skill Point Check: $skillPointString\n" +
-				"Popup Check: $enablePopupCheckString\n" +
-				"Stop on Mandatory Race: $enableStopOnMandatoryRaceString\n" +
-				"Prioritize Energy Options: $enablePrioritizeEnergyOptionsString\n\n" +
-				"---------- Debug Options ----------\n" +
-				"Debug Mode: $debugModeString\n" +
-				"$confidenceString\n" +
-				"$customScaleString\n" +
-				"Start Template Matching Test: $debugModeStartTemplateMatchingTestString\n" +
-				"Start Single Training Failure OCR Test: $debugModeStartSingleTrainingFailureOCRTestString\n" +
-				"Start Comprehensive Training Failure OCR Test: $debugModeStartComprehensiveTrainingFailureOCRTestString\n" +
-				"Hide String Comparison Results: $hideComparisonResultsString\n\n"
+		settingsStatusTextView.text = SettingsPrinter.getSettingsString(requireContext())
 		
 		// Now construct the data files if this is the first time.
 		if (firstRun) {
@@ -466,7 +268,7 @@ class HomeFragment : Fragment() {
 	private fun constructDataClasses() {
 		// Construct the data class for Characters and Support Cards.
 		val fileList = arrayListOf("characters.json", "supports.json")
-		while (fileList.size > 0) {
+		while (fileList.isNotEmpty()) {
 			val fileName = fileList[0]
 			fileList.removeAt(0)
 			val objectString = myContext.assets.open("data/$fileName").bufferedReader().use { it.readText() }
