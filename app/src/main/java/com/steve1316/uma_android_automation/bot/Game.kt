@@ -40,6 +40,13 @@ class Game(val myContext: Context) {
 	// Training
 	private val trainings: List<String> = listOf("Speed", "Stamina", "Power", "Guts", "Wit")
 	private val trainingMap: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
+	private var statValueMap: MutableMap<String, Int> = mutableMapOf(
+		"Speed" to 0,
+		"Stamina" to 0,
+		"Power" to 0,
+		"Guts" to 0,
+		"Wit" to 0
+	)
 	private val blacklist: List<String> = sharedPreferences.getStringSet("trainingBlacklist", setOf())!!.toList()
 	private var statPrioritization: List<String> = sharedPreferences.getString("statPrioritization", "")!!.split("|")
 	private val enablePrioritizeEnergyOptions: Boolean = sharedPreferences.getBoolean("enablePrioritizeEnergyOptions", false)
@@ -590,6 +597,12 @@ class Game(val myContext: Context) {
 		
 		// Grab the training with the maximum weight.
 		trainingMap.forEach { (statName, map) ->
+			// Skip training if the stat is maxed out.
+			if (statValueMap[statName]!! >= 1200) {
+				printToLog("[TRAINING] Training for $statName will be skipped due to it already being at ${statValueMap[statName]}.")
+				return@forEach
+			}
+
 			val weight = map["statWeight"]!!
 			if (weight > maxWeight) {
 				maxWeight = weight
@@ -1190,7 +1203,20 @@ class Game(val myContext: Context) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Helper Functions
-	
+
+	/**
+    * Updates the current stat value mapping by reading the character's current stats from the Main screen.
+    */
+	fun updateStatValueMapping() {
+		printToLog("\n[STATS] Updating stat value mapping.")
+		statValueMap = imageUtils.determineStatValues(statValueMap)
+		// Print the updated stat value mapping here.
+		statValueMap.forEach { it ->
+			printToLog("[STATS] ${it.key}: ${it.value}")
+		}
+		printToLog("[STATS] Stat value mapping updated.\n")
+	}
+
 	/**
 	 * Handles the Inheritance event if detected on the screen.
 	 *
