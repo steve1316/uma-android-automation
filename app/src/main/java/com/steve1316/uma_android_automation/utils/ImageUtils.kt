@@ -1326,7 +1326,78 @@ class ImageUtils(context: Context, private val game: Game) {
 			-1
 		}
 	}
-	
+
+	/**
+	 *
+	 */
+	fun determineStatValues(statValueMapping: MutableMap<String, Int>): MutableMap<String, Int> {
+		val (skillPointsLocation, sourceBitmap) = findImage("skill_points")
+
+		if (skillPointsLocation != null) {
+			// Process all stats at once using the mapping
+			statValueMapping.forEach { (statName, _) ->
+				val croppedBitmap = when (statName) {
+					"Speed" -> {
+						Bitmap.createBitmap(sourceBitmap, relX(skillPointsLocation.x, -862), relY(skillPointsLocation.y, 25), relWidth(98), relHeight(42))
+					}
+					"Stamina" -> {
+						Bitmap.createBitmap(sourceBitmap, relX(skillPointsLocation.x, -862 + 170), relY(skillPointsLocation.y, 25), relWidth(98), relHeight(42))
+					}
+					"Power" -> {
+						Bitmap.createBitmap(sourceBitmap, relX(skillPointsLocation.x, -862 + 170*2), relY(skillPointsLocation.y, 25), relWidth(98), relHeight(42))
+					}
+					"Guts" -> {
+						Bitmap.createBitmap(sourceBitmap, relX(skillPointsLocation.x, -862 + 170*3), relY(skillPointsLocation.y, 25), relWidth(98), relHeight(42))
+					}
+					"Wit" -> {
+						Bitmap.createBitmap(sourceBitmap, relX(skillPointsLocation.x, -862 + 170*4), relY(skillPointsLocation.y, 25), relWidth(98), relHeight(42))
+					}
+					else -> {
+						game.printToLog("[ERROR] determineStatValue() received an incorrect stat name of $statName.", tag = tag, isError = true)
+						return@forEach
+					}
+				}
+
+				// Make the cropped screenshot grayscale.
+				val cvImage = Mat()
+				Utils.bitmapToMat(croppedBitmap, cvImage)
+				Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
+				if (debugMode) Imgcodecs.imwrite("$matchFilePath/debug${statName}StatValue_afterCrop.png", cvImage)
+
+				val resultBitmap = createBitmap(cvImage.cols(), cvImage.rows())
+				Utils.matToBitmap(cvImage, resultBitmap)
+				tessBaseAPI.setImage(resultBitmap)
+
+				// Set the Page Segmentation Mode to '--psm 7' or "Treat the image as a single text line" according to https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method
+				tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE
+
+				var result = "empty!"
+				try {
+					// Finally, detect text on the cropped region.
+					result = tessBaseAPI.utF8Text
+				} catch (e: Exception) {
+					game.printToLog("[ERROR] Cannot perform OCR with Tesseract: ${e.stackTraceToString()}", tag = tag, isError = true)
+				}
+
+				tessBaseAPI.clear()
+				cvImage.release()
+
+				game.printToLog("[INFO] Detected number of stats for $statName from Tesseract before formatting: $result", tag = tag)
+				try {
+					Log.d(tag, "Converting $result to integer for $statName stat value")
+					val cleanedResult = result.replace(Regex("[^0-9]"), "")
+					statValueMapping[statName] = cleanedResult.toInt()
+				} catch (_: NumberFormatException) {
+					statValueMapping[statName] = -1
+				}
+			}
+		} else {
+			game.printToLog("[ERROR] Could not start the process of detecting stat values.", tag = tag, isError = true)
+		}
+
+		return statValueMapping
+	}
+
 	/**
 	 * Initialize Tesseract for future OCR operations. Make sure to put your .traineddata inside the root of the /assets/ folder.
 	 */
