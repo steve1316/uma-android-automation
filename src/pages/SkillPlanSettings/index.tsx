@@ -1,4 +1,4 @@
-import React, { useMemo, useContext, useState, useRef, useCallback, FC, ReactNode } from "react"
+import React, { useMemo, useContext, useState, useRef, useCallback, FC, ReactNode } from 'react';
 import {
     View,
     Text,
@@ -9,87 +9,90 @@ import {
     Image,
     Modal,
     Dimensions,
-} from "react-native"
-import { FlashList, ListRenderItem } from "@shopify/flash-list"
-import { Search, X, Trash2 } from "lucide-react-native"
-import { Divider, Snackbar } from "react-native-paper"
-import { useTheme } from "../../context/ThemeContext"
-import { BotStateContext, defaultSettings } from "../../context/BotStateContext"
-import CustomSelect from "../../components/CustomSelect"
-import CustomCheckbox from "../../components/CustomCheckbox"
-import CustomButton from "../../components/CustomButton"
-import PageHeader from "../../components/PageHeader"
-import WarningContainer from "../../components/WarningContainer"
-import { SearchPageProvider } from "../../context/SearchPageContext"
-import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
-import skillsData from "../../data/skills.json"
-import icons from "../SkillSettings/icons"
+} from 'react-native';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
+import { Search, X, Trash2 } from 'lucide-react-native';
+import { Divider, Snackbar } from 'react-native-paper';
+import { useTheme } from '../../context/ThemeContext';
+import { BotStateContext, defaultSettings } from '../../context/BotStateContext';
+import CustomTitle from '../../components/CustomTitle';
+import CustomSelect from '../../components/CustomSelect';
+import CustomCheckbox from '../../components/CustomCheckbox';
+import CustomButton from '../../components/CustomButton';
+import PageHeader from '../../components/PageHeader';
+import WarningContainer from '../../components/WarningContainer';
+import { SearchPageProvider } from '../../context/SearchPageContext';
+import { usePerformanceLogging } from '../../hooks/usePerformanceLogging';
+import skillsData from '../../data/skills.json';
+import icons from '../SkillSettings/icons';
 
-const MAX_SKILLS_IN_LIST: number = 10
+const MAX_SKILLS_IN_LIST: number = 10;
 
 interface Skill {
-    id: number
-    gene_id: number
-    name_en: string
-    desc_en: string
-    icon_id: number
-    cost: number
-    eval_pt: number
-    pt_ratio: number
-    rarity: number
-    condition: string
-    precondition: string
-    inherited: boolean
-    community_tier: number | null
-    versions: number[]
-    upgrade: number | null
-    downgrade: number | null
+    id: number;
+    gene_id: number;
+    name_en: string;
+    desc_en: string;
+    icon_id: number;
+    cost: number;
+    eval_pt: number;
+    pt_ratio: number;
+    rarity: number;
+    condition: string;
+    precondition: string;
+    inherited: boolean;
+    community_tier: number | null;
+    versions: number[];
+    upgrade: number | null;
+    downgrade: number | null;
 }
 
 export interface SkillPlanSettingsProps {
-    planKey: string
-    name: string
-    title: string
-    description: string
+    planKey: string;
+    name: string;
+    title: string;
+    description: string;
 }
 
 export interface DynamicSkillPlanSettingsProps {
-    [key: string]: SkillPlanSettingsProps
+    [key: string]: SkillPlanSettingsProps;
 }
 
 export const skillPlanSettingsPages: DynamicSkillPlanSettingsProps = {
     skillPointCheck: {
-        planKey: "skillPointCheck",
-        name: "SkillPlanSettingsSkillPointCheck",
-        title: "Skill Point Check",
+        planKey: 'skillPointCheck',
+        name: 'SkillPlanSettingsSkillPointCheck',
+        title: 'Skill Point Check',
         description:
-            "Configure the skills to buy when the skill point threshold has been reached.\n\nEvaluated ratings are sourced from Umamusume Wiki and community tier list ratings are sourced from Game8.",
+            'Configure the skills to buy when the skill point threshold has been reached.\n\nEvaluated ratings are sourced from Umamusume Wiki and community tier list ratings are sourced from Game8.',
     },
     preFinals: {
-        planKey: "preFinals",
-        name: "SkillPlanSettingsPreFinals",
-        title: "Pre-Finals",
-        description: "Configure the skills to buy just before the finale season.\n\nEvaluated ratings are sourced from Umamusume Wiki and community tier list ratings are sourced from Game8.",
+        planKey: 'preFinals',
+        name: 'SkillPlanSettingsPreFinals',
+        title: 'Pre-Finals',
+        description:
+            'Configure the skills to buy just before the finale season.\n\nEvaluated ratings are sourced from Umamusume Wiki and community tier list ratings are sourced from Game8.',
     },
     careerComplete: {
-        planKey: "careerComplete",
-        name: "SkillPlanSettingsCareerComplete",
-        title: "Career Complete",
-        description: "Configure the skills to buy after the career has completed.\n\nEvaluated ratings are sourced from Umamusume Wiki and community tier list ratings are sourced from Game8.",
+        planKey: 'careerComplete',
+        name: 'SkillPlanSettingsCareerComplete',
+        title: 'Career Complete',
+        description:
+            'Configure the skills to buy after the career has completed.\n\nEvaluated ratings are sourced from Umamusume Wiki and community tier list ratings are sourced from Game8.',
     },
-}
+};
 
 interface SkillItemCardProps {
-    item: Skill
-    onPress?: () => void
-    children?: ReactNode
+    item: Skill;
+    onPress?: () => void;
+    children?: ReactNode;
 }
 
 // Convert skills.json to array.
-const skillData: Skill[] = Object.values(skillsData)
+const skillData: Skill[] = Object.values(skillsData);
 
 const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
-    const { colors } = useTheme()
+    const { colors } = useTheme();
 
     const styles = useMemo(
         () =>
@@ -104,9 +107,9 @@ const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
                     borderColor: colors.border,
                 },
                 skillItemHeader: {
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
                 },
                 skillItemIcon: {
                     width: 64,
@@ -115,7 +118,7 @@ const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
                 },
                 skillItemName: {
                     fontSize: 16,
-                    fontWeight: "600",
+                    fontWeight: '600',
                     color: colors.foreground,
                 },
                 skillItemDescription: {
@@ -131,14 +134,17 @@ const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
                 },
             }),
         [colors],
-    )
+    );
     return (
         <TouchableOpacity
             style={styles.skillItemCard}
             onPress={onPress}
         >
             <View style={styles.skillItemHeader}>
-                <Image source={icons[item.icon_id]} style={styles.skillItemIcon} />
+                <Image
+                    source={icons[item.icon_id]}
+                    style={styles.skillItemIcon}
+                />
                 <View style={{ flex: 1 }}>
                     <Text style={styles.skillItemName}>{item.name_en}</Text>
                     <Text style={styles.skillItemDescription}>{item.desc_en}</Text>
@@ -147,128 +153,139 @@ const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
                 {children}
             </View>
         </TouchableOpacity>
-    )
-}
+    );
+};
 
 const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, description }) => {
-    usePerformanceLogging(name)
-    const { colors } = useTheme()
-    const bsc = useContext(BotStateContext)
+    usePerformanceLogging(name);
+    const { colors } = useTheme();
+    const bsc = useContext(BotStateContext);
 
-    const { settings, setSettings } = bsc
+    const { settings, setSettings } = bsc;
 
     // Merge current skills settings with defaults to handle missing properties.
-    const combinedConfig = { ...defaultSettings.skills.plans, ...settings.skills.plans }
+    const combinedConfig = { ...defaultSettings.skills.plans, ...settings.skills.plans };
 
-    const { enabled, strategy, enableBuyInheritedUniqueSkills, enableBuyNegativeSkills, plan } = combinedConfig[planKey]
+    const { enabled, strategy, enableBuyInheritedUniqueSkills, enableBuyNegativeSkills, plan } =
+        combinedConfig[planKey];
 
-    const [searchModalVisible, setSearchModalVisible] = useState(false)
-    const [selectedSkillsModalVisible, setSelectedSkillsModalVisible] = useState(false)
-    const [searchQuery, setSearchQuery] = useState("")
-    const [snackbarVisible, setSnackbarVisible] = useState(false)
-    const [snackbarMessage, setSnackbarMessage] = useState("")
+    const [searchModalVisible, setSearchModalVisible] = useState(false);
+    const [selectedSkillsModalVisible, setSelectedSkillsModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
     // Modal list data used to ensure data immutability when modifying lists.
-    const [searchModalData, setSearchModalData] = useState<Skill[]>(skillData)
-    const [selectedSkillsModalData, setSelectedSkillsModalData] = useState<Skill[]>([])
+    const [searchModalData, setSearchModalData] = useState<Skill[]>(skillData);
+    const [selectedSkillsModalData, setSelectedSkillsModalData] = useState<Skill[]>([]);
 
-    const snackbarTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const scrollViewRef = useRef<ScrollView>(null)
+    const snackbarTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const scrollViewRef = useRef<ScrollView>(null);
 
     // Parse skill plan from CSV string.
     const planIds: number[] = useMemo(() => {
-        return plan && plan !== "" && typeof plan === "string" ? plan.split(",").map((s) => Number(s)) : []
-    }, [plan])
+        return plan && plan !== '' && typeof plan === 'string' ? plan.split(',').map((s) => Number(s)) : [];
+    }, [plan]);
 
     React.useEffect(() => {
-        console.log("planIds or skillData changed 0:", planIds)
-        const availableSkills: Skill[] = skillData.filter((item: Skill) => !planIds.includes(item.id))
+        const availableSkills: Skill[] = skillData.filter((item: Skill) => !planIds.includes(item.id));
         if (!searchQuery.trim()) {
-            setSearchModalData(availableSkills)
-            return
+            setSearchModalData(availableSkills);
+            return;
         }
 
-        const query = searchQuery.toLowerCase()
-        setSearchModalData(availableSkills.filter((item: Skill) => item.name_en.toLowerCase().includes(query)))
-    }, [searchQuery, planIds, skillData])
+        const query = searchQuery.toLowerCase();
+        setSearchModalData(availableSkills.filter((item: Skill) => item.name_en.toLowerCase().includes(query)));
+    }, [searchQuery, planIds, skillData]);
 
     React.useEffect(() => {
-        console.log("planIds or skillData changed 1:", planIds)
-        setSelectedSkillsModalData(skillData.filter((item: Skill) => planIds.includes(item.id)))
-    }, [planIds, skillData])
+        setSelectedSkillsModalData(skillData.filter((item: Skill) => planIds.includes(item.id)));
+    }, [planIds, skillData]);
 
-    const keyExtractor = useCallback((item: Skill) => `${item.id.toString()}${item.name_en}`, [])
+    const keyExtractor = useCallback((item: Skill) => `${item.id.toString()}${item.name_en}`, []);
 
-    const updateSkillsSetting = useCallback((key: string, value: any) => {
-        setSettings({
-            ...bsc.settings,
-            skills: {
-                ...bsc.settings.skills,
-                plans: {
-                    ...bsc.settings.skills.plans,
-                    [planKey]: {
-                        ...bsc.settings.skills.plans[planKey],
-                        [key]: value,
+    const updateSkillsSetting = useCallback(
+        (key: string, value: any) => {
+            setSettings({
+                ...bsc.settings,
+                skills: {
+                    ...bsc.settings.skills,
+                    plans: {
+                        ...bsc.settings.skills.plans,
+                        [planKey]: {
+                            ...bsc.settings.skills.plans[planKey],
+                            [key]: value,
+                        },
                     },
                 },
-            },
-        })
-    }, [bsc.settings, planKey, setSettings])
+            });
+        },
+        [bsc.settings, planKey, setSettings],
+    );
 
-    const showSnackbar = useCallback((msg: string) => {
-        if (!searchModalVisible) {
-            return
-        }
+    const showSnackbar = useCallback(
+        (msg: string) => {
+            if (!searchModalVisible) {
+                return;
+            }
 
-        if (snackbarTimeoutRef.current) {
-            clearTimeout(snackbarTimeoutRef.current)
-        }
+            if (snackbarTimeoutRef.current) {
+                clearTimeout(snackbarTimeoutRef.current);
+            }
 
-        setSnackbarMessage(msg)
-        setSnackbarVisible(true)
+            setSnackbarMessage(msg);
+            setSnackbarVisible(true);
 
-        snackbarTimeoutRef.current = setTimeout(() => {
-            setSnackbarVisible(false)
-        }, 2000)
-    }, [searchModalVisible, snackbarTimeoutRef, setSnackbarMessage, setSnackbarVisible])
+            snackbarTimeoutRef.current = setTimeout(() => {
+                setSnackbarVisible(false);
+            }, 2000);
+        },
+        [searchModalVisible, snackbarTimeoutRef, setSnackbarMessage, setSnackbarVisible],
+    );
 
-    const removeSkillFromPlan = useCallback((skill: Skill) => {
-        const newPlanIds: number[] = planIds.filter((id) => id !== skill.id)
+    const removeSkillFromPlan = useCallback(
+        (skill: Skill) => {
+            const newPlanIds: number[] = planIds.filter((id) => id !== skill.id);
 
-        // Update the racing plan with the changes.
-        updateSkillsSetting("plan", newPlanIds.join(","))
-    }, [planIds, updateSkillsSetting])
+            // Update the racing plan with the changes.
+            updateSkillsSetting('plan', newPlanIds.join(','));
+        },
+        [planIds, updateSkillsSetting],
+    );
 
-    const addSkillToPlan = useCallback((skill: Skill) => {
-        if (planIds.includes(skill.id)) {
-            return
-        }
+    const addSkillToPlan = useCallback(
+        (skill: Skill) => {
+            if (planIds.includes(skill.id)) {
+                return;
+            }
 
-        const newPlanIds: number[] = [...planIds, skill.id]
+            const newPlanIds: number[] = [...planIds, skill.id];
 
-        // Update the racing plan with the changes.
-        updateSkillsSetting("plan", newPlanIds.join(","))
+            // Update the racing plan with the changes.
+            updateSkillsSetting('plan', newPlanIds.join(','));
 
-        showSnackbar("Added skill to plan: " + skill.name_en)
-    }, [planIds, updateSkillsSetting, showSnackbar])
+            showSnackbar('Added skill to plan: ' + skill.name_en);
+        },
+        [planIds, updateSkillsSetting, showSnackbar],
+    );
 
     const clearAllSkillsFromPlan = useCallback(() => {
-        updateSkillsSetting("plan", "")
-    }, [updateSkillsSetting])
+        updateSkillsSetting('plan', '');
+    }, [updateSkillsSetting]);
 
     const onDismissSnackbar = useCallback(() => {
-        setSnackbarVisible(false)
-        setSnackbarMessage("")
+        setSnackbarVisible(false);
+        setSnackbarMessage('');
         if (snackbarTimeoutRef.current) {
-            clearTimeout(snackbarTimeoutRef.current)
+            clearTimeout(snackbarTimeoutRef.current);
         }
-    }, [setSnackbarVisible, setSnackbarMessage, snackbarTimeoutRef])
+    }, [setSnackbarVisible, setSnackbarMessage, snackbarTimeoutRef]);
 
     const styles = useMemo(
         () =>
             StyleSheet.create({
                 root: {
                     flex: 1,
-                    flexDirection: "column",
+                    flexDirection: 'column',
                     margin: 10,
                     backgroundColor: colors.background,
                 },
@@ -284,7 +301,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 },
                 sectionTitle: {
                     fontSize: 18,
-                    fontWeight: "600",
+                    fontWeight: '600',
                     color: colors.foreground,
                     marginBottom: 12,
                 },
@@ -298,9 +315,9 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                     borderColor: colors.border,
                 },
                 skillItemHeader: {
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
                 },
                 skillItemIcon: {
                     width: 64,
@@ -309,7 +326,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 },
                 skillItemName: {
                     fontSize: 16,
-                    fontWeight: "600",
+                    fontWeight: '600',
                     color: colors.foreground,
                 },
                 skillItemDescription: {
@@ -349,36 +366,36 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 },
                 modalOverlay: {
                     flex: 1,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    justifyContent: "center",
-                    alignItems: "center",
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                 },
                 modalContent: {
                     backgroundColor: colors.background,
                     borderRadius: 16,
                     padding: 20,
-                    width: Dimensions.get("window").width * 0.9,
-                    maxHeight: Dimensions.get("window").height * 0.8,
-                    flexDirection: "column",
-                    justifyContent: "flex-start",
+                    width: Dimensions.get('window').width * 0.9,
+                    maxHeight: Dimensions.get('window').height * 0.8,
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
                 },
                 modalHeader: {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     marginBottom: 20,
                 },
                 modalTitle: {
                     fontSize: 20,
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     color: colors.foreground,
                 },
                 closeButton: {
                     padding: 8,
                 },
                 searchContainer: {
-                    flexDirection: "row",
-                    alignItems: "center",
+                    flexDirection: 'row',
+                    alignItems: 'center',
                     backgroundColor: colors.card,
                     borderWidth: 1,
                     borderColor: colors.border,
@@ -391,7 +408,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                     paddingVertical: 12,
                     color: colors.foreground,
                     fontSize: 12,
-                    backgroundColor: "transparent",
+                    backgroundColor: 'transparent',
                 },
                 clearSearchButton: {
                     padding: 8,
@@ -402,7 +419,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                     minHeight: 400,
                 },
                 noResults: {
-                    textAlign: "center",
+                    textAlign: 'center',
                     color: colors.foreground,
                     opacity: 0.6,
                     padding: 20,
@@ -412,7 +429,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 },
             }),
         [colors],
-    )
+    );
 
     const renderOptions = useCallback(() => {
         return (
@@ -421,17 +438,21 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                     <CustomCheckbox
                         searchId={`enable-buy-inherited-unique-skills-${name}`}
                         checked={enableBuyInheritedUniqueSkills}
-                        onCheckedChange={(checked) => updateSkillsSetting("enableBuyInheritedUniqueSkills", checked)}
+                        onCheckedChange={(checked) => updateSkillsSetting('enableBuyInheritedUniqueSkills', checked)}
                         label="Purchase All Inherited Unique Skills"
-                        description={"When enabled, the bot will attempt to purchase all inherited unique skills regardless of their evaluated rating or community tier list rating."}
+                        description={
+                            'When enabled, the bot will attempt to purchase all inherited unique skills regardless of their evaluated rating or community tier list rating.'
+                        }
                         style={{ marginTop: 16 }}
                     />
                     <CustomCheckbox
                         searchId={`enable-buy-negative-skills-${name}`}
                         checked={enableBuyNegativeSkills}
-                        onCheckedChange={(checked) => updateSkillsSetting("enableBuyNegativeSkills", checked)}
+                        onCheckedChange={(checked) => updateSkillsSetting('enableBuyNegativeSkills', checked)}
                         label="Purchase All Negative Skills"
-                        description={"When enabled, the bot will attempt to purchase all negative skills (i.e. Firm Conditions ×)."}
+                        description={
+                            'When enabled, the bot will attempt to purchase all negative skills (i.e. Firm Conditions ×).'
+                        }
                         style={{ marginTop: 16 }}
                     />
                 </View>
@@ -439,30 +460,37 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                     <Text style={styles.inputLabel}>Automated Skill Point Spending Strategy</Text>
                     <CustomSelect
                         options={[
-                            { value: "default", label: "Do Not Spend Remaining Points" },
-                            { value: "optimize_skills", label: "Best Skills First" },
-                            { value: "optimize_rank", label: "Optimize Rank" },
+                            { value: 'default', label: 'Do Not Spend Remaining Points' },
+                            { value: 'optimize_skills', label: 'Best Skills First' },
+                            { value: 'optimize_rank', label: 'Optimize Rank' },
                         ]}
                         value={strategy}
                         defaultValue={defaultSettings.skills.plans[planKey].strategy}
-                        onValueChange={(value) => updateSkillsSetting("strategy", value)}
+                        onValueChange={(value) => updateSkillsSetting('strategy', value)}
                         placeholder="Select Strategy"
                     />
-                    {strategy == "optimize_rank" && <WarningContainer>⚠️ Warning: Optimize Rank ignores any of the Skill Style Overrides set in the Skill Settings page.</WarningContainer>}
+                    {strategy == 'optimize_rank' && (
+                        <WarningContainer>
+                            ⚠️ Warning: Optimize Rank ignores any of the Skill Style Overrides set in the Skill Settings
+                            page.
+                        </WarningContainer>
+                    )}
                     <Text style={styles.inputDescription}>
-                        This option determines what the bot does with any remaining skill points after it has purchased all of the skills from the Planned Skills section and the other options on this
-                        page.
+                        This option determines what the bot does with any remaining skill points after it has purchased
+                        all of the skills from the Planned Skills section and the other options on this page.
                     </Text>
                     <Text style={styles.inputDescription}>
-                        Best Skills First will use a community skill tier list to purchase better skills first and then within each tier it will attempt to optimize rank since the skills within each
-                        tier are not ordered.
+                        Best Skills First will use a community skill tier list to purchase better skills first and then
+                        within each tier it will attempt to optimize rank since the skills within each tier are not
+                        ordered.
                     </Text>
                     <Text style={styles.inputDescription}>
-                        Optimize Rank will purchase skills in a way which will result in the highest trainee rank. Avoid this option if you wish to train an uma up for TT or CM.
+                        Optimize Rank will purchase skills in a way which will result in the highest trainee rank. Avoid
+                        this option if you wish to train an uma up for TT or CM.
                     </Text>
                 </View>
             </>
-        )
+        );
     }, [
         defaultSettings,
         updateSkillsSetting,
@@ -470,199 +498,258 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         strategy,
         enableBuyInheritedUniqueSkills,
         enableBuyNegativeSkills,
-    ])
+    ]);
 
-    const renderSelectedSkillItem = useCallback((item: Skill) => (
-        <SkillItemCard item={item}>
-            <TouchableOpacity
-                onPress={(e) => {
-                    e.stopPropagation()
-                    removeSkillFromPlan(item)
-                }}
-                style={styles.removeButton}
-            >
-                <X size={20} color={colors.destructive} />
-            </TouchableOpacity>
-        </SkillItemCard>
-    ), [removeSkillFromPlan])
-
-    const renderSelectedSkillsModalSkillItem: ListRenderItem<Skill> = useCallback(({ item }: { item: Skill }) => {
-        return renderSelectedSkillItem(item)
-    }, [renderSelectedSkillItem])
-
-    const renderSearchModalSkillItem: ListRenderItem<Skill> = useCallback(({ item }: { item: Skill }) => (
-        <SkillItemCard item={item} onPress={() => {
-            console.log("onPress: " + JSON.stringify(item))
-            addSkillToPlan(item)
-        }} />
-    ), [addSkillToPlan])
-
-    const renderSelectedSkillsList = useCallback(() => (
-        <View style={styles.section}>
-            <View style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                marginBottom: 12,
-            }}>
-                <Text style={{ fontSize: 16, fontWeight: "600", color: colors.foreground }}>
-                    Current Skills ({selectedSkillsModalData.length})
-                </Text>
-                <CustomButton
-                    icon={<Trash2 size={16} />}
-                    onPress={clearAllSkillsFromPlan}
-                    variant={selectedSkillsModalData.length <= 0 ? "outline" : "destructive"}
+    const renderSelectedSkillItem = useCallback(
+        (item: Skill) => (
+            <SkillItemCard item={item}>
+                <TouchableOpacity
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        removeSkillFromPlan(item);
+                    }}
+                    style={styles.removeButton}
                 >
-                    Clear
-                </CustomButton>
-            </View>
-            {selectedSkillsModalData.slice(0, MAX_SKILLS_IN_LIST).map((item) => renderSelectedSkillItem(item))}
-            {selectedSkillsModalData.length > MAX_SKILLS_IN_LIST && (
-                <View style={styles.section}>
+                    <X
+                        size={20}
+                        color={colors.destructive}
+                    />
+                </TouchableOpacity>
+            </SkillItemCard>
+        ),
+        [removeSkillFromPlan],
+    );
+
+    const renderSelectedSkillsModalSkillItem: ListRenderItem<Skill> = useCallback(
+        ({ item }: { item: Skill }) => {
+            return renderSelectedSkillItem(item);
+        },
+        [renderSelectedSkillItem],
+    );
+
+    const renderSearchModalSkillItem: ListRenderItem<Skill> = useCallback(
+        ({ item }: { item: Skill }) => (
+            <SkillItemCard
+                item={item}
+                onPress={() => addSkillToPlan(item)}
+            />
+        ),
+        [addSkillToPlan],
+    );
+
+    const renderSelectedSkillsList = useCallback(
+        () => (
+            <View style={styles.section}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                        marginBottom: 12,
+                    }}
+                >
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: colors.foreground }}>
+                        Current Skills ({selectedSkillsModalData.length})
+                    </Text>
                     <CustomButton
-                        onPress={() => {
-                            setSelectedSkillsModalVisible(true)
-                        }}
-                        variant="default"
+                        icon={<Trash2 size={16} />}
+                        onPress={clearAllSkillsFromPlan}
+                        variant={selectedSkillsModalData.length <= 0 ? 'outline' : 'destructive'}
                     >
-                        {selectedSkillsModalData.length - MAX_SKILLS_IN_LIST} more skills not displayed. Click to view all skills in plan.
+                        Clear
                     </CustomButton>
                 </View>
-            )}
-        </View>
-    ), [
-        selectedSkillsModalData,
-        clearAllSkillsFromPlan,
-        renderSelectedSkillItem,
-        setSelectedSkillsModalVisible,
-    ])
-
-    const renderSelectedSkillsModal = useCallback(() => (
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={selectedSkillsModalVisible}
-            onRequestClose={() => {
-                setSelectedSkillsModalVisible(false)
-            }}
-        >
-            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setSelectedSkillsModalVisible(false)}>
-                <TouchableOpacity style={styles.modalContent} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Selected Skills in Plan</Text>
-                        <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedSkillsModalVisible(false)}>
-                            <X size={24} color={colors.foreground} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.searchSkillsList}>
-                        <FlashList
-                            data={selectedSkillsModalData}
-                            renderItem={renderSelectedSkillsModalSkillItem}
-                            keyExtractor={keyExtractor}
-                            keyboardShouldPersistTaps="always"
-                            ListEmptyComponent={
-                                <View style={{ padding: 20 }}>
-                                    <Text style={styles.noResults}>
-                                        {selectedSkillsModalData.length === 0 && "No skills selected in plan."}
-                                    </Text>
-                                </View>
-                            }
-                        />
-                    </View>
-                </TouchableOpacity>
-            </TouchableOpacity>
-        </Modal>
-    ), [
-        selectedSkillsModalData,
-        selectedSkillsModalVisible,
-        setSelectedSkillsModalVisible,
-        renderSelectedSkillsModalSkillItem,
-        keyExtractor,
-    ])
-
-    const renderSkillSelectionModal = useCallback(() => (
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={searchModalVisible}
-            onRequestClose={() => {
-                setSearchModalVisible(false)
-                onDismissSnackbar()
-            }}
-        >
-            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setSearchModalVisible(false)}>
-                <TouchableOpacity style={styles.modalContent} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
-                    <View style={styles.modalHeader}>
-                        <Snackbar
-                            visible={snackbarVisible}
-                            onDismiss={onDismissSnackbar}
-                            action={{
-                                label: "Close",
-                                onPress: () => {
-                                    onDismissSnackbar()
-                                },
+                {selectedSkillsModalData.slice(0, MAX_SKILLS_IN_LIST).map((item) => renderSelectedSkillItem(item))}
+                {selectedSkillsModalData.length > MAX_SKILLS_IN_LIST && (
+                    <View style={styles.section}>
+                        <CustomButton
+                            onPress={() => {
+                                setSelectedSkillsModalVisible(true);
                             }}
-                            style={{ backgroundColor: "#388e3c", borderRadius: 10 }}
-                            duration={Number.POSITIVE_INFINITY}
+                            variant="default"
                         >
-                            {snackbarMessage}
-                        </Snackbar>
-                        <Text style={styles.modalTitle}>Select Skill</Text>
-                        <TouchableOpacity style={styles.closeButton} onPress={() => setSearchModalVisible(false)}>
-                            <X size={24} color={colors.foreground} />
-                        </TouchableOpacity>
+                            {selectedSkillsModalData.length - MAX_SKILLS_IN_LIST} more skills not displayed. Click to
+                            view all skills in plan.
+                        </CustomButton>
                     </View>
+                )}
+            </View>
+        ),
+        [selectedSkillsModalData, clearAllSkillsFromPlan, renderSelectedSkillItem, setSelectedSkillsModalVisible],
+    );
 
-                    <View style={styles.searchContainer}>
-                        <Search size={20} color={colors.foreground} />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Search by skill name..."
-                            placeholderTextColor={colors.mutedForeground}
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                        />
-                        {searchQuery.length > 0 && (
-                            <TouchableOpacity style={styles.clearSearchButton} onPress={() => setSearchQuery("")}>
-                                <X size={16} color={colors.foreground} />
+    const renderSelectedSkillsModal = useCallback(
+        () => (
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={selectedSkillsModalVisible}
+                onRequestClose={() => {
+                    setSelectedSkillsModalVisible(false);
+                }}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setSelectedSkillsModalVisible(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.modalContent}
+                        activeOpacity={1}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Selected Skills in Plan</Text>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setSelectedSkillsModalVisible(false)}
+                            >
+                                <X
+                                    size={24}
+                                    color={colors.foreground}
+                                />
                             </TouchableOpacity>
-                        )}
-                    </View>
+                        </View>
 
-                    <View style={styles.searchSkillsList}>
-                        <FlashList
-                            data={searchModalData}
-                            renderItem={renderSearchModalSkillItem}
-                            keyExtractor={keyExtractor}
-                            keyboardShouldPersistTaps="always"
-                            ListEmptyComponent={
-                                <View style={{ padding: 20 }}>
-                                    <Text style={styles.noResults}>No skills match your search.</Text>
-                                </View>
-                            }
-                        />
-                    </View>
+                        <View style={styles.searchSkillsList}>
+                            <FlashList
+                                data={selectedSkillsModalData}
+                                renderItem={renderSelectedSkillsModalSkillItem}
+                                keyExtractor={keyExtractor}
+                                keyboardShouldPersistTaps="always"
+                                ListEmptyComponent={
+                                    <View style={{ padding: 20 }}>
+                                        <Text style={styles.noResults}>
+                                            {selectedSkillsModalData.length === 0 && 'No skills selected in plan.'}
+                                        </Text>
+                                    </View>
+                                }
+                            />
+                        </View>
+                    </TouchableOpacity>
                 </TouchableOpacity>
-            </TouchableOpacity>
-        </Modal>
-    ), [
-        searchModalData,
-        searchModalVisible,
-        setSearchModalVisible,
-        onDismissSnackbar,
-        snackbarVisible,
-        searchQuery,
-        setSearchQuery,
-        renderSearchModalSkillItem,
-        keyExtractor,
-    ])
+            </Modal>
+        ),
+        [
+            selectedSkillsModalData,
+            selectedSkillsModalVisible,
+            setSelectedSkillsModalVisible,
+            renderSelectedSkillsModalSkillItem,
+            keyExtractor,
+        ],
+    );
+
+    const renderSkillSelectionModal = useCallback(
+        () => (
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={searchModalVisible}
+                onRequestClose={() => {
+                    setSearchModalVisible(false);
+                    onDismissSnackbar();
+                }}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setSearchModalVisible(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.modalContent}
+                        activeOpacity={1}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        <View style={styles.modalHeader}>
+                            <Snackbar
+                                visible={snackbarVisible}
+                                onDismiss={onDismissSnackbar}
+                                action={{
+                                    label: 'Close',
+                                    onPress: () => {
+                                        onDismissSnackbar();
+                                    },
+                                }}
+                                style={{ backgroundColor: '#388e3c', borderRadius: 10 }}
+                                duration={Number.POSITIVE_INFINITY}
+                            >
+                                {snackbarMessage}
+                            </Snackbar>
+                            <Text style={styles.modalTitle}>Select Skill</Text>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setSearchModalVisible(false)}
+                            >
+                                <X
+                                    size={24}
+                                    color={colors.foreground}
+                                />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.searchContainer}>
+                            <Search
+                                size={20}
+                                color={colors.foreground}
+                            />
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search by skill name..."
+                                placeholderTextColor={colors.mutedForeground}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+                            {searchQuery.length > 0 && (
+                                <TouchableOpacity
+                                    style={styles.clearSearchButton}
+                                    onPress={() => setSearchQuery('')}
+                                >
+                                    <X
+                                        size={16}
+                                        color={colors.foreground}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        <View style={styles.searchSkillsList}>
+                            <FlashList
+                                data={searchModalData}
+                                renderItem={renderSearchModalSkillItem}
+                                keyExtractor={keyExtractor}
+                                keyboardShouldPersistTaps="always"
+                                ListEmptyComponent={
+                                    <View style={{ padding: 20 }}>
+                                        <Text style={styles.noResults}>No skills match your search.</Text>
+                                    </View>
+                                }
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+        ),
+        [
+            searchModalData,
+            searchModalVisible,
+            setSearchModalVisible,
+            onDismissSnackbar,
+            snackbarVisible,
+            searchQuery,
+            setSearchQuery,
+            renderSearchModalSkillItem,
+            keyExtractor,
+        ],
+    );
 
     return (
         <View style={styles.root}>
             <PageHeader title={`${title} Plan`} />
-            <SearchPageProvider page={name} scrollViewRef={scrollViewRef}>
+            <SearchPageProvider
+                page={name}
+                scrollViewRef={scrollViewRef}
+            >
                 <ScrollView
                     ref={scrollViewRef}
                     nestedScrollEnabled={true}
@@ -676,19 +763,26 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                         <CustomCheckbox
                             searchId={`enable-skill-plan-${planKey}`}
                             checked={enabled}
-                            onCheckedChange={(checked) => updateSkillsSetting("enabled", checked)}
+                            onCheckedChange={(checked) => updateSkillsSetting('enabled', checked)}
                             label={`Enable ${title} Plan (Beta)`}
-                            description={"When enabled, the bot will attempt to purchase skills based on the following configuration."}
+                            description={
+                                'When enabled, the bot will attempt to purchase skills based on the following configuration.'
+                            }
                         />
                         {enabled && (
                             <View style={styles.section}>
                                 {renderOptions()}
                                 <Divider style={{ marginBottom: 16 }} />
                                 <View style={styles.section}>
+                                    <CustomTitle
+                                        searchId={`skill-plan-settings-${planKey}`}
+                                        title="Planned Skills"
+                                        description="Select skills that the bot will always attempt to buy."
+                                    />
                                     <CustomButton
                                         onPress={() => {
-                                            onDismissSnackbar()
-                                            setSearchModalVisible(true)
+                                            onDismissSnackbar();
+                                            setSearchModalVisible(true);
                                         }}
                                         variant="default"
                                     >
@@ -704,7 +798,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
             {renderSkillSelectionModal()}
             {renderSelectedSkillsModal()}
         </View>
-    )
-}
+    );
+};
 
-export default React.memo(SkillPlanSettings)
+export default React.memo(SkillPlanSettings);
