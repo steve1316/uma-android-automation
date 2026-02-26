@@ -108,6 +108,7 @@ export const useBootstrap = () => {
             const skills: Array<Omit<DatabaseSkill, "id">> = Object.entries(skillsData).map(([key, skill]) => ({
                 key,
                 skill_id: skill.id,
+                gene_id: skill.gene_id,
                 name_en: skill.name_en,
                 desc_en: skill.desc_en,
                 icon_id: skill.icon_id,

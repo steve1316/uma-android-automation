@@ -29,6 +29,7 @@ const MAX_SKILLS_IN_LIST: number = 10
 
 interface Skill {
     id: number
+    gene_id: number
     name_en: string
     desc_en: string
     icon_id: number

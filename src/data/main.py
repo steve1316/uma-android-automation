@@ -17,6 +17,10 @@ import requests
 IS_DELTA = True
 DELTA_BACKLOG_COUNT = 5
 
+GAMETORA_DATA_URL = "https://gametora.com/data"
+GAMETORA_MANIFESTS_URL = f"{GAMETORA_DATA_URL}/manifests/umamusume.json"
+GAMETORA_MANIFEST_DATA_BASE_URL = f"{GAMETORA_DATA_URL}/umamusume"
+
 # Event name patterns that belong to the "After a Race" section.
 AFTER_RACE_EVENT_PATTERNS = [
     "Victory! (G1)",
@@ -50,7 +54,7 @@ def load_after_race_events() -> Dict[str, List[str]]:
 
     characters_file = os.path.join(os.path.dirname(__file__), "characters.json")
     if not os.path.exists(characters_file):
-        logging.warning("characters.json not found. Cannot load \"After a Race\" events.")
+        logging.warning('characters.json not found. Cannot load "After a Race" events.')
         return after_race_events
 
     try:
@@ -59,7 +63,7 @@ def load_after_race_events() -> Dict[str, List[str]]:
 
         # Get the first character's data only.
         if not characters_data:
-            logging.warning("characters.json is empty. Cannot load \"After a Race\" events.")
+            logging.warning('characters.json is empty. Cannot load "After a Race" events.')
             return after_race_events
 
         first_character_events = next(iter(characters_data.values()))
@@ -71,10 +75,10 @@ def load_after_race_events() -> Dict[str, List[str]]:
                     after_race_events[event_name] = options
                     break
 
-        logging.info(f"Loaded {len(after_race_events)} \"After a Race\" events from characters.json.")
+        logging.info(f'Loaded {len(after_race_events)} "After a Race" events from characters.json.')
 
     except (json.JSONDecodeError, KeyError) as e:
-        logging.warning(f"Failed to load \"After a Race\" events from characters.json: {e}")
+        logging.warning(f'Failed to load "After a Race" events from characters.json: {e}')
 
     return after_race_events
 
@@ -86,10 +90,10 @@ def create_chromedriver():
         The Chrome driver.
     """
     chrome_options = Options()
-    chrome_options.add_argument("--headless=new") # Use the new headless mode
-    chrome_options.add_argument("--disable-gpu") # Disable GPU hardware acceleration (recommended for containers)
-    chrome_options.add_argument("--no-sandbox") # Bypass OS security model (needed for some environments like Docker)
-    chrome_options.add_argument("--window-size=1920,1080") # Set a default window size for consistent rendering
+    chrome_options.add_argument("--headless=new")  # Use the new headless mode
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration (recommended for containers)
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model (needed for some environments like Docker)
+    chrome_options.add_argument("--window-size=1920,1080")  # Set a default window size for consistent rendering
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
@@ -214,6 +218,27 @@ def download_image(url: str, out_fp: str):
             f_out.write(response.content)
     except requests.exceptions.RequestException as exc:
         print(f"An error occurred when downloading image: {e}")
+
+
+def fetch_gametora_manifest_data(manifest_name: str) -> dict:
+    """Fetches data from gametora's JSON manifest.
+
+    Args:
+        manifest_name (str): The name of the manifest to fetch data from.
+
+    Returns:
+        The fetched manifest data JSON as a dictionary.
+    """
+    response = requests.get(GAMETORA_MANIFESTS_URL, timeout=60)
+    response.raise_for_status()
+    manifests = response.json()
+
+    manifest_id = manifests[manifest_name]
+    manifest_url = f"{GAMETORA_MANIFEST_DATA_BASE_URL}/{manifest_name}.{manifest_id}.json"
+    response = requests.get(manifest_url)
+    response.raise_for_status()
+    manifest_data = response.json()
+    return manifest_data
 
 
 class BaseScraper:
@@ -377,7 +402,9 @@ class BaseScraper:
             options.append(option_text)
         return options
 
-    def process_training_events(self, driver: webdriver.Chrome, item_name: str, data_dict: Dict[str, List[str]], include_after_race_events: bool = False):
+    def process_training_events(
+        self, driver: webdriver.Chrome, item_name: str, data_dict: Dict[str, List[str]], include_after_race_events: bool = False
+    ):
         """Processes the training events for the given item.
 
         Args:
@@ -387,7 +414,9 @@ class BaseScraper:
             include_after_race_events (bool): Whether to include 'After a Race' events (only for characters).
         """
         # Find all training events first.
-        all_training_events_unfiltered = driver.find_elements(By.XPATH, "//button[contains(@class, 'sc-') and contains(@class, '-0 ')]")
+        all_training_events_unfiltered = driver.find_elements(
+            By.XPATH, "//button[contains(@class, 'sc-') and contains(@class, '-0 ')]"
+        )
         logging.info(f"Found {len(all_training_events_unfiltered)} unfiltered training events for {item_name}.")
 
         # Find the "Events Without Choices" section header and exclude events from its following grid.
@@ -397,17 +426,20 @@ class BaseScraper:
         try:
             # Find the div containing "Events Without Choices" text.
             no_choices_header = driver.find_element(
-                By.XPATH,
-                "//div[contains(@class, 'sc-') and contains(@class, '-0 ') and contains(text(), 'Events Without Choices')]"
+                By.XPATH, "//div[contains(@class, 'sc-') and contains(@class, '-0 ') and contains(text(), 'Events Without Choices')]"
             )
             # Find the next sibling div which should be the grid containing events without choices.
-            no_choices_grid = no_choices_header.find_element(By.XPATH, "./following-sibling::div[contains(@class, 'sc-') and contains(@class, '-2 ')][1]")
+            no_choices_grid = no_choices_header.find_element(
+                By.XPATH, "./following-sibling::div[contains(@class, 'sc-') and contains(@class, '-2 ')][1]"
+            )
             # Get all training event buttons within this grid.
-            events_without_choices = no_choices_grid.find_elements(By.XPATH, ".//button[contains(@class, 'sc-') and contains(@class, '-0 ')]")
+            events_without_choices = no_choices_grid.find_elements(
+                By.XPATH, ".//button[contains(@class, 'sc-') and contains(@class, '-0 ')]"
+            )
             events_to_exclude = set(events_without_choices)
             logging.info(f"Found {len(events_to_exclude)} events without choices to exclude for {item_name}.")
         except NoSuchElementException:
-            logging.info(f"No \"Events Without Choices\" section found for {item_name}. Including all events.")
+            logging.info(f'No "Events Without Choices" section found for {item_name}. Including all events.')
 
         # Filter out the events without choices.
         all_training_events = [event for event in all_training_events_unfiltered if event not in events_to_exclude]
@@ -419,23 +451,26 @@ class BaseScraper:
             after_race_events = set()
             try:
                 after_race_header = driver.find_element(
-                    By.XPATH,
-                    "//div[contains(@class, 'sc-') and contains(@class, '-0 ') and contains(text(), 'After a Race')]"
+                    By.XPATH, "//div[contains(@class, 'sc-') and contains(@class, '-0 ') and contains(text(), 'After a Race')]"
                 )
-                after_race_grid = after_race_header.find_element(By.XPATH, "./following-sibling::div[contains(@class, 'sc-') and contains(@class, '-2 ')][1]")
-                after_race_buttons = after_race_grid.find_elements(By.XPATH, ".//button[contains(@class, 'sc-') and contains(@class, '-0 ')]")
+                after_race_grid = after_race_header.find_element(
+                    By.XPATH, "./following-sibling::div[contains(@class, 'sc-') and contains(@class, '-2 ')][1]"
+                )
+                after_race_buttons = after_race_grid.find_elements(
+                    By.XPATH, ".//button[contains(@class, 'sc-') and contains(@class, '-0 ')]"
+                )
                 after_race_events = set(after_race_buttons)
-                logging.info(f"Found {len(after_race_events)} \"After a Race\" events to copy for {item_name}.")
+                logging.info(f'Found {len(after_race_events)} "After a Race" events to copy for {item_name}.')
             except NoSuchElementException:
-                logging.info(f"No \"After a Race\" section found for {item_name}.")
+                logging.info(f'No "After a Race" section found for {item_name}.')
 
             # Filter out the "After a Race" events from the list to scrape.
             all_training_events = [event for event in all_training_events if event not in after_race_events]
-            logging.info(f"Found {len(all_training_events)} training events (after excluding \"After a Race\") for {item_name}.")
+            logging.info(f'Found {len(all_training_events)} training events (after excluding "After a Race") for {item_name}.')
 
             # Copy the "After a Race" events from the preloaded cache.
             data_dict.update(self.after_race_events)
-            logging.info(f"Copied {len(self.after_race_events)} \"After a Race\" events for {item_name}.")
+            logging.info(f'Copied {len(self.after_race_events)} "After a Race" events for {item_name}.')
 
         ad_banner_closed = False
 
@@ -447,7 +482,9 @@ class BaseScraper:
             try:
                 tooltip_title = tooltip.find_element(By.XPATH, ".//div[contains(@class, 'sc-') and contains(@class, '-2 ')]").text
                 if tooltip_title in data_dict:
-                    logging.info(f"Training event {tooltip_title} ({j + 1}/{len(all_training_events)}) already exists. Overwriting with new data...")
+                    logging.info(
+                        f"Training event {tooltip_title} ({j + 1}/{len(all_training_events)}) already exists. Overwriting with new data..."
+                    )
             except NoSuchElementException:
                 logging.warning(f"No tooltip title found for training event ({j + 1}/{len(all_training_events)}).")
                 continue
@@ -542,10 +579,10 @@ class SkillScraper(BaseScraper):
         driver.get("https://game8.co/games/Umamusume-Pretty-Derby/archives/536805")
 
         h4_tier_map = {
-            "hs_1": 0, # SS
-            "hs_2": 1, # S
-            "hs_3": 2, # A
-            "hs_4": 3, # B
+            "hs_1": 0,  # SS
+            "hs_2": 1,  # S
+            "hs_3": 2,  # A
+            "hs_4": 3,  # B
         }
 
         res = {}
@@ -553,7 +590,7 @@ class SkillScraper(BaseScraper):
         for h4_id, tier_name in h4_tier_map.items():
             table = driver.find_element(By.XPATH, f"//h4[@id='{h4_id}']/following-sibling::table[2]")
             tds = table.find_elements(By.TAG_NAME, "td")
-        
+
             for td in tds:
                 divs = td.find_elements(By.TAG_NAME, "div")
                 for div in divs:
@@ -565,7 +602,9 @@ class SkillScraper(BaseScraper):
                     # Get rid of any double spaces.
                     skill_name = skill_name.replace("  ", "")
                     if skill_name in res and res[skill_name] != tier_name:
-                        logging.warning(f"Skill is already in tier map with conflicting value: {skill_name} ({tier_name} != {res[skill_name]})")
+                        logging.warning(
+                            f"Skill is already in tier map with conflicting value: {skill_name} ({tier_name} != {res[skill_name]})"
+                        )
                         continue
                     res[skill_name] = tier_name
 
@@ -589,331 +628,262 @@ class SkillScraper(BaseScraper):
                 res[new_name] = res.pop(old_name)
             else:
                 logging.warning(f"Old name not in rename_map: {old_name}")
-        
+
         return res
 
+    def get_skill_activation_conditions(self, skill_object: Dict[str, Any], get_preconditions: bool = False) -> str:
+        """Gets the activation condition/precondition string for a skill.
 
-    @deprecated("Use start_webpack_method() instead.")
-    def start(self):
-        """Starts the scraping process."""
-        driver = create_chromedriver()
-        driver.get(self.url)
-        time.sleep(5)
+        `skill_data` is a very complex and deeply nested JSON object.
+        For each skill entry in this JSON, we need to extract the conditions
+        and preconditions string values. However, these can be in one of a few places.
 
-        self.handle_cookie_consent(driver)
+        The following is one of the more complex examples from the data:
 
-        # Show the Settings dropdown and toggle "Show skill IDs" and "For character-specific skills..."
-        show_settings_button = driver.find_element(
-            By.XPATH, "//div[contains(@class, 'utils_padbottom_half')]//button[contains(@class, 'filters_button_moreless')]"
-        )
-        show_settings_button.click()
-        time.sleep(0.5)
-        show_skill_ids_checkbox = driver.find_element(By.XPATH, "//input[contains(@id, 'showIdCheckbox')]")
-        show_skill_ids_checkbox.click()
-        time.sleep(0.5)
-        show_character_specific_checkbox = driver.find_element(By.XPATH, "//input[contains(@id, 'showUniqueCharCheckbox')]")
-        show_character_specific_checkbox.click()
-        time.sleep(0.5)
-
-        all_skill_rows = driver.find_elements(By.XPATH, "//div[contains(@class, 'skills_table_row_ja')]")
-        logging.info(f"Found {len(all_skill_rows)} non-hidden and hidden skill rows.")
-
-        # Scrape all skill rows.
-        for i, skill_row in enumerate(all_skill_rows):
-            skill_name = skill_row.find_element(By.XPATH, ".//div[contains(@class, 'skills_table_jpname')]").text
-            skill_description = skill_row.find_element(By.XPATH, ".//div[contains(@class, 'skills_table_desc')]").text
-
-            # Strip the skill ID from the description.
-            skill_id_match = re.search(r"\((\d+)\)$", skill_description)
-            skill_id = skill_id_match.group(1) if skill_id_match else None
-            clean_description = re.sub(r"\s*\(\d+\)$", "", skill_description) if skill_id else skill_description
-
-            if skill_name:
-                if skill_name in self.data:
-                    logging.info(f"Skill {skill_name} ({i + 1}/{len(all_skill_rows)}) already exists. Overwriting with new data...")
-                else:
-                    logging.info(f"Scraped skill ({i + 1}/{len(all_skill_rows)}): {skill_name}")
-
-                # Show the tooltip.
-                more_button = skill_row.find_element(By.XPATH, "//span[contains(@class, 'skills_more_text')]")
-                more_button.click()
-                time.sleep(0.5)
-
-                # Read the tooltip and extract the price and other versions of the skill.
-                tooltip = driver.find_element(By.XPATH, "//div[@data-tippy-root]")
-                tooltip_lines = tooltip.find_elements(By.XPATH, ".//div[contains(@class, 'tooltips_tooltip_line')]")
-                price = tooltip_lines[7].text.strip()
-                other_versions_div = tooltip.find_element(By.XPATH, ".//div[contains(@style, 'text-align: left;')]")
-                other_versions = []
-                for other_version_div in other_versions_div.find_elements(By.XPATH, ".//div"):
-                    other_versions.append(other_version_div.find_element(By.XPATH, ".//span").text.strip())
-
-                self.data[skill_name] = {
-                    "id": int(skill_id),
-                    "englishName": skill_name,
-                    "englishDescription": clean_description,
-                    "price": int(price.replace("Base cost: ", "").strip()),
-                    "other_versions": other_versions,
+        {
+            "name_en": "Arrows Whistle, Shadows Disperse",
+            "condition_groups": [
+                {
+                    "condition": "is_finalcorner==1",
+                    "precondition": "phase>=2&order_rate<=50&overtake_target_time>=2",
                 }
-                
-                # Dismiss the tooltip.
-                more_button.click()
-                time.sleep(0.5)
-
-        self.save_data()
-        driver.quit()
-
-    def start_webpack_method(self):
-        """Starts the scraping process using the JS webpack method."""
-        driver = create_chromedriver()
-        driver.get(self.url)
-
-        self.data = {}
-
-        # Get supplementary data for later use.
-        skill_evaluation_points = self.scrape_skill_evaluation_points()
-        skill_to_tier_map = self.scrape_skill_tier_list()
-        
-        # Capitalization on the website we use for the tier list may differ.
-        # We need to make everything lowercase for proper lookups between sources.
-        skill_to_tier_map_lowercase = {k.lower(): k for k in skill_to_tier_map.keys()}
-
-        # Webpack for Next.js loads chunks into a global variable called webpackChunk_N_E.
-        # Each chunk contains these module functions that populates "module.exports".
-        # This JS script creates a fake object "tmp" with a null "exports" property.
-        # Then it searches for the Webpack chunk that contains module ID 60930 and calls it with the tmp fake object. 
-        # It then assigns the skill data to tmp.exports and we return it as a dictionary.
-        skill_data = driver.execute_script("let tmp = { exports: null }; window.webpackChunk_N_E.find(chunk => chunk[1] && chunk[1][60930])[1][60930](tmp); return tmp.exports")
-        
-        def get_skill_activation_conditions(skill_object: Dict[str, Any], get_preconditions: bool = False):
-            """ Gets the activation condition/precondition string for a skill.
-
-            `skill_data` is a very complex and deeply nested JSON object.
-            For each skill entry in this JSON, we need to extract the conditions
-            and preconditions string values. However, these can be in one of a few places.
-
-            The following is one of the more complex examples from the data:
-
-            {
-                "name_en": "Arrows Whistle, Shadows Disperse",
+            ],
+            "gene_version": {
                 "condition_groups": [
                     {
                         "condition": "is_finalcorner==1",
                         "precondition": "phase>=2&order_rate<=50&overtake_target_time>=2",
                     }
                 ],
-                "gene_version": {
+            },
+            "loc": {
+                "en": {     // Global version
                     "condition_groups": [
                         {
-                            "condition": "is_finalcorner==1",
-                            "precondition": "phase>=2&order_rate<=50&overtake_target_time>=2",
+                            "condition": "is_finalcorner==1&order_rate<=40&overtake_target_time>=2",
                         }
                     ],
-                },
-                "loc": {
-                    "en": {     // Global version
+                    "gene_version": {
                         "condition_groups": [
                             {
                                 "condition": "is_finalcorner==1&order_rate<=40&overtake_target_time>=2",
                             }
-                        ],
-                        "gene_version": {
-                            "condition_groups": [
-                                {
-                                    "condition": "is_finalcorner==1&order_rate<=40&overtake_target_time>=2",
-                                }
-                            ]
-                        }
+                        ]
                     }
                 }
             }
+        }
 
-            In this example, we have a unique skill. Since this is a unique skill,
-            it has properties called "gene_version". The "gene_version" is the inherited
-            version that can be purchased when inherited from legacy umamusume.
+        In this example, we have a unique skill. Since this is a unique skill,
+        it has properties called "gene_version". The "gene_version" is the inherited
+        version that can be purchased when inherited from legacy umamusume.
 
-            If a skill has a gene_version, then we always want to use that data since
-            the non-inherited version can't be purchased.
+        If a skill has a gene_version, then we always want to use that data since
+        the non-inherited version can't be purchased.
 
-            However, in these entries we also have the "loc" property. This is the
-            localization (i.e. JP, KO, Global). These localizations may be on different
-            patches and thus may have different values. So we want to make sure to use
-            the Global (en) localization.
+        However, in these entries we also have the "loc" property. This is the
+        localization (i.e. JP, KO, Global). These localizations may be on different
+        patches and thus may have different values. So we want to make sure to use
+        the Global (en) localization.
 
-            Then within the localization, we can extract our "condition" string.
-            Take note that the "precondition" field is not in the localization.
-            Not every entry contains all of these structures so we have to combine
-            data across the existing fields to get everything we need.
+        Then within the localization, we can extract our "condition" string.
+        Take note that the "precondition" field is not in the localization.
+        Not every entry contains all of these structures so we have to combine
+        data across the existing fields to get everything we need.
 
-            To do this, we try to get data using the following priority order:
-            1) loc -> en -> gene_version -> condition_groups -> condition/precondition
-            2) loc -> en -> condition_groups -> condition/precondition
-            3) gene_version -> condition_groups -> condition/precondition
-            4) condition_groups -> condition/precondition
+        To do this, we try to get data using the following priority order:
+        1) loc -> en -> gene_version -> condition_groups -> condition/precondition
+        2) loc -> en -> condition_groups -> condition/precondition
+        3) gene_version -> condition_groups -> condition/precondition
+        4) condition_groups -> condition/precondition
 
-            To sum up, we just need to get the most accurate data possible for the
-            global release by combining the best data we can extract from the entry.
-            Not every entry has all these fields so we just take what we can get.
+        To sum up, we just need to get the most accurate data possible for the
+        global release by combining the best data we can extract from the entry.
+        Not every entry has all these fields so we just take what we can get.
 
-            Args:
-                skill_object (Dict[str, Any]) A single entry from skill_data. This is a complex nested dict.
-                get_preconditions (bool, optional) Whether to get the "preconditions" entry
-                    instead of the "conditions" entry. Defaults to False.
+        Args:
+            skill_object (Dict[str, Any]) A single entry from skill_data. This is a complex nested dict.
+            get_preconditions (bool, optional) Whether to get the "preconditions" entry
+                instead of the "conditions" entry. Defaults to False.
 
-            Returns:
-                The condition string.
-            """
-            # Prioritize getting the english version of the condition group since it
-            # should be the current global patch data.
-            # Always try the gene_version first.
-            groups = skill_object.get("loc", {}).get("en", {}).get("gene_version", None)
-            if groups is not None:
-                groups = skill_object.get("loc", {}).get("en", {}).get("gene_version", {}).get("condition_groups", None)
+        Returns:
+            The condition string.
+        """
+        # Prioritize getting the english version of the condition group since it
+        # should be the current global patch data.
+        # Always try the gene_version first.
+        groups = skill_object.get("loc", {}).get("en", {}).get("gene_version", None)
+        if groups is not None:
+            groups = skill_object.get("loc", {}).get("en", {}).get("gene_version", {}).get("condition_groups", None)
+        else:
+            groups = skill_object.get("loc", {}).get("en", {}).get("condition_groups", None)
+
+        # Fall back to main condition_groups field.
+        if groups is None:
+            if "gene_version" in skill_object:
+                groups = skill_object["gene_version"].get("condition_groups", None)
             else:
-                groups = skill_object.get("loc", {}).get("en", {}).get("condition_groups", None)
-            
-            # Fall back to main condition_groups field.
-            if groups is None:
-                if "gene_version" in skill_object:
-                    groups = skill_object["gene_version"].get("condition_groups", None)
+                groups = skill_object.get("condition_groups", None)
+
+        # Just return now if we still havent found anything.
+        if groups is None:
+            return ""
+
+        res = []
+        for group in groups:
+            condition = group.get("precondition" if get_preconditions else "condition", None)
+            if condition is not None:
+                res.append(condition)
+
+        return "@".join(res)
+
+    def start(self):
+        self.data = {}
+
+        # Get supplementary data for later use.
+        skill_evaluation_points = self.scrape_skill_evaluation_points()
+        skill_to_tier_map = self.scrape_skill_tier_list()
+        # Capitalization on the website we use for the tier list may differ.
+        # We need to make everything lowercase for proper lookups between sources.
+        skill_to_tier_map_lowercase = {k.lower(): k for k in skill_to_tier_map.keys()}
+
+        try:
+            skill_data = fetch_gametora_manifest_data("skills")
+
+            skill_id_to_name = {}
+            for skill in skill_data:
+                try:
+                    # If name_en doesnt exist, then the skill isn't in global yet.
+                    if "name_en" not in skill:
+                        continue
+
+                    skill_id = skill["id"]
+                    skill_gene_id = skill_id
+                    skill_name_en = skill["name_en"].strip().replace("  ", " ")
+                    skill_desc_en = skill["desc_en"]
+                    skill_iconid = skill["iconid"]
+                    skill_rarity = skill["rarity"]
+                    skill_inherited = False
+                    skill_cost = skill.get("cost", None)
+                    # For inherited unique skills, we actually want the
+                    # gene version's ID since the primary ID isn't the one that
+                    # we can purchase through inheritance.
+                    if "gene_version" in skill:
+                        skill_gene_id = skill["gene_version"]["id"]
+                        skill_desc_en = skill["gene_version"]["desc_en"]
+                        skill_iconid = skill["gene_version"]["iconid"]
+                        skill_rarity = skill["gene_version"]["rarity"]
+                        skill_inherited = skill["gene_version"].get("inherited", False)
+                        skill_cost = skill["gene_version"].get("cost", None)
+
+                    if skill_cost is None:
+                        logging.warning(f"Dropping skill with invalid COST: {skill_name_en}")
+                        continue
+
+                    # Get the skill activation conditions.
+                    skill_condition = self.get_skill_activation_conditions(skill)
+                    skill_precondition = self.get_skill_activation_conditions(skill, get_preconditions=True)
+
+                    extra_data = skill_evaluation_points.get(
+                        skill_gene_id,
+                        {"evaluation_points": 0, "point_ratio": 0.0},
+                    )
+
+                    # The tier list doesn't include any of the JP skills so we don't treat
+                    # missing skills as errors. These warnings should be reviewed by maintainer
+                    # in case any skill names are misspelled.
+                    # We can ignore any negative skills since they won't appear in the tier list.
+                    tmp_skill_name = skill_to_tier_map_lowercase.get(skill_name_en.lower(), None)
+                    bIsNegative = skill_iconid % 10 == 4
+                    if tmp_skill_name is None and not bIsNegative:
+                        logging.warning(f"Skill Tier Unknown: {skill_name_en}")
+
+                    community_tier = skill_to_tier_map.get(tmp_skill_name, None)
+
+                    # Corrections to invalid GameTora skill data.
+                    if skill_name_en.lower() == "indomitable" and skill_id != 200471:
+                        # There are multiple entries with the name "Indomitable".
+                        # Only the one with id 200471 is valid. Skip others.
+                        continue
+                    elif skill_id in [1000011, 1000012, 1000013, 1000014, 1000015, 1000016, 1000017]:
+                        # These are carnival bonus skill IDs. These aren't currently valid.
+                        # Unsure if they ever will be. So we skip them.
+                        continue
+
+                    for old_name, old_entry in self.data.items():
+                        old_id = old_entry.get("id")
+                        if old_id == skill_id:
+                            logging.warning(
+                                f"Duplicate ID when adding skill: {skill_name_en} ({skill_id}), Previous entry: {old_name} ({old_id})"
+                            )
+
+                    tmp = {
+                        "id": skill_id,
+                        "gene_id": skill_gene_id,
+                        "name_en": skill_name_en,
+                        "desc_en": skill_desc_en,
+                        "icon_id": skill_iconid,
+                        "cost": skill_cost,
+                        "eval_pt": extra_data["evaluation_points"],
+                        "pt_ratio": extra_data["point_ratio"],
+                        "rarity": skill_rarity,
+                        "condition": skill_condition,
+                        "precondition": skill_precondition,
+                        "inherited": skill_inherited,
+                        "community_tier": community_tier,
+                        "versions": sorted(skill.get("versions", [])),
+                        "upgrade": None,
+                        "downgrade": None,
+                    }
+                    skill_id_to_name[skill["id"]] = skill_name_en
+
+                    self.data[skill_name_en] = tmp
+                except KeyError as exc:
+                    if "name_en" in skill:
+                        logging.error(f"KeyError when parsing skill ({skill['name_en']}): {exc}")
+                    else:
+                        logging.error(f"KeyError when parsing skill: {exc}")
+                    continue
+
+            # Populate the upgrade/downgrade versions for every skill.
+            for skill_name, skill in self.data.items():
+                # If skill has no other versions, skip.
+                if skill["versions"] == []:
+                    continue
+
+                # Now determine the upgrades/downgrades of this skill.
+                index = bisect.bisect_left(skill["versions"], skill["id"])
+                if index == 0:
+                    # This is the highest level of this skill.
+                    downgrade_version = skill["versions"][0]
+                    if downgrade_version in skill_id_to_name:
+                        self.data[skill_name]["downgrade"] = downgrade_version
+                elif index == len(skill["versions"]):
+                    # This is the lowest level of this skill.
+                    upgrade_version = skill["versions"][-1]
+                    if upgrade_version in skill_id_to_name:
+                        self.data[skill_name]["upgrade"] = upgrade_version
                 else:
-                    groups = skill_object.get("condition_groups", None)
-    
-            # Just return now if we still havent found anything.
-            if groups is None:
-                return ""
-            
-            res = []
-            for group in groups:
-                condition = group.get("precondition" if get_preconditions else "condition", None)
-                if condition is not None:
-                    res.append(condition)
+                    # Skill has both an upgraded and downgraded variant.
+                    upgrade_version = skill["versions"][index - 1]
+                    if upgrade_version in skill_id_to_name:
+                        self.data[skill_name]["upgrade"] = upgrade_version
 
-            return "@".join(res)
+                    downgrade_version = skill["versions"][index]
+                    if downgrade_version in skill_id_to_name:
+                        self.data[skill_name]["downgrade"] = downgrade_version
 
-        skill_id_to_name = {}
-        for skill in skill_data:
-            try:
-                # If name_en doesnt exist, then the skill isn't in global yet.
-                if "name_en" not in skill:
-                    continue
-                
-                skill_id = skill["id"]
-                skill_name_en = skill["name_en"].strip().replace("  ", " ")
-                skill_desc_en = skill["desc_en"]
-                skill_iconid = skill["iconid"]
-                skill_rarity = skill["rarity"]
-                skill_inherited = False
-                skill_cost = skill.get("cost", None)
-                # For inherited unique skills, we actually want the
-                # gene version's ID since the primary ID isn't the one that
-                # we can purchase through inheritance.
-                if "gene_version" in skill:
-                    skill_id = skill["gene_version"]["id"]
-                    skill_desc_en = skill["gene_version"]["desc_en"]
-                    skill_iconid = skill["gene_version"]["iconid"]
-                    skill_rarity = skill["gene_version"]["rarity"]
-                    skill_inherited = skill["gene_version"].get("inherited", False)
-                    skill_cost = skill["gene_version"].get("cost", None)
+            # Save the skill icons
+            icon_ids = set(x["icon_id"] for x in self.data.values())
+            for icon_id in icon_ids:
+                url = f"https://gametora.com/images/umamusume/skill_icons/utx_ico_skill_{icon_id}.png"
+                out_fp = f"../pages/SkillSettings/icons/utx_ico_skill_{icon_id}.png"
+                download_image(url, out_fp)
 
-                if skill_cost is None:
-                    logging.warning(f"Dropping skill with invalid COST: {skill_name_en}")
-                    continue
+            self.save_data()
 
-                # Get the skill activation conditions.
-                skill_condition = get_skill_activation_conditions(skill)
-                skill_precondition = get_skill_activation_conditions(skill, get_preconditions=True)
-
-                extra_data = skill_evaluation_points.get(
-                    skill_id,
-                    {"evaluation_points": 0, "point_ratio": 0.0},
-                )
-
-                # The tier list doesn't include any of the JP skills so we don't treat
-                # missing skills as errors. These warnings should be reviewed by maintainer
-                # in case any skill names are misspelled.
-                # We can ignore any negative skills since they won't appear in the tier list.
-                tmp_skill_name = skill_to_tier_map_lowercase.get(skill_name_en.lower(), None)
-                bIsNegative = skill_iconid % 10 == 4
-                if tmp_skill_name is None and not bIsNegative:
-                    logging.warning(f"Skill Tier Unknown: {skill_name_en}")
-
-                community_tier = skill_to_tier_map.get(tmp_skill_name, None)
-
-                # Corrections to invalid GameTora skill data.
-                if skill_name_en.lower() == "indomitable" and skill_id != 200471:
-                    # There are multiple entries with the name "Indomitable".
-                    # Only the one with id 200471 is valid. Skip others.
-                    continue
-                elif skill_id in [1000011, 1000012, 1000013, 1000014, 1000015, 1000016, 1000017]:
-                    # These are carnival bonus skill IDs. These aren't currently valid.
-                    # Unsure if they ever will be. So we skip them.
-                    continue
-
-                tmp = {
-                    "id": skill_id,
-                    "name_en": skill_name_en,
-                    "desc_en": skill_desc_en,
-                    "icon_id": skill_iconid,
-                    "cost": skill_cost,
-                    "eval_pt": extra_data["evaluation_points"],
-                    "pt_ratio": extra_data["point_ratio"],
-                    "rarity": skill_rarity,
-                    "condition": skill_condition,
-                    "precondition": skill_precondition,
-                    "inherited": skill_inherited,
-                    "community_tier": community_tier,
-                    "versions": sorted(skill.get("versions", [])),
-                    "upgrade": None,
-                    "downgrade": None,
-                }
-                skill_id_to_name[skill["id"]] = skill_name_en
-
-                self.data[skill_name_en] = tmp
-            except KeyError as exc:
-                if "name_en" in skill:
-                    logging.error(f"KeyError when parsing skill ({skill['name_en']}): {exc}")
-                else:
-                    logging.error(f"KeyError when parsing skill: {exc}")
-                continue
-        
-        # Populate the upgrade/downgrade versions for every skill.
-        for skill_name, skill in self.data.items():
-            # If skill has no other versions, skip.
-            if skill["versions"] == []:
-                continue
-
-            # Now determine the upgrades/downgrades of this skill.
-            index = bisect.bisect_left(skill["versions"], skill["id"])
-            if index == 0:
-                # This is the highest level of this skill.
-                downgrade_version = skill["versions"][0]
-                if downgrade_version in skill_id_to_name:
-                    self.data[skill_name]["downgrade"] = downgrade_version
-            elif index == len(skill["versions"]):
-                # This is the lowest level of this skill.
-                upgrade_version = skill["versions"][-1]
-                if upgrade_version in skill_id_to_name:
-                    self.data[skill_name]["upgrade"] = upgrade_version
-            else:
-                # Skill has both an upgraded and downgraded variant.
-                upgrade_version = skill["versions"][index - 1]
-                if upgrade_version in skill_id_to_name:
-                    self.data[skill_name]["upgrade"] = upgrade_version
-                
-                downgrade_version = skill["versions"][index]
-                if downgrade_version in skill_id_to_name:
-                    self.data[skill_name]["downgrade"] = downgrade_version
-
-        # Save the skill icons
-        icon_ids = set(x["icon_id"] for x in self.data.values())
-        for icon_id in icon_ids:
-            url = f"https://gametora.com/images/umamusume/skill_icons/utx_ico_skill_{icon_id}.png"
-            out_fp = f"../pages/SkillSettings/icons/utx_ico_skill_{icon_id}.png"
-            download_image(url, out_fp)
-
-        self.save_data()
-        driver.quit()
+        except Exception as exc:
+            print("Error:", exc)
 
 
 class CharacterScraper(BaseScraper):
@@ -1065,10 +1035,7 @@ class RaceScraper(BaseScraper):
 
         logging.info(f"Found {len(race_items)} races.")
 
-        race_details_links = [
-            item.find_element(By.XPATH, ".//div[contains(@class, 'sc-9a731efd-2')]")
-            for item in race_items
-        ]
+        race_details_links = [item.find_element(By.XPATH, ".//div[contains(@class, 'sc-9a731efd-2')]") for item in race_items]
 
         ad_banner_closed = False
 
@@ -1081,7 +1048,9 @@ class RaceScraper(BaseScraper):
             time.sleep(0.5)
 
             # Acquire the elements needed to scrape the race information.
-            dialog = driver.find_element(By.XPATH, "//div[@role='dialog']").find_element(By.XPATH, ".//div[contains(@class, 'races_det_wrapper')]")
+            dialog = driver.find_element(By.XPATH, "//div[@role='dialog']").find_element(
+                By.XPATH, ".//div[contains(@class, 'races_det_wrapper')]"
+            )
             dialog_infobox = dialog.find_element(By.XPATH, ".//div[contains(@class, 'races_det_infobox')]")
             dialog_schedules = dialog.find_elements(By.XPATH, ".//div[contains(@class, 'races_det_schedule')]")
             for dialog_schedule in dialog_schedules:
@@ -1096,7 +1065,9 @@ class RaceScraper(BaseScraper):
 
                 race_data = {
                     "name": dialog.find_element(By.XPATH, ".//div[contains(@class, 'races_det_header')]").text,
-                    "date": dialog_schedule.find_element(By.XPATH, ".//div[contains(@class, 'races_schedule_header')]").text.replace("\n", " "),
+                    "date": dialog_schedule.find_element(By.XPATH, ".//div[contains(@class, 'races_schedule_header')]").text.replace(
+                        "\n", " "
+                    ),
                     "raceTrack": info_map.get("Racetrack"),
                     "course": info_map.get("Course"),
                     "direction": "Right" if info_map.get("Direction") and info_map.get("Direction") == "Clockwise" else "Left",
@@ -1105,7 +1076,11 @@ class RaceScraper(BaseScraper):
                     "distanceType": info_map.get("Distance (type)"),
                     "distanceMeters": int(info_map.get("Distance (meters)")),
                     "fans": int(
-                        dialog_schedule_items[-1].text.replace("Fans gained", "").replace("for 1st place", "").replace("See all", "").strip()
+                        dialog_schedule_items[-1]
+                        .text.replace("Fans gained", "")
+                        .replace("for 1st place", "")
+                        .replace("See all", "")
+                        .strip()
                     ),
                 }
 
@@ -1140,7 +1115,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     skill_scraper = SkillScraper()
-    skill_scraper.start_webpack_method()
+    skill_scraper.start()
 
     after_race_events = load_after_race_events()
     character_scraper = CharacterScraper(after_race_events)

@@ -1,6 +1,7 @@
 {
     "#LookatCurren": {
-        "id": 900381,
+        "id": 100381,
+        "gene_id": 900381,
         "name_en": "#LookatCurren",
         "desc_en": "Very slightly begin to advance when passing another runner while well-positioned around halfway through the race.",
         "icon_id": 20011,
@@ -18,6 +19,7 @@
     },
     "1,500,000 CC": {
         "id": 201412,
+        "gene_id": 201412,
         "name_en": "1,500,000 CC",
         "desc_en": "Slightly increase velocity on an uphill. (Late Surger)",
         "icon_id": 20011,
@@ -36,7 +38,8 @@
         "downgrade": null
     },
     "114th Time's the Charm": {
-        "id": 910521,
+        "id": 110521,
+        "gene_id": 910521,
         "name_en": "114th Time's the Charm",
         "desc_en": "Give max effort when far from the lead on the final corner, very slightly increasing velocity steadily for a duration proportional to distance from the lead.",
         "icon_id": 20011,
@@ -54,6 +57,7 @@
     },
     "15,000,000 CC": {
         "id": 201411,
+        "gene_id": 201411,
         "name_en": "15,000,000 CC",
         "desc_en": "Increase velocity on an uphill. (Late Surger)",
         "icon_id": 20012,
@@ -72,7 +76,8 @@
         "downgrade": 201412
     },
     "1st Place Kiss☆": {
-        "id": 900241,
+        "id": 10241,
+        "gene_id": 900241,
         "name_en": "1st Place Kiss☆",
         "desc_en": "Very slightly increase ability to break out of the pack on the straight after engaging in a challenge toward the front on the final corner or later.",
         "icon_id": 20011,
@@ -90,6 +95,7 @@
     },
     "99 Problems": {
         "id": 202181,
+        "gene_id": 202181,
         "name_en": "99 Problems",
         "desc_en": "Get overwhelmed by powerful opponents, moderately decreasing Guts and Wit.",
         "icon_id": 10044,
@@ -106,7 +112,8 @@
         "downgrade": null
     },
     "A Kiss for Courage": {
-        "id": 910041,
+        "id": 110041,
+        "gene_id": 910041,
         "name_en": "A Kiss for Courage",
         "desc_en": "Slightly increase velocity when positioned toward the front in the second half of the race after recovering endurance with a skill.",
         "icon_id": 20011,
@@ -123,7 +130,8 @@
         "downgrade": null
     },
     "A Lifelong Dream, A Moment's Flight": {
-        "id": 900711,
+        "id": 100711,
+        "gene_id": 900711,
         "name_en": "A Lifelong Dream, A Moment's Flight",
         "desc_en": "Slightly consume endurance to moderately increase velocity for a moderate duration when close to the runner behind on the final straight.",
         "icon_id": 20011,
@@ -131,7 +139,7 @@
         "eval_pt": 180,
         "pt_ratio": 0.9,
         "rarity": 1,
-        "condition": "is_last_straight==1&bashin_diff_behind<=1",
+        "condition": "is_finalcorner==1&corner==0&bashin_diff_behind<=1",
         "precondition": "",
         "inherited": true,
         "community_tier": null,
@@ -140,7 +148,8 @@
         "downgrade": null
     },
     "A Princess Must Seize Victory!": {
-        "id": 900391,
+        "id": 100391,
+        "gene_id": 900391,
         "name_en": "A Princess Must Seize Victory!",
         "desc_en": "Slightly increase velocity when engaged in a challenge on the final straight.",
         "icon_id": 20011,
@@ -158,6 +167,7 @@
     },
     "A Small Breather": {
         "id": 201422,
+        "gene_id": 201422,
         "name_en": "A Small Breather",
         "desc_en": "Slightly recover endurance late-race. (Late Surger)",
         "icon_id": 20021,
@@ -177,6 +187,7 @@
     },
     "Acceleration": {
         "id": 201062,
+        "gene_id": 201062,
         "name_en": "Acceleration",
         "desc_en": "Slightly increase acceleration when passing another runner mid-race. (Mile)",
         "icon_id": 20041,
@@ -196,6 +207,7 @@
     },
     "Adored by All": {
         "id": 201011,
+        "gene_id": 201011,
         "name_en": "Adored by All",
         "desc_en": "Intimidate runners behind when positioned toward the front early-race. (Sprint)",
         "icon_id": 30012,
@@ -215,6 +227,7 @@
     },
     "Adrenaline Rush": {
         "id": 200761,
+        "gene_id": 200761,
         "name_en": "Adrenaline Rush",
         "desc_en": "Regain the energy to run when close to exhausting strength. (Long)",
         "icon_id": 20022,
@@ -234,6 +247,7 @@
     },
     "After-School Stroll": {
         "id": 201482,
+        "gene_id": 201482,
         "name_en": "After-School Stroll",
         "desc_en": "Slightly reduce fatigue on a downhill. (End Closer)",
         "icon_id": 20021,
@@ -252,7 +266,8 @@
         "downgrade": null
     },
     "All Charged! It's Go Time!": {
-        "id": 900311,
+        "id": 100311,
+        "gene_id": 900311,
         "name_en": "All Charged! It's Go Time!",
         "desc_en": "Very slightly increase velocity when positioned toward the front with about 300m remaining. If coming out of an uphill, moderately increase velocity instead.",
         "icon_id": 20011,
@@ -270,6 +285,7 @@
     },
     "All I've Got": {
         "id": 201702,
+        "gene_id": 201702,
         "name_en": "All I've Got",
         "desc_en": "Slightly increase velocity when well-positioned on a straight in the last spurt. (Medium)",
         "icon_id": 20011,
@@ -289,6 +305,7 @@
     },
     "All-Seeing Eyes": {
         "id": 201441,
+        "gene_id": 201441,
         "name_en": "All-Seeing Eyes",
         "desc_en": "Startle other runners late-race. (Late Surger)",
         "icon_id": 30052,
@@ -307,7 +324,8 @@
         "downgrade": 201442
     },
     "Ambition to Surpass the Sakura": {
-        "id": 900691,
+        "id": 100691,
+        "gene_id": 900691,
         "name_en": "Ambition to Surpass the Sakura",
         "desc_en": "Slightly increase velocity when well-positioned and close to the runner ahead with 300m or less remaining.",
         "icon_id": 20011,
@@ -324,7 +342,8 @@
         "downgrade": null
     },
     "Anchors Aweigh!": {
-        "id": 900071,
+        "id": 100071,
+        "gene_id": 900071,
         "name_en": "Anchors Aweigh!",
         "desc_en": "Very slightly increase velocity steadily with a long spurt starting halfway through the race.",
         "icon_id": 20011,
@@ -341,7 +360,8 @@
         "downgrade": null
     },
     "Angling and Scheming": {
-        "id": 900201,
+        "id": 100201,
+        "gene_id": 900201,
         "name_en": "Angling and Scheming",
         "desc_en": "Slightly increase acceleration when in the lead on a corner late-race.",
         "icon_id": 20041,
@@ -358,7 +378,8 @@
         "downgrade": null
     },
     "Arrows Whistle, Shadows Disperse": {
-        "id": 910171,
+        "id": 110171,
+        "gene_id": 910171,
         "name_en": "Arrows Whistle, Shadows Disperse",
         "desc_en": "Slightly increase velocity when pressured by another runner in the front part of the pack on the final corner or later.",
         "icon_id": 20011,
@@ -375,7 +396,8 @@
         "downgrade": null
     },
     "Barcarole of Blessings": {
-        "id": 910151,
+        "id": 110151,
+        "gene_id": 910151,
         "name_en": "Barcarole of Blessings",
         "desc_en": "Slightly increase velocity for a moderate duration when in the front part of the pack with 400m remaining. If at least 7 skills have been activated, moderately increase velocity for a moderate duration instead.",
         "icon_id": 20011,
@@ -393,6 +415,7 @@
     },
     "Battle Formation": {
         "id": 201091,
+        "gene_id": 201091,
         "name_en": "Battle Formation",
         "desc_en": "Dull movement for runners ahead when positioned toward the back early-race. (Mile)",
         "icon_id": 30022,
@@ -412,6 +435,7 @@
     },
     "Be Still": {
         "id": 201692,
+        "gene_id": 201692,
         "name_en": "Be Still",
         "desc_en": "Slightly recover endurance when positioned toward the back upon approaching mid-race. (Late Surger)",
         "icon_id": 20021,
@@ -431,6 +455,7 @@
     },
     "Beeline Burst": {
         "id": 200361,
+        "gene_id": 200361,
         "name_en": "Beeline Burst",
         "desc_en": "Increase velocity on a straight.",
         "icon_id": 20012,
@@ -449,7 +474,8 @@
         "downgrade": 200362
     },
     "Behold Thine Emperor's Divine Might": {
-        "id": 900171,
+        "id": 100171,
+        "gene_id": 900171,
         "name_en": "Behold Thine Emperor's Divine Might",
         "desc_en": "Moderately increase velocity on the final straight after passing another runner 3 times late-race.",
         "icon_id": 20011,
@@ -466,7 +492,8 @@
         "downgrade": null
     },
     "Best Day Ever": {
-        "id": 910221,
+        "id": 110221,
+        "gene_id": 910221,
         "name_en": "Best Day Ever",
         "desc_en": "If well-positioned late-race on the final corner or later, slightly increase velocity. If there's a large distance left to the finish, also increase acceleration very minimally.",
         "icon_id": 20011,
@@ -484,6 +511,7 @@
     },
     "Best in Japan": {
         "id": 202061,
+        "gene_id": 202061,
         "name_en": "Best in Japan",
         "desc_en": "Everyone's expectations strongly inspire the skill user, increasing velocity on the final corner. (Long)",
         "icon_id": 2010010,
@@ -501,6 +529,7 @@
     },
     "Big-Sisterly": {
         "id": 201071,
+        "gene_id": 201071,
         "name_en": "Big-Sisterly",
         "desc_en": "Increase passing ability. (Mile)",
         "icon_id": 20012,
@@ -520,6 +549,7 @@
     },
     "Blast Forward": {
         "id": 201173,
+        "gene_id": 201173,
         "name_en": "Blast Forward",
         "desc_en": "Increase velocity on a straight. (Long)",
         "icon_id": 20012,
@@ -539,7 +569,8 @@
         "downgrade": null
     },
     "Blazing Pride": {
-        "id": 900181,
+        "id": 100181,
+        "gene_id": 900181,
         "name_en": "Blazing Pride",
         "desc_en": "Slightly increase velocity when passing another runner from midpack or further back on the final corner.",
         "icon_id": 20011,
@@ -557,6 +588,7 @@
     },
     "Blinding Flash": {
         "id": 200671,
+        "gene_id": 200671,
         "name_en": "Blinding Flash",
         "desc_en": "Increase spurting ability when positioned toward the back late-race. (Sprint)",
         "icon_id": 20012,
@@ -575,7 +607,8 @@
         "downgrade": 200672
     },
     "Blue Rose Closer": {
-        "id": 900301,
+        "id": 100301,
+        "gene_id": 900301,
         "name_en": "Blue Rose Closer",
         "desc_en": "Slightly increase velocity on the final straight after passing another runner in the front part of the pack on the final corner or later.",
         "icon_id": 20011,
@@ -592,7 +625,8 @@
         "downgrade": null
     },
     "Bountiful Harvest": {
-        "id": 910561,
+        "id": 110561,
+        "gene_id": 910561,
         "name_en": "Bountiful Harvest",
         "desc_en": "Slightly increase velocity with a surge of fortune when pressured by another runner toward the back in the second half of the race.",
         "icon_id": 20011,
@@ -609,7 +643,8 @@
         "downgrade": null
     },
     "Break It Down!": {
-        "id": 910201,
+        "id": 110201,
+        "gene_id": 910201,
         "name_en": "Break It Down!",
         "desc_en": "If positioned toward the front on a straight late-race, slightly increase velocity. If the straight is on the backstretch, also increase acceleration very minimally.",
         "icon_id": 20011,
@@ -627,6 +662,7 @@
     },
     "Breath of Fresh Air": {
         "id": 200381,
+        "gene_id": 200381,
         "name_en": "Breath of Fresh Air",
         "desc_en": "Recover endurance on a straight.",
         "icon_id": 20022,
@@ -645,7 +681,8 @@
         "downgrade": 200382
     },
     "Budding Blossom": {
-        "id": 900511,
+        "id": 100511,
+        "gene_id": 900511,
         "name_en": "Budding Blossom",
         "desc_en": "If the skill user engaged in a challenge on a mid-race corner, slightly increase acceleration when well-positioned late-race at least halfway through the final corner.",
         "icon_id": 20041,
@@ -663,6 +700,7 @@
     },
     "Burning Soul": {
         "id": 202091,
+        "gene_id": 202091,
         "name_en": "Burning Soul",
         "desc_en": "When engaged in a challenge midpack mid-race, moderately recover endurance and moderately increase velocity. (Medium)",
         "icon_id": 20012,
@@ -682,6 +720,7 @@
     },
     "Burning Spirit GUTS": {
         "id": 210041,
+        "gene_id": 210041,
         "name_en": "Burning Spirit GUTS",
         "desc_en": "Burn bright with team spirit, increasing vigor in proportion to the total Guts of racing team members late-race.",
         "icon_id": 20102,
@@ -701,6 +740,7 @@
     },
     "Burning Spirit PWR": {
         "id": 210031,
+        "gene_id": 210031,
         "name_en": "Burning Spirit PWR",
         "desc_en": "Burn bright with team spirit, increasing acceleration in proportion to the total Power of racing team members late-race.",
         "icon_id": 20122,
@@ -720,6 +760,7 @@
     },
     "Burning Spirit SPD": {
         "id": 210011,
+        "gene_id": 210011,
         "name_en": "Burning Spirit SPD",
         "desc_en": "Burn bright with team spirit, increasing velocity in proportion to the total Speed of racing team members mid-race.",
         "icon_id": 20102,
@@ -739,6 +780,7 @@
     },
     "Burning Spirit STA": {
         "id": 210021,
+        "gene_id": 210021,
         "name_en": "Burning Spirit STA",
         "desc_en": "Burn bright with team spirit, recovering endurance in proportion to the total Stamina of racing team members mid-race.",
         "icon_id": 20112,
@@ -758,6 +800,7 @@
     },
     "Burning Spirit WIT": {
         "id": 210051,
+        "gene_id": 210051,
         "name_en": "Burning Spirit WIT",
         "desc_en": "Burn bright with team spirit, increasing strategic navigation for a medium duration in proportion to the total Wit of racing team members early-race.",
         "icon_id": 20132,
@@ -776,7 +819,8 @@
         "downgrade": 210052
     },
     "Call Me King": {
-        "id": 900611,
+        "id": 10611,
+        "gene_id": 900611,
         "name_en": "Call Me King",
         "desc_en": "Moderately increase velocity in a true display of skill with 200m remaining after racing calmly.",
         "icon_id": 20011,
@@ -794,6 +838,7 @@
     },
     "Calm and Collected": {
         "id": 200561,
+        "gene_id": 200561,
         "name_en": "Calm and Collected",
         "desc_en": "Decrease fatigue upon approaching mid-race. (Pace Chaser)",
         "icon_id": 20022,
@@ -813,6 +858,7 @@
     },
     "Calm in a Crowd": {
         "id": 200482,
+        "gene_id": 200482,
         "name_en": "Calm in a Crowd",
         "desc_en": "Slightly recover endurance when surrounded mid-race.",
         "icon_id": 20021,
@@ -832,6 +878,7 @@
     },
     "Center Stage": {
         "id": 200451,
+        "gene_id": 200451,
         "name_en": "Center Stage",
         "desc_en": "Greatly increase navigation early-race.",
         "icon_id": 20052,
@@ -850,7 +897,8 @@
         "downgrade": 200452
     },
     "Certain Victory": {
-        "id": 910031,
+        "id": 110031,
+        "gene_id": 910031,
         "name_en": "Certain Victory",
         "desc_en": "Moderately increase velocity on the final straight after being on the heels of another runner toward the front on the final corner or later.",
         "icon_id": 20011,
@@ -868,6 +916,7 @@
     },
     "Changing Gears": {
         "id": 201051,
+        "gene_id": 201051,
         "name_en": "Changing Gears",
         "desc_en": "Increase passing ability when positioned toward the front mid-race. (Mile)",
         "icon_id": 20012,
@@ -886,7 +935,8 @@
         "downgrade": 201052
     },
     "Chasing After You": {
-        "id": 900251,
+        "id": 100251,
+        "gene_id": 900251,
         "name_en": "Chasing After You",
         "desc_en": "Very slightly increase velocity steadily and very minimally intimidate runners ahead when in midpack in the second half of the race.",
         "icon_id": 20011,
@@ -904,6 +954,7 @@
     },
     "Chukyo Racecourse ×": {
         "id": 200073,
+        "gene_id": 200073,
         "name_en": "Chukyo Racecourse ×",
         "desc_en": "Moderately decrease performance at Chukyo Racecourse.",
         "icon_id": 10024,
@@ -924,6 +975,7 @@
     },
     "Chukyo Racecourse ○": {
         "id": 200072,
+        "gene_id": 200072,
         "name_en": "Chukyo Racecourse ○",
         "desc_en": "Moderately increase performance at Chukyo Racecourse.",
         "icon_id": 10021,
@@ -944,6 +996,7 @@
     },
     "Chukyo Racecourse ◎": {
         "id": 200071,
+        "gene_id": 200071,
         "name_en": "Chukyo Racecourse ◎",
         "desc_en": "Increase performance at Chukyo Racecourse.",
         "icon_id": 10021,
@@ -964,6 +1017,7 @@
     },
     "Clairvoyance": {
         "id": 201121,
+        "gene_id": 201121,
         "name_en": "Clairvoyance",
         "desc_en": "Widen field of view with heightened observation early-race. (Medium)",
         "icon_id": 20092,
@@ -982,7 +1036,8 @@
         "downgrade": 201122
     },
     "Class Rep + Speed = Bakushin": {
-        "id": 900411,
+        "id": 10411,
+        "gene_id": 900411,
         "name_en": "Class Rep + Speed = Bakushin",
         "desc_en": "Slightly increase velocity when engaged in a challenge toward the front in the second half of the race.",
         "icon_id": 20011,
@@ -999,7 +1054,8 @@
         "downgrade": null
     },
     "Clear Heart": {
-        "id": 900451,
+        "id": 10451,
+        "gene_id": 900451,
         "name_en": "Clear Heart",
         "desc_en": "Moderately recover endurance when well-positioned mid-race.",
         "icon_id": 20021,
@@ -1017,6 +1073,7 @@
     },
     "Cloudy Days ○": {
         "id": 200222,
+        "gene_id": 200222,
         "name_en": "Cloudy Days ○",
         "desc_en": "Moderately increase performance in cloudy weather.",
         "icon_id": 10041,
@@ -1036,6 +1093,7 @@
     },
     "Cloudy Days ◎": {
         "id": 200221,
+        "gene_id": 200221,
         "name_en": "Cloudy Days ◎",
         "desc_en": "Increase performance in cloudy weather.",
         "icon_id": 10041,
@@ -1055,6 +1113,7 @@
     },
     "Come What May": {
         "id": 201701,
+        "gene_id": 201701,
         "name_en": "Come What May",
         "desc_en": "Increase velocity when well-positioned on a straight in the last spurt. (Medium)",
         "icon_id": 20012,
@@ -1074,6 +1133,7 @@
     },
     "Competitive Spirit ○": {
         "id": 200282,
+        "gene_id": 200282,
         "name_en": "Competitive Spirit ○",
         "desc_en": "Moderately increase performance when many other runners are using the same strategy.",
         "icon_id": 10031,
@@ -1094,6 +1154,7 @@
     },
     "Competitive Spirit ◎": {
         "id": 200281,
+        "gene_id": 200281,
         "name_en": "Competitive Spirit ◎",
         "desc_en": "Increase performance when many other runners are using the same strategy.",
         "icon_id": 10031,
@@ -1114,6 +1175,7 @@
     },
     "Concentration": {
         "id": 200431,
+        "gene_id": 200431,
         "name_en": "Concentration",
         "desc_en": "Decrease time lost to slow starts.",
         "icon_id": 20062,
@@ -1133,7 +1195,8 @@
         "downgrade": 200432
     },
     "Condor's Fury": {
-        "id": 910141,
+        "id": 110141,
+        "gene_id": 910141,
         "name_en": "Condor's Fury",
         "desc_en": "Slightly increase acceleration when aiming for the front from midpack on the final corner.",
         "icon_id": 20041,
@@ -1151,6 +1214,7 @@
     },
     "Cooldown": {
         "id": 200741,
+        "gene_id": 200741,
         "name_en": "Cooldown",
         "desc_en": "Decrease fatigue by taking a breather upon entering a straight. (Long)",
         "icon_id": 20022,
@@ -1169,7 +1233,8 @@
         "downgrade": 200742
     },
     "Corazón ☆ Ardiente": {
-        "id": 900141,
+        "id": 10141,
+        "gene_id": 900141,
         "name_en": "Corazón ☆ Ardiente",
         "desc_en": "Very slightly hang on to the advantage when positioned toward the front with energy to spare on the final straight.",
         "icon_id": 20011,
@@ -1187,6 +1252,7 @@
     },
     "Corner Acceleration ×": {
         "id": 200343,
+        "gene_id": 200343,
         "name_en": "Corner Acceleration ×",
         "desc_en": "Moderately decrease acceleration on a corner with awkward turning.",
         "icon_id": 20044,
@@ -1207,6 +1273,7 @@
     },
     "Corner Acceleration ○": {
         "id": 200342,
+        "gene_id": 200342,
         "name_en": "Corner Acceleration ○",
         "desc_en": "Slightly increase acceleration on a corner with masterful turning.",
         "icon_id": 20041,
@@ -1227,6 +1294,7 @@
     },
     "Corner Adept ×": {
         "id": 200333,
+        "gene_id": 200333,
         "name_en": "Corner Adept ×",
         "desc_en": "Moderately decrease velocity on a corner with clumsy turning.",
         "icon_id": 20014,
@@ -1247,6 +1315,7 @@
     },
     "Corner Adept ○": {
         "id": 200332,
+        "gene_id": 200332,
         "name_en": "Corner Adept ○",
         "desc_en": "Slightly increase velocity on a corner with skilled turning.",
         "icon_id": 20011,
@@ -1267,6 +1336,7 @@
     },
     "Corner Connoisseur": {
         "id": 200341,
+        "gene_id": 200341,
         "name_en": "Corner Connoisseur",
         "desc_en": "Increase acceleration on a corner with masterful turning.",
         "icon_id": 20042,
@@ -1287,6 +1357,7 @@
     },
     "Corner Recovery ×": {
         "id": 200353,
+        "gene_id": 200353,
         "name_en": "Corner Recovery ×",
         "desc_en": "Moderately lose endurance on a corner with inefficient turning.",
         "icon_id": 20024,
@@ -1307,6 +1378,7 @@
     },
     "Corner Recovery ○": {
         "id": 200352,
+        "gene_id": 200352,
         "name_en": "Corner Recovery ○",
         "desc_en": "Slightly recover endurance on a corner with efficient turning.",
         "icon_id": 20021,
@@ -1327,6 +1399,7 @@
     },
     "Countermeasure": {
         "id": 200992,
+        "gene_id": 200992,
         "name_en": "Countermeasure",
         "desc_en": "Slightly increase passing ability when positioned toward the front upon approaching late-race. (Sprint)",
         "icon_id": 20041,
@@ -1346,6 +1419,7 @@
     },
     "Crusader": {
         "id": 201501,
+        "gene_id": 201501,
         "name_en": "Crusader",
         "desc_en": "Widen field of view when positioned toward the back late-race. (End Closer)",
         "icon_id": 20092,
@@ -1364,7 +1438,8 @@
         "downgrade": 201502
     },
     "Cut and Drive!": {
-        "id": 900081,
+        "id": 100081,
+        "gene_id": 900081,
         "name_en": "Cut and Drive!",
         "desc_en": "Slightly increase velocity when positioned toward the front with 200m or less remaining.",
         "icon_id": 20011,
@@ -1381,7 +1456,8 @@
         "downgrade": null
     },
     "Dancing in the Leaves": {
-        "id": 910401,
+        "id": 110401,
+        "gene_id": 910401,
         "name_en": "Dancing in the Leaves",
         "desc_en": "Very slightly increase ability to break out of the pack when engaged in a challenge in midpack on the final corner.",
         "icon_id": 20011,
@@ -1399,6 +1475,7 @@
     },
     "Daring Strike": {
         "id": 202021,
+        "gene_id": 202021,
         "name_en": "Daring Strike",
         "desc_en": "Moderately increase velocity for a medium duration when positioned toward the back mid-race. (End Closer)",
         "icon_id": 20012,
@@ -1418,6 +1495,7 @@
     },
     "Dauntless": {
         "id": 202121,
+        "gene_id": 202121,
         "name_en": "Dauntless",
         "desc_en": "When positioned in the midpack during the second half of the race, increase velocity and very slightly increase acceleration. (Late Surger)",
         "icon_id": 20012,
@@ -1436,7 +1514,8 @@
         "downgrade": 202122
     },
     "Dazzl'n ♪ Diver": {
-        "id": 910011,
+        "id": 110011,
+        "gene_id": 910011,
         "name_en": "Dazzl'n ♪ Diver",
         "desc_en": "Slightly recover endurance after activating 2 skills mid-race.",
         "icon_id": 20021,
@@ -1454,6 +1533,7 @@
     },
     "Dazzling Disorientation": {
         "id": 201371,
+        "gene_id": 201371,
         "name_en": "Dazzling Disorientation",
         "desc_en": "Moderately narrow the field of view for runners behind when positioned toward the front late-race. (Pace Chaser)",
         "icon_id": 30072,
@@ -1473,6 +1553,7 @@
     },
     "Deep Breaths": {
         "id": 200742,
+        "gene_id": 200742,
         "name_en": "Deep Breaths",
         "desc_en": "Slightly decrease fatigue by taking a breather upon entering a straight. (Long)",
         "icon_id": 20021,
@@ -1492,6 +1573,7 @@
     },
     "Defeatist": {
         "id": 200411,
+        "gene_id": 200411,
         "name_en": "Defeatist",
         "desc_en": "Moderately increase urge to give up when positioned around the very back on the final straight.",
         "icon_id": 20014,
@@ -1509,6 +1591,7 @@
     },
     "Determined Descent": {
         "id": 201341,
+        "gene_id": 201341,
         "name_en": "Determined Descent",
         "desc_en": "Moderately improve running on a downhill. (Pace Chaser)",
         "icon_id": 20042,
@@ -1528,6 +1611,7 @@
     },
     "Disorient": {
         "id": 201372,
+        "gene_id": 201372,
         "name_en": "Disorient",
         "desc_en": "Slightly narrow the field of view for runners behind when positioned toward the front late-race. (Pace Chaser)",
         "icon_id": 30071,
@@ -1547,6 +1631,7 @@
     },
     "Dodging Danger": {
         "id": 201262,
+        "gene_id": 201262,
         "name_en": "Dodging Danger",
         "desc_en": "Moderately avoid becoming surrounded early-race. (Front Runner)",
         "icon_id": 20051,
@@ -1566,6 +1651,7 @@
     },
     "Dominator": {
         "id": 201151,
+        "gene_id": 201151,
         "name_en": "Dominator",
         "desc_en": "Decrease velocity of runners ahead when positioned toward the back late-race. (Medium)",
         "icon_id": 30012,
@@ -1585,6 +1671,7 @@
     },
     "Downhill Speedster": {
         "id": 202172,
+        "gene_id": 202172,
         "name_en": "Downhill Speedster",
         "desc_en": "Slightly increase velocity on downhills.",
         "icon_id": 20011,
@@ -1603,7 +1690,8 @@
         "downgrade": null
     },
     "Dreams Donned with Pride!": {
-        "id": 920011,
+        "id": 120011,
+        "gene_id": 920011,
         "name_en": "Dreams Donned with Pride!",
         "desc_en": "If the skill user activates another skill on the final corner late-race, very slightly increase velocity. If racing at Nakayama Racecourse, moderately increase velocity instead.",
         "icon_id": 20011,
@@ -1621,6 +1709,7 @@
     },
     "Eager": {
         "id": 202102,
+        "gene_id": 202102,
         "name_en": "Eager",
         "desc_en": "When positioned toward the back mid-race, slightly increase velocity. (Medium)",
         "icon_id": 20011,
@@ -1640,6 +1729,7 @@
     },
     "Early Lead": {
         "id": 200532,
+        "gene_id": 200532,
         "name_en": "Early Lead",
         "desc_en": "Slightly increase ability to go to the front early-race. (Front Runner)",
         "icon_id": 20041,
@@ -1659,6 +1749,7 @@
     },
     "Early Start": {
         "id": 202022,
+        "gene_id": 202022,
         "name_en": "Early Start",
         "desc_en": "Very slightly increase velocity for a medium duration when positioned toward the back mid-race. (End Closer)",
         "icon_id": 20011,
@@ -1678,6 +1769,7 @@
     },
     "Elated": {
         "id": 202101,
+        "gene_id": 202101,
         "name_en": "Elated",
         "desc_en": "When positioned toward the back mid-race, increase velocity. (Medium)",
         "icon_id": 20012,
@@ -1696,7 +1788,8 @@
         "downgrade": 202102
     },
     "Empress's Pride": {
-        "id": 900181,
+        "id": 10181,
+        "gene_id": 900181,
         "name_en": "Empress's Pride",
         "desc_en": "Slightly increase velocity when passing another runner from midpack or further back on the final corner.",
         "icon_id": 20011,
@@ -1714,6 +1807,7 @@
     },
     "Encroaching Shadow": {
         "id": 200641,
+        "gene_id": 200641,
         "name_en": "Encroaching Shadow",
         "desc_en": "Increase acceleration on a straight in the last spurt. (End Closer)",
         "icon_id": 20042,
@@ -1733,6 +1827,7 @@
     },
     "End Closer Corners ○": {
         "id": 201462,
+        "gene_id": 201462,
         "name_en": "End Closer Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (End Closer)",
         "icon_id": 20011,
@@ -1753,6 +1848,7 @@
     },
     "End Closer Corners ◎": {
         "id": 201461,
+        "gene_id": 201461,
         "name_en": "End Closer Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (End Closer)",
         "icon_id": 20011,
@@ -1773,6 +1869,7 @@
     },
     "End Closer Savvy ○": {
         "id": 201552,
+        "gene_id": 201552,
         "name_en": "End Closer Savvy ○",
         "desc_en": "Moderately increase ability to get into a good position. (End Closer)",
         "icon_id": 10051,
@@ -1792,6 +1889,7 @@
     },
     "End Closer Savvy ◎": {
         "id": 201551,
+        "gene_id": 201551,
         "name_en": "End Closer Savvy ◎",
         "desc_en": "Increase ability to get into a good position. (End Closer)",
         "icon_id": 10051,
@@ -1811,6 +1909,7 @@
     },
     "End Closer Straightaways ○": {
         "id": 201452,
+        "gene_id": 201452,
         "name_en": "End Closer Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (End Closer)",
         "icon_id": 20011,
@@ -1831,6 +1930,7 @@
     },
     "End Closer Straightaways ◎": {
         "id": 201451,
+        "gene_id": 201451,
         "name_en": "End Closer Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (End Closer)",
         "icon_id": 20011,
@@ -1851,6 +1951,7 @@
     },
     "Escape Artist": {
         "id": 200541,
+        "gene_id": 200541,
         "name_en": "Escape Artist",
         "desc_en": "Increase ability to go to the front mid-race. (Front Runner)",
         "icon_id": 20012,
@@ -1869,7 +1970,8 @@
         "downgrade": 200542
     },
     "Eternal Encompassing Shine": {
-        "id": 900671,
+        "id": 100671,
+        "gene_id": 900671,
         "name_en": "Eternal Encompassing Shine",
         "desc_en": "If well-positioned at the start of the final straight, slightly increase velocity. If positioned near the front, moderately increase velocity instead.",
         "icon_id": 20011,
@@ -1886,7 +1988,8 @@
         "downgrade": null
     },
     "Eternal Moments": {
-        "id": 910181,
+        "id": 110181,
+        "gene_id": 910181,
         "name_en": "Eternal Moments",
         "desc_en": "Slightly increase velocity when starting to make a move from a position toward the front mid-race.",
         "icon_id": 20011,
@@ -1903,7 +2006,8 @@
         "downgrade": null
     },
     "Every Rose Has Its Fangs": {
-        "id": 910301,
+        "id": 110301,
+        "gene_id": 910301,
         "name_en": "Every Rose Has Its Fangs",
         "desc_en": "Slightly drain endurance from runners ahead when well-positioned and pressured by another runner mid-race.",
         "icon_id": 20021,
@@ -1921,6 +2025,7 @@
     },
     "Extra Tank": {
         "id": 200762,
+        "gene_id": 200762,
         "name_en": "Extra Tank",
         "desc_en": "Slightly regain the energy to run when close to exhausting strength. (Long)",
         "icon_id": 20021,
@@ -1939,7 +2044,8 @@
         "downgrade": null
     },
     "Fairy Tale": {
-        "id": 900221,
+        "id": 100221,
+        "gene_id": 900221,
         "name_en": "Fairy Tale",
         "desc_en": "Slightly increase velocity when engaged in a challenge while well-positioned in the second half of the race.",
         "icon_id": 20011,
@@ -1957,6 +2063,7 @@
     },
     "Fall Frenzy": {
         "id": 200194,
+        "gene_id": 200194,
         "name_en": "Fall Frenzy",
         "desc_en": "Increase performance in fall, boosting Speed and Power.",
         "icon_id": 10012,
@@ -1978,6 +2085,7 @@
     },
     "Fall Runner ×": {
         "id": 200193,
+        "gene_id": 200193,
         "name_en": "Fall Runner ×",
         "desc_en": "Moderately decrease performance in fall.",
         "icon_id": 10014,
@@ -1999,6 +2107,7 @@
     },
     "Fall Runner ○": {
         "id": 200192,
+        "gene_id": 200192,
         "name_en": "Fall Runner ○",
         "desc_en": "Moderately increase performance in fall.",
         "icon_id": 10011,
@@ -2020,6 +2129,7 @@
     },
     "Fall Runner ◎": {
         "id": 200191,
+        "gene_id": 200191,
         "name_en": "Fall Runner ◎",
         "desc_en": "Increase performance in fall.",
         "icon_id": 10011,
@@ -2041,6 +2151,7 @@
     },
     "Familiar Ground": {
         "id": 202002,
+        "gene_id": 202002,
         "name_en": "Familiar Ground",
         "desc_en": "Slightly recover endurance when positioned toward the back mid-race. (Dirt)",
         "icon_id": 20021,
@@ -2060,6 +2171,7 @@
     },
     "Fast & Furious": {
         "id": 200591,
+        "gene_id": 200591,
         "name_en": "Fast & Furious",
         "desc_en": "Increase velocity mid-race. (Late Surger)",
         "icon_id": 20012,
@@ -2079,6 +2191,7 @@
     },
     "Fast-Paced": {
         "id": 200542,
+        "gene_id": 200542,
         "name_en": "Fast-Paced",
         "desc_en": "Slightly increase ability to go to the front mid-race. (Front Runner)",
         "icon_id": 20011,
@@ -2098,6 +2211,7 @@
     },
     "Fearless": {
         "id": 202122,
+        "gene_id": 202122,
         "name_en": "Fearless",
         "desc_en": "When positioned in the midpack during the second half of the race, slightly increase velocity and very minimally increase acceleration. (Late Surger)",
         "icon_id": 20011,
@@ -2117,6 +2231,7 @@
     },
     "Feature Act": {
         "id": 202012,
+        "gene_id": 202012,
         "name_en": "Feature Act",
         "desc_en": "Slightly increase velocity when positioned toward the front upon approaching late-race. (Long)",
         "icon_id": 20011,
@@ -2135,7 +2250,8 @@
         "downgrade": null
     },
     "Feel the Burn!": {
-        "id": 900271,
+        "id": 10271,
+        "gene_id": 900271,
         "name_en": "Feel the Burn!",
         "desc_en": "Slightly increase acceleration in an attempt to move up on a corner late-race.",
         "icon_id": 20041,
@@ -2152,7 +2268,8 @@
         "downgrade": null
     },
     "Festive Miracle": {
-        "id": 910061,
+        "id": 110061,
+        "gene_id": 910061,
         "name_en": "Festive Miracle",
         "desc_en": "Very slightly control breathing and kick forward toward victory in the second half of the race after recovering endurance with skills at least 3 times.",
         "icon_id": 20011,
@@ -2170,6 +2287,7 @@
     },
     "Fighter": {
         "id": 201402,
+        "gene_id": 201402,
         "name_en": "Fighter",
         "desc_en": "Slightly increase acceleration for a medium duration when trying to pass another runner. (Late Surger)",
         "icon_id": 20041,
@@ -2189,6 +2307,7 @@
     },
     "Fighting Spirit": {
         "id": 202092,
+        "gene_id": 202092,
         "name_en": "Fighting Spirit",
         "desc_en": "When engaged in a challenge midpack mid-race, very slightly recover endurance and slightly increase velocity. (Medium)",
         "icon_id": 20011,
@@ -2208,6 +2327,7 @@
     },
     "Final Push": {
         "id": 200552,
+        "gene_id": 200552,
         "name_en": "Final Push",
         "desc_en": "Slightly increase ability to keep the lead on the final corner. (Front Runner)",
         "icon_id": 20041,
@@ -2227,6 +2347,7 @@
     },
     "Firm Conditions ×": {
         "id": 200153,
+        "gene_id": 200153,
         "name_en": "Firm Conditions ×",
         "desc_en": "Moderately decrease performance on firm ground.",
         "icon_id": 10034,
@@ -2248,6 +2369,7 @@
     },
     "Firm Conditions ○": {
         "id": 200152,
+        "gene_id": 200152,
         "name_en": "Firm Conditions ○",
         "desc_en": "Moderately increase performance on firm ground.",
         "icon_id": 10031,
@@ -2269,6 +2391,7 @@
     },
     "Firm Conditions ◎": {
         "id": 200151,
+        "gene_id": 200151,
         "name_en": "Firm Conditions ◎",
         "desc_en": "Increase performance on firm ground.",
         "icon_id": 10031,
@@ -2290,6 +2413,7 @@
     },
     "Firm Course Menace": {
         "id": 200154,
+        "gene_id": 200154,
         "name_en": "Firm Course Menace",
         "desc_en": "Increase performance on firm ground, boosting Power and Speed.",
         "icon_id": 10032,
@@ -2311,6 +2435,7 @@
     },
     "Flash Forward": {
         "id": 201103,
+        "gene_id": 201103,
         "name_en": "Flash Forward",
         "desc_en": "Increase velocity on a straight. (Medium)",
         "icon_id": 20012,
@@ -2330,7 +2455,8 @@
         "downgrade": null
     },
     "Flashy☆Landing": {
-        "id": 900241,
+        "id": 100241,
+        "gene_id": 900241,
         "name_en": "Flashy☆Landing",
         "desc_en": "Very slightly increase ability to break out of the pack on the straight after engaging in a challenge toward the front on the final corner or later.",
         "icon_id": 20011,
@@ -2347,7 +2473,8 @@
         "downgrade": null
     },
     "Flowery☆Maneuver": {
-        "id": 910241,
+        "id": 110241,
+        "gene_id": 910241,
         "name_en": "Flowery☆Maneuver",
         "desc_en": "Slightly increase velocity when passing another runner toward the front on the final corner. If passing toward the back, slightly increase acceleration instead.",
         "icon_id": 20011,
@@ -2365,6 +2492,7 @@
     },
     "Flustered End Closers": {
         "id": 200931,
+        "gene_id": 200931,
         "name_en": "Flustered End Closers",
         "desc_en": "Slightly increase fatigue for end closers mid-race.",
         "icon_id": 30051,
@@ -2382,6 +2510,7 @@
     },
     "Flustered Front Runners": {
         "id": 200841,
+        "gene_id": 200841,
         "name_en": "Flustered Front Runners",
         "desc_en": "Slightly increase fatigue for front runners mid-race.",
         "icon_id": 30051,
@@ -2399,6 +2528,7 @@
     },
     "Flustered Late Surgers": {
         "id": 200901,
+        "gene_id": 200901,
         "name_en": "Flustered Late Surgers",
         "desc_en": "Slightly increase fatigue for late surgers mid-race.",
         "icon_id": 30051,
@@ -2416,6 +2546,7 @@
     },
     "Flustered Pace Chasers": {
         "id": 200871,
+        "gene_id": 200871,
         "name_en": "Flustered Pace Chasers",
         "desc_en": "Slightly increase fatigue for pace chasers mid-race.",
         "icon_id": 30051,
@@ -2433,6 +2564,7 @@
     },
     "Focus": {
         "id": 200432,
+        "gene_id": 200432,
         "name_en": "Focus",
         "desc_en": "Slightly decrease time lost to slow starts.",
         "icon_id": 20061,
@@ -2452,7 +2584,8 @@
         "downgrade": 200433
     },
     "Focused Mind": {
-        "id": 900111,
+        "id": 10111,
+        "gene_id": 900111,
         "name_en": "Focused Mind",
         "desc_en": "Slightly increase velocity when passing another runner toward the back on the final straight.",
         "icon_id": 20011,
@@ -2470,6 +2603,7 @@
     },
     "Forward, March!": {
         "id": 201682,
+        "gene_id": 201682,
         "name_en": "Forward, March!",
         "desc_en": "Moderately prepare to aim for the front late-race. (Dirt)",
         "icon_id": 20051,
@@ -2489,6 +2623,7 @@
     },
     "Free-Spirited": {
         "id": 202072,
+        "gene_id": 202072,
         "name_en": "Free-Spirited",
         "desc_en": "If positioned in the midpack around when the mid-race starts, slightly decrease velocity and moderately recover endurance. (Long)",
         "icon_id": 20021,
@@ -2508,6 +2643,7 @@
     },
     "Frenzied End Closers": {
         "id": 200821,
+        "gene_id": 200821,
         "name_en": "Frenzied End Closers",
         "desc_en": "Increase time needed for end closers to calm down when they become rushed.",
         "icon_id": 30041,
@@ -2525,6 +2661,7 @@
     },
     "Frenzied Front Runners": {
         "id": 200791,
+        "gene_id": 200791,
         "name_en": "Frenzied Front Runners",
         "desc_en": "Increase time needed for front runners to calm down when they become rushed.",
         "icon_id": 30041,
@@ -2542,6 +2679,7 @@
     },
     "Frenzied Late Surgers": {
         "id": 200811,
+        "gene_id": 200811,
         "name_en": "Frenzied Late Surgers",
         "desc_en": "Increase time needed for late surgers to calm down when they become rushed.",
         "icon_id": 30041,
@@ -2559,6 +2697,7 @@
     },
     "Frenzied Pace Chasers": {
         "id": 200801,
+        "gene_id": 200801,
         "name_en": "Frenzied Pace Chasers",
         "desc_en": "Increase time needed for pace chasers to calm down when they become rushed.",
         "icon_id": 30041,
@@ -2576,6 +2715,7 @@
     },
     "From the Brink": {
         "id": 202081,
+        "gene_id": 202081,
         "name_en": "From the Brink",
         "desc_en": "If positioned toward the back late-race, increase acceleration. (Medium)",
         "icon_id": 20042,
@@ -2595,6 +2735,7 @@
     },
     "Front Runner Corners ○": {
         "id": 201252,
+        "gene_id": 201252,
         "name_en": "Front Runner Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Front Runner)",
         "icon_id": 20011,
@@ -2615,6 +2756,7 @@
     },
     "Front Runner Corners ◎": {
         "id": 201251,
+        "gene_id": 201251,
         "name_en": "Front Runner Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Front Runner)",
         "icon_id": 20011,
@@ -2635,6 +2777,7 @@
     },
     "Front Runner Savvy ○": {
         "id": 201522,
+        "gene_id": 201522,
         "name_en": "Front Runner Savvy ○",
         "desc_en": "Moderately increase ability to get into a good position. (Front Runner)",
         "icon_id": 10051,
@@ -2654,6 +2797,7 @@
     },
     "Front Runner Savvy ◎": {
         "id": 201521,
+        "gene_id": 201521,
         "name_en": "Front Runner Savvy ◎",
         "desc_en": "Increase ability to get into a good position. (Front Runner)",
         "icon_id": 10051,
@@ -2673,6 +2817,7 @@
     },
     "Front Runner Straightaways ○": {
         "id": 201242,
+        "gene_id": 201242,
         "name_en": "Front Runner Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Front Runner)",
         "icon_id": 20011,
@@ -2693,6 +2838,7 @@
     },
     "Front Runner Straightaways ◎": {
         "id": 201241,
+        "gene_id": 201241,
         "name_en": "Front Runner Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Front Runner)",
         "icon_id": 20011,
@@ -2713,6 +2859,7 @@
     },
     "Fukushima Racecourse ×": {
         "id": 200103,
+        "gene_id": 200103,
         "name_en": "Fukushima Racecourse ×",
         "desc_en": "Moderately decrease performance at Fukushima Racecourse.",
         "icon_id": 10024,
@@ -2733,6 +2880,7 @@
     },
     "Fukushima Racecourse ○": {
         "id": 200102,
+        "gene_id": 200102,
         "name_en": "Fukushima Racecourse ○",
         "desc_en": "Moderately increase performance at Fukushima Racecourse.",
         "icon_id": 10021,
@@ -2753,6 +2901,7 @@
     },
     "Fukushima Racecourse ◎": {
         "id": 200101,
+        "gene_id": 200101,
         "name_en": "Fukushima Racecourse ◎",
         "desc_en": "Increase performance at Fukushima Racecourse.",
         "icon_id": 10021,
@@ -2773,6 +2922,7 @@
     },
     "Full Throttle": {
         "id": 202152,
+        "gene_id": 202152,
         "name_en": "Full Throttle",
         "desc_en": "Greatly consume endurance mid-race and moderately increase velocity. (Late Surger)",
         "icon_id": 20011,
@@ -2792,6 +2942,7 @@
     },
     "Full of Vigor": {
         "id": 202111,
+        "gene_id": 202111,
         "name_en": "Full of Vigor",
         "desc_en": "When positioned toward the back on the final corner, increase velocity. (Mile)",
         "icon_id": 20012,
@@ -2811,6 +2962,7 @@
     },
     "Furious Feat": {
         "id": 200701,
+        "gene_id": 200701,
         "name_en": "Furious Feat",
         "desc_en": "Increase passing ability when positioned toward the back late-race. (Mile)",
         "icon_id": 20042,
@@ -2829,7 +2981,8 @@
         "downgrade": 200702
     },
     "G00 1st. F∞;": {
-        "id": 900261,
+        "id": 100261,
+        "gene_id": 900261,
         "name_en": "G00 1st. F∞;",
         "desc_en": "Slightly increase velocity when positioned toward the front after making it to the final straight without faltering.",
         "icon_id": 20011,
@@ -2847,6 +3000,7 @@
     },
     "G1 Averseness": {
         "id": 200311,
+        "gene_id": 200311,
         "name_en": "G1 Averseness",
         "desc_en": "Moderately decrease performance in G1 or otherwise important races.",
         "icon_id": 10014,
@@ -2864,6 +3018,7 @@
     },
     "Gap Closer": {
         "id": 200672,
+        "gene_id": 200672,
         "name_en": "Gap Closer",
         "desc_en": "Slightly increase spurting ability when positioned toward the back late-race. (Sprint)",
         "icon_id": 20011,
@@ -2883,6 +3038,7 @@
     },
     "Gatekept": {
         "id": 200433,
+        "gene_id": 200433,
         "name_en": "Gatekept",
         "desc_en": "Moderately increase time lost to slow starts.",
         "icon_id": 20064,
@@ -2902,7 +3058,8 @@
         "downgrade": null
     },
     "Genius x Bakushin = Victory": {
-        "id": 900411,
+        "id": 100411,
+        "gene_id": 900411,
         "name_en": "Genius x Bakushin = Victory",
         "desc_en": "Slightly increase velocity when engaged in a challenge toward the front in the second half of the race.",
         "icon_id": 20011,
@@ -2919,7 +3076,8 @@
         "downgrade": null
     },
     "Give Mummy a Hug ♡": {
-        "id": 910451,
+        "id": 110451,
+        "gene_id": 910451,
         "name_en": "Give Mummy a Hug ♡",
         "desc_en": "Very slightly increase ability to break out of the pack when well-positioned and close to the runner ahead on the final straight.",
         "icon_id": 20011,
@@ -2937,6 +3095,7 @@
     },
     "Glittering Star": {
         "id": 210062,
+        "gene_id": 210062,
         "name_en": "Glittering Star",
         "desc_en": "Very slightly control breathing and kick forward in the second half of the race. Effect is increased in proportion to number of career wins.",
         "icon_id": 20141,
@@ -2956,6 +3115,7 @@
     },
     "Go with the Flow": {
         "id": 200502,
+        "gene_id": 200502,
         "name_en": "Go with the Flow",
         "desc_en": "Moderately increase navigation late-race.",
         "icon_id": 20051,
@@ -2974,7 +3134,8 @@
         "downgrade": null
     },
     "Go, Go, Mun!": {
-        "id": 900621,
+        "id": 100621,
+        "gene_id": 900621,
         "name_en": "Go, Go, Mun!",
         "desc_en": "Slightly recover endurance and very slightly increase velocity when in midpack around halfway through the race.",
         "icon_id": 20021,
@@ -2992,6 +3153,7 @@
     },
     "Go-Home Specialist": {
         "id": 201481,
+        "gene_id": 201481,
         "name_en": "Go-Home Specialist",
         "desc_en": "Reduce fatigue on a downhill. (End Closer)",
         "icon_id": 20022,
@@ -3011,6 +3173,7 @@
     },
     "Gourmand": {
         "id": 201351,
+        "gene_id": 201351,
         "name_en": "Gourmand",
         "desc_en": "Recover endurance mid-race. (Pace Chaser)",
         "icon_id": 20022,
@@ -3029,7 +3192,8 @@
         "downgrade": 201352
     },
     "Go☆Go☆Goal!": {
-        "id": 910601,
+        "id": 110601,
+        "gene_id": 910601,
         "name_en": "Go☆Go☆Goal!",
         "desc_en": "If the skill user passed another runner on the final corner or later, slightly increase velocity from the midpack onward on the final straight. If the skill user isn't one of the top favorites, keep steadily increasing velocity slightly.",
         "icon_id": 20011,
@@ -3047,6 +3211,7 @@
     },
     "Greed for Speed": {
         "id": 201081,
+        "gene_id": 201081,
         "name_en": "Greed for Speed",
         "desc_en": "Moderately steal velocity from runners behind when positioned toward the front mid-race. (Mile)",
         "icon_id": 30012,
@@ -3066,6 +3231,7 @@
     },
     "Groundwork": {
         "id": 201601,
+        "gene_id": 201601,
         "name_en": "Groundwork",
         "desc_en": "Slightly increase acceleration after activating many skills early-race.",
         "icon_id": 20041,
@@ -3084,7 +3250,8 @@
         "downgrade": null
     },
     "Guten Appetit ♪": {
-        "id": 910371,
+        "id": 110371,
+        "gene_id": 910371,
         "name_en": "Guten Appetit ♪",
         "desc_en": "Slightly increase velocity continuously on the final straight after passing another runner 3 times on the final corner or later.",
         "icon_id": 20011,
@@ -3102,6 +3269,7 @@
     },
     "Hakodate Racecourse ×": {
         "id": 200093,
+        "gene_id": 200093,
         "name_en": "Hakodate Racecourse ×",
         "desc_en": "Moderately decrease performance at Hakodate Racecourse.",
         "icon_id": 10024,
@@ -3122,6 +3290,7 @@
     },
     "Hakodate Racecourse ○": {
         "id": 200092,
+        "gene_id": 200092,
         "name_en": "Hakodate Racecourse ○",
         "desc_en": "Moderately increase performance at Hakodate Racecourse.",
         "icon_id": 10021,
@@ -3142,6 +3311,7 @@
     },
     "Hakodate Racecourse ◎": {
         "id": 200091,
+        "gene_id": 200091,
         "name_en": "Hakodate Racecourse ◎",
         "desc_en": "Increase performance at Hakodate Racecourse.",
         "icon_id": 10021,
@@ -3162,6 +3332,7 @@
     },
     "Hanshin Racecourse ×": {
         "id": 200053,
+        "gene_id": 200053,
         "name_en": "Hanshin Racecourse ×",
         "desc_en": "Moderately decrease performance at Hanshin Racecourse.",
         "icon_id": 10024,
@@ -3182,6 +3353,7 @@
     },
     "Hanshin Racecourse ○": {
         "id": 200052,
+        "gene_id": 200052,
         "name_en": "Hanshin Racecourse ○",
         "desc_en": "Moderately increase performance at Hanshin Racecourse.",
         "icon_id": 10021,
@@ -3202,6 +3374,7 @@
     },
     "Hanshin Racecourse ◎": {
         "id": 200051,
+        "gene_id": 200051,
         "name_en": "Hanshin Racecourse ◎",
         "desc_en": "Increase performance at Hanshin Racecourse.",
         "icon_id": 10021,
@@ -3222,6 +3395,7 @@
     },
     "Hard Worker": {
         "id": 201401,
+        "gene_id": 201401,
         "name_en": "Hard Worker",
         "desc_en": "Moderately increase acceleration for a medium duration when trying to pass another runner. (Late Surger)",
         "icon_id": 20042,
@@ -3241,6 +3415,7 @@
     },
     "Hawkeye": {
         "id": 201122,
+        "gene_id": 201122,
         "name_en": "Hawkeye",
         "desc_en": "Moderately widen field of view with heightened observation early-race. (Medium)",
         "icon_id": 20091,
@@ -3260,6 +3435,7 @@
     },
     "Head-On": {
         "id": 201902,
+        "gene_id": 201902,
         "name_en": "Head-On",
         "desc_en": "Slightly increase acceleration when positioned toward the front late-race. (Pace Chaser)",
         "icon_id": 20041,
@@ -3279,6 +3455,7 @@
     },
     "Headliner": {
         "id": 202011,
+        "gene_id": 202011,
         "name_en": "Headliner",
         "desc_en": "Increase velocity when positioned toward the front upon approaching late-race. (Long)",
         "icon_id": 20012,
@@ -3298,6 +3475,7 @@
     },
     "Hesitant End Closers": {
         "id": 200941,
+        "gene_id": 200941,
         "name_en": "Hesitant End Closers",
         "desc_en": "Slightly decrease velocity of end closers late-race.",
         "icon_id": 30011,
@@ -3315,6 +3493,7 @@
     },
     "Hesitant Front Runners": {
         "id": 200851,
+        "gene_id": 200851,
         "name_en": "Hesitant Front Runners",
         "desc_en": "Slightly decrease velocity of front runners late-race.",
         "icon_id": 30011,
@@ -3332,6 +3511,7 @@
     },
     "Hesitant Late Surgers": {
         "id": 200911,
+        "gene_id": 200911,
         "name_en": "Hesitant Late Surgers",
         "desc_en": "Slightly decrease velocity of late surgers late-race.",
         "icon_id": 30011,
@@ -3349,6 +3529,7 @@
     },
     "Hesitant Pace Chasers": {
         "id": 200881,
+        "gene_id": 200881,
         "name_en": "Hesitant Pace Chasers",
         "desc_en": "Slightly decrease velocity of pace chasers late-race.",
         "icon_id": 30011,
@@ -3366,6 +3547,7 @@
     },
     "Highlander": {
         "id": 201581,
+        "gene_id": 201581,
         "name_en": "Highlander",
         "desc_en": "Slightly improve running on an uphill.",
         "icon_id": 20041,
@@ -3385,6 +3567,7 @@
     },
     "Homestretch Haste": {
         "id": 200512,
+        "gene_id": 200512,
         "name_en": "Homestretch Haste",
         "desc_en": "Slightly increase velocity in the last spurt.",
         "icon_id": 20011,
@@ -3404,6 +3587,7 @@
     },
     "Huge Lead": {
         "id": 200982,
+        "gene_id": 200982,
         "name_en": "Huge Lead",
         "desc_en": "Slightly increase ability to maintain the lead when leading by a large margin mid-race. (Sprint)",
         "icon_id": 20011,
@@ -3423,6 +3607,7 @@
     },
     "Hydrate": {
         "id": 201352,
+        "gene_id": 201352,
         "name_en": "Hydrate",
         "desc_en": "Slightly recover endurance mid-race. (Pace Chaser)",
         "icon_id": 20021,
@@ -3442,6 +3627,7 @@
     },
     "I Can See Right Through You": {
         "id": 201472,
+        "gene_id": 201472,
         "name_en": "I Can See Right Through You",
         "desc_en": "Slightly widen field of view with situational awareness when moving sideways. (End Closer)",
         "icon_id": 20091,
@@ -3460,7 +3646,8 @@
         "downgrade": null
     },
     "I Can Win Sometimes, Right?": {
-        "id": 900601,
+        "id": 10601,
+        "gene_id": 900601,
         "name_en": "I Can Win Sometimes, Right?",
         "desc_en": "Slightly increase velocity when positioned 3rd and about to lose late-race.",
         "icon_id": 20011,
@@ -3477,7 +3664,8 @@
         "downgrade": null
     },
     "I Never Goof Up!": {
-        "id": 900581,
+        "id": 100581,
+        "gene_id": 900581,
         "name_en": "I Never Goof Up!",
         "desc_en": "Very slightly aim for the front when passing another runner from midpack or further back on a corner late-race.",
         "icon_id": 20011,
@@ -3494,7 +3682,8 @@
         "downgrade": null
     },
     "I See Victory in My Future!": {
-        "id": 900561,
+        "id": 100561,
+        "gene_id": 900561,
         "name_en": "I See Victory in My Future!",
         "desc_en": "Slightly clear a path forward depending on divination results when the way ahead is jammed late-race.",
         "icon_id": 20011,
@@ -3512,6 +3701,7 @@
     },
     "Ignited Spirit GUTS": {
         "id": 210042,
+        "gene_id": 210042,
         "name_en": "Ignited Spirit GUTS",
         "desc_en": "Burn bright with team spirit, very slightly increasing vigor in proportion to the total Guts of racing team members late-race.",
         "icon_id": 20101,
@@ -3531,6 +3721,7 @@
     },
     "Ignited Spirit PWR": {
         "id": 210032,
+        "gene_id": 210032,
         "name_en": "Ignited Spirit PWR",
         "desc_en": "Burn bright with team spirit, slightly increasing acceleration in proportion to the total Power of racing team members late-race.",
         "icon_id": 20121,
@@ -3550,6 +3741,7 @@
     },
     "Ignited Spirit SPD": {
         "id": 210012,
+        "gene_id": 210012,
         "name_en": "Ignited Spirit SPD",
         "desc_en": "Burn bright with team spirit, slightly increasing velocity in proportion to the total Speed of racing team members mid-race.",
         "icon_id": 20101,
@@ -3569,6 +3761,7 @@
     },
     "Ignited Spirit STA": {
         "id": 210022,
+        "gene_id": 210022,
         "name_en": "Ignited Spirit STA",
         "desc_en": "Burn bright with team spirit, slightly recovering endurance in proportion to the total Stamina of racing team members mid-race.",
         "icon_id": 20111,
@@ -3588,6 +3781,7 @@
     },
     "Ignited Spirit WIT": {
         "id": 210052,
+        "gene_id": 210052,
         "name_en": "Ignited Spirit WIT",
         "desc_en": "Burn bright with team spirit, slightly increasing strategic navigation for a medium duration in proportion to the total Wit of racing team members early-race.",
         "icon_id": 20131,
@@ -3607,6 +3801,7 @@
     },
     "Illusionist": {
         "id": 201231,
+        "gene_id": 201231,
         "name_en": "Illusionist",
         "desc_en": "Narrow the field of view for runners ahead late-race. (Long)",
         "icon_id": 30072,
@@ -3626,6 +3821,7 @@
     },
     "In Body and Mind": {
         "id": 200511,
+        "gene_id": 200511,
         "name_en": "In Body and Mind",
         "desc_en": "Increase velocity in the last spurt.",
         "icon_id": 20012,
@@ -3645,6 +3841,7 @@
     },
     "In High Spirits": {
         "id": 202041,
+        "gene_id": 202041,
         "name_en": "In High Spirits",
         "desc_en": "Increase velocity when positioned toward the front upon approaching late-race. (Sprint)",
         "icon_id": 20012,
@@ -3664,6 +3861,7 @@
     },
     "Indomitable": {
         "id": 200471,
+        "gene_id": 200471,
         "name_en": "Indomitable",
         "desc_en": "Recover endurance when passed by another runner mid-race.",
         "icon_id": 20022,
@@ -3683,6 +3881,7 @@
     },
     "Innate Experience": {
         "id": 200751,
+        "gene_id": 200751,
         "name_en": "Innate Experience",
         "desc_en": "Increase velocity when near the inner rail on the final corner. (Long)",
         "icon_id": 20012,
@@ -3702,6 +3901,7 @@
     },
     "Inner Post Averseness": {
         "id": 200253,
+        "gene_id": 200253,
         "name_en": "Inner Post Averseness",
         "desc_en": "Moderately decrease performance in brackets 1–3.",
         "icon_id": 10054,
@@ -3722,6 +3922,7 @@
     },
     "Inner Post Proficiency ○": {
         "id": 200252,
+        "gene_id": 200252,
         "name_en": "Inner Post Proficiency ○",
         "desc_en": "Moderately increase performance in brackets 1–3.",
         "icon_id": 10051,
@@ -3742,6 +3943,7 @@
     },
     "Inner Post Proficiency ◎": {
         "id": 200251,
+        "gene_id": 200251,
         "name_en": "Inner Post Proficiency ◎",
         "desc_en": "Increase performance in brackets 1–3.",
         "icon_id": 10051,
@@ -3762,6 +3964,7 @@
     },
     "Inside Scoop": {
         "id": 200752,
+        "gene_id": 200752,
         "name_en": "Inside Scoop",
         "desc_en": "Slightly increase velocity when near the inner rail on the final corner. (Long)",
         "icon_id": 20011,
@@ -3781,6 +3984,7 @@
     },
     "Intense Gaze": {
         "id": 201512,
+        "gene_id": 201512,
         "name_en": "Intense Gaze",
         "desc_en": "Slightly unnerve runners in focus late-race. (End Closer)",
         "icon_id": 30011,
@@ -3800,6 +4004,7 @@
     },
     "Intimidate": {
         "id": 201012,
+        "gene_id": 201012,
         "name_en": "Intimidate",
         "desc_en": "Moderately intimidate runners behind when positioned toward the front early-race. (Sprint)",
         "icon_id": 30011,
@@ -3818,7 +4023,8 @@
         "downgrade": null
     },
     "Introduction to Physiology": {
-        "id": 900321,
+        "id": 10321,
+        "gene_id": 900321,
         "name_en": "Introduction to Physiology",
         "desc_en": "Slightly recover endurance and very slightly increase velocity for a moderate duration when sitting off the pace on a corner in the second half of the race.",
         "icon_id": 20021,
@@ -3836,6 +4042,7 @@
     },
     "Iron Will": {
         "id": 200441,
+        "gene_id": 200441,
         "name_en": "Iron Will",
         "desc_en": "Recover endurance when the way ahead is jammed early-race or mid-race.",
         "icon_id": 20022,
@@ -3855,6 +4062,7 @@
     },
     "It's On!": {
         "id": 200461,
+        "gene_id": 200461,
         "name_en": "It's On!",
         "desc_en": "Increase velocity when passing another runner mid-race.",
         "icon_id": 20012,
@@ -3873,7 +4081,8 @@
         "downgrade": 200462
     },
     "Joyful Voyage!": {
-        "id": 910101,
+        "id": 110101,
+        "gene_id": 910101,
         "name_en": "Joyful Voyage!",
         "desc_en": "If positioned toward the front with 200m remaining, slightly increase velocity. Then, if also positioned near the leading Umamusume, move minimally forward.",
         "icon_id": 20011,
@@ -3890,7 +4099,8 @@
         "downgrade": null
     },
     "Just a Little Farther!": {
-        "id": 900601,
+        "id": 100601,
+        "gene_id": 900601,
         "name_en": "Just a Little Farther!",
         "desc_en": "Slightly increase velocity when positioned 3rd and about to lose late-race.",
         "icon_id": 20011,
@@ -3907,7 +4117,8 @@
         "downgrade": null
     },
     "KEEP IT REAL.": {
-        "id": 900401,
+        "id": 100401,
+        "gene_id": 900401,
         "name_en": "KEEP IT REAL.",
         "desc_en": "Very slightly increase acceleration steadily when starting to make a move from midpack in the second half of the race.",
         "icon_id": 20011,
@@ -3925,6 +4136,7 @@
     },
     "Keen Eye": {
         "id": 200691,
+        "gene_id": 200691,
         "name_en": "Keen Eye",
         "desc_en": "Decrease fatigue, then moderately decrease velocity of runners ahead when positioned toward the back upon approaching mid-race. (Mile)",
         "icon_id": 20022,
@@ -3944,6 +4156,7 @@
     },
     "Keep Going!": {
         "id": 202151,
+        "gene_id": 202151,
         "name_en": "Keep Going!",
         "desc_en": "Greatly consume endurance mid-race and greatly increase velocity. (Late Surger)",
         "icon_id": 20012,
@@ -3962,7 +4175,8 @@
         "downgrade": 202152
     },
     "Keep Pushing Ahead": {
-        "id": 900641,
+        "id": 100641,
+        "gene_id": 900641,
         "name_en": "Keep Pushing Ahead",
         "desc_en": "If positioned toward the front from the start of the race until the second half of the race, slightly recover endurance and very slightly increase velocity steadily.",
         "icon_id": 20021,
@@ -3980,6 +4194,7 @@
     },
     "Keeping the Lead": {
         "id": 201192,
+        "gene_id": 201192,
         "name_en": "Keeping the Lead",
         "desc_en": "Slightly increase ability to maintain the lead when leading by a fair margin mid-race. (Long)",
         "icon_id": 20011,
@@ -3999,6 +4214,7 @@
     },
     "Killer Tunes": {
         "id": 200721,
+        "gene_id": 200721,
         "name_en": "Killer Tunes",
         "desc_en": "Increase positioning ability when positioned toward the front mid-race. (Medium)",
         "icon_id": 20012,
@@ -4018,6 +4234,7 @@
     },
     "Kokura Racecourse ×": {
         "id": 200123,
+        "gene_id": 200123,
         "name_en": "Kokura Racecourse ×",
         "desc_en": "Moderately decrease performance at Kokura Racecourse.",
         "icon_id": 10024,
@@ -4038,6 +4255,7 @@
     },
     "Kokura Racecourse ○": {
         "id": 200122,
+        "gene_id": 200122,
         "name_en": "Kokura Racecourse ○",
         "desc_en": "Moderately increase performance at Kokura Racecourse.",
         "icon_id": 10021,
@@ -4058,6 +4276,7 @@
     },
     "Kokura Racecourse ◎": {
         "id": 200121,
+        "gene_id": 200121,
         "name_en": "Kokura Racecourse ◎",
         "desc_en": "Increase performance at Kokura Racecourse.",
         "icon_id": 10021,
@@ -4078,6 +4297,7 @@
     },
     "Kyoto Racecourse ×": {
         "id": 200063,
+        "gene_id": 200063,
         "name_en": "Kyoto Racecourse ×",
         "desc_en": "Moderately decrease performance at Kyoto Racecourse.",
         "icon_id": 10024,
@@ -4099,6 +4319,7 @@
     },
     "Kyoto Racecourse ○": {
         "id": 200062,
+        "gene_id": 200062,
         "name_en": "Kyoto Racecourse ○",
         "desc_en": "Moderately increase performance at Kyoto Racecourse.",
         "icon_id": 10021,
@@ -4120,6 +4341,7 @@
     },
     "Kyoto Racecourse ◎": {
         "id": 200061,
+        "gene_id": 200061,
         "name_en": "Kyoto Racecourse ◎",
         "desc_en": "Increase performance at Kyoto Racecourse.",
         "icon_id": 10021,
@@ -4141,6 +4363,7 @@
     },
     "Lane Legerdemain": {
         "id": 200501,
+        "gene_id": 200501,
         "name_en": "Lane Legerdemain",
         "desc_en": "Increase navigation late-race.",
         "icon_id": 20052,
@@ -4160,6 +4383,7 @@
     },
     "Late Surger Corners ○": {
         "id": 201392,
+        "gene_id": 201392,
         "name_en": "Late Surger Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Late Surger)",
         "icon_id": 20011,
@@ -4180,6 +4404,7 @@
     },
     "Late Surger Corners ◎": {
         "id": 201391,
+        "gene_id": 201391,
         "name_en": "Late Surger Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Late Surger)",
         "icon_id": 20011,
@@ -4200,6 +4425,7 @@
     },
     "Late Surger Savvy ○": {
         "id": 201542,
+        "gene_id": 201542,
         "name_en": "Late Surger Savvy ○",
         "desc_en": "Moderately increase ability to get into a good position. (Late Surger)",
         "icon_id": 10051,
@@ -4219,6 +4445,7 @@
     },
     "Late Surger Savvy ◎": {
         "id": 201541,
+        "gene_id": 201541,
         "name_en": "Late Surger Savvy ◎",
         "desc_en": "Increase ability to get into a good position. (Late Surger)",
         "icon_id": 10051,
@@ -4238,6 +4465,7 @@
     },
     "Late Surger Straightaways ○": {
         "id": 201382,
+        "gene_id": 201382,
         "name_en": "Late Surger Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Late Surger)",
         "icon_id": 20011,
@@ -4258,6 +4486,7 @@
     },
     "Late Surger Straightaways ◎": {
         "id": 201381,
+        "gene_id": 201381,
         "name_en": "Late Surger Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Late Surger)",
         "icon_id": 20011,
@@ -4278,6 +4507,7 @@
     },
     "Lay Low": {
         "id": 200442,
+        "gene_id": 200442,
         "name_en": "Lay Low",
         "desc_en": "Slightly recover endurance when the way ahead is jammed early-race or mid-race.",
         "icon_id": 20021,
@@ -4297,6 +4527,7 @@
     },
     "Lead the Charge!": {
         "id": 201681,
+        "gene_id": 201681,
         "name_en": "Lead the Charge!",
         "desc_en": "Prepare to aim for the front late-race. (Dirt)",
         "icon_id": 20052,
@@ -4316,6 +4547,7 @@
     },
     "Leader's Pride": {
         "id": 201272,
+        "gene_id": 201272,
         "name_en": "Leader's Pride",
         "desc_en": "Slightly increase ability to pass or challenge another runner early-race or mid-race. (Front Runner)",
         "icon_id": 20011,
@@ -4335,6 +4567,7 @@
     },
     "Left-Handed ×": {
         "id": 200023,
+        "gene_id": 200023,
         "name_en": "Left-Handed ×",
         "desc_en": "Moderately decrease performance on left-handed tracks.",
         "icon_id": 10014,
@@ -4356,6 +4589,7 @@
     },
     "Left-Handed ○": {
         "id": 200022,
+        "gene_id": 200022,
         "name_en": "Left-Handed ○",
         "desc_en": "Moderately increase performance on left-handed tracks.",
         "icon_id": 10011,
@@ -4377,6 +4611,7 @@
     },
     "Left-Handed ◎": {
         "id": 200021,
+        "gene_id": 200021,
         "name_en": "Left-Handed ◎",
         "desc_en": "Increase performance on left-handed tracks.",
         "icon_id": 10011,
@@ -4397,7 +4632,8 @@
         "downgrade": 200022
     },
     "Legacy of the Strong": {
-        "id": 910131,
+        "id": 110131,
+        "gene_id": 910131,
         "name_en": "Legacy of the Strong",
         "desc_en": "Slightly increase velocity continuously when pressured by another runner and running out of energy toward the front on the final corner or later.",
         "icon_id": 20011,
@@ -4414,7 +4650,8 @@
         "downgrade": null
     },
     "Let's Pump Some Iron!": {
-        "id": 900271,
+        "id": 100271,
+        "gene_id": 900271,
         "name_en": "Let's Pump Some Iron!",
         "desc_en": "Slightly increase acceleration in an attempt to move up on a corner late-race.",
         "icon_id": 20041,
@@ -4432,6 +4669,7 @@
     },
     "Levelheaded": {
         "id": 201492,
+        "gene_id": 201492,
         "name_en": "Levelheaded",
         "desc_en": "Slightly regain composure by calming down when the way ahead is jammed. (End Closer)",
         "icon_id": 20021,
@@ -4451,6 +4689,7 @@
     },
     "Lie in Wait": {
         "id": 201691,
+        "gene_id": 201691,
         "name_en": "Lie in Wait",
         "desc_en": "Recover endurance when positioned toward the back upon approaching mid-race. (Late Surger)",
         "icon_id": 20022,
@@ -4470,6 +4709,7 @@
     },
     "Light as a Feather": {
         "id": 202042,
+        "gene_id": 202042,
         "name_en": "Light as a Feather",
         "desc_en": "Slightly increase velocity when positioned toward the front upon approaching late-race. (Sprint)",
         "icon_id": 20011,
@@ -4489,6 +4729,7 @@
     },
     "Lightning Step": {
         "id": 201131,
+        "gene_id": 201131,
         "name_en": "Lightning Step",
         "desc_en": "Avoid becoming surrounded for a medium duration when positioned toward the back mid-race. (Medium)",
         "icon_id": 20052,
@@ -4507,7 +4748,8 @@
         "downgrade": 201132
     },
     "Lights of Vaudeville": {
-        "id": 900051,
+        "id": 100051,
+        "gene_id": 900051,
         "name_en": "Lights of Vaudeville",
         "desc_en": "Moderately increase velocity when just breaking out of the pack toward the front on the final straight.",
         "icon_id": 20011,
@@ -4525,6 +4767,7 @@
     },
     "Lone Wolf": {
         "id": 201641,
+        "gene_id": 201641,
         "name_en": "Lone Wolf",
         "desc_en": "Moderately increase performance when no other runners have the heart of a lone wolf.",
         "icon_id": 10011,
@@ -4542,6 +4785,7 @@
     },
     "Long Corners ○": {
         "id": 201182,
+        "gene_id": 201182,
         "name_en": "Long Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Long)",
         "icon_id": 20011,
@@ -4562,6 +4806,7 @@
     },
     "Long Corners ◎": {
         "id": 201181,
+        "gene_id": 201181,
         "name_en": "Long Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Long)",
         "icon_id": 20011,
@@ -4582,6 +4827,7 @@
     },
     "Long Shot ○": {
         "id": 200302,
+        "gene_id": 200302,
         "name_en": "Long Shot ○",
         "desc_en": "Moderately increase performance when 4th favorite or below.",
         "icon_id": 10011,
@@ -4601,6 +4847,7 @@
     },
     "Long Shot ◎": {
         "id": 200301,
+        "gene_id": 200301,
         "name_en": "Long Shot ◎",
         "desc_en": "Increase performance when 4th favorite or below.",
         "icon_id": 10011,
@@ -4620,6 +4867,7 @@
     },
     "Long Straightaways ○": {
         "id": 201172,
+        "gene_id": 201172,
         "name_en": "Long Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Long)",
         "icon_id": 20011,
@@ -4640,6 +4888,7 @@
     },
     "Long Straightaways ◎": {
         "id": 201171,
+        "gene_id": 201171,
         "name_en": "Long Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Long)",
         "icon_id": 20011,
@@ -4659,7 +4908,8 @@
         "downgrade": 201172
     },
     "Louder! Tracen Cheer!": {
-        "id": 910611,
+        "id": 110611,
+        "gene_id": 910611,
         "name_en": "Louder! Tracen Cheer!",
         "desc_en": "If the skill user stayed toward the very back during the first half of the race without being rushed, slightly increase acceleration on the final straight.",
         "icon_id": 20041,
@@ -4676,7 +4926,8 @@
         "downgrade": null
     },
     "Lovely Spring Breeze": {
-        "id": 900741,
+        "id": 100741,
+        "gene_id": 900741,
         "name_en": "Lovely Spring Breeze",
         "desc_en": "From the midpack in the second half of the race, minimally increase velocity steadily for a duration based on remaining endurance.",
         "icon_id": 20011,
@@ -4693,7 +4944,8 @@
         "downgrade": null
     },
     "Luck Be with Me!": {
-        "id": 900561,
+        "id": 10561,
+        "gene_id": 900561,
         "name_en": "Luck Be with Me!",
         "desc_en": "Slightly clear a path forward depending on divination results when the way ahead is jammed late-race.",
         "icon_id": 20011,
@@ -4711,6 +4963,7 @@
     },
     "Lucky Seven": {
         "id": 201562,
+        "gene_id": 201562,
         "name_en": "Lucky Seven",
         "desc_en": "Moderately good things may happen when in bracket 7.",
         "icon_id": 10061,
@@ -4730,6 +4983,7 @@
     },
     "Master of the Sands": {
         "id": 202001,
+        "gene_id": 202001,
         "name_en": "Master of the Sands",
         "desc_en": "Recover endurance and increase velocity when positioned toward the back mid-race. (Dirt)",
         "icon_id": 20022,
@@ -4749,6 +5003,7 @@
     },
     "Masterful Gambit": {
         "id": 200632,
+        "gene_id": 200632,
         "name_en": "Masterful Gambit",
         "desc_en": "Slightly move up in preparation to close the gap when positioned toward the back late-race. (End Closer)",
         "icon_id": 20011,
@@ -4768,6 +5023,7 @@
     },
     "Maverick ○": {
         "id": 200272,
+        "gene_id": 200272,
         "name_en": "Maverick ○",
         "desc_en": "Increase performance when no other runners are using the same strategy.",
         "icon_id": 10011,
@@ -4787,6 +5043,7 @@
     },
     "Maverick ◎": {
         "id": 200271,
+        "gene_id": 200271,
         "name_en": "Maverick ◎",
         "desc_en": "Greatly increase performance when no other runners are using the same strategy.",
         "icon_id": 10011,
@@ -4806,6 +5063,7 @@
     },
     "Medium Corners ○": {
         "id": 201112,
+        "gene_id": 201112,
         "name_en": "Medium Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Medium)",
         "icon_id": 20011,
@@ -4826,6 +5084,7 @@
     },
     "Medium Corners ◎": {
         "id": 201111,
+        "gene_id": 201111,
         "name_en": "Medium Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Medium)",
         "icon_id": 20011,
@@ -4846,6 +5105,7 @@
     },
     "Medium Straightaways ○": {
         "id": 201102,
+        "gene_id": 201102,
         "name_en": "Medium Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Medium)",
         "icon_id": 20011,
@@ -4866,6 +5126,7 @@
     },
     "Medium Straightaways ◎": {
         "id": 201101,
+        "gene_id": 201101,
         "name_en": "Medium Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Medium)",
         "icon_id": 20011,
@@ -4886,6 +5147,7 @@
     },
     "Meticulous Measures": {
         "id": 201002,
+        "gene_id": 201002,
         "name_en": "Meticulous Measures",
         "desc_en": "Moderately prepare to make for the finish line for a medium duration mid-race. (Sprint)",
         "icon_id": 20051,
@@ -4905,6 +5167,7 @@
     },
     "Mile Corners ○": {
         "id": 201042,
+        "gene_id": 201042,
         "name_en": "Mile Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Mile)",
         "icon_id": 20011,
@@ -4925,6 +5188,7 @@
     },
     "Mile Corners ◎": {
         "id": 201041,
+        "gene_id": 201041,
         "name_en": "Mile Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Mile)",
         "icon_id": 20011,
@@ -4945,6 +5209,7 @@
     },
     "Mile Maven": {
         "id": 200681,
+        "gene_id": 200681,
         "name_en": "Mile Maven",
         "desc_en": "Widen the margin when positioned toward the front early-race. (Mile)",
         "icon_id": 20012,
@@ -4964,6 +5229,7 @@
     },
     "Mile Straightaways ○": {
         "id": 201032,
+        "gene_id": 201032,
         "name_en": "Mile Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Mile)",
         "icon_id": 20011,
@@ -4984,6 +5250,7 @@
     },
     "Mile Straightaways ◎": {
         "id": 201031,
+        "gene_id": 201031,
         "name_en": "Mile Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Mile)",
         "icon_id": 20011,
@@ -5004,6 +5271,7 @@
     },
     "Miraculous Step": {
         "id": 201141,
+        "gene_id": 201141,
         "name_en": "Miraculous Step",
         "desc_en": "Decrease fatigue when moving sideways. (Medium)",
         "icon_id": 20022,
@@ -5023,6 +5291,7 @@
     },
     "Moonlit Flash": {
         "id": 201453,
+        "gene_id": 201453,
         "name_en": "Moonlit Flash",
         "desc_en": "Increase velocity on straights. (End Closer)",
         "icon_id": 20012,
@@ -5042,7 +5311,8 @@
         "downgrade": null
     },
     "Moving Past, and Beyond": {
-        "id": 900591,
+        "id": 100591,
+        "gene_id": 900591,
         "name_en": "Moving Past, and Beyond",
         "desc_en": "Having run the race calmly, slightly increase acceleration when making a move mid-race, or on a crucial corner late-race whilst in midpack.",
         "icon_id": 20041,
@@ -5060,6 +5330,7 @@
     },
     "Moxie": {
         "id": 201282,
+        "gene_id": 201282,
         "name_en": "Moxie",
         "desc_en": "Slightly reduce fatigue on an uphill. (Front Runner)",
         "icon_id": 20021,
@@ -5079,6 +5350,7 @@
     },
     "Murmur": {
         "id": 201162,
+        "gene_id": 201162,
         "name_en": "Murmur",
         "desc_en": "Slightly disturb runners directly ahead mid-race. (Medium)",
         "icon_id": 30051,
@@ -5098,6 +5370,7 @@
     },
     "Mystifying Murmur": {
         "id": 201161,
+        "gene_id": 201161,
         "name_en": "Mystifying Murmur",
         "desc_en": "Disturb runners directly ahead mid-race. (Medium)",
         "icon_id": 30052,
@@ -5117,6 +5390,7 @@
     },
     "Nakayama Racecourse ×": {
         "id": 200043,
+        "gene_id": 200043,
         "name_en": "Nakayama Racecourse ×",
         "desc_en": "Moderately decrease performance at Nakayama Racecourse.",
         "icon_id": 10024,
@@ -5137,6 +5411,7 @@
     },
     "Nakayama Racecourse ○": {
         "id": 200042,
+        "gene_id": 200042,
         "name_en": "Nakayama Racecourse ○",
         "desc_en": "Moderately increase performance at Nakayama Racecourse.",
         "icon_id": 10021,
@@ -5157,6 +5432,7 @@
     },
     "Nakayama Racecourse ◎": {
         "id": 200041,
+        "gene_id": 200041,
         "name_en": "Nakayama Racecourse ◎",
         "desc_en": "Increase performance at Nakayama Racecourse.",
         "icon_id": 10021,
@@ -5177,6 +5453,7 @@
     },
     "Neck and Neck": {
         "id": 201901,
+        "gene_id": 201901,
         "name_en": "Neck and Neck",
         "desc_en": "Increase acceleration when positioned toward the front late-race. (Pace Chaser)",
         "icon_id": 20042,
@@ -5195,7 +5472,8 @@
         "downgrade": 201902
     },
     "Nemesis": {
-        "id": 900501,
+        "id": 100501,
+        "gene_id": 900501,
         "name_en": "Nemesis",
         "desc_en": "Slightly increase velocity when moving up from midpack on the final corner or later.",
         "icon_id": 20011,
@@ -5213,6 +5491,7 @@
     },
     "Niigata Racecourse ×": {
         "id": 200113,
+        "gene_id": 200113,
         "name_en": "Niigata Racecourse ×",
         "desc_en": "Moderately decrease performance at Niigata Racecourse.",
         "icon_id": 10024,
@@ -5233,6 +5512,7 @@
     },
     "Niigata Racecourse ○": {
         "id": 200112,
+        "gene_id": 200112,
         "name_en": "Niigata Racecourse ○",
         "desc_en": "Moderately increase performance at Niigata Racecourse.",
         "icon_id": 10021,
@@ -5253,6 +5533,7 @@
     },
     "Niigata Racecourse ◎": {
         "id": 200111,
+        "gene_id": 200111,
         "name_en": "Niigata Racecourse ◎",
         "desc_en": "Increase performance at Niigata Racecourse.",
         "icon_id": 10021,
@@ -5273,6 +5554,7 @@
     },
     "Nimble Navigator": {
         "id": 200492,
+        "gene_id": 200492,
         "name_en": "Nimble Navigator",
         "desc_en": "Slightly increase maneuverability when the way ahead is blocked in the last spurt.",
         "icon_id": 20041,
@@ -5292,6 +5574,7 @@
     },
     "No Stopping Me!": {
         "id": 200491,
+        "gene_id": 200491,
         "name_en": "No Stopping Me!",
         "desc_en": "Increase maneuverability when the way ahead is blocked in the last spurt.",
         "icon_id": 20042,
@@ -5311,6 +5594,7 @@
     },
     "Non-Standard Distance ×": {
         "id": 200143,
+        "gene_id": 200143,
         "name_en": "Non-Standard Distance ×",
         "desc_en": "Moderately decrease performance over non-standard distances (non-multiples of 400m).",
         "icon_id": 10024,
@@ -5331,6 +5615,7 @@
     },
     "Non-Standard Distance ○": {
         "id": 200142,
+        "gene_id": 200142,
         "name_en": "Non-Standard Distance ○",
         "desc_en": "Moderately increase performance over non-standard distances (non-multiples of 400m).",
         "icon_id": 10021,
@@ -5351,6 +5636,7 @@
     },
     "Non-Standard Distance ◎": {
         "id": 200141,
+        "gene_id": 200141,
         "name_en": "Non-Standard Distance ◎",
         "desc_en": "Increase performance over non-standard distances (non-multiples of 400m).",
         "icon_id": 10021,
@@ -5371,6 +5657,7 @@
     },
     "Nothing Ventured": {
         "id": 202031,
+        "gene_id": 202031,
         "name_en": "Nothing Ventured",
         "desc_en": "Greatly increase velocity in the second half of the race, but also greatly increase fatigue sometimes.",
         "icon_id": 20012,
@@ -5389,7 +5676,8 @@
         "downgrade": 202032
     },
     "Now We're Cruisin'!": {
-        "id": 900341,
+        "id": 100341,
+        "gene_id": 900341,
         "name_en": "Now We're Cruisin'!",
         "desc_en": "When competing for the lead if positioned in the midpack or further for the first half of the race, moderately increase velocity.",
         "icon_id": 20011,
@@ -5406,7 +5694,8 @@
         "downgrade": null
     },
     "OMG! (ﾟ∀ﾟ) The Final Sprint! ☆": {
-        "id": 900191,
+        "id": 100191,
+        "gene_id": 900191,
         "name_en": "OMG! (ﾟ∀ﾟ) The Final Sprint! ☆",
         "desc_en": "Slightly increase velocity and navigation after passing another runner 2 times late-race.",
         "icon_id": 20011,
@@ -5424,6 +5713,7 @@
     },
     "Of Calm Mind": {
         "id": 202071,
+        "gene_id": 202071,
         "name_en": "Of Calm Mind",
         "desc_en": "If positioned in the midpack around when the mid-race starts, slightly decrease velocity and greatly recover endurance. (Long)",
         "icon_id": 20022,
@@ -5443,6 +5733,7 @@
     },
     "Oi Racecourse ×": {
         "id": 200953,
+        "gene_id": 200953,
         "name_en": "Oi Racecourse ×",
         "desc_en": "Moderately decrease performance at Oi Racecourse.",
         "icon_id": 10024,
@@ -5463,6 +5754,7 @@
     },
     "Oi Racecourse ○": {
         "id": 200952,
+        "gene_id": 200952,
         "name_en": "Oi Racecourse ○",
         "desc_en": "Moderately increase performance at Oi Racecourse.",
         "icon_id": 10021,
@@ -5483,6 +5775,7 @@
     },
     "Oi Racecourse ◎": {
         "id": 200951,
+        "gene_id": 200951,
         "name_en": "Oi Racecourse ◎",
         "desc_en": "Increase performance at Oi Racecourse.",
         "icon_id": 10021,
@@ -5503,6 +5796,7 @@
     },
     "On Your Left!": {
         "id": 200601,
+        "gene_id": 200601,
         "name_en": "On Your Left!",
         "desc_en": "Increase acceleration late-race. (Late Surger)",
         "icon_id": 20042,
@@ -5521,7 +5815,8 @@
         "downgrade": 200602
     },
     "One True Color": {
-        "id": 910381,
+        "id": 110381,
+        "gene_id": 910381,
         "name_en": "One True Color",
         "desc_en": "If positioned toward the front with 350m remaining and there is another Umamusume close behind, break out of the pack slightly more easily.",
         "icon_id": 20011,
@@ -5539,6 +5834,7 @@
     },
     "Opening Gambit": {
         "id": 201092,
+        "gene_id": 201092,
         "name_en": "Opening Gambit",
         "desc_en": "Slightly dull movement for runners ahead when positioned toward the back early-race. (Mile)",
         "icon_id": 30021,
@@ -5557,7 +5853,8 @@
         "downgrade": null
     },
     "Operation Cacao": {
-        "id": 910261,
+        "id": 110261,
+        "gene_id": 910261,
         "name_en": "Operation Cacao",
         "desc_en": "Take a minimal breather and slightly increase velocity when in the front part of the pack and there's another runner coming from behind on a corner mid-race.",
         "icon_id": 20011,
@@ -5574,7 +5871,8 @@
         "downgrade": null
     },
     "Our Ticket to Win!": {
-        "id": 900351,
+        "id": 100351,
+        "gene_id": 900351,
         "name_en": "Our Ticket to Win!",
         "desc_en": "Slightly increase velocity when positioned toward the front on the final straight after engaging in a challenge on the final corner or later.",
         "icon_id": 20011,
@@ -5592,6 +5890,7 @@
     },
     "Outer Post Averseness": {
         "id": 200263,
+        "gene_id": 200263,
         "name_en": "Outer Post Averseness",
         "desc_en": "Moderately decrease performance in brackets 6–8.",
         "icon_id": 10014,
@@ -5612,6 +5911,7 @@
     },
     "Outer Post Proficiency ○": {
         "id": 200262,
+        "gene_id": 200262,
         "name_en": "Outer Post Proficiency ○",
         "desc_en": "Moderately increase performance in brackets 6–8.",
         "icon_id": 10011,
@@ -5632,6 +5932,7 @@
     },
     "Outer Post Proficiency ◎": {
         "id": 200261,
+        "gene_id": 200261,
         "name_en": "Outer Post Proficiency ◎",
         "desc_en": "Increase performance in brackets 6–8.",
         "icon_id": 10011,
@@ -5652,6 +5953,7 @@
     },
     "Outer Swell": {
         "id": 200612,
+        "gene_id": 200612,
         "name_en": "Outer Swell",
         "desc_en": "Slightly increase velocity when passing another runner on the outside on the final corner. (Late Surger)",
         "icon_id": 20011,
@@ -5671,6 +5973,7 @@
     },
     "Overwhelming Pressure": {
         "id": 201211,
+        "gene_id": 201211,
         "name_en": "Overwhelming Pressure",
         "desc_en": "Increase velocity when passing another runner late-race. (Long)",
         "icon_id": 20012,
@@ -5690,6 +5993,7 @@
     },
     "Pace Chaser Corners ○": {
         "id": 201322,
+        "gene_id": 201322,
         "name_en": "Pace Chaser Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Pace Chaser)",
         "icon_id": 20011,
@@ -5710,6 +6014,7 @@
     },
     "Pace Chaser Corners ◎": {
         "id": 201321,
+        "gene_id": 201321,
         "name_en": "Pace Chaser Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Pace Chaser)",
         "icon_id": 20011,
@@ -5730,6 +6035,7 @@
     },
     "Pace Chaser Savvy ○": {
         "id": 201532,
+        "gene_id": 201532,
         "name_en": "Pace Chaser Savvy ○",
         "desc_en": "Moderately increase ability to get into a good position. (Pace Chaser)",
         "icon_id": 10051,
@@ -5749,6 +6055,7 @@
     },
     "Pace Chaser Savvy ◎": {
         "id": 201531,
+        "gene_id": 201531,
         "name_en": "Pace Chaser Savvy ◎",
         "desc_en": "Increase ability to get into a good position. (Pace Chaser)",
         "icon_id": 10051,
@@ -5768,6 +6075,7 @@
     },
     "Pace Chaser Straightaways ○": {
         "id": 201312,
+        "gene_id": 201312,
         "name_en": "Pace Chaser Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Pace Chaser)",
         "icon_id": 20011,
@@ -5788,6 +6096,7 @@
     },
     "Pace Chaser Straightaways ◎": {
         "id": 201311,
+        "gene_id": 201311,
         "name_en": "Pace Chaser Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Pace Chaser)",
         "icon_id": 20011,
@@ -5808,6 +6117,7 @@
     },
     "Pace Strategy": {
         "id": 200472,
+        "gene_id": 200472,
         "name_en": "Pace Strategy",
         "desc_en": "Slightly recover endurance when passed by another runner mid-race.",
         "icon_id": 20021,
@@ -5827,6 +6137,7 @@
     },
     "Packphobia": {
         "id": 200401,
+        "gene_id": 200401,
         "name_en": "Packphobia",
         "desc_en": "Moderately lose endurance when surrounded.",
         "icon_id": 20024,
@@ -5844,6 +6155,7 @@
     },
     "Paddock Fright": {
         "id": 200321,
+        "gene_id": 200321,
         "name_en": "Paddock Fright",
         "desc_en": "Moderately decrease performance when the favorite.",
         "icon_id": 10024,
@@ -5861,6 +6173,7 @@
     },
     "Passing Pro": {
         "id": 201202,
+        "gene_id": 201202,
         "name_en": "Passing Pro",
         "desc_en": "Slightly decrease fatigue when determined to pass another runner. (Long)",
         "icon_id": 20021,
@@ -5879,7 +6192,8 @@
         "downgrade": null
     },
     "Peerless Dance of Flowering Flames": {
-        "id": 900721,
+        "id": 100721,
+        "gene_id": 900721,
         "name_en": "Peerless Dance of Flowering Flames",
         "desc_en": "If the skill user passed another runner on the final corner or later, slightly increase velocity when in the front part of the pack with 300m remaining.",
         "icon_id": 20011,
@@ -5897,6 +6211,7 @@
     },
     "Perfect Prep!": {
         "id": 201001,
+        "gene_id": 201001,
         "name_en": "Perfect Prep!",
         "desc_en": "Prepare to make for the finish line for a medium duration mid-race. (Sprint)",
         "icon_id": 20052,
@@ -5916,6 +6231,7 @@
     },
     "Petrifying Gaze": {
         "id": 201511,
+        "gene_id": 201511,
         "name_en": "Petrifying Gaze",
         "desc_en": "Unnerve runners in focus late-race. (End Closer)",
         "icon_id": 30012,
@@ -5935,6 +6251,7 @@
     },
     "Plan X": {
         "id": 200991,
+        "gene_id": 200991,
         "name_en": "Plan X",
         "desc_en": "Increase passing ability when positioned toward the front upon approaching late-race. (Sprint)",
         "icon_id": 20042,
@@ -5954,6 +6271,7 @@
     },
     "Playtime's Over!": {
         "id": 201661,
+        "gene_id": 201661,
         "name_en": "Playtime's Over!",
         "desc_en": "Slightly increase velocity when followed by another runner directly behind for a long time.",
         "icon_id": 20011,
@@ -5972,7 +6290,8 @@
         "downgrade": 201662
     },
     "Pop & Polish": {
-        "id": 900481,
+        "id": 100481,
+        "gene_id": 900481,
         "name_en": "Pop & Polish",
         "desc_en": "Slightly increase velocity when pressured by or passing another runner while well-positioned on the final straight.",
         "icon_id": 20011,
@@ -5990,6 +6309,7 @@
     },
     "Position Pilfer": {
         "id": 200592,
+        "gene_id": 200592,
         "name_en": "Position Pilfer",
         "desc_en": "Slightly increase velocity mid-race. (Late Surger)",
         "icon_id": 20011,
@@ -6009,6 +6329,7 @@
     },
     "Preferred Position": {
         "id": 200572,
+        "gene_id": 200572,
         "name_en": "Preferred Position",
         "desc_en": "Slightly decrease fatigue mid-race. (Pace Chaser)",
         "icon_id": 20021,
@@ -6028,6 +6349,7 @@
     },
     "Prepared to Pass": {
         "id": 200582,
+        "gene_id": 200582,
         "name_en": "Prepared to Pass",
         "desc_en": "Slightly increase ability to break out of the pack on the final corner. (Pace Chaser)",
         "icon_id": 20011,
@@ -6046,7 +6368,8 @@
         "downgrade": null
     },
     "Presents from X": {
-        "id": 910231,
+        "id": 110231,
+        "gene_id": 910231,
         "name_en": "Presents from X",
         "desc_en": "Slightly increase velocity mid-race after staying well-positioned from the start of the race up until the second half.",
         "icon_id": 20011,
@@ -6064,6 +6387,7 @@
     },
     "Pressure": {
         "id": 201212,
+        "gene_id": 201212,
         "name_en": "Pressure",
         "desc_en": "Slightly increase velocity when passing another runner late-race. (Long)",
         "icon_id": 20011,
@@ -6082,7 +6406,8 @@
         "downgrade": null
     },
     "Prideful King": {
-        "id": 900611,
+        "id": 100611,
+        "gene_id": 900611,
         "name_en": "Prideful King",
         "desc_en": "Moderately increase velocity in a true display of skill with 200m remaining after racing calmly.",
         "icon_id": 20011,
@@ -6100,6 +6425,7 @@
     },
     "Productive Plan": {
         "id": 200682,
+        "gene_id": 200682,
         "name_en": "Productive Plan",
         "desc_en": "Slightly widen the margin when positioned toward the front early-race. (Mile)",
         "icon_id": 20011,
@@ -6119,6 +6445,7 @@
     },
     "Professor of Curvature": {
         "id": 200331,
+        "gene_id": 200331,
         "name_en": "Professor of Curvature",
         "desc_en": "Increase velocity on a corner with skilled turning.",
         "icon_id": 20012,
@@ -6139,6 +6466,7 @@
     },
     "Prudent Positioning": {
         "id": 200452,
+        "gene_id": 200452,
         "name_en": "Prudent Positioning",
         "desc_en": "Increase navigation early-race.",
         "icon_id": 20051,
@@ -6158,6 +6486,7 @@
     },
     "Pumped": {
         "id": 202112,
+        "gene_id": 202112,
         "name_en": "Pumped",
         "desc_en": "When positioned toward the back on the final corner, slightly increase velocity. (Mile)",
         "icon_id": 20011,
@@ -6176,7 +6505,8 @@
         "downgrade": null
     },
     "Pure Heart": {
-        "id": 900451,
+        "id": 100451,
+        "gene_id": 900451,
         "name_en": "Pure Heart",
         "desc_en": "Moderately recover endurance when well-positioned mid-race.",
         "icon_id": 20021,
@@ -6194,6 +6524,7 @@
     },
     "Race Planner": {
         "id": 200571,
+        "gene_id": 200571,
         "name_en": "Race Planner",
         "desc_en": "Decrease fatigue mid-race. (Pace Chaser)",
         "icon_id": 20022,
@@ -6213,6 +6544,7 @@
     },
     "Radiant Star": {
         "id": 210061,
+        "gene_id": 210061,
         "name_en": "Radiant Star",
         "desc_en": "Control breathing and kick forward in the second half of the race. Effect is increased in proportion to number of career wins.",
         "icon_id": 20142,
@@ -6232,6 +6564,7 @@
     },
     "Rainy Days ×": {
         "id": 200233,
+        "gene_id": 200233,
         "name_en": "Rainy Days ×",
         "desc_en": "Moderately decrease performance in rainy weather.",
         "icon_id": 10044,
@@ -6252,6 +6585,7 @@
     },
     "Rainy Days ○": {
         "id": 200232,
+        "gene_id": 200232,
         "name_en": "Rainy Days ○",
         "desc_en": "Moderately increase performance in rainy weather.",
         "icon_id": 10041,
@@ -6272,6 +6606,7 @@
     },
     "Rainy Days ◎": {
         "id": 200231,
+        "gene_id": 200231,
         "name_en": "Rainy Days ◎",
         "desc_en": "Increase performance in rainy weather.",
         "icon_id": 10041,
@@ -6292,6 +6627,7 @@
     },
     "Ramp Revulsion": {
         "id": 200391,
+        "gene_id": 200391,
         "name_en": "Ramp Revulsion",
         "desc_en": "Moderately increase fatigue on an uphill.",
         "icon_id": 20024,
@@ -6309,6 +6645,7 @@
     },
     "Ramp Up": {
         "id": 200462,
+        "gene_id": 200462,
         "name_en": "Ramp Up",
         "desc_en": "Slightly increase velocity when passing another runner mid-race.",
         "icon_id": 20011,
@@ -6327,7 +6664,8 @@
         "downgrade": null
     },
     "Ravissant": {
-        "id": 910051,
+        "id": 110051,
+        "gene_id": 910051,
         "name_en": "Ravissant",
         "desc_en": "When passing another racer at the front part of the pack on the final corner or later, moderately increase velocity for a moderate duration.",
         "icon_id": 20011,
@@ -6344,7 +6682,8 @@
         "downgrade": null
     },
     "Ready, Go!": {
-        "id": 900621,
+        "id": 10621,
+        "gene_id": 900621,
         "name_en": "Ready, Go!",
         "desc_en": "Slightly recover endurance and very slightly increase velocity when in midpack around halfway through the race.",
         "icon_id": 20021,
@@ -6362,6 +6701,7 @@
     },
     "Reckless": {
         "id": 200421,
+        "gene_id": 200421,
         "name_en": "Reckless",
         "desc_en": "Moderately increase carelessness when in the lead with around 200m remaining.",
         "icon_id": 20014,
@@ -6378,7 +6718,8 @@
         "downgrade": null
     },
     "Red Ace": {
-        "id": 900091,
+        "id": 10091,
+        "gene_id": 900091,
         "name_en": "Red Ace",
         "desc_en": "Very slightly swell with the determination to be number one when positioned toward the front in the second half of the race.",
         "icon_id": 20011,
@@ -6395,7 +6736,8 @@
         "downgrade": null
     },
     "Red Shift/LP1211-M": {
-        "id": 900041,
+        "id": 100041,
+        "gene_id": 900041,
         "name_en": "Red Shift/LP1211-M",
         "desc_en": "Slightly increase acceleration when positioned toward the front on the final corner or later.",
         "icon_id": 20041,
@@ -6413,6 +6755,7 @@
     },
     "Refraction Arc": {
         "id": 201113,
+        "gene_id": 201113,
         "name_en": "Refraction Arc",
         "desc_en": "Increase velocity on corners. (Medium)",
         "icon_id": 20012,
@@ -6433,6 +6776,7 @@
     },
     "Reignition": {
         "id": 201291,
+        "gene_id": 201291,
         "name_en": "Reignition",
         "desc_en": "Increase acceleration when not in the lead mid-race. (Front Runner)",
         "icon_id": 20042,
@@ -6452,6 +6796,7 @@
     },
     "Relax": {
         "id": 201421,
+        "gene_id": 201421,
         "name_en": "Relax",
         "desc_en": "Recover endurance late-race. (Late Surger)",
         "icon_id": 20022,
@@ -6470,7 +6815,8 @@
         "downgrade": 201422
     },
     "Resplendent Red Ace": {
-        "id": 900091,
+        "id": 100091,
+        "gene_id": 900091,
         "name_en": "Resplendent Red Ace",
         "desc_en": "Very slightly swell with the determination to be number one when positioned toward the front in the second half of the race.",
         "icon_id": 20011,
@@ -6488,6 +6834,7 @@
     },
     "Restart": {
         "id": 201302,
+        "gene_id": 201302,
         "name_en": "Restart",
         "desc_en": "Slightly dull movement for runners ahead when not in the lead early-race. (Front Runner)",
         "icon_id": 30021,
@@ -6505,6 +6852,7 @@
     },
     "Restless": {
         "id": 201281,
+        "gene_id": 201281,
         "name_en": "Restless",
         "desc_en": "Reduce fatigue on an uphill. (Front Runner)",
         "icon_id": 20022,
@@ -6524,6 +6872,7 @@
     },
     "Restraint": {
         "id": 202161,
+        "gene_id": 202161,
         "name_en": "Restraint",
         "desc_en": "Increase Wit and moderately decrease the chance of being Rushed.",
         "icon_id": 10051,
@@ -6541,6 +6890,7 @@
     },
     "Right-Handed Demon": {
         "id": 200014,
+        "gene_id": 200014,
         "name_en": "Right-Handed Demon",
         "desc_en": "Increase proficiency in right-handed tracks, increasing Speed and Power.",
         "icon_id": 10012,
@@ -6562,6 +6912,7 @@
     },
     "Right-Handed ×": {
         "id": 200013,
+        "gene_id": 200013,
         "name_en": "Right-Handed ×",
         "desc_en": "Moderately decrease performance on right-handed tracks.",
         "icon_id": 10014,
@@ -6583,6 +6934,7 @@
     },
     "Right-Handed ○": {
         "id": 200012,
+        "gene_id": 200012,
         "name_en": "Right-Handed ○",
         "desc_en": "Moderately increase performance on right-handed tracks.",
         "icon_id": 10011,
@@ -6604,6 +6956,7 @@
     },
     "Right-Handed ◎": {
         "id": 200011,
+        "gene_id": 200011,
         "name_en": "Right-Handed ◎",
         "desc_en": "Increase performance on right-handed tracks.",
         "icon_id": 10011,
@@ -6625,6 +6978,7 @@
     },
     "Rising Dragon": {
         "id": 200611,
+        "gene_id": 200611,
         "name_en": "Rising Dragon",
         "desc_en": "Increase velocity when passing another runner on the outside on the final corner. (Late Surger)",
         "icon_id": 20012,
@@ -6644,6 +6998,7 @@
     },
     "Risky Business": {
         "id": 202032,
+        "gene_id": 202032,
         "name_en": "Risky Business",
         "desc_en": "Moderately increase velocity in the second half of the race, but also greatly increase fatigue sometimes.",
         "icon_id": 20011,
@@ -6663,6 +7018,7 @@
     },
     "Rosy Outlook": {
         "id": 200712,
+        "gene_id": 200712,
         "name_en": "Rosy Outlook",
         "desc_en": "Slightly decrease fatigue when positioned toward the front mid-race. (Medium)",
         "icon_id": 20021,
@@ -6682,6 +7038,7 @@
     },
     "Runaway": {
         "id": 202051,
+        "gene_id": 202051,
         "name_en": "Runaway",
         "desc_en": "Attempt to gain an especially large lead and keep it until the finish. (Front Runner)",
         "icon_id": 40012,
@@ -6699,6 +7056,7 @@
     },
     "Running Idle": {
         "id": 200521,
+        "gene_id": 200521,
         "name_en": "Running Idle",
         "desc_en": "Moderately increase fatigue when in the lead by too large of a margin.",
         "icon_id": 20024,
@@ -6716,6 +7074,7 @@
     },
     "Rushing Gale!": {
         "id": 200371,
+        "gene_id": 200371,
         "name_en": "Rushing Gale!",
         "desc_en": "Increase acceleration on a straight.",
         "icon_id": 20042,
@@ -6734,7 +7093,8 @@
         "downgrade": 200372
     },
     "SPARKLY☆STARDOM": {
-        "id": 900461,
+        "id": 100461,
+        "gene_id": 900461,
         "name_en": "SPARKLY☆STARDOM",
         "desc_en": "Become very slightly empowered to keep the advantage when positioned toward the front and close to the runner behind on a straight mid-race.",
         "icon_id": 20011,
@@ -6752,6 +7112,7 @@
     },
     "Sapporo Racecourse ×": {
         "id": 200083,
+        "gene_id": 200083,
         "name_en": "Sapporo Racecourse ×",
         "desc_en": "Moderately decrease performance at Sapporo Racecourse.",
         "icon_id": 10024,
@@ -6772,6 +7133,7 @@
     },
     "Sapporo Racecourse ○": {
         "id": 200082,
+        "gene_id": 200082,
         "name_en": "Sapporo Racecourse ○",
         "desc_en": "Moderately increase performance at Sapporo Racecourse.",
         "icon_id": 10021,
@@ -6792,6 +7154,7 @@
     },
     "Sapporo Racecourse ◎": {
         "id": 200081,
+        "gene_id": 200081,
         "name_en": "Sapporo Racecourse ◎",
         "desc_en": "Increase performance at Sapporo Racecourse.",
         "icon_id": 10021,
@@ -6811,7 +7174,8 @@
         "downgrade": 200082
     },
     "Schwarzes Schwert": {
-        "id": 900371,
+        "id": 100371,
+        "gene_id": 900371,
         "name_en": "Schwarzes Schwert",
         "desc_en": "Slightly increase velocity in a dash for the lead after running calmly and according to plan up until the final straight.",
         "icon_id": 20011,
@@ -6829,6 +7193,7 @@
     },
     "Second Wind": {
         "id": 201292,
+        "gene_id": 201292,
         "name_en": "Second Wind",
         "desc_en": "Slightly increase acceleration when not in the lead mid-race. (Front Runner)",
         "icon_id": 20041,
@@ -6848,6 +7213,7 @@
     },
     "See Ya Later!": {
         "id": 201662,
+        "gene_id": 201662,
         "name_en": "See Ya Later!",
         "desc_en": "Increase velocity when followed by another runner directly behind for a long time.",
         "icon_id": 20012,
@@ -6867,6 +7233,7 @@
     },
     "Serenity": {
         "id": 201491,
+        "gene_id": 201491,
         "name_en": "Serenity",
         "desc_en": "Regain composure by calming down when the way ahead is jammed. (End Closer)",
         "icon_id": 20022,
@@ -6885,7 +7252,8 @@
         "downgrade": 201492
     },
     "Shadow Break": {
-        "id": 900161,
+        "id": 100161,
+        "gene_id": 900161,
         "name_en": "Shadow Break",
         "desc_en": "Slightly increase velocity when passing another runner on the outside on the final corner or later. If the skill user engaged in a challenge mid-race, moderately increase velocity instead.",
         "icon_id": 20011,
@@ -6903,6 +7271,7 @@
     },
     "Shake It Out": {
         "id": 201621,
+        "gene_id": 201621,
         "name_en": "Shake It Out",
         "desc_en": "Slightly recover endurance after activating many skills late-race.",
         "icon_id": 20021,
@@ -6920,6 +7289,7 @@
     },
     "Sharp Gaze": {
         "id": 201442,
+        "gene_id": 201442,
         "name_en": "Sharp Gaze",
         "desc_en": "Slightly startle other runners late-race. (Late Surger)",
         "icon_id": 30051,
@@ -6939,6 +7309,7 @@
     },
     "Shatterproof": {
         "id": 201361,
+        "gene_id": 201361,
         "name_en": "Shatterproof",
         "desc_en": "Moderately increase acceleration when positioned toward the back mid-race. (Pace Chaser)",
         "icon_id": 20042,
@@ -6958,6 +7329,7 @@
     },
     "Shifting Gears": {
         "id": 201052,
+        "gene_id": 201052,
         "name_en": "Shifting Gears",
         "desc_en": "Slightly increase passing ability when positioned toward the front mid-race. (Mile)",
         "icon_id": 20011,
@@ -6976,7 +7348,8 @@
         "downgrade": null
     },
     "Shooting Star": {
-        "id": 900011,
+        "id": 100011,
+        "gene_id": 900011,
         "name_en": "Shooting Star",
         "desc_en": "Slightly increase velocity and very minimally increase acceleration after passing another runner toward the front late-race.",
         "icon_id": 20011,
@@ -6993,7 +7366,8 @@
         "downgrade": null
     },
     "Shooting Star of Dioskouroi": {
-        "id": 900331,
+        "id": 100331,
+        "gene_id": 900331,
         "name_en": "Shooting Star of Dioskouroi",
         "desc_en": "Slightly increase velocity when far from the lead on the final straight. If positioned around the very back, moderately increase velocity instead.",
         "icon_id": 20011,
@@ -7010,7 +7384,8 @@
         "downgrade": null
     },
     "Shooting for Victory!": {
-        "id": 900101,
+        "id": 100101,
+        "gene_id": 900101,
         "name_en": "Shooting for Victory!",
         "desc_en": "Slightly increase acceleration when well-positioned upon approaching the final straight.",
         "icon_id": 20041,
@@ -7028,6 +7403,7 @@
     },
     "Shrewd Step": {
         "id": 201332,
+        "gene_id": 201332,
         "name_en": "Shrewd Step",
         "desc_en": "Slightly increase ability to navigate smoothly. (Pace Chaser)",
         "icon_id": 20041,
@@ -7047,6 +7423,7 @@
     },
     "Sixth Sense": {
         "id": 201261,
+        "gene_id": 201261,
         "name_en": "Sixth Sense",
         "desc_en": "Avoid becoming surrounded early-race. (Front Runner)",
         "icon_id": 20052,
@@ -7065,7 +7442,8 @@
         "downgrade": 201262
     },
     "Sky-High Teio Step": {
-        "id": 900031,
+        "id": 100031,
+        "gene_id": 900031,
         "name_en": "Sky-High Teio Step",
         "desc_en": "Moderately increase velocity when closing the gap to runners ahead on the final straight.",
         "icon_id": 20011,
@@ -7083,6 +7461,7 @@
     },
     "Sleeping Lion": {
         "id": 200621,
+        "gene_id": 200621,
         "name_en": "Sleeping Lion",
         "desc_en": "Decrease fatigue mid-race. (End Closer)",
         "icon_id": 20022,
@@ -7102,6 +7481,7 @@
     },
     "Slick Surge": {
         "id": 200602,
+        "gene_id": 200602,
         "name_en": "Slick Surge",
         "desc_en": "Slightly increase acceleration late-race. (Late Surger)",
         "icon_id": 20041,
@@ -7121,6 +7501,7 @@
     },
     "Slipstream": {
         "id": 201651,
+        "gene_id": 201651,
         "name_en": "Slipstream",
         "desc_en": "Slightly decrease wind resistance when following directly behind another runner.",
         "icon_id": 20011,
@@ -7140,6 +7521,7 @@
     },
     "Smoke Screen": {
         "id": 201232,
+        "gene_id": 201232,
         "name_en": "Smoke Screen",
         "desc_en": "Moderately narrow the field of view for runners ahead late-race. (Long)",
         "icon_id": 30071,
@@ -7159,6 +7541,7 @@
     },
     "Snowy Days ○": {
         "id": 200242,
+        "gene_id": 200242,
         "name_en": "Snowy Days ○",
         "desc_en": "Moderately increase performance in snowy weather.",
         "icon_id": 10041,
@@ -7178,6 +7561,7 @@
     },
     "Snowy Days ◎": {
         "id": 200241,
+        "gene_id": 200241,
         "name_en": "Snowy Days ◎",
         "desc_en": "Increase performance in snowy weather.",
         "icon_id": 10041,
@@ -7197,6 +7581,7 @@
     },
     "Soft Step": {
         "id": 201142,
+        "gene_id": 201142,
         "name_en": "Soft Step",
         "desc_en": "Slightly decrease fatigue when moving sideways. (Medium)",
         "icon_id": 20021,
@@ -7216,6 +7601,7 @@
     },
     "Speed Eater": {
         "id": 201082,
+        "gene_id": 201082,
         "name_en": "Speed Eater",
         "desc_en": "Slightly steal velocity from runners behind when positioned toward the front mid-race. (Mile)",
         "icon_id": 30011,
@@ -7235,6 +7621,7 @@
     },
     "Speed Star": {
         "id": 200581,
+        "gene_id": 200581,
         "name_en": "Speed Star",
         "desc_en": "Increase ability to break out of the pack on the final corner. (Pace Chaser)",
         "icon_id": 20012,
@@ -7254,6 +7641,7 @@
     },
     "Spring Runner ×": {
         "id": 200173,
+        "gene_id": 200173,
         "name_en": "Spring Runner ×",
         "desc_en": "Moderately decrease performance in spring.",
         "icon_id": 10014,
@@ -7275,6 +7663,7 @@
     },
     "Spring Runner ○": {
         "id": 200172,
+        "gene_id": 200172,
         "name_en": "Spring Runner ○",
         "desc_en": "Moderately increase performance in spring.",
         "icon_id": 10011,
@@ -7296,6 +7685,7 @@
     },
     "Spring Runner ◎": {
         "id": 200171,
+        "gene_id": 200171,
         "name_en": "Spring Runner ◎",
         "desc_en": "Increase performance in spring.",
         "icon_id": 10011,
@@ -7317,6 +7707,7 @@
     },
     "Spring Spectacle": {
         "id": 200174,
+        "gene_id": 200174,
         "name_en": "Spring Spectacle",
         "desc_en": "Increase performance in spring, boosting Speed and Power.",
         "icon_id": 10012,
@@ -7338,6 +7729,7 @@
     },
     "Sprint Corners ○": {
         "id": 200972,
+        "gene_id": 200972,
         "name_en": "Sprint Corners ○",
         "desc_en": "Slightly increase velocity on a corner. (Sprint)",
         "icon_id": 20011,
@@ -7358,6 +7750,7 @@
     },
     "Sprint Corners ◎": {
         "id": 200971,
+        "gene_id": 200971,
         "name_en": "Sprint Corners ◎",
         "desc_en": "Moderately increase velocity on a corner. (Sprint)",
         "icon_id": 20011,
@@ -7378,6 +7771,7 @@
     },
     "Sprint Straightaways ○": {
         "id": 200962,
+        "gene_id": 200962,
         "name_en": "Sprint Straightaways ○",
         "desc_en": "Slightly increase velocity on a straight. (Sprint)",
         "icon_id": 20011,
@@ -7398,6 +7792,7 @@
     },
     "Sprint Straightaways ◎": {
         "id": 200961,
+        "gene_id": 200961,
         "name_en": "Sprint Straightaways ◎",
         "desc_en": "Moderately increase velocity on a straight. (Sprint)",
         "icon_id": 20011,
@@ -7418,6 +7813,7 @@
     },
     "Sprinting Gear": {
         "id": 200652,
+        "gene_id": 200652,
         "name_en": "Sprinting Gear",
         "desc_en": "Slightly increase acceleration on a straight. (Sprint)",
         "icon_id": 20041,
@@ -7437,6 +7833,7 @@
     },
     "Staggering Lead": {
         "id": 200981,
+        "gene_id": 200981,
         "name_en": "Staggering Lead",
         "desc_en": "Increase ability to maintain the lead when leading by a large margin mid-race. (Sprint)",
         "icon_id": 20012,
@@ -7456,6 +7853,7 @@
     },
     "Stamina Eater": {
         "id": 201222,
+        "gene_id": 201222,
         "name_en": "Stamina Eater",
         "desc_en": "Very slightly steal endurance from runners ahead when positioned toward the back mid-race. (Long)",
         "icon_id": 30051,
@@ -7475,6 +7873,7 @@
     },
     "Stamina Siphon": {
         "id": 201221,
+        "gene_id": 201221,
         "name_en": "Stamina Siphon",
         "desc_en": "Slightly steal endurance from runners ahead when positioned toward the back mid-race. (Long)",
         "icon_id": 30052,
@@ -7494,6 +7893,7 @@
     },
     "Stamina to Spare": {
         "id": 200562,
+        "gene_id": 200562,
         "name_en": "Stamina to Spare",
         "desc_en": "Slightly decrease fatigue upon approaching mid-race. (Pace Chaser)",
         "icon_id": 20021,
@@ -7513,6 +7913,7 @@
     },
     "Standard Distance ×": {
         "id": 200133,
+        "gene_id": 200133,
         "name_en": "Standard Distance ×",
         "desc_en": "Moderately decrease performance over standard distances (multiples of 400m).",
         "icon_id": 10024,
@@ -7533,6 +7934,7 @@
     },
     "Standard Distance ○": {
         "id": 200132,
+        "gene_id": 200132,
         "name_en": "Standard Distance ○",
         "desc_en": "Moderately increase performance over standard distances (multiples of 400m).",
         "icon_id": 10021,
@@ -7553,6 +7955,7 @@
     },
     "Standard Distance ◎": {
         "id": 200131,
+        "gene_id": 200131,
         "name_en": "Standard Distance ◎",
         "desc_en": "Increase performance over standard distances (multiples of 400m).",
         "icon_id": 10021,
@@ -7573,6 +7976,7 @@
     },
     "Standing By": {
         "id": 200622,
+        "gene_id": 200622,
         "name_en": "Standing By",
         "desc_en": "Slightly decrease fatigue mid-race. (End Closer)",
         "icon_id": 20021,
@@ -7592,6 +7996,7 @@
     },
     "Steadfast": {
         "id": 200732,
+        "gene_id": 200732,
         "name_en": "Steadfast",
         "desc_en": "Slightly increase ability to fight back when passed by another runner on the final corner. (Medium)",
         "icon_id": 20011,
@@ -7611,6 +8016,7 @@
     },
     "Step on the Gas!": {
         "id": 201061,
+        "gene_id": 201061,
         "name_en": "Step on the Gas!",
         "desc_en": "Increase acceleration when passing another runner mid-race. (Mile)",
         "icon_id": 20042,
@@ -7630,6 +8036,7 @@
     },
     "Stop Right There!": {
         "id": 201022,
+        "gene_id": 201022,
         "name_en": "Stop Right There!",
         "desc_en": "Slightly cause panic in and very slightly dull movement for runners ahead when positioned toward the back early-race. (Sprint)",
         "icon_id": 30051,
@@ -7649,6 +8056,7 @@
     },
     "Straight Descent": {
         "id": 201342,
+        "gene_id": 201342,
         "name_en": "Straight Descent",
         "desc_en": "Slightly improve running on a downhill. (Pace Chaser)",
         "icon_id": 20041,
@@ -7668,6 +8076,7 @@
     },
     "Straightaway Acceleration": {
         "id": 200372,
+        "gene_id": 200372,
         "name_en": "Straightaway Acceleration",
         "desc_en": "Slightly increase acceleration on a straight.",
         "icon_id": 20041,
@@ -7687,6 +8096,7 @@
     },
     "Straightaway Adept": {
         "id": 200362,
+        "gene_id": 200362,
         "name_en": "Straightaway Adept",
         "desc_en": "Slightly increase velocity on a straight.",
         "icon_id": 20011,
@@ -7706,6 +8116,7 @@
     },
     "Straightaway Recovery": {
         "id": 200382,
+        "gene_id": 200382,
         "name_en": "Straightaway Recovery",
         "desc_en": "Slightly recover endurance on a straight.",
         "icon_id": 20021,
@@ -7725,6 +8136,7 @@
     },
     "Straightaway Spurt": {
         "id": 200642,
+        "gene_id": 200642,
         "name_en": "Straightaway Spurt",
         "desc_en": "Slightly increase acceleration on a straight in the last spurt. (End Closer)",
         "icon_id": 20041,
@@ -7744,6 +8156,7 @@
     },
     "Strategist": {
         "id": 201502,
+        "gene_id": 201502,
         "name_en": "Strategist",
         "desc_en": "Slightly widen field of view when positioned toward the back late-race. (End Closer)",
         "icon_id": 20091,
@@ -7763,6 +8176,7 @@
     },
     "Studious": {
         "id": 201432,
+        "gene_id": 201432,
         "name_en": "Studious",
         "desc_en": "Slightly widen field of view with heightened observation mid-race. (Late Surger)",
         "icon_id": 20091,
@@ -7782,6 +8196,7 @@
     },
     "Sturm und Drang": {
         "id": 200631,
+        "gene_id": 200631,
         "name_en": "Sturm und Drang",
         "desc_en": "Move up in preparation to close the gap when positioned toward the back late-race. (End Closer)",
         "icon_id": 20012,
@@ -7801,6 +8216,7 @@
     },
     "Subdued End Closers": {
         "id": 200921,
+        "gene_id": 200921,
         "name_en": "Subdued End Closers",
         "desc_en": "Slightly increase fatigue for end closers early-race.",
         "icon_id": 30051,
@@ -7818,6 +8234,7 @@
     },
     "Subdued Front Runners": {
         "id": 200831,
+        "gene_id": 200831,
         "name_en": "Subdued Front Runners",
         "desc_en": "Slightly increase fatigue for front runners early-race.",
         "icon_id": 30051,
@@ -7835,6 +8252,7 @@
     },
     "Subdued Late Surgers": {
         "id": 200891,
+        "gene_id": 200891,
         "name_en": "Subdued Late Surgers",
         "desc_en": "Slightly increase fatigue for late surgers early-race.",
         "icon_id": 30051,
@@ -7852,6 +8270,7 @@
     },
     "Subdued Pace Chasers": {
         "id": 200861,
+        "gene_id": 200861,
         "name_en": "Subdued Pace Chasers",
         "desc_en": "Slightly increase fatigue for pace chasers early-race.",
         "icon_id": 30051,
@@ -7869,6 +8288,7 @@
     },
     "Summer Runner ×": {
         "id": 200183,
+        "gene_id": 200183,
         "name_en": "Summer Runner ×",
         "desc_en": "Moderately decrease performance in summer.",
         "icon_id": 10014,
@@ -7890,6 +8310,7 @@
     },
     "Summer Runner ○": {
         "id": 200182,
+        "gene_id": 200182,
         "name_en": "Summer Runner ○",
         "desc_en": "Moderately increase performance in summer.",
         "icon_id": 10011,
@@ -7911,6 +8332,7 @@
     },
     "Summer Runner ◎": {
         "id": 200181,
+        "gene_id": 200181,
         "name_en": "Summer Runner ◎",
         "desc_en": "Increase performance in summer.",
         "icon_id": 10011,
@@ -7932,6 +8354,7 @@
     },
     "Sunny Days ○": {
         "id": 200212,
+        "gene_id": 200212,
         "name_en": "Sunny Days ○",
         "desc_en": "Moderately increase performance in sunny weather.",
         "icon_id": 10041,
@@ -7951,6 +8374,7 @@
     },
     "Sunny Days ◎": {
         "id": 200211,
+        "gene_id": 200211,
         "name_en": "Sunny Days ◎",
         "desc_en": "Increase performance in sunny weather.",
         "icon_id": 10041,
@@ -7970,6 +8394,7 @@
     },
     "Super Lucky Seven": {
         "id": 201561,
+        "gene_id": 201561,
         "name_en": "Super Lucky Seven",
         "desc_en": "Good things may happen when in bracket 7.",
         "icon_id": 10062,
@@ -7988,7 +8413,8 @@
         "downgrade": 201562
     },
     "Super-Duper Climax": {
-        "id": 900521,
+        "id": 100521,
+        "gene_id": 900521,
         "name_en": "Super-Duper Climax",
         "desc_en": "Slightly recover endurance with a glance at nearby runners when positioned toward the back on the final corner.",
         "icon_id": 20021,
@@ -8005,7 +8431,8 @@
         "downgrade": null
     },
     "Super-Duper Stoked": {
-        "id": 900521,
+        "id": 10521,
+        "gene_id": 900521,
         "name_en": "Super-Duper Stoked",
         "desc_en": "Slightly recover endurance with a glance at nearby runners when positioned toward the back on the final corner.",
         "icon_id": 20021,
@@ -8022,7 +8449,8 @@
         "downgrade": null
     },
     "Superior Heal": {
-        "id": 910111,
+        "id": 110111,
+        "gene_id": 910111,
         "name_en": "Superior Heal",
         "desc_en": "Moderately recover endurance when overtaken toward the back mid-race.",
         "icon_id": 20021,
@@ -8040,6 +8468,7 @@
     },
     "Superstan": {
         "id": 201592,
+        "gene_id": 201592,
         "name_en": "Superstan",
         "desc_en": "Increase velocity when close to many runners.",
         "icon_id": 20012,
@@ -8059,6 +8488,7 @@
     },
     "Swinging Maestro": {
         "id": 200351,
+        "gene_id": 200351,
         "name_en": "Swinging Maestro",
         "desc_en": "Recover endurance on a corner with efficient turning.",
         "icon_id": 20022,
@@ -8079,6 +8509,7 @@
     },
     "Sympathy": {
         "id": 201631,
+        "gene_id": 201631,
         "name_en": "Sympathy",
         "desc_en": "Moderately increase performance when many runners share a sympathetic heart.",
         "icon_id": 10011,
@@ -8098,6 +8529,7 @@
     },
     "Tactical Tweak": {
         "id": 201362,
+        "gene_id": 201362,
         "name_en": "Tactical Tweak",
         "desc_en": "Slightly increase acceleration when positioned toward the back mid-race. (Pace Chaser)",
         "icon_id": 20041,
@@ -8117,6 +8549,7 @@
     },
     "Tail Held High": {
         "id": 201611,
+        "gene_id": 201611,
         "name_en": "Tail Held High",
         "desc_en": "Slightly increase velocity after activating many skills mid-race.",
         "icon_id": 20011,
@@ -8136,6 +8569,7 @@
     },
     "Tail Nine": {
         "id": 201612,
+        "gene_id": 201612,
         "name_en": "Tail Nine",
         "desc_en": "Increase velocity after activating many skills mid-race.",
         "icon_id": 20012,
@@ -8155,6 +8589,7 @@
     },
     "Take the Chance": {
         "id": 202082,
+        "gene_id": 202082,
         "name_en": "Take the Chance",
         "desc_en": "If positioned toward the back late-race, slightly increase acceleration. (Medium)",
         "icon_id": 20041,
@@ -8174,6 +8609,7 @@
     },
     "Taking the Lead": {
         "id": 200531,
+        "gene_id": 200531,
         "name_en": "Taking the Lead",
         "desc_en": "Increase ability to go to the front early-race. (Front Runner)",
         "icon_id": 20042,
@@ -8193,6 +8629,7 @@
     },
     "Tantalizing Trick": {
         "id": 200772,
+        "gene_id": 200772,
         "name_en": "Tantalizing Trick",
         "desc_en": "Increase fatigue for rushed runners behind when positioned toward the front mid-race.",
         "icon_id": 30052,
@@ -8212,6 +8649,7 @@
     },
     "Target in Sight ○": {
         "id": 200292,
+        "gene_id": 200292,
         "name_en": "Target in Sight ○",
         "desc_en": "Moderately increase performance when the favorite is using the same strategy.",
         "icon_id": 10041,
@@ -8231,6 +8669,7 @@
     },
     "Target in Sight ◎": {
         "id": 200291,
+        "gene_id": 200291,
         "name_en": "Target in Sight ◎",
         "desc_en": "Increase performance when the favorite is using the same strategy.",
         "icon_id": 10041,
@@ -8250,6 +8689,7 @@
     },
     "Technician": {
         "id": 201331,
+        "gene_id": 201331,
         "name_en": "Technician",
         "desc_en": "Moderately increase ability to navigate smoothly. (Pace Chaser)",
         "icon_id": 20042,
@@ -8269,6 +8709,7 @@
     },
     "Tether": {
         "id": 201152,
+        "gene_id": 201152,
         "name_en": "Tether",
         "desc_en": "Slightly decrease velocity of runners ahead when positioned toward the back late-race. (Medium)",
         "icon_id": 30011,
@@ -8288,6 +8729,7 @@
     },
     "The Bigger Picture": {
         "id": 201431,
+        "gene_id": 201431,
         "name_en": "The Bigger Picture",
         "desc_en": "Widen field of view with heightened observation mid-race. (Late Surger)",
         "icon_id": 20092,
@@ -8307,6 +8749,7 @@
     },
     "The Coast Is Clear!": {
         "id": 201471,
+        "gene_id": 201471,
         "name_en": "The Coast Is Clear!",
         "desc_en": "Moderately widen field of view with situational awareness when moving sideways. (End Closer)",
         "icon_id": 20092,
@@ -8325,7 +8768,8 @@
         "downgrade": 201472
     },
     "The Duty of Dignity Calls": {
-        "id": 900131,
+        "id": 100131,
+        "gene_id": 900131,
         "name_en": "The Duty of Dignity Calls",
         "desc_en": "Slightly increase velocity when positioned toward the front on the final corner.",
         "icon_id": 20011,
@@ -8342,7 +8786,8 @@
         "downgrade": null
     },
     "The View from the Lead Is Mine!": {
-        "id": 900021,
+        "id": 100021,
+        "gene_id": 900021,
         "name_en": "The View from the Lead Is Mine!",
         "desc_en": "Slightly increase velocity when in the lead by a fair margin in the second half of the race.",
         "icon_id": 20011,
@@ -8359,7 +8804,8 @@
         "downgrade": null
     },
     "This Dance Is for Vittoria!": {
-        "id": 900151,
+        "id": 100151,
+        "gene_id": 900151,
         "name_en": "This Dance Is for Vittoria!",
         "desc_en": "Slightly increase velocity when positioned toward the front and close to the runner ahead or behind on the final corner or later.",
         "icon_id": 20011,
@@ -8377,6 +8823,7 @@
     },
     "Thunderbolt Step": {
         "id": 201132,
+        "gene_id": 201132,
         "name_en": "Thunderbolt Step",
         "desc_en": "Moderately avoid becoming surrounded for a medium duration when positioned toward the back mid-race. (Medium)",
         "icon_id": 20051,
@@ -8396,6 +8843,7 @@
     },
     "Tokyo Racecourse ×": {
         "id": 200033,
+        "gene_id": 200033,
         "name_en": "Tokyo Racecourse ×",
         "desc_en": "Moderately decrease performance at Tokyo Racecourse.",
         "icon_id": 10024,
@@ -8417,6 +8865,7 @@
     },
     "Tokyo Racecourse ○": {
         "id": 200032,
+        "gene_id": 200032,
         "name_en": "Tokyo Racecourse ○",
         "desc_en": "Moderately increase performance at Tokyo Racecourse.",
         "icon_id": 10021,
@@ -8438,6 +8887,7 @@
     },
     "Tokyo Racecourse ◎": {
         "id": 200031,
+        "gene_id": 200031,
         "name_en": "Tokyo Racecourse ◎",
         "desc_en": "Increase performance at Tokyo Racecourse.",
         "icon_id": 10021,
@@ -8459,6 +8909,7 @@
     },
     "Top Pick": {
         "id": 201672,
+        "gene_id": 201672,
         "name_en": "Top Pick",
         "desc_en": "Slightly increase velocity when engaged in a challenge mid-race. (Dirt)",
         "icon_id": 20011,
@@ -8478,6 +8929,7 @@
     },
     "Top Runner": {
         "id": 201271,
+        "gene_id": 201271,
         "name_en": "Top Runner",
         "desc_en": "Increase ability to pass or challenge another runner early-race or mid-race. (Front Runner)",
         "icon_id": 20012,
@@ -8497,6 +8949,7 @@
     },
     "Trackblazer": {
         "id": 200711,
+        "gene_id": 200711,
         "name_en": "Trackblazer",
         "desc_en": "Decrease fatigue when positioned toward the front mid-race. (Medium)",
         "icon_id": 20022,
@@ -8516,6 +8969,7 @@
     },
     "Trending in the Charts!": {
         "id": 201671,
+        "gene_id": 201671,
         "name_en": "Trending in the Charts!",
         "desc_en": "Increase velocity when engaged in a challenge mid-race. (Dirt)",
         "icon_id": 20012,
@@ -8535,6 +8989,7 @@
     },
     "Trick (Front)": {
         "id": 200771,
+        "gene_id": 200771,
         "name_en": "Trick (Front)",
         "desc_en": "Slightly increase fatigue for rushed runners behind when positioned toward the front mid-race.",
         "icon_id": 30051,
@@ -8554,6 +9009,7 @@
     },
     "Trick (Rear)": {
         "id": 200781,
+        "gene_id": 200781,
         "name_en": "Trick (Rear)",
         "desc_en": "Slightly increase fatigue for rushed runners ahead when positioned toward the back mid-race.",
         "icon_id": 30051,
@@ -8571,6 +9027,7 @@
     },
     "Triple 7s": {
         "id": 201571,
+        "gene_id": 201571,
         "name_en": "Triple 7s",
         "desc_en": "Slightly gain energy with 777m remaining.",
         "icon_id": 20021,
@@ -8587,7 +9044,8 @@
         "downgrade": null
     },
     "Triumphant Pulse": {
-        "id": 900061,
+        "id": 100061,
+        "gene_id": 900061,
         "name_en": "Triumphant Pulse",
         "desc_en": "Moderately increase ability to break out of the pack when positioned toward the front with 200m remaining.",
         "icon_id": 20011,
@@ -8605,6 +9063,7 @@
     },
     "Turbo Sprint": {
         "id": 200651,
+        "gene_id": 200651,
         "name_en": "Turbo Sprint",
         "desc_en": "Increase acceleration on a straight. (Sprint)",
         "icon_id": 20042,
@@ -8623,7 +9082,8 @@
         "downgrade": 200652
     },
     "U=ma2": {
-        "id": 900321,
+        "id": 100321,
+        "gene_id": 900321,
         "name_en": "U=ma2",
         "desc_en": "Slightly recover endurance and very slightly increase velocity for a moderate duration when sitting off the pace on a corner in the second half of the race.",
         "icon_id": 20021,
@@ -8641,6 +9101,7 @@
     },
     "Uma Stan": {
         "id": 201591,
+        "gene_id": 201591,
         "name_en": "Uma Stan",
         "desc_en": "Slightly increase velocity when close to many runners.",
         "icon_id": 20011,
@@ -8660,6 +9121,7 @@
     },
     "Unrestrained": {
         "id": 200551,
+        "gene_id": 200551,
         "name_en": "Unrestrained",
         "desc_en": "Increase ability to keep the lead on the final corner. (Front Runner)",
         "icon_id": 20042,
@@ -8679,6 +9141,7 @@
     },
     "Unruffled": {
         "id": 200481,
+        "gene_id": 200481,
         "name_en": "Unruffled",
         "desc_en": "Recover endurance when surrounded mid-race.",
         "icon_id": 20022,
@@ -8698,6 +9161,7 @@
     },
     "Unyielding": {
         "id": 200731,
+        "gene_id": 200731,
         "name_en": "Unyielding",
         "desc_en": "Increase ability to fight back when passed by another runner on the final corner. (Medium)",
         "icon_id": 20012,
@@ -8717,6 +9181,7 @@
     },
     "Unyielding Spirit": {
         "id": 201072,
+        "gene_id": 201072,
         "name_en": "Unyielding Spirit",
         "desc_en": "Slightly increase passing ability. (Mile)",
         "icon_id": 20011,
@@ -8736,6 +9201,7 @@
     },
     "Up-Tempo": {
         "id": 200722,
+        "gene_id": 200722,
         "name_en": "Up-Tempo",
         "desc_en": "Slightly increase positioning ability when positioned toward the front mid-race. (Medium)",
         "icon_id": 20011,
@@ -8755,6 +9221,7 @@
     },
     "Updrafters": {
         "id": 200702,
+        "gene_id": 200702,
         "name_en": "Updrafters",
         "desc_en": "Slightly increase passing ability when positioned toward the back late-race. (Mile)",
         "icon_id": 20041,
@@ -8773,7 +9240,8 @@
         "downgrade": null
     },
     "V Is for Victory!": {
-        "id": 900351,
+        "id": 10351,
+        "gene_id": 900351,
         "name_en": "V Is for Victory!",
         "desc_en": "Slightly increase velocity when positioned toward the front on the final straight after engaging in a challenge on the final corner or later.",
         "icon_id": 20011,
@@ -8791,6 +9259,7 @@
     },
     "VIP Pass": {
         "id": 201201,
+        "gene_id": 201201,
         "name_en": "VIP Pass",
         "desc_en": "Decrease fatigue when determined to pass another runner. (Long)",
         "icon_id": 20022,
@@ -8810,6 +9279,7 @@
     },
     "Vanguard Spirit": {
         "id": 201191,
+        "gene_id": 201191,
         "name_en": "Vanguard Spirit",
         "desc_en": "Increase ability to maintain the lead when leading by a fair margin mid-race. (Long)",
         "icon_id": 20012,
@@ -8828,7 +9298,8 @@
         "downgrade": 201192
     },
     "Victoria por plancha ☆": {
-        "id": 900141,
+        "id": 100141,
+        "gene_id": 900141,
         "name_en": "Victoria por plancha ☆",
         "desc_en": "Very slightly hang on to the advantage when positioned toward the front with energy to spare on the final straight.",
         "icon_id": 20011,
@@ -8845,7 +9316,8 @@
         "downgrade": null
     },
     "Victory Cheer!": {
-        "id": 900681,
+        "id": 100681,
+        "gene_id": 900681,
         "name_en": "Victory Cheer!",
         "desc_en": "Very slightly increase velocity when positioned toward the front on the third corner in the second half of the race. Or, very slightly kick forward when toward the front on the backstretch late-race.",
         "icon_id": 20011,
@@ -8862,7 +9334,8 @@
         "downgrade": null
     },
     "Victory belongs to me—Strelitzia! ☆": {
-        "id": 900441,
+        "id": 100441,
+        "gene_id": 900441,
         "name_en": "Victory belongs to me—Strelitzia! ☆",
         "desc_en": "If positioned toward the back until the start of the final corner, when there are 300m remaining, slightly increase velocity continuously.",
         "icon_id": 20011,
@@ -8880,6 +9353,7 @@
     },
     "Wait-and-See": {
         "id": 200662,
+        "gene_id": 200662,
         "name_en": "Wait-and-See",
         "desc_en": "Slightly decrease fatigue and very slightly increase acceleration when positioned toward the back mid-race. (Sprint)",
         "icon_id": 20021,
@@ -8897,6 +9371,7 @@
     },
     "Wallflower": {
         "id": 200283,
+        "gene_id": 200283,
         "name_en": "Wallflower",
         "desc_en": "Moderately decrease performance when many other runners are using the same strategy.",
         "icon_id": 10034,
@@ -8916,7 +9391,8 @@
         "downgrade": null
     },
     "Warning Shot!": {
-        "id": 900071,
+        "id": 10071,
+        "gene_id": 900071,
         "name_en": "Warning Shot!",
         "desc_en": "Very slightly increase velocity steadily with a long spurt starting halfway through the race.",
         "icon_id": 20011,
@@ -8934,6 +9410,7 @@
     },
     "Watchful Eye": {
         "id": 200692,
+        "gene_id": 200692,
         "name_en": "Watchful Eye",
         "desc_en": "Slightly decrease fatigue, then very slightly decrease velocity of runners ahead when positioned toward the back upon approaching mid-race. (Mile)",
         "icon_id": 20021,
@@ -8953,6 +9430,7 @@
     },
     "Wet Conditions ×": {
         "id": 200163,
+        "gene_id": 200163,
         "name_en": "Wet Conditions ×",
         "desc_en": "Moderately decrease performance on good, soft, and heavy ground.",
         "icon_id": 10034,
@@ -8974,6 +9452,7 @@
     },
     "Wet Conditions ○": {
         "id": 200162,
+        "gene_id": 200162,
         "name_en": "Wet Conditions ○",
         "desc_en": "Moderately increase performance on good, soft, and heavy ground.",
         "icon_id": 10031,
@@ -8995,6 +9474,7 @@
     },
     "Wet Conditions ◎": {
         "id": 200161,
+        "gene_id": 200161,
         "name_en": "Wet Conditions ◎",
         "desc_en": "Increase performance on good, soft, and heavy ground.",
         "icon_id": 10031,
@@ -9015,7 +9495,8 @@
         "downgrade": 200162
     },
     "Where There's a Will, There's a Way": {
-        "id": 900111,
+        "id": 100111,
+        "gene_id": 900111,
         "name_en": "Where There's a Will, There's a Way",
         "desc_en": "Slightly increase velocity when passing another runner toward the back on the final straight.",
         "icon_id": 20011,
@@ -9032,7 +9513,8 @@
         "downgrade": null
     },
     "Wherever This Wonder Leads": {
-        "id": 910591,
+        "id": 110591,
+        "gene_id": 910591,
         "name_en": "Wherever This Wonder Leads",
         "desc_en": "If positioned midpack on a downhill just before late-race and there's a large distance left to the finish, slightly increase velocity.",
         "icon_id": 20011,
@@ -9049,7 +9531,8 @@
         "downgrade": null
     },
     "White Lightning Comin' Through!": {
-        "id": 900211,
+        "id": 100211,
+        "gene_id": 900211,
         "name_en": "White Lightning Comin' Through!",
         "desc_en": "Slightly bolt down the track when well-positioned or aiming for the front from midpack on a straight in the second half of the race.",
         "icon_id": 20011,
@@ -9067,6 +9550,7 @@
     },
     "Wild Wind": {
         "id": 202131,
+        "gene_id": 202131,
         "name_en": "Wild Wind",
         "desc_en": "When positioned toward the front mid-race, increase velocity and slightly decrease the velocity of runners behind the skill user. (Medium)",
         "icon_id": 20012,
@@ -9086,6 +9570,7 @@
     },
     "Winter Runner ×": {
         "id": 200203,
+        "gene_id": 200203,
         "name_en": "Winter Runner ×",
         "desc_en": "Moderately decrease performance in winter.",
         "icon_id": 10014,
@@ -9107,6 +9592,7 @@
     },
     "Winter Runner ○": {
         "id": 200202,
+        "gene_id": 200202,
         "name_en": "Winter Runner ○",
         "desc_en": "Moderately increase performance in winter.",
         "icon_id": 10011,
@@ -9128,6 +9614,7 @@
     },
     "Winter Runner ◎": {
         "id": 200201,
+        "gene_id": 200201,
         "name_en": "Winter Runner ◎",
         "desc_en": "Increase performance in winter.",
         "icon_id": 10011,
@@ -9149,6 +9636,7 @@
     },
     "With All My Soul": {
         "id": 202132,
+        "gene_id": 202132,
         "name_en": "With All My Soul",
         "desc_en": "When positioned toward the front mid-race, slightly increase velocity and minimally decrease the velocity of runners behind the skill user. (Medium)",
         "icon_id": 20011,
@@ -9167,7 +9655,8 @@
         "downgrade": null
     },
     "Xceleration": {
-        "id": 900081,
+        "id": 10081,
+        "gene_id": 900081,
         "name_en": "Xceleration",
         "desc_en": "Slightly increase velocity when positioned toward the front with 200m or less remaining.",
         "icon_id": 20011,
@@ -9184,7 +9673,8 @@
         "downgrade": null
     },
     "YUMMY☆SPEED!": {
-        "id": 900281,
+        "id": 100281,
+        "gene_id": 900281,
         "name_en": "YUMMY☆SPEED!",
         "desc_en": "Very slightly kick forward when moderately tired while well-positioned halfway through the race.",
         "icon_id": 20011,
@@ -9202,6 +9692,7 @@
     },
     "Yodo Invicta": {
         "id": 200064,
+        "gene_id": 200064,
         "name_en": "Yodo Invicta",
         "desc_en": "Increase performance at Kyoto Racecourse, boosting Stamina and Wit.",
         "icon_id": 10022,
@@ -9222,7 +9713,8 @@
         "downgrade": null
     },
     "You and Me! One-on-One!": {
-        "id": 900121,
+        "id": 100121,
+        "gene_id": 900121,
         "name_en": "You and Me! One-on-One!",
         "desc_en": "Slightly increase velocity on the final straight after passing another runner on the outside toward the back on the final corner or later.",
         "icon_id": 20011,
@@ -9240,6 +9732,7 @@
     },
     "You're Not the Boss of Me!": {
         "id": 202141,
+        "gene_id": 202141,
         "name_en": "You're Not the Boss of Me!",
         "desc_en": "Increase time lost to slow starts and moderately decrease Wit.",
         "icon_id": 20064,
@@ -9257,6 +9750,7 @@
     },
     "You've Got No Shot": {
         "id": 201021,
+        "gene_id": 201021,
         "name_en": "You've Got No Shot",
         "desc_en": "Cause panic in and moderately dull movement for runners ahead when positioned toward the back early-race. (Sprint)",
         "icon_id": 30052,
@@ -9275,7 +9769,8 @@
         "downgrade": 201022
     },
     "trigger:BEAT": {
-        "id": 900361,
+        "id": 100361,
+        "gene_id": 900361,
         "name_en": "trigger:BEAT",
         "desc_en": "When near the inner rail midpack on the final corner or later, slightly increase velocity and ability to navigate smoothly on the final straight.",
         "icon_id": 20011,
@@ -9292,7 +9787,8 @@
         "downgrade": null
     },
     "∴win Q.E.D.": {
-        "id": 900231,
+        "id": 100231,
+        "gene_id": 900231,
         "name_en": "∴win Q.E.D.",
         "desc_en": "Slightly increase velocity when passing another runner toward the front on the final corner or later.",
         "icon_id": 20011,
@@ -9310,6 +9806,7 @@
     },
     "♡ 3D Nail Art": {
         "id": 201801,
+        "gene_id": 201801,
         "name_en": "♡ 3D Nail Art",
         "desc_en": "Moderately decrease performance on firm ground.",
         "icon_id": 10014,

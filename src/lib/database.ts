@@ -32,6 +32,7 @@ export interface DatabaseSkill {
     id: number
     key: string
     skill_id: number
+    gene_id: number
     name_en: string
     desc_en: string
     icon_id: number
@@ -212,6 +213,7 @@ export class DatabaseManager {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     key TEXT UNIQUE NOT NULL,
                     skill_id INTEGER NOT NULL,
+                    gene_id INTEGER NOT NULL,
                     name_en TEXT NOT NULL,
                     desc_en TEXT NOT NULL,
                     icon_id INTEGER NOT NULL,
@@ -712,8 +714,8 @@ export class DatabaseManager {
 
                 await this.db!.runAsync("BEGIN TRANSACTION")
                 const stmt = await this.db!.prepareAsync(
-                    `INSERT OR REPLACE INTO ${this.TABLE_SKILLS} (key, skill_id, name_en, desc_en, icon_id, cost, eval_pt, pt_ratio, rarity, condition, precondition, inherited, community_tier, versions, upgrade, downgrade)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT OR REPLACE INTO ${this.TABLE_SKILLS} (key, skill_id, gene_id, name_en, desc_en, icon_id, cost, eval_pt, pt_ratio, rarity, condition, precondition, inherited, community_tier, versions, upgrade, downgrade)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 )
 
                 // Execute all skills in batch using prepared statement.
@@ -725,6 +727,7 @@ export class DatabaseManager {
                     await stmt.executeAsync([
                         skill.key,
                         skill.skill_id,
+                        skill.gene_id,
                         skill.name_en,
                         skill.desc_en,
                         skill.icon_id,

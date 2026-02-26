@@ -48,6 +48,7 @@ class SkillDatabase (private val game: Game) {
     companion object {
         private val TABLE_SKILLS = "skills"
         private val SKILLS_COLUMN_SKILL_ID = "skill_id"
+        private val SKILLS_COLUMN_GENE_ID = "gene_id"
         private val SKILLS_COLUMN_NAME_EN = "name_en"
         private val SKILLS_COLUMN_DESC_EN = "desc_en"
         private val SKILLS_COLUMN_ICON_ID = "icon_id"
@@ -86,6 +87,7 @@ class SkillDatabase (private val game: Game) {
                 if (cursor.moveToFirst()) {
                     do {
                         val idIndex: Int = cursor.getColumnIndexOrThrow(SKILLS_COLUMN_SKILL_ID)
+                        val geneIdIndex: Int = cursor.getColumnIndexOrThrow(SKILLS_COLUMN_GENE_ID)
                         val nameIndex: Int = cursor.getColumnIndexOrThrow(SKILLS_COLUMN_NAME_EN)
                         val descriptionIndex: Int = cursor.getColumnIndexOrThrow(SKILLS_COLUMN_DESC_EN)
                         val iconIdIndex: Int = cursor.getColumnIndexOrThrow(SKILLS_COLUMN_ICON_ID)
@@ -103,6 +105,7 @@ class SkillDatabase (private val game: Game) {
 
                         val skillData = SkillData(
                             id = it.getInt(idIndex),
+                            geneId = it.getInt(geneIdIndex),
                             name = it.getString(nameIndex),
                             description = it.getString(descriptionIndex),
                             iconId = it.getInt(iconIdIndex),
