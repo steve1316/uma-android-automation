@@ -199,10 +199,16 @@ const SearchableItem = ({ id, title, description, page, children, scrollViewRef,
 
     useEffect(() => {
         // Automatically register this item into the global search index on mount.
+        // We defer this until after interactions (like the drawer opening/closing or page mounting)
+        // have finished to reduce the UI lag during transitions.
         if (finalPage) {
-            // Only emit the parentId fallback if we are actively hiding the component.
-            const effectiveParentId = condition === false ? parentId : undefined
-            registerItem({ id, title: finalTitle, description: finalDescription, page: finalPage, parentId: effectiveParentId })
+            const timeoutHandle = setTimeout(() => {
+                // Only emit the parentId fallback if we are actively hiding the component.
+                const effectiveParentId = condition === false ? parentId : undefined
+                registerItem({ id, title: finalTitle, description: finalDescription, page: finalPage, parentId: effectiveParentId })
+            }, 0)
+
+            return () => clearTimeout(timeoutHandle)
         }
     }, [id, finalTitle, finalDescription, finalPage, parentId, condition, registerItem])
 

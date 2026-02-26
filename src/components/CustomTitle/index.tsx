@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import React, { useMemo } from "react"
 import { Text, StyleSheet, TextStyle } from "react-native"
 import { useTheme } from "../../context/ThemeContext"
 import SearchableItem from "../SearchableItem"
@@ -56,4 +56,4 @@ const CustomTitle = ({ title, description, style, searchId, searchTitle, searchD
     return content
 }
 
-export default CustomTitle
+export default React.memo(CustomTitle)

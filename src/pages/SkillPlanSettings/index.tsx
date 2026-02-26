@@ -1,4 +1,4 @@
-import { useMemo, useContext, useState, useRef, useCallback, FC, ReactNode } from "react"
+import React, { useMemo, useContext, useState, useRef, useCallback, FC, ReactNode } from "react"
 import {
     View,
     Text,
@@ -21,6 +21,7 @@ import CustomButton from "../../components/CustomButton"
 import PageHeader from "../../components/PageHeader"
 import WarningContainer from "../../components/WarningContainer"
 import { SearchPageProvider } from "../../context/SearchPageContext"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import skillsData from "../../data/skills.json"
 import icons from "../SkillSettings/icons"
 
@@ -146,6 +147,7 @@ const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
 }
 
 const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, description }) => {
+    usePerformanceLogging(name)
     const { colors } = useTheme()
     const bsc = useContext(BotStateContext)
 
@@ -167,59 +169,14 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
     const selectedSkillsScrollViewRef = useRef<ScrollView>(null)
 
     // Convert skills.json to array.
-    const skillData: Skill[] = Object.values(skillsData)
+    const skillData: Skill[] = useMemo(() => {
+        return Object.values(skillsData)
+    }, [])
 
     // Parse skill plan from CSV string.
     const planIds: number[] = useMemo(() => {
-        console.log("HERE!: " + plan)
         return plan && plan !== "" && typeof plan === "string" ? plan.split(",").map((s) => Number(s)) : []
     }, [plan])
-
-    const keyExtractor = useCallback((item: Skill) => item.id.toString(), [])
-
-    const updateSkillsSetting = (key: string, value: any) => {
-        setSettings({
-            ...bsc.settings,
-            skills: {
-                ...bsc.settings.skills,
-                plans: {
-                    ...bsc.settings.skills.plans,
-                    [planKey]: {
-                        ...bsc.settings.skills.plans[planKey],
-                        [key]: value,
-                    },
-                },
-            },
-        })
-    }
-
-    const removeSkillFromPlan = (skill: Skill) => {
-        const newPlanIds: number[] = planIds.filter((id) => id !== skill.id)
-
-        // Update the racing plan with the changes.
-        updateSkillsSetting("plan", newPlanIds.join(","))
-    }
-
-    const addSkillToPlan = (skill: Skill) => {
-        if (planIds.includes(skill.id)) {
-            return
-        }
-
-        const newPlanIds: number[] = [...planIds, skill.id]
-
-        // Update the racing plan with the changes.
-        updateSkillsSetting("plan", newPlanIds.join(","))
-
-        showSnackbar("Added skill to plan: " + skill.name_en)
-    }
-
-    const clearAllSkillsFromPlan = () => {
-        //updateSkillsSetting("plan", "")
-        const newPlanIds: number[] = [...planIds, ...skillData.map(item => item.id)]
-
-        // Update the racing plan with the changes.
-        updateSkillsSetting("plan", newPlanIds.join(","))
-    }
 
     const availableSkills: Skill[] = useMemo(() => {
         return skillData.filter((item: Skill) => !planIds.includes(item.id))
@@ -239,7 +196,32 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         return skillData.filter((item: Skill) => planIds.includes(item.id))
     }, [skillData, planIds])
 
-    const showSnackbar = (msg: string) => {
+    const keyExtractor = useCallback((item: Skill) => item.id.toString(), [])
+
+    const updateSkillsSetting = useCallback((key: string, value: any) => {
+        setSettings({
+            ...bsc.settings,
+            skills: {
+                ...bsc.settings.skills,
+                plans: {
+                    ...bsc.settings.skills.plans,
+                    [planKey]: {
+                        ...bsc.settings.skills.plans[planKey],
+                        [key]: value,
+                    },
+                },
+            },
+        })
+    }, [bsc.settings, planKey, setSettings])
+
+    const removeSkillFromPlan = useCallback((skill: Skill) => {
+        const newPlanIds: number[] = planIds.filter((id) => id !== skill.id)
+
+        // Update the racing plan with the changes.
+        updateSkillsSetting("plan", newPlanIds.join(","))
+    }, [planIds, updateSkillsSetting])
+
+    const showSnackbar = useCallback((msg: string) => {
         if (!searchModalVisible) {
             return
         }
@@ -254,15 +236,32 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         snackbarTimeoutRef.current = setTimeout(() => {
             setSnackbarVisible(false)
         }, 2000)
-    }
+    }, [searchModalVisible, snackbarTimeoutRef, setSnackbarMessage, setSnackbarVisible])
 
-    const onDismissSnackbar = () => {
+    const addSkillToPlan = useCallback((skill: Skill) => {
+        if (planIds.includes(skill.id)) {
+            return
+        }
+
+        const newPlanIds: number[] = [...planIds, skill.id]
+
+        // Update the racing plan with the changes.
+        updateSkillsSetting("plan", newPlanIds.join(","))
+
+        showSnackbar("Added skill to plan: " + skill.name_en)
+    }, [planIds, updateSkillsSetting, showSnackbar])
+
+    const clearAllSkillsFromPlan = useCallback(() => {
+        updateSkillsSetting("plan", "")
+    }, [updateSkillsSetting])
+
+    const onDismissSnackbar = useCallback(() => {
         setSnackbarVisible(false)
         setSnackbarMessage("")
         if (snackbarTimeoutRef.current) {
             clearTimeout(snackbarTimeoutRef.current)
         }
-    }
+    }, [setSnackbarVisible, setSnackbarMessage, snackbarTimeoutRef])
 
     const styles = useMemo(
         () =>
@@ -415,7 +414,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [colors],
     )
 
-    const renderOptions = () => {
+    const renderOptions = useCallback(() => {
         return (
             <>
                 <View style={styles.inputContainer}>
@@ -464,7 +463,14 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 </View>
             </>
         )
-    }
+    }, [
+        defaultSettings,
+        updateSkillsSetting,
+        planKey,
+        strategy,
+        enableBuyInheritedUniqueSkills,
+        enableBuyNegativeSkills,
+    ])
 
     const renderSelectedSkillItem = useCallback((item: Skill) => (
         <SkillItemCard item={item}>
@@ -479,7 +485,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
             </TouchableOpacity>
         </SkillItemCard>
     ), [removeSkillFromPlan])
-    
+
     const renderSelectedSkillsModalSkillItem: ListRenderItem<Skill> = useCallback(({ item }: { item: Skill }) => {
         return renderSelectedSkillItem(item)
     }, [renderSelectedSkillItem])
@@ -522,9 +528,14 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 </View>
             )}
         </View>
-    ), [currentSkills, clearAllSkillsFromPlan, renderSelectedSkillItem, keyExtractor, setSelectedSkillsModalVisible])
+    ), [
+        currentSkills,
+        clearAllSkillsFromPlan,
+        renderSelectedSkillItem,
+        setSelectedSkillsModalVisible,
+    ])
 
-    const renderSelectedSkillsModal = () => (
+    const renderSelectedSkillsModal = useCallback(() => (
         <Modal
             animationType="slide"
             transparent={true}
@@ -560,9 +571,15 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 </TouchableOpacity>
             </TouchableOpacity>
         </Modal>
-    )
+    ), [
+        selectedSkillsModalVisible,
+        setSelectedSkillsModalVisible,
+        currentSkills,
+        renderSelectedSkillsModalSkillItem,
+        keyExtractor,
+    ])
 
-    const renderSkillSelectionModal = () => (
+    const renderSkillSelectionModal = useCallback(() => (
         <Modal
             animationType="slide"
             transparent={true}
@@ -576,19 +593,19 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 <TouchableOpacity style={styles.modalContent} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
                     <View style={styles.modalHeader}>
                         <Snackbar
-                        visible={snackbarVisible}
-                        onDismiss={onDismissSnackbar}
-                        action={{
-                            label: "Close",
-                            onPress: () => {
-                                onDismissSnackbar()
-                            },
-                        }}
-                        style={{ backgroundColor: "#388e3c", borderRadius: 10 }}
-                        duration={Number.POSITIVE_INFINITY}
-                    >
-                        {snackbarMessage}
-                    </Snackbar>
+                            visible={snackbarVisible}
+                            onDismiss={onDismissSnackbar}
+                            action={{
+                                label: "Close",
+                                onPress: () => {
+                                    onDismissSnackbar()
+                                },
+                            }}
+                            style={{ backgroundColor: "#388e3c", borderRadius: 10 }}
+                            duration={Number.POSITIVE_INFINITY}
+                        >
+                            {snackbarMessage}
+                        </Snackbar>
                         <Text style={styles.modalTitle}>Select Skill</Text>
                         <TouchableOpacity style={styles.closeButton} onPress={() => setSearchModalVisible(false)}>
                             <X size={24} color={colors.foreground} />
@@ -625,7 +642,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                                             : availableSkills.length === 0
                                                 ? "All available skills have been selected."
                                                 : filteredSkills.length === 0
-                                                    && "No skills match your search. Try a different search term."
+                                                && "No skills match your search. Try a different search term."
                                         }
                                     </Text>
                                 </View>
@@ -635,7 +652,19 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 </TouchableOpacity>
             </TouchableOpacity>
         </Modal>
-    )
+    ), [
+        searchModalVisible,
+        setSearchModalVisible,
+        onDismissSnackbar,
+        snackbarVisible,
+        searchQuery,
+        setSearchQuery,
+        renderSearchModalSkillItem,
+        keyExtractor,
+        skillData,
+        availableSkills,
+        filteredSkills,
+    ])
 
     return (
         <View style={styles.root}>
@@ -685,4 +714,4 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
     )
 }
 
-export default SkillPlanSettings
+export default React.memo(SkillPlanSettings)

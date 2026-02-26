@@ -12,8 +12,10 @@ import NavigationLink from "../../components/NavigationLink"
 import PageHeader from "../../components/PageHeader"
 import WarningContainer from "../../components/WarningContainer"
 import SearchableItem from "../../components/SearchableItem"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const RacingSettings = () => {
+    usePerformanceLogging("RacingSettings")
     const { colors } = useTheme()
     const navigation = useNavigation()
     const bsc = useContext(BotStateContext)

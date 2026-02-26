@@ -28,4 +28,4 @@ const NavigationLink: React.FC<NavigationLinkProps> = ({ title, description, onP
     )
 }
 
-export default NavigationLink
+export default React.memo(NavigationLink)

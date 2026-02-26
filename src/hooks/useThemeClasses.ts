@@ -1,9 +1,11 @@
+import { useMemo } from "react"
 import { useTheme } from "../context/ThemeContext"
 
 export const useThemeClasses = () => {
     const { isDark } = useTheme()
 
-    return {
+    // Memoize the return value to prevent new object references on every render.
+    return useMemo(() => ({
         // Background classes
         bg: isDark ? "bg-gray-900" : "bg-white",
         bgSecondary: isDark ? "bg-gray-800" : "bg-gray-50",
@@ -27,5 +29,5 @@ export const useThemeClasses = () => {
         warning: "text-yellow-600",
         error: "text-red-600",
         info: "text-blue-600",
-    }
+    }), [isDark])
 }

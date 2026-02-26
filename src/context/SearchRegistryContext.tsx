@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from "react"
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react"
+import { startTiming } from "../lib/performanceLogger"
 import searchConfig from "../data/searchConfig"
 
 export interface SearchOption {
@@ -52,17 +53,21 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
      * (e.g., when a conditional toggle changes).
      */
     const registerItem = useCallback((item: SearchOption) => {
+        const endTiming = startTiming("search_register_item", "ui")
         setSearchIndex((prev) => {
             if (prev[item.id]) {
                 // If it already exists, update it if the parentId has changed like when the setting is toggled on/off and conditional state changes.
                 if (prev[item.id].parentId !== item.parentId) {
+                    endTiming({ id: item.id, title: item.title, action: "update" })
                     return {
                         ...prev,
                         [item.id]: item,
                     }
                 }
+                endTiming({ id: item.id, title: item.title, action: "skip" })
                 return prev
             }
+            endTiming({ id: item.id, title: item.title, action: "add" })
             return {
                 ...prev,
                 [item.id]: item,
@@ -70,7 +75,10 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         })
     }, [])
 
-    return <SearchContext.Provider value={{ searchIndex, registerItem }}>{children}</SearchContext.Provider>
+    // Memoize the provider value to prevent cascading re-renders.
+    const providerValue = useMemo(() => ({ searchIndex, registerItem }), [searchIndex, registerItem])
+
+    return <SearchContext.Provider value={providerValue}>{children}</SearchContext.Provider>
 }
 
 /**

@@ -353,4 +353,4 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
     return content
 }
 
-export default CustomSlider
+export default React.memo(CustomSlider)

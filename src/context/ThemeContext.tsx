@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { useColorScheme } from "react-native"
 import { THEME } from "../lib/theme"
 
@@ -37,20 +37,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         }
     }, [systemColorScheme])
 
-    const toggleTheme = () => {
+    const toggleTheme = useCallback(() => {
         setTheme((prev) => (prev === "light" ? "dark" : "light"))
-    }
+    }, [])
 
-    const isDark = theme === "dark"
-    const colors = THEME[theme]
-
-    const value: ThemeContextType = {
-        theme,
-        setTheme,
-        toggleTheme,
-        isDark,
-        colors,
-    }
+    // Memoize the provider value to prevent cascading re-renders.
+    const value = useMemo<ThemeContextType>(() => {
+        const isDark = theme === "dark"
+        const colors = THEME[theme]
+        return {
+            theme,
+            setTheme,
+            toggleTheme,
+            isDark,
+            colors,
+        }
+    }, [theme, toggleTheme])
 
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

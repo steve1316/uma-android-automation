@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
 import { DrawerContentScrollView, DrawerContentComponentProps, useDrawerStatus } from "@react-navigation/drawer"
 import { CommonActions } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
+import { markNavigationStart } from "../../lib/performanceLogger"
 import { useTheme } from "../../context/ThemeContext"
 import { BotStateContext } from "../../context/BotStateContext"
 import { skillPlanSettingsPages } from "../../pages/SkillPlanSettings"
@@ -301,27 +302,37 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
     // Navigate to a route and close the drawer.
     // For nested routes, we navigate to the Settings drawer and then the specific screen.
     const handleNavigation = (routeName: string) => {
-        if (routeName === "Home") {
-            // Navigate to Home drawer screen.
-            navigation.dispatch(CommonActions.navigate({ name: "Home" }))
-        } else if (routeName === "Settings") {
-            // Navigate to Settings main page.
-            navigation.dispatch(
-                CommonActions.navigate({
-                    name: "Settings",
-                    params: { screen: "SettingsMain", initial: false },
-                }),
-            )
-        } else {
-            // Settings sub-pages: navigate to Settings drawer, then to the specific screen.
-            navigation.dispatch(
-                CommonActions.navigate({
-                    name: "Settings",
-                    params: { screen: routeName, initial: false },
-                }),
-            )
-        }
+        // Mark the start of the navigation for performance tracking.
+        markNavigationStart(routeName)
+
+        // Close the drawer immediately to start the transition.
+        // This achieves the effect of hiding the initial lag of mounting and rendering the target page while we are transitioning to it.
         navigation.closeDrawer()
+
+        // Defer the heavy navigation until the drawer closing animation has been scheduled.
+        // This prevents the target page's heavy mount/render from stuttering the drawer animation.
+        setTimeout(() => {
+            if (routeName === "Home") {
+                // Navigate to Home drawer screen.
+                navigation.dispatch(CommonActions.navigate({ name: "Home" }))
+            } else if (routeName === "Settings") {
+                // Navigate to Settings main page.
+                navigation.dispatch(
+                    CommonActions.navigate({
+                        name: "Settings",
+                        params: { screen: "SettingsMain", initial: false },
+                    }),
+                )
+            } else {
+                // Settings sub-pages: navigate to Settings drawer, then to the specific screen.
+                navigation.dispatch(
+                    CommonActions.navigate({
+                        name: "Settings",
+                        params: { screen: routeName, initial: false },
+                    }),
+                )
+            }
+        }, 0)
     }
 
     // Navigate to a parent route and close the drawer.
@@ -429,4 +440,4 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
     )
 }
 
-export default DrawerContent
+export default React.memo(DrawerContent)

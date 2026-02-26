@@ -6,8 +6,10 @@ import { SearchPageProvider } from "../../context/SearchPageContext"
 import CustomSlider from "../../components/CustomSlider"
 import CustomCheckbox from "../../components/CustomCheckbox"
 import PageHeader from "../../components/PageHeader"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const OCRSettings = () => {
+    usePerformanceLogging("OCRSettings")
     const { colors } = useTheme()
     const bsc = useContext(BotStateContext)
     const scrollViewRef = useRef<ScrollView>(null)

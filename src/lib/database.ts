@@ -539,18 +539,23 @@ export class DatabaseManager {
      * @returns The value of the setting, or null if not found.
      */
     async loadSetting(category: string, key: string): Promise<any> {
+        const endTiming = startTiming("database_load_setting", "database")
         this.ensureInitialized()
 
         try {
             const result = await this.db!.getFirstAsync<DatabaseSettings>(`SELECT * FROM ${this.TABLE_SETTINGS} WHERE category = ? AND key = ?`, [category, key])
 
             if (!result) {
+                endTiming({ status: "not_found", category, key })
                 return null
             }
 
-            return this.deserializeValue(key, result.value)
+            const value = this.deserializeValue(key, result.value)
+            endTiming({ status: "success", category, key })
+            return value
         } catch (error) {
             logErrorWithTimestamp(`[DB] Failed to load setting ${category}.${key}:`, error)
+            endTiming({ status: "error", category, key, error: error instanceof Error ? error.message : String(error) })
             throw error
         }
     }
@@ -744,7 +749,7 @@ export class DatabaseManager {
                 logWithTimestamp(`[DB] Successfully saved ${skills.length} skills in batch.`)
             })
 
-            endTiming({ status: "success", racesCount: skills.length })
+            endTiming({ status: "success", skillsCount: skills.length })
         } catch (error) {
             const skillsInfo = skills.length > 0 ? ` (${skills.length} skills: ${skills.map((s) => `${s.name_en} (id ${s.skill_id})`).join(", ")})` : " (no skills)"
             logErrorWithTimestamp(`[DB] Failed to save skills batch${skillsInfo}:\n`, error)
@@ -944,13 +949,16 @@ export class DatabaseManager {
      * @returns A promise that resolves with the current active profile name, or null if no profile is active.
      */
     async getCurrentProfileName(): Promise<string | null> {
+        const endTiming = startTiming("database_get_current_profile_name", "database")
         this.ensureInitialized()
 
         try {
             const profileName = await this.loadSetting("misc", "currentProfileName")
+            endTiming({ status: "success", profileName })
             return profileName || null
         } catch (error) {
             logErrorWithTimestamp("[DB] Failed to load current profile name:", error)
+            endTiming({ status: "error", error: error instanceof Error ? error.message : String(error) })
             return null
         }
     }
@@ -962,6 +970,7 @@ export class DatabaseManager {
      * @returns A promise that resolves when the current active profile name is set or null if no profile is active.
      */
     async setCurrentProfileName(profileName: string | null): Promise<void> {
+        const endTiming = startTiming("database_set_current_profile_name", "database")
         this.ensureInitialized()
 
         try {
@@ -971,8 +980,10 @@ export class DatabaseManager {
                 // Delete the setting if profileName is null.
                 await this.db!.runAsync(`DELETE FROM ${this.TABLE_SETTINGS} WHERE category = ? AND key = ?`, ["misc", "currentProfileName"])
             }
+            endTiming({ status: "success", profileName })
         } catch (error) {
             logErrorWithTimestamp("[DB] Failed to save current profile name:", error)
+            endTiming({ status: "error", error: error instanceof Error ? error.message : String(error) })
             throw error
         }
     }

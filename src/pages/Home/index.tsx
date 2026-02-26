@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { Ionicons } from "@expo/vector-icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip"
 import PageHeader from "../../components/PageHeader"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const styles = StyleSheet.create({
     root: {
@@ -34,6 +35,7 @@ const styles = StyleSheet.create({
 })
 
 const Home = () => {
+    usePerformanceLogging("Home")
     const { StartModule } = NativeModules
 
     const { isDark, colors } = useTheme()

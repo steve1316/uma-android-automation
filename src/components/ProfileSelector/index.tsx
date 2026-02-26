@@ -241,4 +241,4 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({ currentTrainingSettin
     )
 }
 
-export default ProfileSelector
+export default React.memo(ProfileSelector)

@@ -10,8 +10,10 @@ import { Separator } from "../../components/ui/separator"
 import PageHeader from "../../components/PageHeader"
 import WarningContainer from "../../components/WarningContainer"
 import { SearchPageProvider } from "../../context/SearchPageContext"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const DebugSettings = () => {
+    usePerformanceLogging("DebugSettings")
     const { colors } = useTheme()
     const bsc = useContext(BotStateContext)
     const scrollViewRef = useRef<ScrollView>(null)

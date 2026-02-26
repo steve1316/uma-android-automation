@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react"
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from "react"
 import { databaseManager } from "../lib/database"
+import { startTiming } from "../lib/performanceLogger"
 import { logWithTimestamp, logErrorWithTimestamp } from "../lib/logger"
 import { Settings } from "./BotStateContext"
 
@@ -38,6 +39,7 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
      * Load all profiles from the database.
      */
     const loadProfiles = useCallback(async () => {
+        const endTiming = startTiming("profile_load_all", "state")
         try {
             setIsLoading(true)
 
@@ -59,9 +61,11 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
 
             setProfiles(parsedProfiles)
             logWithTimestamp(`[ProfileManager] Loaded ${parsedProfiles.length} profiles.`)
+            endTiming({ count: parsedProfiles.length })
         } catch (error) {
             logErrorWithTimestamp("[ProfileManager] Failed to load profiles:", error)
             setProfiles([])
+            endTiming({ status: "error", error: error instanceof Error ? error.message : String(error) })
         } finally {
             setIsLoading(false)
         }
@@ -71,15 +75,18 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
      * Load the current active profile name.
      */
     const loadCurrentProfileName = useCallback(async () => {
+        const endTiming = startTiming("profile_load_current_name", "state")
         try {
             // Wait for database to be initialized before loading current profile name.
             await databaseManager.initialize()
 
             const profileName = await databaseManager.getCurrentProfileName()
             setCurrentProfileName(profileName)
+            endTiming({ name: profileName })
         } catch (error) {
             logErrorWithTimestamp("[ProfileManager] Failed to load current profile name:", error)
             setCurrentProfileName(null)
+            endTiming({ status: "error", error: error instanceof Error ? error.message : String(error) })
         }
     }, [])
 
@@ -89,7 +96,8 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
         loadCurrentProfileName()
     }, [loadProfiles, loadCurrentProfileName])
 
-    const value = {
+    // Memoize the provider value to prevent cascading re-renders.
+    const value = useMemo(() => ({
         profiles,
         currentProfileName,
         isLoading,
@@ -98,7 +106,7 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
         setProfiles,
         setCurrentProfileName,
         setIsLoading,
-    }
+    }), [profiles, currentProfileName, isLoading, loadProfiles, loadCurrentProfileName])
 
     return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
 }

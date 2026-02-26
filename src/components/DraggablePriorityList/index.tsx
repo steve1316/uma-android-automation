@@ -176,4 +176,4 @@ const DraggablePriorityList: React.FC<DraggablePriorityListProps> = ({ items, se
     )
 }
 
-export default DraggablePriorityList
+export default React.memo(DraggablePriorityList)

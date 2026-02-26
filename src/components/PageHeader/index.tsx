@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from "react"
+import React, { useMemo, useState, useRef, useEffect } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextInput, Animated, Keyboard, ScrollView } from "react-native"
 import { useNavigation, DrawerActions } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
@@ -343,4 +343,4 @@ const PageHeader = ({ title, showHomeButton = true, titleComponent, centerCompon
     )
 }
 
-export default PageHeader
+export default React.memo(PageHeader)

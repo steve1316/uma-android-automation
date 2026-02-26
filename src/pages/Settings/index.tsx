@@ -19,8 +19,10 @@ import WarningContainer from "../../components/WarningContainer"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../components/ui/alert-dialog"
 import { useSettings } from "../../context/SettingsContext"
 import { useSettingsFileManager } from "../../hooks/useSettingsFileManager"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const Settings = () => {
+    usePerformanceLogging("Settings")
     const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false)
     const scrollViewRef = useRef<ScrollView>(null)
 

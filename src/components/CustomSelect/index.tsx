@@ -122,4 +122,4 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     return content
 }
 
-export default CustomSelect
+export default React.memo(CustomSelect)

@@ -98,4 +98,4 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     )
 }
 
-export default CustomButton
+export default React.memo(CustomButton)

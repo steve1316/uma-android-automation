@@ -1,6 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native"
 import { createDrawerNavigator } from "@react-navigation/drawer"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { useCallback } from "react"
 import { PortalHost } from "@rn-primitives/portal"
 import { StatusBar } from "expo-status-bar"
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context"
@@ -37,7 +38,7 @@ const Stack = createNativeStackNavigator()
  */
 function SettingsStack() {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
             <Stack.Screen name="SettingsMain" component={Settings} />
             <Stack.Screen name="TrainingSettings" component={TrainingSettings} />
             <Stack.Screen name="TrainingEventSettings" component={TrainingEventSettings} />
@@ -46,7 +47,7 @@ function SettingsStack() {
             <Stack.Screen name="RacingPlanSettings" component={RacingPlanSettings} />
             <Stack.Screen name="SkillSettings" component={SkillSettings} />
             {Object.entries(skillPlanSettingsPages).map(([key, config]) => (
-                <Stack.Screen name={config.name}>
+                <Stack.Screen key={key} name={config.name}>
                     {(props) => <SkillPlanSettings {...props} planKey={config.planKey} name={config.name} title={config.title} description={config.description} />}
                 </Stack.Screen>
             ))}
@@ -60,9 +61,12 @@ function SettingsStack() {
 function MainDrawer() {
     const { colors } = useTheme()
 
+    // Stabilize the drawerContent callback to prevent unnecessary remounts.
+    const renderDrawerContent = useCallback((props: any) => <DrawerContent {...props} />, [])
+
     return (
         <Drawer.Navigator
-            drawerContent={(props) => <DrawerContent {...props} />}
+            drawerContent={renderDrawerContent}
             screenOptions={{
                 headerShown: false,
                 drawerType: "front",

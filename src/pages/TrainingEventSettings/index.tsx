@@ -11,6 +11,7 @@ import CustomTitle from "../../components/CustomTitle"
 import CustomButton from "../../components/CustomButton"
 import { Search, X } from "lucide-react-native"
 import PageHeader from "../../components/PageHeader"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 // Import the data files.
 import charactersData from "../../data/characters.json"
@@ -40,6 +41,7 @@ const excludedEventNames = new Set([
 ])
 
 const TrainingEventSettings = () => {
+    usePerformanceLogging("TrainingEventSettings")
     const { colors } = useTheme()
     const bsc = useContext(BotStateContext)
     const scrollViewRef = useRef<ScrollView>(null)

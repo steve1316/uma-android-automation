@@ -1,4 +1,4 @@
-import { createContext, useState } from "react"
+import { createContext, useCallback, useMemo, useState } from "react"
 
 export interface MessageLogEntry {
     id: number
@@ -18,15 +18,16 @@ export const MessageLogProvider = ({ children }: any): React.ReactElement => {
     const [messageLog, setMessageLog] = useState<MessageLogEntry[]>([])
 
     // Add to the message log while keeping track of the sequential message IDs to prevent duplication.
-    const addMessageToLog = (id: number, message: string) => {
+    const addMessageToLog = useCallback((id: number, message: string) => {
         setMessageLog((prev) => [...prev, { id, message }])
-    }
+    }, [])
 
-    const providerValues: MessageLogProviderProps = {
+    // Memoize the provider value to prevent cascading re-renders.
+    const providerValues = useMemo<MessageLogProviderProps>(() => ({
         messageLog,
         setMessageLog,
         addMessageToLog,
-    }
+    }), [messageLog, addMessageToLog])
 
     return <MessageLogContext.Provider value={providerValues}>{children}</MessageLogContext.Provider>
 }

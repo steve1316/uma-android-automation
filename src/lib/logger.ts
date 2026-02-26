@@ -1,3 +1,5 @@
+import { PerformanceLogger } from "./performanceLogger"
+
 /**
  * Utility functions for logging with timestamps.
  */
@@ -14,6 +16,7 @@ export const getTimestamp = (): string => {
  * Log a message with timestamp prefix.
  */
 export const logWithTimestamp = (message: string): void => {
+    if (PerformanceLogger.SUPPRESS_LOGGING) return
     console.log(`[${getTimestamp()}] ${message}`)
 }
 

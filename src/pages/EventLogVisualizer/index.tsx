@@ -16,11 +16,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/too
 import { Info } from "lucide-react-native"
 import CustomCheckbox from "../../components/CustomCheckbox"
 import PageHeader from "../../components/PageHeader"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import WarningContainer from "../../components/WarningContainer"
 
 type MixedRecord = DayRecord | GapRecord | FileDividerRecord
 
 const EventLogVisualizer: React.FC = () => {
+    usePerformanceLogging("EventLogVisualizer")
     const { colors, isDark } = useTheme()
     const { openDataDirectory } = useSettings()
 

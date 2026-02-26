@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react"
+import { useState, useEffect, useContext, useMemo } from "react"
 import * as FileSystem from "expo-file-system"
 import * as Sharing from "expo-sharing"
 import { startActivityAsync } from "expo-intent-launcher"
@@ -329,6 +329,7 @@ export const useSettingsManager = () => {
 
     // Open the app's data directory using Storage Access Framework.
     const openDataDirectory = async () => {
+        const endTiming = startTiming("settings_manager_open_data_dir", "settings")
         // Get the app's package name from the document directory path.
         const packageName = "com.steve1316.uma_android_automation"
 
@@ -340,6 +341,7 @@ export const useSettingsManager = () => {
                     flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
                 })
 
+                endTiming({ status: "success", method: "saf" })
                 return
             } catch (safError) {
                 console.warn("SAF approach failed, trying fallback:", safError)
@@ -352,6 +354,7 @@ export const useSettingsManager = () => {
                     type: "resource/folder",
                 })
 
+                endTiming({ status: "success", method: "intent" })
                 return
             } catch (folderError) {
                 console.warn("Folder approach failed, trying file sharing:", folderError)
@@ -368,6 +371,7 @@ export const useSettingsManager = () => {
                         mimeType: "application/json",
                         dialogTitle: "Share Settings File",
                     })
+                    endTiming({ status: "success", method: "share" })
                 } else {
                     throw new Error("Sharing not available")
                 }
@@ -376,6 +380,7 @@ export const useSettingsManager = () => {
             }
         } catch (error) {
             logErrorWithTimestamp(`Error opening app data directory: ${error}`)
+            endTiming({ status: "error", error: error instanceof Error ? error.message : String(error) })
         }
     }
 
@@ -416,7 +421,7 @@ export const useSettingsManager = () => {
         }
     }
 
-    return {
+    return useMemo(() => ({
         saveSettings,
         saveSettingsImmediate,
         loadSettings,
@@ -425,5 +430,5 @@ export const useSettingsManager = () => {
         resetSettings,
         openDataDirectory,
         isSaving: isSaving || isSQLiteSaving,
-    }
+    }), [saveSettings, saveSettingsImmediate, loadSettings, importSettings, exportSettings, resetSettings, openDataDirectory, isSaving, isSQLiteSaving])
 }

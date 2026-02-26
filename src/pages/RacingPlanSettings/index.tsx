@@ -11,6 +11,7 @@ import { Input } from "../../components/ui/input"
 import { CircleCheckBig, Plus, Trash2 } from "lucide-react-native"
 import racesData from "../../data/races.json"
 import PageHeader from "../../components/PageHeader"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import SearchableItem from "../../components/SearchableItem"
 
 interface Race {
@@ -32,6 +33,7 @@ interface PlannedRace {
 }
 
 const RacingPlanSettings = () => {
+    usePerformanceLogging("RacingPlanSettings")
     const { colors } = useTheme()
     const bsc = useContext(BotStateContext)
     const scrollViewRef = useRef<ScrollView>(null)
@@ -75,22 +77,26 @@ const RacingPlanSettings = () => {
     }, [improvementThreshold])
 
     // Parse racing plan from JSON string.
-    const parsedRacingPlan: PlannedRace[] = racingPlan && racingPlan !== "[]" && typeof racingPlan === "string" ? JSON.parse(racingPlan) : []
+    const parsedRacingPlan: PlannedRace[] = useMemo(() => {
+        return racingPlan && racingPlan !== "[]" && typeof racingPlan === "string" ? JSON.parse(racingPlan) : []
+    }, [racingPlan])
 
     // Convert races.json to array.
-    const allRaces: Race[] = Object.values(racesData)
+    const allRaces: Race[] = useMemo(() => Object.values(racesData), [])
 
     // Filter races based on search and preferences.
-    const filteredRaces = allRaces.filter((race) => {
-        const matchesSearch = race.name.toLowerCase().includes(searchQuery.toLowerCase()) || race.date.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredRaces = useMemo(() => {
+        return allRaces.filter((race) => {
+            const matchesSearch = race.name.toLowerCase().includes(searchQuery.toLowerCase()) || race.date.toLowerCase().includes(searchQuery.toLowerCase())
 
-        const matchesFans = race.fans >= minFansThreshold
-        const matchesTerrain = preferredTerrain === "Any" || race.terrain === preferredTerrain
-        const matchesGrade = preferredGrades.includes(race.grade) && race.grade !== "OP" && race.grade !== "Pre-OP"
-        const matchesDistance = preferredDistances.includes(race.distanceType)
+            const matchesFans = race.fans >= minFansThreshold
+            const matchesTerrain = preferredTerrain === "Any" || race.terrain === preferredTerrain
+            const matchesGrade = preferredGrades.includes(race.grade) && race.grade !== "OP" && race.grade !== "Pre-OP"
+            const matchesDistance = preferredDistances.includes(race.distanceType)
 
-        return matchesSearch && matchesFans && matchesTerrain && matchesGrade && matchesDistance
-    })
+            return matchesSearch && matchesFans && matchesTerrain && matchesGrade && matchesDistance
+        })
+    }, [allRaces, searchQuery, minFansThreshold, preferredTerrain, preferredGrades, preferredDistances])
 
     const updateRacingSetting = (key: string, value: any) => {
         if (key === "enableRacingPlan" && value) {

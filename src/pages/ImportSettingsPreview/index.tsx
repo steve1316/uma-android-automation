@@ -6,6 +6,7 @@ import CustomButton from "../../components/CustomButton"
 import { SettingsChange } from "../../hooks/useSettingsFileManager"
 import { useSettings } from "../../context/SettingsContext"
 import PageHeader from "../../components/PageHeader"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 /**
  * Route params passed from the settings file manager when navigating to this screen.
@@ -16,6 +17,7 @@ interface ImportSettingsPreviewParams {
 }
 
 const ImportSettingsPreview = () => {
+    usePerformanceLogging("ImportSettingsPreview")
     const { colors, isDark } = useTheme()
     const navigation = useNavigation()
     const route = useRoute()
@@ -27,13 +29,15 @@ const ImportSettingsPreview = () => {
     const fileUri = params.fileUri || ""
 
     // Group changes by category.
-    const groupedChanges = changes.reduce((acc, change) => {
-        if (!acc[change.category]) {
-            acc[change.category] = []
-        }
-        acc[change.category].push(change)
-        return acc
-    }, {} as Record<string, SettingsChange[]>)
+    const groupedChanges = useMemo(() => {
+        return changes.reduce((acc, change) => {
+            if (!acc[change.category]) {
+                acc[change.category] = []
+            }
+            acc[change.category].push(change)
+            return acc
+        }, {} as Record<string, SettingsChange[]>)
+    }, [changes])
 
     const styles = useMemo(
         () =>

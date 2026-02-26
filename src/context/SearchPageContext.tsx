@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from "react"
+import React, { createContext, useContext, useMemo, ReactNode } from "react"
 import { ScrollView } from "react-native"
 
 interface SearchPageContextType {
@@ -18,7 +18,10 @@ const SearchPageContext = createContext<SearchPageContextType | undefined>(undef
  * @param children The children of the provider.
  */
 export const SearchPageProvider = ({ page, scrollViewRef, children }: { page: string; scrollViewRef?: React.RefObject<ScrollView | null>; children: ReactNode }) => {
-    return <SearchPageContext.Provider value={{ page, scrollViewRef }}>{children}</SearchPageContext.Provider>
+    // Memoize the provider value to prevent cascading re-renders.
+    const value = useMemo(() => ({ page, scrollViewRef }), [page, scrollViewRef])
+
+    return <SearchPageContext.Provider value={value}>{children}</SearchPageContext.Provider>
 }
 
 export const useSearchPage = () => {

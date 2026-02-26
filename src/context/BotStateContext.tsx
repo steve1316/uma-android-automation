@@ -1,4 +1,4 @@
-import { createContext, useState } from "react"
+import { createContext, useState, useMemo, useCallback } from "react"
 import { startTiming } from "../lib/performanceLogger"
 import racesData from "../data/races.json"
 import { skillPlanSettingsPages } from "../pages/SkillPlanSettings"
@@ -360,7 +360,7 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     const [settings, setSettings] = useState<Settings>(() => JSON.parse(JSON.stringify(defaultSettings)))
 
     // Wrapped setSettings with performance logging.
-    const setSettingsWithLogging = (update: Settings | ((prev: Settings) => Settings)) => {
+    const setSettingsWithLogging = useCallback((update: Settings | ((prev: Settings) => Settings)) => {
         const endTiming = startTiming("bot_state_set_settings", "state")
 
         try {
@@ -378,9 +378,10 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
             endTiming({ status: "error", error: error instanceof Error ? error.message : String(error) })
             throw error
         }
-    }
+    }, [])
 
-    const providerValues: BotStateProviderProps = {
+    // Memoize the provider value to prevent cascading re-renders.
+    const providerValues = useMemo<BotStateProviderProps>(() => ({
         readyStatus,
         setReadyStatus,
         defaultSettings,
@@ -390,7 +391,7 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
         setAppName,
         appVersion,
         setAppVersion,
-    }
+    }), [readyStatus, settings, appName, appVersion, setSettingsWithLogging])
 
     return <BotStateContext.Provider value={providerValues}>{children}</BotStateContext.Provider>
 }

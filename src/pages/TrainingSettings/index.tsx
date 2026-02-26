@@ -1,4 +1,4 @@
-import React, { useMemo, useContext, useEffect, useState, useRef } from "react"
+import React, { useMemo, useContext, useEffect, useState, useRef, useCallback } from "react"
 import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Dimensions } from "react-native"
 import { Snackbar } from "react-native-paper"
 import { useTheme } from "../../context/ThemeContext"
@@ -18,8 +18,10 @@ import { databaseManager } from "../../lib/database"
 import PageHeader from "../../components/PageHeader"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import SearchableItem from "../../components/SearchableItem"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const TrainingSettings = () => {
+    usePerformanceLogging("TrainingSettings")
     const { colors } = useTheme()
     const bsc = useContext(BotStateContext)
     const scrollViewRef = useRef<ScrollView>(null)
@@ -49,16 +51,24 @@ const TrainingSettings = () => {
         return defaultSettings.training.focusOnSparkStatTarget
     })
 
+    // Use a ref to track if the initial mount sync has been done to avoid redundant updates.
+    const isMounted = useRef(false)
+
     // Merge current training settings with defaults to handle missing properties.
     // Include local state values to ensure blacklist and prioritization are current.
-    const trainingSettings = {
-        ...defaultSettings.training,
-        ...settings.training,
-        trainingBlacklist: blacklistItems,
-        statPrioritization: statPrioritizationItems,
-        focusOnSparkStatTarget: sparkStatTargetItems,
-    }
-    const trainingStatTargetSettings = { ...defaultSettings.trainingStatTarget, ...settings.trainingStatTarget }
+    const trainingSettings = useMemo(
+        () => ({
+            ...defaultSettings.training,
+            ...settings.training,
+            trainingBlacklist: blacklistItems,
+            statPrioritization: statPrioritizationItems,
+            focusOnSparkStatTarget: sparkStatTargetItems,
+        }),
+        [settings.training, blacklistItems, statPrioritizationItems, sparkStatTargetItems],
+    )
+
+    const trainingStatTargetSettings = useMemo(() => ({ ...defaultSettings.trainingStatTarget, ...settings.trainingStatTarget }), [settings.trainingStatTarget])
+
     const {
         maximumFailureChance,
         disableTrainingOnMaxedStat,
@@ -73,35 +83,59 @@ const TrainingSettings = () => {
         enablePrioritizeSkillHints,
     } = trainingSettings
 
+    // Update global settings when local state changes, but skip the initial mount check.
+    // We also verify that the values are actually different before triggering an update.
     useEffect(() => {
-        updateTrainingSetting("statPrioritization", statPrioritizationItems)
+        if (isMounted.current) {
+            const currentVal = settings.training?.statPrioritization
+            if (JSON.stringify(currentVal) !== JSON.stringify(statPrioritizationItems)) {
+                updateTrainingSetting("statPrioritization", statPrioritizationItems)
+            }
+        }
     }, [statPrioritizationItems])
 
     useEffect(() => {
-        updateTrainingSetting("trainingBlacklist", blacklistItems)
+        if (isMounted.current) {
+            const currentVal = settings.training?.trainingBlacklist
+            if (JSON.stringify(currentVal) !== JSON.stringify(blacklistItems)) {
+                updateTrainingSetting("trainingBlacklist", blacklistItems)
+            }
+        }
     }, [blacklistItems])
 
     useEffect(() => {
-        updateTrainingSetting("focusOnSparkStatTarget", sparkStatTargetItems)
+        if (isMounted.current) {
+            const currentVal = settings.training?.focusOnSparkStatTarget
+            if (JSON.stringify(currentVal) !== JSON.stringify(sparkStatTargetItems)) {
+                updateTrainingSetting("focusOnSparkStatTarget", sparkStatTargetItems)
+            }
+        }
     }, [sparkStatTargetItems])
+
+    // Mark as mounted after the first render.
+    useEffect(() => {
+        isMounted.current = true
+    }, [])
 
     // Sync local state when settings change (e.g., when switching profiles).
     useEffect(() => {
-        if (settings.training?.trainingBlacklist !== undefined) {
-            setBlacklistItems(settings.training.trainingBlacklist)
+        const newVal = settings.training?.trainingBlacklist
+        if (newVal !== undefined && JSON.stringify(newVal) !== JSON.stringify(blacklistItems)) {
+            setBlacklistItems(newVal)
         }
     }, [settings.training?.trainingBlacklist])
 
     useEffect(() => {
-        if (settings.training?.statPrioritization !== undefined) {
-            setStatPrioritizationItems(settings.training.statPrioritization)
+        const newVal = settings.training?.statPrioritization
+        if (newVal !== undefined && JSON.stringify(newVal) !== JSON.stringify(statPrioritizationItems)) {
+            setStatPrioritizationItems(newVal)
         }
     }, [settings.training?.statPrioritization])
 
     useEffect(() => {
-        const value = settings.training?.focusOnSparkStatTarget
-        if (value !== undefined && Array.isArray(value)) {
-            setSparkStatTargetItems(value)
+        const newVal = settings.training?.focusOnSparkStatTarget
+        if (newVal !== undefined && Array.isArray(newVal) && JSON.stringify(newVal) !== JSON.stringify(sparkStatTargetItems)) {
+            setSparkStatTargetItems(newVal)
         }
     }, [settings.training?.focusOnSparkStatTarget])
 
@@ -123,7 +157,7 @@ const TrainingSettings = () => {
         syncProfileName()
     }, [currentProfileName])
 
-    const updateTrainingSetting = (key: keyof typeof settings.training, value: any) => {
+    const updateTrainingSetting = useCallback((key: keyof typeof settings.training, value: any) => {
         setSettings((prev) => ({
             ...prev,
             training: {
@@ -131,7 +165,7 @@ const TrainingSettings = () => {
                 [key]: value,
             },
         }))
-    }
+    }, [setSettings])
 
     const handleOverwriteSettings = async (profileSettings: Partial<Settings>) => {
         // Get the current profile name directly from the database to ensure we have the latest value.
@@ -168,7 +202,7 @@ const TrainingSettings = () => {
         }
     }
 
-    const updateTrainingStatTarget = (key: keyof typeof settings.trainingStatTarget, value: any) => {
+    const updateTrainingStatTarget = useCallback((key: keyof typeof settings.trainingStatTarget, value: any) => {
         setSettings((prev) => ({
             ...prev,
             trainingStatTarget: {
@@ -176,7 +210,7 @@ const TrainingSettings = () => {
                 [key]: value,
             },
         }))
-    }
+    }, [setSettings])
 
     const styles = useMemo(
         () =>
@@ -892,4 +926,4 @@ const TrainingSettings = () => {
     )
 }
 
-export default TrainingSettings
+export default React.memo(TrainingSettings)

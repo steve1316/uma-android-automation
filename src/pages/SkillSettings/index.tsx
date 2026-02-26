@@ -13,8 +13,10 @@ import { BotStateContext, defaultSettings } from "../../context/BotStateContext"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import { skillPlanSettingsPages } from "../SkillPlanSettings"
 import InfoContainer from "../../components/InfoContainer"
+import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 const SkillSettings = () => {
+    usePerformanceLogging("SkillSettings")
     const { colors } = useTheme()
     const navigation = useNavigation()
     const bsc = useContext(BotStateContext)
