@@ -84,6 +84,9 @@ interface SkillItemCardProps {
     children?: ReactNode
 }
 
+// Convert skills.json to array.
+const skillData: Skill[] = Object.values(skillsData)
+
 const SkillItemCard: FC<SkillItemCardProps> = ({ item, onPress, children }) => {
     const { colors } = useTheme()
 
@@ -163,40 +166,36 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
     const [searchQuery, setSearchQuery] = useState("")
     const [snackbarVisible, setSnackbarVisible] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState("")
+    // Modal list data used to ensure data immutability when modifying lists.
+    const [searchModalData, setSearchModalData] = useState<Skill[]>(skillData)
+    const [selectedSkillsModalData, setSelectedSkillsModalData] = useState<Skill[]>([])
+
     const snackbarTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
     const scrollViewRef = useRef<ScrollView>(null)
-    const selectedSkillsScrollViewRef = useRef<ScrollView>(null)
-
-    // Convert skills.json to array.
-    const skillData: Skill[] = useMemo(() => {
-        return Object.values(skillsData)
-    }, [])
 
     // Parse skill plan from CSV string.
     const planIds: number[] = useMemo(() => {
         return plan && plan !== "" && typeof plan === "string" ? plan.split(",").map((s) => Number(s)) : []
     }, [plan])
 
-    const availableSkills: Skill[] = useMemo(() => {
-        return skillData.filter((item: Skill) => !planIds.includes(item.id))
-    }, [skillData, planIds])
-
-    const filteredSkills: Skill[] = useMemo(() => {
+    React.useEffect(() => {
+        console.log("planIds or skillData changed 0:", planIds)
+        const availableSkills: Skill[] = skillData.filter((item: Skill) => !planIds.includes(item.id))
         if (!searchQuery.trim()) {
-            return availableSkills
+            setSearchModalData(availableSkills)
+            return
         }
+
         const query = searchQuery.toLowerCase()
-        return availableSkills.filter((item: Skill) => {
-            return item.name_en.toLowerCase().includes(query)
-        })
-    }, [searchQuery, availableSkills])
+        setSearchModalData(availableSkills.filter((item: Skill) => item.name_en.toLowerCase().includes(query)))
+    }, [searchQuery, planIds, skillData])
 
-    const currentSkills = useMemo(() => {
-        return skillData.filter((item: Skill) => planIds.includes(item.id))
-    }, [skillData, planIds])
+    React.useEffect(() => {
+        console.log("planIds or skillData changed 1:", planIds)
+        setSelectedSkillsModalData(skillData.filter((item: Skill) => planIds.includes(item.id)))
+    }, [planIds, skillData])
 
-    const keyExtractor = useCallback((item: Skill) => item.id.toString(), [])
+    const keyExtractor = useCallback((item: Skill) => `${item.id.toString()}${item.name_en}`, [])
 
     const updateSkillsSetting = useCallback((key: string, value: any) => {
         setSettings({
@@ -214,13 +213,6 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         })
     }, [bsc.settings, planKey, setSettings])
 
-    const removeSkillFromPlan = useCallback((skill: Skill) => {
-        const newPlanIds: number[] = planIds.filter((id) => id !== skill.id)
-
-        // Update the racing plan with the changes.
-        updateSkillsSetting("plan", newPlanIds.join(","))
-    }, [planIds, updateSkillsSetting])
-
     const showSnackbar = useCallback((msg: string) => {
         if (!searchModalVisible) {
             return
@@ -237,6 +229,13 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
             setSnackbarVisible(false)
         }, 2000)
     }, [searchModalVisible, snackbarTimeoutRef, setSnackbarMessage, setSnackbarVisible])
+
+    const removeSkillFromPlan = useCallback((skill: Skill) => {
+        const newPlanIds: number[] = planIds.filter((id) => id !== skill.id)
+
+        // Update the racing plan with the changes.
+        updateSkillsSetting("plan", newPlanIds.join(","))
+    }, [planIds, updateSkillsSetting])
 
     const addSkillToPlan = useCallback((skill: Skill) => {
         if (planIds.includes(skill.id)) {
@@ -491,7 +490,10 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
     }, [renderSelectedSkillItem])
 
     const renderSearchModalSkillItem: ListRenderItem<Skill> = useCallback(({ item }: { item: Skill }) => (
-        <SkillItemCard item={item} onPress={() => addSkillToPlan(item)} />
+        <SkillItemCard item={item} onPress={() => {
+            console.log("onPress: " + JSON.stringify(item))
+            addSkillToPlan(item)
+        }} />
     ), [addSkillToPlan])
 
     const renderSelectedSkillsList = useCallback(() => (
@@ -504,18 +506,18 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                 marginBottom: 12,
             }}>
                 <Text style={{ fontSize: 16, fontWeight: "600", color: colors.foreground }}>
-                    Current Skills ({currentSkills.length})
+                    Current Skills ({selectedSkillsModalData.length})
                 </Text>
                 <CustomButton
                     icon={<Trash2 size={16} />}
                     onPress={clearAllSkillsFromPlan}
-                    variant={currentSkills.length <= 0 ? "outline" : "destructive"}
+                    variant={selectedSkillsModalData.length <= 0 ? "outline" : "destructive"}
                 >
                     Clear
                 </CustomButton>
             </View>
-            {currentSkills.slice(0, MAX_SKILLS_IN_LIST).map((item) => renderSelectedSkillItem(item))}
-            {currentSkills.length > MAX_SKILLS_IN_LIST && (
+            {selectedSkillsModalData.slice(0, MAX_SKILLS_IN_LIST).map((item) => renderSelectedSkillItem(item))}
+            {selectedSkillsModalData.length > MAX_SKILLS_IN_LIST && (
                 <View style={styles.section}>
                     <CustomButton
                         onPress={() => {
@@ -523,13 +525,13 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
                         }}
                         variant="default"
                     >
-                        {currentSkills.length - MAX_SKILLS_IN_LIST} more skills not displayed. Click to view all skills in plan.
+                        {selectedSkillsModalData.length - MAX_SKILLS_IN_LIST} more skills not displayed. Click to view all skills in plan.
                     </CustomButton>
                 </View>
             )}
         </View>
     ), [
-        currentSkills,
+        selectedSkillsModalData,
         clearAllSkillsFromPlan,
         renderSelectedSkillItem,
         setSelectedSkillsModalVisible,
@@ -555,14 +557,14 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
 
                     <View style={styles.searchSkillsList}>
                         <FlashList
-                            data={currentSkills}
+                            data={selectedSkillsModalData}
                             renderItem={renderSelectedSkillsModalSkillItem}
                             keyExtractor={keyExtractor}
                             keyboardShouldPersistTaps="always"
                             ListEmptyComponent={
                                 <View style={{ padding: 20 }}>
                                     <Text style={styles.noResults}>
-                                        {currentSkills.length === 0 && "No skills selected in plan."}
+                                        {selectedSkillsModalData.length === 0 && "No skills selected in plan."}
                                     </Text>
                                 </View>
                             }
@@ -572,9 +574,9 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
             </TouchableOpacity>
         </Modal>
     ), [
+        selectedSkillsModalData,
         selectedSkillsModalVisible,
         setSelectedSkillsModalVisible,
-        currentSkills,
         renderSelectedSkillsModalSkillItem,
         keyExtractor,
     ])
@@ -630,21 +632,13 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
 
                     <View style={styles.searchSkillsList}>
                         <FlashList
-                            data={filteredSkills}
+                            data={searchModalData}
                             renderItem={renderSearchModalSkillItem}
                             keyExtractor={keyExtractor}
                             keyboardShouldPersistTaps="always"
                             ListEmptyComponent={
                                 <View style={{ padding: 20 }}>
-                                    <Text style={styles.noResults}>
-                                        {skillData.length === 0
-                                            ? "Failed to load any skill data. Check logs for errors."
-                                            : availableSkills.length === 0
-                                                ? "All available skills have been selected."
-                                                : filteredSkills.length === 0
-                                                && "No skills match your search. Try a different search term."
-                                        }
-                                    </Text>
+                                    <Text style={styles.noResults}>No skills match your search.</Text>
                                 </View>
                             }
                         />
@@ -653,6 +647,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
             </TouchableOpacity>
         </Modal>
     ), [
+        searchModalData,
         searchModalVisible,
         setSearchModalVisible,
         onDismissSnackbar,
@@ -661,9 +656,6 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         setSearchQuery,
         renderSearchModalSkillItem,
         keyExtractor,
-        skillData,
-        availableSkills,
-        filteredSkills,
     ])
 
     return (
