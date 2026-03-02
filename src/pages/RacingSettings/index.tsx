@@ -14,6 +14,11 @@ import WarningContainer from "../../components/WarningContainer"
 import SearchableItem from "../../components/SearchableItem"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
+/**
+ * The Racing Settings page.
+ * Provides configuration for fan farming, race retries, mandatory race handling, race strategies (Junior vs. Original),
+ * force racing, in-game race agenda, and navigation to the Racing Plan Settings sub-page.
+ */
 const RacingSettings = () => {
     usePerformanceLogging("RacingSettings")
     const { colors } = useTheme()
@@ -38,6 +43,12 @@ const RacingSettings = () => {
         enableUserInGameRaceAgenda,
     } = racingSettings
 
+    /**
+     * Update a racing setting with special handling for the in-game race agenda.
+     * When the in-game race agenda is enabled, it automatically disables the Farming Fans and Racing Plan settings to prevent conflicts.
+     * @param key The key of the setting to update.
+     * @param value The value to set the setting to.
+     */
     const updateRacingSetting = (key: keyof typeof settings.racing, value: any) => {
         if (key === "enableUserInGameRaceAgenda" && value) {
             setSettings({
@@ -98,7 +109,7 @@ const RacingSettings = () => {
                     marginTop: 4,
                 },
             }),
-        [colors],
+        [colors]
     )
 
     return (

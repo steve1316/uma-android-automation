@@ -7,121 +7,144 @@ import { X } from "lucide-react-native"
 import { useProfileManager } from "../../hooks/useProfileManager"
 import { Settings } from "../../context/BotStateContext"
 
+// Table headers for the stat targets table.
 const TABLE_HEADERS = ["", "SPD", "STA", "POW", "GUTS", "WIT"]
+// Distance types for the stat targets table.
 const DISTANCE_TYPES = ["Sprint", "Mile", "Med", "Long"]
 
 interface ProfileCreationModalProps {
+    /** Whether the modal is currently visible. */
     visible: boolean
+    /** Callback to close the modal. */
     onClose: () => void
+    /** The current training settings to be saved in the new profile. */
     currentTrainingSettings: Settings["training"]
+    /** The current training stat target settings to be saved in the new profile. */
     currentTrainingStatTargetSettings: Settings["trainingStatTarget"]
+    /** Optional callback fired after a profile is successfully created. */
     onProfileCreated?: (profileName: string) => void
+    /** Optional callback fired when an error occurs. */
     onError?: (message: string) => void
 }
 
+/**
+ * A modal dialog for creating new training profiles.
+ * Displays a name input, a preview of the current training settings,
+ * and a stat targets table organized by distance type.
+ * @param visible Whether the modal is visible.
+ * @param onClose Callback to close the modal.
+ * @param currentTrainingSettings The current training settings to save.
+ * @param currentTrainingStatTargetSettings The current stat target settings to save.
+ * @param onProfileCreated Optional callback fired after successful creation.
+ * @param onError Optional callback for error handling.
+ */
 const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, onClose, currentTrainingSettings, currentTrainingStatTargetSettings, onProfileCreated, onError }) => {
     const { colors } = useTheme()
     const { createProfile } = useProfileManager(onError)
     const [profileName, setProfileName] = useState("")
     const [isCreating, setIsCreating] = useState(false)
 
-    const styles = useMemo(() => StyleSheet.create({
-        modal: {
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(70, 70, 70, 0.5)",
-        },
-        modalContent: {
-            backgroundColor: colors.background,
-            borderRadius: 12,
-            padding: 20,
-            width: "90%",
-            maxHeight: "80%",
-        },
-        header: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 20,
-        },
-        title: {
-            fontSize: 20,
-            fontWeight: "bold",
-            color: colors.foreground,
-        },
-        closeButton: {
-            padding: 4,
-        },
-        input: {
-            marginBottom: 16,
-        },
-        settingsPreview: {
-            marginTop: 16,
-            marginBottom: 16,
-            padding: 12,
-            backgroundColor: colors.secondary,
-            borderRadius: 8,
-            height: 200,
-        },
-        previewTitle: {
-            fontSize: 14,
-            fontWeight: "600",
-            color: colors.foreground,
-            marginBottom: 8,
-        },
-        previewText: {
-            fontSize: 12,
-            color: colors.foreground,
-            opacity: 0.7,
-        },
-        tableContainer: {
-            marginTop: 12,
-        },
-        tableTitle: {
-            fontSize: 12,
-            fontWeight: "600",
-            color: colors.foreground,
-            marginBottom: 8,
-        },
-        table: {
-            borderWidth: 1,
-            borderColor: colors.foreground + "40",
-            borderRadius: 4,
-            overflow: "hidden",
-            backgroundColor: colors.secondary,
-        },
-        tableRow: {
-            flexDirection: "row",
-            borderBottomWidth: 1,
-            borderBottomColor: colors.foreground + "30",
-        },
-        tableCell: {
-            flex: 1,
-            padding: 8,
-            borderRightWidth: 1,
-            borderRightColor: colors.foreground + "30",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.secondary,
-        },
-        tableHeaderText: {
-            fontSize: 9,
-            fontWeight: "600",
-            color: colors.foreground,
-        },
-        tableCellText: {
-            fontSize: 9,
-            color: colors.foreground,
-            opacity: 0.8,
-        },
-        buttonRow: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            gap: 8,
-            marginTop: 16,
-        },
-    }), [colors])
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                modal: {
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "rgba(70, 70, 70, 0.5)",
+                },
+                modalContent: {
+                    backgroundColor: colors.background,
+                    borderRadius: 12,
+                    padding: 20,
+                    width: "90%",
+                    maxHeight: "80%",
+                },
+                header: {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 20,
+                },
+                title: {
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    color: colors.foreground,
+                },
+                closeButton: {
+                    padding: 4,
+                },
+                input: {
+                    marginBottom: 16,
+                },
+                settingsPreview: {
+                    marginTop: 16,
+                    marginBottom: 16,
+                    padding: 12,
+                    backgroundColor: colors.secondary,
+                    borderRadius: 8,
+                    height: 200,
+                },
+                previewTitle: {
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: colors.foreground,
+                    marginBottom: 8,
+                },
+                previewText: {
+                    fontSize: 12,
+                    color: colors.foreground,
+                    opacity: 0.7,
+                },
+                tableContainer: {
+                    marginTop: 12,
+                },
+                tableTitle: {
+                    fontSize: 12,
+                    fontWeight: "600",
+                    color: colors.foreground,
+                    marginBottom: 8,
+                },
+                table: {
+                    borderWidth: 1,
+                    borderColor: colors.foreground + "40",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    backgroundColor: colors.secondary,
+                },
+                tableRow: {
+                    flexDirection: "row",
+                    borderBottomWidth: 1,
+                    borderBottomColor: colors.foreground + "30",
+                },
+                tableCell: {
+                    flex: 1,
+                    padding: 8,
+                    borderRightWidth: 1,
+                    borderRightColor: colors.foreground + "30",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.secondary,
+                },
+                tableHeaderText: {
+                    fontSize: 9,
+                    fontWeight: "600",
+                    color: colors.foreground,
+                },
+                tableCellText: {
+                    fontSize: 9,
+                    color: colors.foreground,
+                    opacity: 0.8,
+                },
+                buttonRow: {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    marginTop: 16,
+                },
+            }),
+        [colors]
+    )
 
     // Format the training settings into a preview string.
     const settingsPreview = useMemo(() => {
@@ -174,18 +197,24 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
         }))
     }, [getStatTargets])
 
+    /**
+     * Handles the creation of a new profile.
+     */
     const handleCreate = useCallback(async () => {
         if (!profileName.trim()) {
             return
         }
 
         try {
+            // Set loading state.
             setIsCreating(true)
             const createdProfileName = profileName.trim()
+            // Create the new profile.
             await createProfile(createdProfileName, {
                 training: currentTrainingSettings,
                 trainingStatTarget: currentTrainingStatTargetSettings,
             })
+            // Reset the profile name and close the modal. The callback is called to notify the parent component that the profile was created.
             setProfileName("")
             onProfileCreated?.(createdProfileName)
             onClose()
@@ -197,6 +226,9 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
         }
     }, [profileName, createProfile, currentTrainingSettings, currentTrainingStatTargetSettings, onProfileCreated, onClose, onError])
 
+    /**
+     * Handles the closing of the modal by resetting the profile name and calling the `onClose` callback.
+     */
     const handleClose = useCallback(() => {
         setProfileName("")
         onClose()
@@ -206,6 +238,7 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
         <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={handleClose}>
             <View style={styles.modal}>
                 <View style={styles.modalContent}>
+                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Create New Profile</Text>
                         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
@@ -213,10 +246,12 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
                         </TouchableOpacity>
                     </View>
 
+                    {/* Profile name input */}
                     <View style={styles.input}>
                         <Input placeholder="Profile name" value={profileName} onChangeText={setProfileName} style={{ color: colors.foreground, backgroundColor: colors.secondary }} />
                     </View>
 
+                    {/* Training settings preview */}
                     <View style={styles.settingsPreview}>
                         <Text style={styles.previewTitle}>Current Training Settings (will be saved):</Text>
                         <ScrollView nestedScrollEnabled={true}>
@@ -232,7 +267,7 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
                                             </View>
                                         ))}
                                     </View>
-                                    {/* Data Rows */}
+                                    {/* Data Rows for each distance type and stat */}
                                     {tableData.map((row, rowIndex) => (
                                         <View key={rowIndex} style={styles.tableRow}>
                                             <View style={[styles.tableCell, { borderRightWidth: 1 }]}>

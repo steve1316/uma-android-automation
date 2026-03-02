@@ -14,6 +14,7 @@
         "build:debug:bundle": "node android/generate-bundle.js && cd android && ./gradlew --stop && ./gradlew assembleDebug",
         "build:debug:clean": "cd android && ./gradlew --stop && ./gradlew clean && ./gradlew assembleDebug",
         "lint": "expo lint",
+        "format": "prettier --write \"**/*.{ts,tsx}\"",
         "update": "yarn install && yarn upgrade-interactive --latest"
     },
     "dependencies": {

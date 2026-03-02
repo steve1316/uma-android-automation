@@ -3,6 +3,7 @@ package com.steve1316.uma_android_automation.bot
 import android.graphics.Bitmap
 import android.util.Log
 import com.steve1316.automation_library.utils.MessageLog
+import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.components.*
 import com.steve1316.uma_android_automation.types.BoundingBox
@@ -190,6 +191,9 @@ open class DialogHandler(val game: Game) {
 					MessageLog.i(TAG, "\n[END] Stopping the bot due to failing a mandatory race.")
 					MessageLog.i(TAG, "********************")
 					game.notificationMessage = "Stopping the bot due to failing a mandatory race."
+					if (DiscordUtils.enableDiscordNotifications) {
+						DiscordUtils.queue.add("```diff\n- ${MessageLog.getSystemTimeString()} Stopping the bot due to failing a mandatory race.\n```")
+					}
 					throw IllegalStateException()
 				}
 				game.racing.raceRetries--
@@ -293,6 +297,9 @@ open class DialogHandler(val game: Game) {
 					MessageLog.i(TAG, "\n[END] Stopping the bot due to failing to handle a scheduled race.")
 					MessageLog.i(TAG, "********************")
 					game.notificationMessage = "Stopping the bot due to failing to handle a scheduled race."
+					if (DiscordUtils.enableDiscordNotifications) {
+						DiscordUtils.queue.add("```diff\n- ${MessageLog.getSystemTimeString()} Stopping the bot due to failing to handle a scheduled race.\n```")
+					}
 					throw IllegalStateException()
 				}
 			}

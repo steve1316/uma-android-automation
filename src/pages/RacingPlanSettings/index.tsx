@@ -14,24 +14,47 @@ import PageHeader from "../../components/PageHeader"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import SearchableItem from "../../components/SearchableItem"
 
+/**
+ * Represents a race entry from the `races.json` data file.
+ */
 interface Race {
+    /** The display name of the race. */
     name: string
+    /** The in-game date when the race occurs. */
     date: string
+    /** The race grade (e.g. G1, G2, G3). */
     grade: string
+    /** The terrain type (e.g. Turf, Dirt). */
     terrain: string
+    /** The distance category (e.g. Short, Mile, Medium, Long). */
     distanceType: string
+    /** The actual distance in meters. */
     distanceMeters: number
+    /** The number of fans gained from this race. */
     fans: number
+    /** The turn number when this race occurs. */
     turnNumber: number
 }
 
+/**
+ * Represents a race that has been added to the user's racing plan.
+ */
 interface PlannedRace {
+    /** The name of the planned race. */
     raceName: string
+    /** The in-game date when the planned race occurs. */
     date: string
+    /** The priority order of this race in the plan. */
     priority: number
+    /** The turn number when this race occurs. */
     turnNumber: number
 }
 
+/**
+ * The Racing Plan Settings page.
+ * Provides smart race planning with opportunity cost analysis, configurable quality thresholds, terrain/grade/distance filters,
+ * time decay factors, and a selectable list of planned races.
+ */
 const RacingPlanSettings = () => {
     usePerformanceLogging("RacingPlanSettings")
     const { colors } = useTheme()
@@ -98,6 +121,11 @@ const RacingPlanSettings = () => {
         })
     }, [allRaces, searchQuery, minFansThreshold, preferredTerrain, preferredGrades, preferredDistances])
 
+    /**
+     * Update a racing setting with special handling for the racing plan settings.
+     * @param key The key of the setting to update.
+     * @param value The value to set the setting to.
+     */
     const updateRacingSetting = (key: string, value: any) => {
         if (key === "enableRacingPlan" && value) {
             setSettings({
@@ -122,6 +150,11 @@ const RacingPlanSettings = () => {
         }
     }
 
+    /**
+     * Toggle the selection of a race within the racing plan.
+     * If the race is already present in the plan, it will be removed. Otherwise, it is added to the plan.
+     * @param race The specific race instance to add or remove.
+     */
     const handleRacePress = (race: Race) => {
         // Determine if this should be added to the racing plan or removed.
         // Use raceName + date + turnNumber to uniquely identify each race instance.
@@ -146,6 +179,9 @@ const RacingPlanSettings = () => {
         updateRacingSetting("racingPlan", JSON.stringify(newPlan))
     }
 
+    /**
+     * Add all currently filtered races to the racing plan.
+     */
     const addAllRacesToPlan = () => {
         const newPlan: PlannedRace[] = filteredRaces.map((race, index) => ({
             raceName: race.name,
@@ -157,26 +193,37 @@ const RacingPlanSettings = () => {
         updateRacingSetting("racingPlan", JSON.stringify(newPlan))
     }
 
+    /**
+     * Remove all races from the racing plan.
+     */
     const clearAllRacesFromPlan = () => {
         updateRacingSetting("racingPlan", JSON.stringify([]))
     }
 
+    /**
+     * Toggle a race grade in the preferred grades list.
+     * @param grade The grade to add or remove (e.g., `G1`, `G2`, `G3`).
+     */
     const toggleGrade = (grade: string) => {
         if (preferredGrades.includes(grade)) {
             updateRacingSetting(
                 "preferredGrades",
-                preferredGrades.filter((g: string) => g !== grade),
+                preferredGrades.filter((g: string) => g !== grade)
             )
         } else {
             updateRacingSetting("preferredGrades", [...preferredGrades, grade])
         }
     }
 
+    /**
+     * Toggle a distance category in the preferred distances list.
+     * @param distance The distance category to add or remove (e.g., `Mile`, `Medium`).
+     */
     const toggleDistance = (distance: string) => {
         if (preferredDistances.includes(distance)) {
             updateRacingSetting(
                 "preferredDistances",
-                preferredDistances.filter((d: string) => d !== distance),
+                preferredDistances.filter((d: string) => d !== distance)
             )
         } else {
             updateRacingSetting("preferredDistances", [...preferredDistances, distance])
@@ -264,9 +311,14 @@ const RacingPlanSettings = () => {
                     fontWeight: "600",
                 },
             }),
-        [colors],
+        [colors]
     )
 
+    /**
+     * Render the configuration options for the racing plan.
+     * Includes thresholds for fans, look-ahead days, quality, and preferred race attributes.
+     * @returns A React element containing the configuration options.
+     */
     const renderOptions = () => {
         return (
             <>
@@ -552,6 +604,11 @@ const RacingPlanSettings = () => {
         )
     }
 
+    /**
+     * Render the searchable list of races available for planning.
+     * Users can filter and select specific races to add to their optimized racing plan.
+     * @returns A React element containing the searchable race list.
+     */
     const renderRaceList = () => {
         return (
             <View style={enableRacingPlan ? styles.section : { display: "none" }}>

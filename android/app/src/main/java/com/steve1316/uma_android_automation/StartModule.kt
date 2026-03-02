@@ -25,6 +25,12 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
 import androidx.core.net.toUri
+import com.facebook.react.bridge.Promise
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import kotlinx.coroutines.runBlocking
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Takes care of setting up internal processes such as the Accessibility and MediaProjection services, receiving and sending messages over to the
@@ -288,6 +294,76 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
             } catch (e: Exception) {
                 EventBus.getDefault().postSticky(ExceptionEvent(e))
             }
+        }
+    }
+
+    /**
+     * Tests the Discord connection by creating a temporary Kord client,
+     * looking up the user, opening a DM channel, and sending a test message.
+     *
+     * @param token The Discord bot token.
+     * @param userID The Discord user ID to send the test message to.
+     * @param promise The React Native promise to resolve or reject.
+     */
+    @ReactMethod
+    fun testDiscordConnection(token: String, userID: String, promise: Promise) {
+        Log.d(TAG, "testDiscordConnection called - token length: ${token.length}, userID: '$userID'")
+        Thread {
+            runBlocking {
+                try {
+                    val client = Kord(token)
+
+                    val user = try {
+                        client.getUser(Snowflake(userID.toLong()))
+                    } catch (e: Exception) {
+                        client.shutdown()
+                        promise.reject("DISCORD_USER_ERROR", "Failed to find user with the provided user ID.")
+                        return@runBlocking
+                    }
+
+                    if (user == null) {
+                        client.shutdown()
+                        promise.reject("DISCORD_USER_ERROR", "Failed to find user with the provided user ID.")
+                        return@runBlocking
+                    }
+
+                    val dmChannel = try {
+                        user.getDmChannel()
+                    } catch (e: Exception) {
+                        client.shutdown()
+                        promise.reject("DISCORD_DM_ERROR", "Failed to open DM channel with user.")
+                        return@runBlocking
+                    }
+
+                    // Prepend a timestamp to the test message.
+                    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    dmChannel.createMessage("[$timestamp] \u2705 Test message from Uma Android Automation! Discord integration is working.")
+                    client.shutdown()
+                    promise.resolve("Test message sent successfully!")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Discord connection test failed: ${e.message}")
+                    promise.reject("DISCORD_ERROR", "Failed to connect to Discord: ${e.message}")
+                }
+            }
+        }.start()
+    }
+
+    /**
+     * Retrieves the device's exact width, height, and DPI metrics.
+     *
+     * @param promise The React Native promise that resolves the WritableMap of metrics.
+     */
+    @ReactMethod
+    fun getDeviceDimensions(promise: Promise) {
+        try {
+            val metrics = reactApplicationContext.resources.displayMetrics
+            val map = Arguments.createMap()
+            map.putInt("width", metrics.widthPixels)
+            map.putInt("height", metrics.heightPixels)
+            map.putInt("dpi", metrics.densityDpi)
+            promise.resolve(map)
+        } catch (e: Exception) {
+            promise.reject("DEVICE_INFO_ERROR", "Failed to retrieve device dimensions: ${e.message}")
         }
     }
 

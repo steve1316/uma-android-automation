@@ -5,23 +5,36 @@ import { logWithTimestamp, logErrorWithTimestamp } from "../lib/logger"
 import { Settings } from "./BotStateContext"
 
 export interface Profile {
+    /** The unique identifier for the profile. */
     id: number
+    /** The name of the profile. */
     name: string
+    /** The settings for the profile. */
     settings: Partial<Settings>
+    /** The creation timestamp of the profile. */
     created_at: string
+    /** The last updated timestamp of the profile. */
     updated_at: string
 }
 
 export const DEFAULT_PROFILE_NAME = "Default Profile"
 
 interface ProfileContextType {
+    /** The array of all profiles. */
     profiles: Profile[]
+    /** The name of the currently selected profile. */
     currentProfileName: string | null
+    /** Whether the profiles are currently being loaded. */
     isLoading: boolean
+    /** Loads all profiles from the database. */
     loadProfiles: () => Promise<void>
+    /** Loads the name of the currently selected profile. */
     loadCurrentProfileName: () => Promise<void>
+    /** Sets the array of all profiles. */
     setProfiles: (profiles: Profile[]) => void
+    /** Sets the name of the currently selected profile. */
     setCurrentProfileName: (name: string | null) => void
+    /** Sets whether the profiles are currently being loaded. */
     setIsLoading: (loading: boolean) => void
 }
 
@@ -29,6 +42,8 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 /**
  * Provider for profiles to ensure they are loaded only once and shared across components.
+ * @param children The child components to render within the provider.
+ * @returns The profile context provider.
  */
 export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [profiles, setProfiles] = useState<Profile[]>([])
@@ -97,22 +112,26 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
     }, [loadProfiles, loadCurrentProfileName])
 
     // Memoize the provider value to prevent cascading re-renders.
-    const value = useMemo(() => ({
-        profiles,
-        currentProfileName,
-        isLoading,
-        loadProfiles,
-        loadCurrentProfileName,
-        setProfiles,
-        setCurrentProfileName,
-        setIsLoading,
-    }), [profiles, currentProfileName, isLoading, loadProfiles, loadCurrentProfileName])
+    const value = useMemo(
+        () => ({
+            profiles,
+            currentProfileName,
+            isLoading,
+            loadProfiles,
+            loadCurrentProfileName,
+            setProfiles,
+            setCurrentProfileName,
+            setIsLoading,
+        }),
+        [profiles, currentProfileName, isLoading, loadProfiles, loadCurrentProfileName]
+    )
 
     return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
 }
 
 /**
- * Hook to use the ProfileContext.
+ * Hook to use the ProfileContext. It is required that it is used within a ProfileProvider.
+ * @returns The profile context with the profiles, current profile name, loading state, and profile management functions.
  */
 export const useProfileContext = () => {
     const context = useContext(ProfileContext)

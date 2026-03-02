@@ -25,38 +25,36 @@
  */
 
 export interface PerformanceMetric {
+    /** The name of the operation being timed. */
     operation: string
+    /** The duration of the operation in milliseconds. */
     duration: number
+    /** The timestamp when the operation started. */
     timestamp: number
+    /** Additional details about the operation. */
     details?: Record<string, any>
+    /** The category of the operation (e.g., "database", "settings", "state", "ui"). */
     category: "database" | "settings" | "state" | "ui"
 }
 
-export interface PerformanceLoggerOptions {
-    enableConsoleLogging?: boolean
-    maxMetricsHistory?: number
-}
-
+/**
+ * Performance logging utility for tracking operation timing and performance metrics.
+ * Provides detailed timing information for debugging performance issues.
+ */
 export class PerformanceLogger {
     public static ENABLED = false
     public static SUPPRESS_LOGGING = true
 
     private metrics: PerformanceMetric[] = []
-    private options: PerformanceLoggerOptions
     private maxMetricsHistory = 100
 
     private pendingNavigations: Map<string, number> = new Map()
 
-    constructor(options: PerformanceLoggerOptions = {}) {
-        this.options = {
-            enableConsoleLogging: true,
-            maxMetricsHistory: this.maxMetricsHistory,
-            ...options,
-        }
-    }
-
     /**
      * Start timing an operation.
+     * @param operation The name of the operation being timed.
+     * @param category The category of the operation (e.g., "database", "settings", "state", "ui").
+     * @returns A function to stop timing the operation and record the metric.
      */
     startTiming(operation: string, category: PerformanceMetric["category"] = "settings"): (details?: Record<string, any>) => PerformanceMetric {
         if (!PerformanceLogger.ENABLED) {
@@ -90,6 +88,7 @@ export class PerformanceLogger {
 
     /**
      * Mark the start of a navigation.
+     * @param target The target of the navigation.
      */
     markNavigationStart(target: string) {
         if (!PerformanceLogger.ENABLED) return
@@ -98,6 +97,8 @@ export class PerformanceLogger {
 
     /**
      * Mark the end of a navigation and record the duration.
+     * @param target The target of the navigation.
+     * @param category The category of the navigation (e.g., "ui").
      */
     markNavigationEnd(target: string, category: PerformanceMetric["category"] = "ui") {
         if (!PerformanceLogger.ENABLED) return
@@ -119,6 +120,7 @@ export class PerformanceLogger {
 
     /**
      * Record a performance metric.
+     * @param metric The metric to record.
      */
     recordMetric(metric: PerformanceMetric) {
         if (!PerformanceLogger.ENABLED) return
@@ -126,8 +128,8 @@ export class PerformanceLogger {
         this.metrics.push(metric)
 
         // Keep only the most recent metrics to prevent memory issues.
-        if (this.metrics.length > (this.options.maxMetricsHistory || this.maxMetricsHistory)) {
-            this.metrics = this.metrics.slice(-(this.options.maxMetricsHistory || this.maxMetricsHistory))
+        if (this.metrics.length > this.maxMetricsHistory) {
+            this.metrics = this.metrics.slice(-this.maxMetricsHistory)
         }
 
         this.logMetric(metric)
@@ -135,17 +137,16 @@ export class PerformanceLogger {
 
     /**
      * Log a performance metric to console.
+     * @param metric The metric to log.
      */
     private logMetric(metric: PerformanceMetric) {
         if (!PerformanceLogger.ENABLED) return
         const logMessage = `[PERF] ${metric.category.toUpperCase()} - ${metric.operation}: ${metric.duration.toFixed(2)}ms${metric.details ? ` | Details: ${JSON.stringify(metric.details)}` : ""}`
 
-        if (this.options.enableConsoleLogging) {
-            if (metric.duration >= 300) {
-                console.warn(logMessage) // Warn for slow operations.
-            } else {
-                console.log(logMessage)
-            }
+        if (metric.duration >= 300) {
+            console.warn(logMessage) // Warn for slow operations.
+        } else {
+            console.log(logMessage)
         }
     }
 }

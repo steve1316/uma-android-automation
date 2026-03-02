@@ -28,6 +28,7 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined)
  * Builds the initial search index from the static search config.
  * This replaces the HeadlessRenderer approach which rendered all pages
  * invisibly just to collect metadata, causing a UI freeze.
+ * @returns The initial search index which serves as the base for the dynamic search index.
  */
 const buildInitialIndex = (): Record<string, SearchOption> => {
     const index: Record<string, SearchOption> = {}
@@ -41,16 +42,16 @@ const buildInitialIndex = (): Record<string, SearchOption> => {
  * Provides the global registry of all searchable items and the function to register new items.
  * The index is pre-populated from the static search config on mount.
  * @param children The children of the provider.
+ * @returns The search provider.
  */
 export const SearchProvider = ({ children }: { children: ReactNode }) => {
     // Pre-populate the search index from the static config.
     const [searchIndex, setSearchIndex] = useState<Record<string, SearchOption>>(buildInitialIndex)
 
     /**
-     * Registers a new searchable item or updates an existing one.
-     * Items from the static config are already in the index, so this
-     * only triggers a state update when the parentId changes dynamically
-     * (e.g., when a conditional toggle changes).
+     * Registers a new searchable item or updates an existing one. Items from the static config are already in the index, so this
+     * only triggers a state update when the `parentId` changes dynamically (e.g., when a conditional toggle changes).
+     * @param item The item to register.
      */
     const registerItem = useCallback((item: SearchOption) => {
         const endTiming = startTiming("search_register_item", "ui")
@@ -83,7 +84,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
 
 /**
  * Hook to access the search registry context.
- * Returns the search index and registration function.
+ * @returns The search registry context with the search index and registration function.
  */
 export const useSearchRegistry = () => {
     const context = useContext(SearchContext)

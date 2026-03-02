@@ -122,14 +122,29 @@ const styles = StyleSheet.create({
 })
 
 interface LogMessage {
+    /** Unique identifier for the log message. */
     id: string
+    /** The text content of the log message. */
     text: string
+    /** The message type used for color-coding (normal, warning, error). */
     type: "normal" | "warning" | "error"
+    /** Optional sequential message ID from the bot service. */
     messageId?: number
 }
 
-// Memoized LogItem component for better performance.
+/**
+ * Memoized individual log entry component for virtualized list rendering.
+ * Supports color-coded text, long-press copy, and optional message ID display.
+ * @param item The log message to display.
+ * @param fontSize The font size to use for the log message.
+ * @param onLongPress The function to call when the log message is long-pressed.
+ * @param enableMessageIdDisplay Whether to display the message ID.
+ */
 const LogItem = memo(({ item, fontSize, onLongPress, enableMessageIdDisplay }: { item: LogMessage; fontSize: number; onLongPress: (message: string) => void; enableMessageIdDisplay: boolean }) => {
+    /**
+     * Returns the style for the log message based on its type.
+     * @returns The style for the log message.
+     */
     const getTextStyle = useCallback(() => {
         const baseStyle = {
             fontSize: fontSize,
@@ -146,7 +161,10 @@ const LogItem = memo(({ item, fontSize, onLongPress, enableMessageIdDisplay }: {
         }
     }, [item.type, fontSize])
 
-    // Trim leading newlines when message ID is present to maintain alignment.
+    /**
+     * Trim leading newlines when message ID is present to maintain alignment.
+     * @returns The display text for the log message.
+     */
     const displayText = useMemo(() => {
         if (enableMessageIdDisplay && item.messageId !== undefined) {
             // Remove leading newlines and whitespace to keep alignment with message ID.
@@ -165,6 +183,12 @@ const LogItem = memo(({ item, fontSize, onLongPress, enableMessageIdDisplay }: {
     )
 })
 
+/**
+ * A full-featured message log display component with search, sort, copy, and font size controls.
+ * Uses virtualized rendering via `FlashList` for performant display of large log volumes.
+ * Supports color-coded messages (normal, warning, error), floating scroll buttons,
+ * and a formatted settings summary as the intro message.
+ */
 const MessageLog = () => {
     const mlc = useContext(MessageLogContext)
     const bsc = useContext(BotStateContext)
@@ -179,6 +203,8 @@ const MessageLog = () => {
     const [viewportHeight, setViewportHeight] = useState(0)
 
     const fontSize = bsc.settings.misc.messageLogFontSize
+    const maxFontSize = 24
+    const minFontSize = 8
 
     // Animated values for smooth scroll button transitions.
     const topButtonOpacity = useRef(new Animated.Value(0)).current
@@ -199,6 +225,10 @@ const MessageLog = () => {
     const showScrollToTop = showScrollButtons && !isAtTop
     const showScrollToBottom = showScrollButtons && !isAtBottom
 
+    /**
+     * Show error dialog.
+     * @param message Error message to display.
+     */
     const showError = useCallback((message: string) => {
         setErrorMessage(message)
         setShowErrorDialog(true)
@@ -214,7 +244,7 @@ const MessageLog = () => {
         const mediumTargetsString = `Medium: \n\t\tSpeed: ${settings.trainingStatTarget.trainingMediumStatTarget_speedStatTarget}\t\tStamina: ${settings.trainingStatTarget.trainingMediumStatTarget_staminaStatTarget}\t\tPower: ${settings.trainingStatTarget.trainingMediumStatTarget_powerStatTarget}\n\t\tGuts: ${settings.trainingStatTarget.trainingMediumStatTarget_gutsStatTarget}\t\t\tWit: ${settings.trainingStatTarget.trainingMediumStatTarget_witStatTarget}`
         const longTargetsString = `Long: \n\t\tSpeed: ${settings.trainingStatTarget.trainingLongStatTarget_speedStatTarget}\t\tStamina: ${settings.trainingStatTarget.trainingLongStatTarget_staminaStatTarget}\t\tPower: ${settings.trainingStatTarget.trainingLongStatTarget_powerStatTarget}\n\t\tGuts: ${settings.trainingStatTarget.trainingLongStatTarget_gutsStatTarget}\t\t\tWit: ${settings.trainingStatTarget.trainingLongStatTarget_witStatTarget}`
 
-        // Racing plan settings.
+        // Racing plan settings that is a string of the JSON array.
         const racingPlanString =
             settings.racing.racingPlan && settings.racing.racingPlan !== "[]" && typeof settings.racing.racingPlan === "string"
                 ? `${JSON.parse(settings.racing.racingPlan).length} Race(s) Selected`
@@ -303,15 +333,19 @@ ${longTargetsString}
 🛣️ Track Distance Override: ${settings.skills.preferredTrackDistance}
 🛣️ Track Surface Override: ${settings.skills.preferredTrackSurface}
 📅 Pre-Finals Skill Plan: ${settings.skills.plans.preFinals.enabled ? "✅" : "❌"}${
-    settings.skills.plans.preFinals.enabled
-        ? `\n\t💲 Buy All Inherited Unique Skills: ${settings.skills.plans.preFinals.enableBuyInheritedUniqueSkills ? "✅" : "❌"}\n\t💲 Buy All Negative Skills: ${settings.skills.plans.preFinals.enableBuyNegativeSkills ? "✅" : "❌"}\n\t💸 Spending Strategy: ${settings.skills.plans.preFinals.strategy ? "✅" : "❌"}`
-        : ""
-}
+            settings.skills.plans.preFinals.enabled
+                ? `\n\t💲 Buy All Inherited Unique Skills: ${settings.skills.plans.preFinals.enableBuyInheritedUniqueSkills ? "✅" : "❌"}\n\t💲 Buy All Negative Skills: ${
+                      settings.skills.plans.preFinals.enableBuyNegativeSkills ? "✅" : "❌"
+                  }\n\t💸 Spending Strategy: ${settings.skills.plans.preFinals.strategy ? "✅" : "❌"}`
+                : ""
+        }
 📅 CareerComplete Skill Plan: ${settings.skills.plans.careerComplete.enabled ? "✅" : "❌"}${
-    settings.skills.plans.careerComplete.enabled
-        ? `\n\t💲 Buy All Inherited Unique Skills: ${settings.skills.plans.careerComplete.enableBuyInheritedUniqueSkills ? "✅" : "❌"}\n\t💲 Buy All Negative Skills: ${settings.skills.plans.careerComplete.enableBuyNegativeSkills ? "✅" : "❌"}\n\t💸 Spending Strategy: ${settings.skills.plans.careerComplete.strategy ? "✅" : "❌"}`
-        : ""
-}
+            settings.skills.plans.careerComplete.enabled
+                ? `\n\t💲 Buy All Inherited Unique Skills: ${settings.skills.plans.careerComplete.enableBuyInheritedUniqueSkills ? "✅" : "❌"}\n\t💲 Buy All Negative Skills: ${
+                      settings.skills.plans.careerComplete.enableBuyNegativeSkills ? "✅" : "❌"
+                  }\n\t💸 Spending Strategy: ${settings.skills.plans.careerComplete.strategy ? "✅" : "❌"}`
+                : ""
+        }
 
 ---------- Misc Options ----------
 🔍 Popup Check: ${settings.general.enablePopupCheck ? "✅" : "❌"}
@@ -336,6 +370,11 @@ ${longTargetsString}
 🔍 Start Training Screen OCR Test: ${settings.debug.debugMode_startTrainingScreenOCRTest ? "✅" : "❌"}
 🔍 Hide String Comparison Results: ${settings.debug.enableHideOCRComparisonResults ? "✅" : "❌"}
 
+---------- Discord Options ----------
+🔔 Discord Notifications: ${settings.discord?.enableDiscordNotifications ? "✅" : "❌"}
+👤 Discord User ID: ${settings.discord?.discordUserID ? "Configured" : "Not Set"}
+🔑 Discord Bot Token: ${settings.discord?.discordToken ? "Configured" : "Not Set"}
+
 ****************************************`
     }, [bsc.settings])
 
@@ -347,11 +386,15 @@ ${longTargetsString}
         })
     }, [formattedSettingsString])
 
-    // Don't add formattedSettingsString if logs are already present (Android already copied it).
+    /**
+     * Create the intro message for the log.
+     * @returns The intro message.
+     */
     const introMessage = useMemo(() => {
         const hasLogs = mlc.messageLog.length > 0
         const baseMessage = `****************************************\nWelcome to ${bsc.appName} v${bsc.appVersion}\n****************************************`
 
+        // Don't add formattedSettingsString if logs are already present (Android already copied it).
         if (hasLogs) {
             // If logs exist, Android already copied the settings string, so don't include it.
             return baseMessage
@@ -361,7 +404,10 @@ ${longTargetsString}
         return bsc.settings.misc.enableSettingsDisplay ? `${baseMessage}\n\n${formattedSettingsString}` : baseMessage
     }, [bsc.appName, bsc.appVersion, bsc.settings.misc.enableSettingsDisplay, formattedSettingsString, mlc.messageLog.length])
 
-    // Process log messages with color coding and virtualization.
+    /**
+     * Process log messages with color coding and virtualization while sorting them by timestamp.
+     * @returns Processed log messages.
+     */
     const processedMessages = useMemo((): LogMessage[] => {
         // Add intro message as the first item.
         const introLines = introMessage.split("\n")
@@ -371,7 +417,7 @@ ${longTargetsString}
             type: "normal" as const,
         }))
 
-        // Process actual log messages.
+        // Process actual log messages and set the type based on the message content.
         const logMessages = mlc.messageLog.map((entry, index) => {
             let type: "normal" | "warning" | "error" = "normal"
 
@@ -389,7 +435,11 @@ ${longTargetsString}
             }
         })
 
-        // Parse timestamp from message text (format: HH:MM:SS.mmm).
+        /**
+         * Parse timestamp from message text (format: HH:MM:SS.mmm).
+         * @param text The message text to parse.
+         * @returns The timestamp in milliseconds.
+         */
         const parseTimestamp = (text: string): number => {
             // Match timestamps like "00:00:00.462", allowing optional leading whitespace/newlines.
             const match = text.match(/^\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/)
@@ -421,7 +471,10 @@ ${longTargetsString}
         return [...introMessages, ...sortedLogMessages]
     }, [mlc.messageLog, introMessage, sortOrder])
 
-    // Filter messages based on search query (excluding intro messages).
+    /**
+     * Filter messages based on search query (excluding intro messages).
+     * @returns Filtered log messages.
+     */
     const filteredMessages = useMemo(() => {
         if (!searchQuery.trim()) {
             // Always return a new array reference to ensure FlashList detects the change.
@@ -454,12 +507,16 @@ ${longTargetsString}
         return () => clearTimeout(timeoutId)
     }, [listKey, sortOrder])
 
-    // Toggle sort order between ascending and descending.
+    /**
+     * Toggle sort order between ascending and descending.
+     */
     const toggleSortOrder = useCallback(() => {
         setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
     }, [])
 
-    // Scroll to top of the list.
+    /**
+     * Scroll to top of the list.
+     */
     const scrollToTop = useCallback(() => {
         scrollViewRef.current?.scrollToOffset({
             offset: 0,
@@ -467,7 +524,9 @@ ${longTargetsString}
         })
     }, [])
 
-    // Scroll to bottom of the list.
+    /**
+     * Scroll to bottom of the list.
+     */
     const scrollToBottom = useCallback(() => {
         if (filteredMessages.length > 0) {
             try {
@@ -485,7 +544,10 @@ ${longTargetsString}
         }
     }, [filteredMessages.length])
 
-    // Handle scroll events to track position.
+    /**
+     * Handle scroll events to track position.
+     * @param event The scroll event.
+     */
     const handleScroll = useCallback((event: any) => {
         const nativeEvent = event.nativeEvent
         const offset = nativeEvent?.contentOffset?.y ?? 0
@@ -503,21 +565,31 @@ ${longTargetsString}
         }
     }, [])
 
-    // Handle scroll end to get final position.
+    /**
+     * Handle scroll end to get final position.
+     * @param event The scroll event.
+     */
     const handleScrollEnd = useCallback((event: any) => {
         const nativeEvent = event.nativeEvent
         const offset = nativeEvent?.contentOffset?.y ?? 0
         setScrollOffset(Math.max(0, offset))
     }, [])
 
-    // Handle content size changes to update content height.
+    /**
+     * Handle content size changes to update content height.
+     * @param width The width of the content.
+     * @param height The height of the content.
+     */
     const handleContentSizeChange = useCallback((width: number, height: number) => {
         if (height > 0) {
             setContentHeight(height)
         }
     }, [])
 
-    // Handle layout changes to update viewport height.
+    /**
+     * Handle layout changes to update viewport height.
+     * @param event The layout event.
+     */
     const handleLayout = useCallback((event: any) => {
         const { height } = event.nativeEvent.layout
         if (height > 0) {
@@ -581,9 +653,11 @@ ${longTargetsString}
         }
     }, [showScrollToTop, showScrollToBottom, topButtonOpacity, bottomButtonOpacity])
 
-    // Font size control functions.
+    /**
+     * Increase font size and then save it to the settings.
+     */
     const increaseFontSize = useCallback(async () => {
-        const newFontSize = Math.min(fontSize + 1, 24)
+        const newFontSize = Math.min(fontSize + 1, maxFontSize)
         const updatedSettings = {
             ...bsc.settings,
             misc: { ...bsc.settings.misc, messageLogFontSize: newFontSize },
@@ -592,8 +666,11 @@ ${longTargetsString}
         await saveSettingsImmediate(updatedSettings)
     }, [fontSize, bsc.settings, bsc.setSettings, saveSettingsImmediate])
 
+    /**
+     * Decrease font size and then save it to the settings.
+     */
     const decreaseFontSize = useCallback(async () => {
-        const newFontSize = Math.max(fontSize - 1, 8)
+        const newFontSize = Math.max(fontSize - 1, minFontSize)
         const updatedSettings = {
             ...bsc.settings,
             misc: { ...bsc.settings.misc, messageLogFontSize: newFontSize },
@@ -602,12 +679,16 @@ ${longTargetsString}
         await saveSettingsImmediate(updatedSettings)
     }, [fontSize, bsc.settings, bsc.setSettings, saveSettingsImmediate])
 
-    // Clear search query.
+    /**
+     * Clear search query.
+     */
     const clearSearch = useCallback(() => {
         setSearchQuery("")
     }, [])
 
-    // Copy all messages to clipboard.
+    /**
+     * Copy all messages to clipboard.
+     */
     const copyToClipboard = useCallback(async () => {
         try {
             const allText = introMessage + "\n" + mlc.messageLog.map((entry) => entry.message).join("\n")
@@ -617,7 +698,10 @@ ${longTargetsString}
         }
     }, [mlc.messageLog, introMessage, showError])
 
-    // Copy individual message on long press.
+    /**
+     * Copy individual message on long press.
+     * @param message The message to copy.
+     */
     const handleLongPress = useCallback(
         async (message: string) => {
             try {
@@ -626,16 +710,24 @@ ${longTargetsString}
                 showError("Failed to copy message")
             }
         },
-        [showError],
+        [showError]
     )
 
-    // Render individual log item.
+    /**
+     * Render individual log item.
+     * @param item The log item to render.
+     * @returns The rendered log item.
+     */
     const renderLogItem = useCallback(
         ({ item }: { item: LogMessage }) => <LogItem item={item} fontSize={fontSize} onLongPress={handleLongPress} enableMessageIdDisplay={bsc.settings.misc.enableMessageIdDisplay} />,
-        [fontSize, handleLongPress, bsc.settings.misc.enableMessageIdDisplay],
+        [fontSize, handleLongPress, bsc.settings.misc.enableMessageIdDisplay]
     )
 
-    // Key extractor for FlatList.
+    /**
+     * Key extractor for `FlashList`.
+     * @param item The log item to extract the key from.
+     * @returns The key for the log item.
+     */
     const keyExtractor = useCallback((item: LogMessage) => item.id, [])
 
     return (

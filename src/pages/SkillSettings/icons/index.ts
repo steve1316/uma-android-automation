@@ -1,4 +1,4 @@
-const icons: {[key: number]: any} = {
+const icons: { [key: number]: any } = {
     10011: require("./utx_ico_skill_10011.png"),
     10012: require("./utx_ico_skill_10012.png"),
     10014: require("./utx_ico_skill_10014.png"),
@@ -56,6 +56,6 @@ const icons: {[key: number]: any} = {
     40012: require("./utx_ico_skill_40012.png"),
     1010011: require("./utx_ico_skill_1010011.png"),
     2010010: require("./utx_ico_skill_2010010.png"),
-};
+}
 
-export default icons;
+export default icons

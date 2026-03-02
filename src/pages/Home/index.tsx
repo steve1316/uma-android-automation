@@ -1,10 +1,10 @@
 import * as Application from "expo-application"
 import MessageLog from "../../components/MessageLog"
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { BotStateContext } from "../../context/BotStateContext"
 import { useSettings } from "../../context/SettingsContext"
 import { logWithTimestamp, logErrorWithTimestamp } from "../../lib/logger"
-import { DeviceEventEmitter, StyleSheet, View, NativeModules } from "react-native"
+import { Animated, DeviceEventEmitter, StyleSheet, View, NativeModules } from "react-native"
 import { Snackbar } from "react-native-paper"
 import { MessageLogContext } from "../../context/MessageLogContext"
 import { useTheme } from "../../context/ThemeContext"
@@ -34,6 +34,10 @@ const styles = StyleSheet.create({
     },
 })
 
+/**
+ * The main Home page of the application.
+ * Displays the Start/Stop button for the bot, a message log, and handles bot lifecycle events including settings persistence and readiness checks.
+ */
 const Home = () => {
     usePerformanceLogging("Home")
     const { StartModule } = NativeModules
@@ -43,10 +47,43 @@ const Home = () => {
     const [showNotReadyDialog, setShowNotReadyDialog] = useState<boolean>(false)
     const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false)
     const [snackbarMessage, setSnackbarMessage] = useState<string>("")
+    const [deviceMetrics, setDeviceMetrics] = useState<{ width: number; height: number; dpi: number } | null>(null)
+    const [unsupportedReason, setUnsupportedReason] = useState<string | null>(null)
 
     const bsc = useContext(BotStateContext)
     const mlc = useContext(MessageLogContext)
     const { saveSettings } = useSettings()
+
+    const pulseAnim = useRef(new Animated.Value(1)).current
+
+    useEffect(() => {
+        let animation: Animated.CompositeAnimation | null = null
+
+        if (unsupportedReason) {
+            // Pulsate the icon to grab attention when there's an unsupported device.
+            animation = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pulseAnim, {
+                        toValue: 1.25,
+                        duration: 700,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(pulseAnim, {
+                        toValue: 1,
+                        duration: 700,
+                        useNativeDriver: true,
+                    }),
+                ])
+            )
+            animation.start()
+        } else {
+            pulseAnim.setValue(1)
+        }
+
+        return () => {
+            animation?.stop()
+        }
+    }, [unsupportedReason])
 
     useEffect(() => {
         const mediaProjectionSubscription = DeviceEventEmitter.addListener("MediaProjectionService", (data) => {
@@ -60,6 +97,7 @@ const Home = () => {
         })
 
         getVersion()
+        fetchDeviceMetrics()
 
         return () => {
             mediaProjectionSubscription.remove()
@@ -67,7 +105,32 @@ const Home = () => {
         }
     }, [])
 
-    // Grab the program name and version.
+    /**
+     * Fetch device metrics from NativeModule.
+     */
+    const fetchDeviceMetrics = async () => {
+        try {
+            const metrics = await StartModule.getDeviceDimensions()
+            setDeviceMetrics(metrics)
+
+            const { width, dpi } = metrics
+            const isWidth1080 = width === 1080
+
+            if (!isWidth1080) {
+                setUnsupportedReason(`unsupported width: ${width} (suggested 1080)`)
+            } else if (dpi !== 240 && dpi !== 450) {
+                setUnsupportedReason(`unsupported DPI: ${dpi} (suggested 240 or 450)`)
+            } else {
+                setUnsupportedReason(null)
+            }
+        } catch (error) {
+            logErrorWithTimestamp("[Home] Failed to fetch device dimensions:", error)
+        }
+    }
+
+    /**
+     * Grab the program name and version.
+     */
     const getVersion = () => {
         const appName = Application.applicationName || "App"
         var version = Application.nativeApplicationVersion || "0.0.0"
@@ -77,6 +140,9 @@ const Home = () => {
         bsc.setAppVersion(version)
     }
 
+    /**
+     * Handles the button press for starting or stopping the bot.
+     */
     const handleButtonPress = async () => {
         if (isRunning) {
             StartModule.stop()
@@ -109,15 +175,45 @@ const Home = () => {
                         <CustomButton variant={isRunning ? "destructive" : isDark ? "default" : "secondary"} onPress={handleButtonPress} isLoading={isRunning} style={styles.button}>
                             {isRunning ? "Stop" : bsc.readyStatus ? "Start" : "Not Ready"}
                         </CustomButton>
-                        {!bsc.readyStatus && !isRunning && (
+                        {unsupportedReason ? (
                             <Tooltip delayDuration={150}>
                                 <TooltipTrigger>
-                                    <Ionicons name="information-circle-outline" size={24} color={colors.foreground} />
+                                    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                                        <Ionicons name="alert-circle-outline" size={24} color={colors.warningBorder} />
+                                    </Animated.View>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom">
-                                    <Text>Select a Scenario in Settings to start</Text>
+                                <TooltipContent sideOffset={12} side="bottom" style={{ maxWidth: 350, backgroundColor: colors.warningBg, borderColor: colors.warningBorder, borderWidth: 1 }}>
+                                    <Text
+                                        style={{ color: colors.warningText }}
+                                    >{`Current Display: ${deviceMetrics?.width}x${deviceMetrics?.height} (${deviceMetrics?.dpi} DPI).
+
+Warning: Performance may be degraded due to ${unsupportedReason}.
+
+Supported Configurations:
+• 1080x1920 @ 240 DPI
+• 1080x2340 @ 450 DPI
+
+Note: Height is not as important to meet as the width. In addition, DPI is tied to the width and height together. How to calculate your specific DPI:
+
+DPI = sqrt(width^2 + height^2) / diagonal
+
+where width and height of the screen is in pixels, and diagonal is the diagonal size of the physical screen in inches.`}</Text>
                                 </TooltipContent>
                             </Tooltip>
+                        ) : deviceMetrics ? (
+                            <Ionicons name="checkmark-circle-outline" size={24} color="green" />
+                        ) : (
+                            !bsc.readyStatus &&
+                            !isRunning && (
+                                <Tooltip delayDuration={150}>
+                                    <TooltipTrigger>
+                                        <Ionicons name="information-circle-outline" size={24} color={colors.foreground} />
+                                    </TooltipTrigger>
+                                    <TooltipContent sideOffset={12} side="bottom">
+                                        <Text>Select a Scenario in Settings to start</Text>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )
                         )}
                     </View>
                 }

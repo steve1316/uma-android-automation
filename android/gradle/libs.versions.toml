@@ -7,14 +7,14 @@ app-minSdk = "24"
 #noinspection ExpiredTargetSdkVersion
 app-targetSdk = "30"
 app-versionCode = "44"
-app-versionName = "5.0.0"
+app-versionName = "5.1.1"
 app-jvm-toolchain = "17"
 
 androidGradleBuildTools = "8.13.0"
 junitJupiter = "6.0.2"
 junitPlatformLauncher = "6.0.2"
 kotlinGradlePlugin = "2.2.0"
-androidCvAutomationLibrary = "2.4.2"
+androidCvAutomationLibrary = "2.4.6"
 lottie = "6.6.9"
 
 [libraries]

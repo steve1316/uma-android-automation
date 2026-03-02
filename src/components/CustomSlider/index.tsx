@@ -6,28 +6,69 @@ import { Input } from "../ui/input"
 import SearchableItem from "../SearchableItem"
 
 interface CustomSliderProps {
+    /** The current value of the slider. */
     value: number
+    /** Callback fired when the slider value changes. */
     onValueChange: (value: number) => void
+    /** Optional callback fired when the user finishes dragging the slider. */
     onSlidingComplete?: (value: number) => void
+    /** The minimum allowed value. */
     min: number
+    /** The maximum allowed value. */
     max: number
+    /** The step increment between values. */
     step: number
+    /** Optional label text displayed above the slider. */
     label?: string
+    /** Optional unit suffix displayed next to the value (e.g. "%"). */
     labelUnit?: string
+    /** Optional placeholder value shown in the input field when empty. */
     placeholder?: number
+    /** Whether to show the current value input below the slider. */
     showValue?: boolean
+    /** Whether to show min/max labels below the slider. */
     showLabels?: boolean
+    /** Optional description text displayed below the label. */
     description?: string
+    /** Optional custom style for the container. */
     style?: ViewStyle
-    // Search props
+    /** Optional search ID for registering this item in the search index. */
     searchId?: string
+    /** Optional override for the searchable title (defaults to label). */
     searchTitle?: string
+    /** Optional override for the searchable description. */
     searchDescription?: string
+    /** Optional condition controlling whether this item is registered in the search index. */
     searchCondition?: boolean
+    /** Optional ID of the parent searchable item for hierarchical search. */
     parentId?: string
+    /** Optional children rendered below the slider. */
     children?: React.ReactNode
 }
 
+/**
+ * A themed slider component with a custom draggable tooltip, editable input field, and search integration.
+ * Supports animated thumb scaling and tooltip display during drag interactions.
+ * Wraps content in a `SearchableItem` when a `searchId` is provided.
+ * @param value The current value of the slider.
+ * @param onValueChange Callback fired when the slider value changes.
+ * @param min The minimum allowed value.
+ * @param max The maximum allowed value.
+ * @param step The step increment between values.
+ * @param label Optional label text displayed above the slider.
+ * @param labelUnit Optional unit suffix displayed next to the value (e.g. "%" ).
+ * @param placeholder Optional placeholder value shown in the input field when empty.
+ * @param showValue Whether to show the current value input below the slider.
+ * @param showLabels Whether to show min/max labels below the slider.
+ * @param description Optional description text displayed below the label.
+ * @param style Optional custom style for the container.
+ * @param searchId Optional search ID for registering this item in the search index.
+ * @param searchTitle Optional override for the searchable title (defaults to label).
+ * @param searchDescription Optional override for the searchable description.
+ * @param searchCondition Optional condition controlling whether this item is registered in the search index.
+ * @param parentId Optional ID of the parent searchable item for hierarchical search.
+ * @param children Optional children rendered below the slider.
+ */
 const CustomSlider: React.FC<CustomSliderProps> = ({
     value,
     onValueChange,
@@ -147,16 +188,25 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
                     marginLeft: 4,
                 },
             }),
-        [colors],
+        [colors]
     )
 
+    /**
+     * Calculates the tooltip position based on the current value.
+     * @param currentValue The current value of the slider.
+     * @returns The tooltip position.
+     */
     const calculateTooltipPosition = (currentValue: number) => {
         if (sliderWidth === 0) return 0
         const percentage = (currentValue - min) / (max - min)
         return percentage * sliderWidth
     }
 
-    // Calculate the number of decimal places based on the step value.
+    /**
+     * Calculates the number of decimal places based on the step value.
+     * @param stepValue The step value.
+     * @returns The number of decimal places.
+     */
     const getDecimalPlaces = (stepValue: number) => {
         if (stepValue >= 1) return 0
         const stepStr = stepValue.toString()
@@ -181,6 +231,10 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         }
     }, [value, isDragging, isTyping, step])
 
+    /**
+     * Callback fired when the user starts dragging the slider.
+     * @param sliderValue The current value of the slider.
+     */
     const handleSlidingStart = (sliderValue: number) => {
         setIsDragging(true)
         setLocalValue(sliderValue)
@@ -201,6 +255,9 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         setTooltipPosition(position)
     }
 
+    /**
+     * Callback fired when the user finishes dragging the slider.
+     */
     const handleSlidingComplete = () => {
         setIsDragging(false)
         onValueChange(localValue)
@@ -223,6 +280,10 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         }
     }
 
+    /**
+     * Callback fired when the slider value changes.
+     * @param sliderValue The current value of the slider.
+     */
     const handleValueChange = (sliderValue: number) => {
         // Round to nearest step to avoid floating point precision issues.
         const roundedValue = Math.round(sliderValue / step) * step
@@ -234,6 +295,10 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         }
     }
 
+    /**
+     * Callback fired when the input value changes.
+     * @param text The current input value.
+     */
     const handleInputChange = (text: string) => {
         setIsTyping(true)
         setInputValue(text)
@@ -248,6 +313,9 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         }
     }
 
+    /**
+     * Callback fired when the input value is submitted.
+     */
     const handleInputSubmit = () => {
         setIsTyping(false)
         const numValue = parseFloat(inputValue)
@@ -264,6 +332,10 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         }
     }
 
+    /**
+     * Callback fired when the slider layout changes.
+     * @param event The layout event.
+     */
     const handleLayout = (event: LayoutChangeEvent) => {
         const { width } = event.nativeEvent.layout
         setSliderWidth(width)

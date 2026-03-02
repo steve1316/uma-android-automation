@@ -13,6 +13,17 @@
         "Heavy Romance": [
             "Rainy Days ○ hint +1\nAgnes Digital bond +5",
             "Wet Conditions ○ hint +1\nAgnes Digital bond +5"
+        ],
+        "(❯)\nA Simp's Aesthetics": [
+            "Skill points +30\nAgnes Digital bond +5"
+        ],
+        "(❯❯)\nA Simp's Burdens": [
+            "Stamina +15\nHydrate hint +1\nAgnes Digital bond +5",
+            "Wit +15\nFocus hint +1\nAgnes Digital bond +5"
+        ],
+        "(❯❯❯)\nA Simp's Lifestyle": [
+            "Randomly either\n----------\nPower +15\nSkill points +20\nLead the Charge! hint +3\n----------\n\n----------\nPower +10\nSkill points +15\nLead the Charge! hint +1",
+            "Randomly either\n----------\nSpeed +35\nUma Stan hint +5\nAgnes Digital bond +5\n----------\n\n----------\nSpeed +35\nUma Stan hint +1\nAgnes Digital bond +5"
         ]
     },
     "Agnes Tachyon": {
@@ -501,6 +512,14 @@
         "Ten Minutes Left!": [
             "Guts +15\nInes Fujin bond +5",
             "Wit +15\nInes Fujin bond +5"
+        ],
+        "(❯)\nA Grand Slam Energy Boost!": [
+            "Maximum Energy +4\nInes Fujin bond +5",
+            "Mood +2\nInes Fujin bond +5"
+        ],
+        "(❯❯)\nYou'll Always Be in My Heart...": [
+            "Speed +10\nMedium Straightaways ○ hint +1\nSympathy hint +1\nInes Fujin bond +5",
+            "Wit +10\nStandard Distance ○ hint +1\nFinal Push hint +1\nInes Fujin bond +5"
         ]
     },
     "Kawakami Princess": {
@@ -995,6 +1014,17 @@
         ],
         "(❯❯❯) Blooming Emotions, with Love": [
             "Energy +20\nDetermined Descent hint +1"
+        ],
+        "(❯)\nNourishment for a Flower Bud": [
+            "Wit +10\nSkill points +10\nNishino Flower bond +5"
+        ],
+        "(❯❯)\nI'm Gonna Be a Mommy!": [
+            "Skill points +15\nShifting Gears hint +1\nNishino Flower bond +5",
+            "Mood +1\nHeal a negative status effect\nNishino Flower bond +10",
+            "Power +25\nNishino Flower bond -5\nEvent chain ended"
+        ],
+        "(❯❯❯)\nBlooming Emotions, with Love": [
+            "Energy +20\nDetermined Descent hint +1"
         ]
     },
     "Oguri Cap": {
@@ -1117,6 +1147,17 @@
             "Skill points +30\nEvent chain ended"
         ],
         "(❯❯❯) Just the Way You Are": [
+            "Randomly either\n----------\nSpeed +15\nGuts +15\nIn High Spirits hint +3\n----------\n\n----------\nSpeed +5\nGuts +5\nLight as a Feather hint +3"
+        ],
+        "(❯)\nUma Kids Footrace Meet": [
+            "Guts +5\nGroundwork hint +1\nSakura Bakushin O bond +5",
+            "Maximum Energy +4\nSpeed +5\nSakura Bakushin O bond +5"
+        ],
+        "(❯❯)\nChasing My Sister": [
+            "Guts +10\nSpeed +5\nSakura Bakushin O bond +5",
+            "Skill points +30\nEvent chain ended"
+        ],
+        "(❯❯❯)\nJust the Way You Are": [
             "Randomly either\n----------\nSpeed +15\nGuts +15\nIn High Spirits hint +3\n----------\n\n----------\nSpeed +5\nGuts +5\nLight as a Feather hint +3"
         ]
     },
@@ -1564,6 +1605,16 @@
             "Speed +10\nSkill points +10"
         ],
         "(❯❯❯) If You Got It, Own It": [
+            "Randomly either\n----------\nEnergy -10\nSpeed +15\nBreath of Fresh Air hint +3\n----------\n\n----------\nEnergy -10\nSpeed +10\nStraightaway Recovery hint +3"
+        ],
+        "(❯)\nLeave It to the Roomie": [
+            "Speed +10\nStamina +5\nTosen Jordan bond +5",
+            "Energy +10\nTosen Jordan bond +5"
+        ],
+        "(❯❯)\nA Gal's Gotta Glam": [
+            "Speed +10\nSkill points +10"
+        ],
+        "(❯❯❯)\nIf You Got It, Own It": [
             "Randomly either\n----------\nEnergy -10\nSpeed +15\nBreath of Fresh Air hint +3\n----------\n\n----------\nEnergy -10\nSpeed +10\nStraightaway Recovery hint +3"
         ]
     },

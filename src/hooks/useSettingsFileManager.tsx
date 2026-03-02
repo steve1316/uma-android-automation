@@ -10,7 +10,6 @@ import { logErrorWithTimestamp } from "../lib/logger"
 /**
  * Format a value for display in the preview dialog.
  * Converts various data types into human-readable strings for the settings import preview.
- *
  * @param value - The value to format (can be any type).
  * @returns A formatted string representation of the value.
  */
@@ -26,7 +25,6 @@ const formatValue = (value: any): string => {
  * Deep comparison of two values to determine if they are equal.
  * Recursively compares nested objects and arrays, handling all primitive types.
  * Used to detect actual changes in settings values, not just reference equality.
- *
  * @param a - First value to compare.
  * @param b - Second value to compare.
  * @returns true if values are deeply equal, false otherwise.
@@ -50,11 +48,10 @@ const deepEqual = (a: any, b: any): boolean => {
 }
 
 /**
- * Compare two settings objects and return a list of changes.
+ * Compare two `Settings` objects and return a list of changes.
  * Iterates through all categories and keys in the imported settings,
  * comparing each value with the current settings using deep equality.
  * Only returns settings that would actually change if imported.
- *
  * @param current - The current settings object from the app state.
  * @param imported - The settings object loaded from the JSON file.
  * @returns Array of change objects containing category, key, old value, and new value.
@@ -92,7 +89,6 @@ const compareSettings = (current: Settings, imported: Settings) => {
  * Recursively merges source object into target, ensuring all nested properties
  * are properly merged rather than replaced. Used to merge imported settings
  * with default settings to ensure all required fields exist.
- *
  * @param target - The target object to merge into (typically default settings).
  * @param source - The source object to merge from (typically imported settings).
  * @returns A new object with merged values from both target and source.
@@ -112,12 +108,11 @@ const deepMerge = <T extends Record<string, any>>(target: T, source: Partial<T>)
 
 /**
  * Load and fix settings from a JSON file without importing.
- * Reads a JSON file from the filesystem, parses it as a Settings object, and merges it
+ * Reads a JSON file from the filesystem, parses it as a `Settings` object, and merges it
  * with default settings to ensure all required fields are present. This allows
  * previewing changes before actually applying them to the app state.
- *
  * @param fileUri - The URI/path to the JSON settings file.
- * @returns A Settings object with all fields populated (merged with defaults).
+ * @returns A `Settings` object with all fields populated (merged with defaults).
  * @throws Error if file cannot be read or parsed.
  */
 const loadFromJSONFile = async (fileUri: string): Promise<Settings> => {
@@ -133,16 +128,23 @@ const loadFromJSONFile = async (fileUri: string): Promise<Settings> => {
 }
 
 export interface SettingsChange {
+    /** The category of the setting that changed. */
     category: string
+    /** The key of the setting that changed. */
     key: string
+    /** The old value of the setting that changed. */
     oldValue: any
+    /** The new value of the setting that changed. */
     newValue: any
+    /** The formatted old value of the setting that changed. */
     formattedOldValue: string
+    /** The formatted new value of the setting that changed. */
     formattedNewValue: string
 }
 
 /**
  * Hook for managing settings file operations (import/export) with file picker and restart prompts.
+ * @returns An object containing the state and functions for managing settings file operations.
  */
 export const useSettingsFileManager = () => {
     const [showImportDialog, setShowImportDialog] = useState(false)
@@ -166,7 +168,6 @@ export const useSettingsFileManager = () => {
     /**
      * Confirms and performs the actual import. Imports the settings from the provided file URI, shows a success dialog
      * if successful, and clears the preview state.
-     *
      * @param fileUri - The URI/path to the JSON settings file to import
      */
     const confirmImportSettings = async (fileUri: string) => {
@@ -188,7 +189,6 @@ export const useSettingsFileManager = () => {
      * Loads the settings file, compares it with current settings, formats
      * the changes for display, and navigates to the preview screen. This is called
      * when the user selects a file to import, before actually applying changes.
-     *
      * @param fileUri - The URI/path to the JSON settings file to compare
      */
     const compareAndPreviewSettings = async (fileUri: string) => {
@@ -224,6 +224,7 @@ export const useSettingsFileManager = () => {
      * Opens the system document picker to allow the user to select a JSON settings file.
      * After file selection, compares the imported settings with current settings
      * and shows a preview dialog instead of importing immediately.
+     * @returns A promise that resolves when the settings file is imported.
      */
     const handleImportSettings = async () => {
         try {
@@ -244,6 +245,7 @@ export const useSettingsFileManager = () => {
     /**
      * Exports the current app settings to a JSON file and shares it using
      * the system share dialog, allowing the user to save it to their preferred location.
+     * @returns A promise that resolves when the settings file is exported.
      */
     const handleExportSettings = async () => {
         try {
@@ -262,6 +264,7 @@ export const useSettingsFileManager = () => {
     /**
      * Confirms import using the pending import URI from state.
      * This is a wrapper that uses the pendingImportUri state.
+     * @returns A promise that resolves when the settings file is imported.
      */
     const confirmPendingImport = async () => {
         if (pendingImportUri) {

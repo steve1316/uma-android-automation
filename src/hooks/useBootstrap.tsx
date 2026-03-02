@@ -13,6 +13,7 @@ import supportsData from "../data/supports.json"
 /**
  * Manages app initialization, settings persistence, and message handling.
  * Coordinates startup sequence and maintains app state synchronization.
+ * @returns The bootstrap state with the `isReady` flag and initialization functions.
  */
 export const useBootstrap = () => {
     const [isReady, setIsReady] = useState<boolean>(false)
@@ -62,12 +63,13 @@ export const useBootstrap = () => {
 
     /**
      * Populate race event data from racing.json into SQLite.
+     * @returns A promise that resolves when the races data has been populated.
      */
     const populateRacesData = async (): Promise<void> => {
         try {
             logWithTimestamp("[Bootstrap] Starting races data population...")
 
-            // Convert races.json data to database format
+            // Convert races.json data to database format.
             const races: Array<Omit<DatabaseRace, "id">> = Object.entries(racesData).map(([key, race]) => ({
                 key,
                 name: race.name,
@@ -86,7 +88,7 @@ export const useBootstrap = () => {
 
             logWithTimestamp(`[Bootstrap] Converted ${races.length} races from JSON to database format`)
 
-            // Clear existing races and populate with new data
+            // Clear existing races and populate with new data.
             await databaseManager.clearRaces()
             await databaseManager.saveRacesBatch(races)
 
@@ -99,12 +101,13 @@ export const useBootstrap = () => {
 
     /**
      * Populate skills data from skills.json into SQLite.
+     * @returns A promise that resolves when the skills data has been populated.
      */
     const populateSkillsData = async (): Promise<void> => {
         try {
             logWithTimestamp("[Bootstrap] Starting skills data population...")
 
-            // Convert races.json data to database format
+            // Convert skills.json data to database format.
             const skills: Array<Omit<DatabaseSkill, "id">> = Object.entries(skillsData).map(([key, skill]) => ({
                 key,
                 skill_id: skill.id,
@@ -127,7 +130,7 @@ export const useBootstrap = () => {
 
             logWithTimestamp(`[Bootstrap] Converted ${skills.length} skills from JSON to database format`)
 
-            // Clear existing skills and populate with new data
+            // Clear existing skills and populate with new data.
             await databaseManager.clearSkills()
             await databaseManager.saveSkillsBatch(skills)
 
@@ -140,6 +143,7 @@ export const useBootstrap = () => {
 
     /**
      * Populate character and support event data from JSON files into SQLite.
+     * @returns A promise that resolves when the event data has been populated.
      */
     const populateEventData = async (): Promise<void> => {
         try {

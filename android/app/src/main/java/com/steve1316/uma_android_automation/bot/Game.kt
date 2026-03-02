@@ -8,6 +8,7 @@ import com.steve1316.uma_android_automation.bot.campaigns.UnityCup
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
 import com.steve1316.automation_library.utils.BotService
+import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
@@ -65,6 +66,20 @@ class Game(val myContext: Context) {
     private val enableCraneGameAttempt: Boolean = SettingsHelper.getBooleanSetting("general", "enableCraneGameAttempt")
     private val enableStopBeforeFinals: Boolean = SettingsHelper.getBooleanSetting("general", "enableStopBeforeFinals")
     private val waitDelay: Double = SettingsHelper.getDoubleSetting("general", "waitDelay")
+
+	// Initialize Discord settings from SQLite.
+	init {
+		DiscordUtils.enableDiscordNotifications = SettingsHelper.getBooleanSetting("discord", "enableDiscordNotifications", false)
+		if (DiscordUtils.enableDiscordNotifications) {
+			try {
+				DiscordUtils.discordToken = SettingsHelper.getStringSetting("discord", "discordToken")
+				DiscordUtils.discordUserID = SettingsHelper.getStringSetting("discord", "discordUserID").toString()
+			} catch (e: Exception) {
+				Log.w(TAG, "Failed to read Discord settings: ${e.message}")
+				DiscordUtils.enableDiscordNotifications = false
+			}
+		}
+	}
 
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -707,6 +722,9 @@ class Game(val myContext: Context) {
 		if (enablePopupCheck && imageUtils.findImageWithBitmap("cancel", sourceBitmap, region = imageUtils.regionBottomHalf) != null) {
 			MessageLog.i(TAG, "\n[END] Bot may have encountered a warning popup. Exiting now...")
 			notificationMessage = "Bot may have encountered a warning popup"
+			if (DiscordUtils.enableDiscordNotifications) {
+				DiscordUtils.queue.add("```diff\n- ${MessageLog.getSystemTimeString()} Bot may have encountered a warning popup. Exiting now...\n```")
+			}
 			return false
 		} else if (findAndTapImage("next", sourceBitmap, tries = 1, region = imageUtils.regionBottomHalf)) {
 			// Now confirm the completion of a Training Goal popup.
@@ -725,6 +743,9 @@ class Game(val myContext: Context) {
                 // Stop when the bot has reached the Crane Game Event.
                 MessageLog.i(TAG, "\n[END] Bot will stop due to the detection of the Crane Game Event.")
                 notificationMessage = "Bot will stop due to the detection of the Crane Game Event."
+                if (DiscordUtils.enableDiscordNotifications) {
+                    DiscordUtils.queue.add("```diff\n- ${MessageLog.getSystemTimeString()} Bot will stop due to the detection of the Crane Game Event.\n```")
+                }
                 return false
             }
         } else if (
@@ -738,6 +759,9 @@ class Game(val myContext: Context) {
 		} else if (imageUtils.findImageWithBitmap("connection_error", sourceBitmap, region = imageUtils.regionMiddle, suppressError = true) != null) {
 			MessageLog.i(TAG, "\n[END] Bot will stop due to detecting a connection error.")
 			notificationMessage = "Bot will stop due to detecting a connection error."
+			if (DiscordUtils.enableDiscordNotifications) {
+				DiscordUtils.queue.add("```diff\n- ${MessageLog.getSystemTimeString()} Bot will stop due to detecting a connection error.\n```")
+			}
 			return false
 		} else if (imageUtils.findImageWithBitmap("race_not_enough_fans", sourceBitmap, region = imageUtils.regionMiddle, suppressError = true) != null) {
 			MessageLog.i(TAG, "[MISC] There was a popup about insufficient fans.")
@@ -813,6 +837,10 @@ class Game(val myContext: Context) {
 		} else if (SettingsHelper.getBooleanSetting("debug", "debugMode_startTrainingScreenOCRTest")) {
 			campaign.startTrainingScreenOCRTest()
 		} else {
+            // Send Discord notification that the run has started.
+			if (DiscordUtils.enableDiscordNotifications) {
+				DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! Scenario: $scenario\n```")
+			}
 			wait(5.0)
             campaign.start()
 		}

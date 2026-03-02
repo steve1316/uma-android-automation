@@ -567,10 +567,9 @@ class Racing (private val game: Game) {
                 return false
             }
         } else {
-            // No maiden races available on this day. Back out and try again later.
-            MessageLog.i(TAG, "[RACE] No maiden races available on this day. Aborting racing...")
-            ButtonBack.click(imageUtils = game.imageUtils)
-            return false
+            // No maiden races available on this day. Check for extra races instead.
+            MessageLog.i(TAG, "[RACE] No maiden races available on this day. Checking for extra races instead...")
+            return handleExtraRace()
         }
 
         // Confirm the selection and the resultant popup and then wait for the game to load.
@@ -1834,14 +1833,7 @@ class Racing (private val game: Game) {
      * @return True if the bot completed the race with retry attempts remaining. Otherwise false.
      */
     fun runRaceWithRetries(): Boolean {
-        // We can check this outside the loop since retrying a race won't change
-        // the fact that it can be skipped.
-        val canSkip = !ButtonViewResultsLocked.check(game.imageUtils, tries = 5)
-        if (canSkip) {
-            MessageLog.i(TAG, "[RACE] Race can be skipped. Proceeding to handle the race with skips...")
-        } else {
-            MessageLog.i(TAG, "[RACE] Unable to skip the race. Proceeding to handle the race manually...")
-        }
+        MessageLog.i(TAG, "[RACE] Proceeding to handle the race...")
 
         do {
             if (game.tryHandleAllDialogs()) {
@@ -1849,40 +1841,35 @@ class Racing (private val game: Game) {
             }
 
             val bitmap: Bitmap = game.imageUtils.getSourceBitmap()
-            if (canSkip) {
-                when {
-                    // Attempt to skip the race.
-                    ButtonViewResults.click(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Clicked ViewResults button to skip race.")
-                    }
-                    ButtonNext.check(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Reached race results screen. Exiting race retry loop...")
-                        return true
-                    }
-                    // Otherwise click to progress through screens.
-                    else -> game.tap(350.0, 450.0, "ok", taps = 3)
+
+            when {
+                // Attempt to skip the race.
+                ButtonViewResults.click(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Clicked ViewResults button to skip race.")
                 }
-            } else {
-                when {
-                    ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Started the manual race.")
-                    }
-                    ButtonRace.click(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Dismissed the list of participants.")
-                    }
-                    ButtonRaceExclamation.click(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Dismissed the list of participants.")
-                    }
-                    ButtonSkip.click(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Clicked skip button.")
-                    }
-                    ButtonNext.check(game.imageUtils, sourceBitmap = bitmap) -> {
-                        MessageLog.i(TAG, "[RACE] Reached race results screen. Exiting race retry loop...")
-                        return true
-                    }
-                    // Otherwise click to progress through screens.
-                    else -> game.tap(350.0, 450.0, "ok", taps = 3)
+                // If the race skip is locked.
+                ButtonViewResultsLocked.check(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Skip is locked. Preparing to run the race manually.")
+                    ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap)
                 }
+                ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Started the manual race.")
+                }
+                ButtonRace.click(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Dismissed the list of participants.")
+                }
+                ButtonRaceExclamation.click(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Dismissed the list of participants.")
+                }
+                ButtonSkip.click(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Clicked skip button.")
+                }
+                ButtonNext.check(game.imageUtils, sourceBitmap = bitmap) -> {
+                    MessageLog.i(TAG, "[RACE] Reached race results screen. Exiting race retry loop...")
+                    return true
+                }
+                // Otherwise click to progress through screens.
+                else -> game.tap(350.0, 450.0, "ok", taps = 3)
             }
         } while (raceRetries >= 0)
 

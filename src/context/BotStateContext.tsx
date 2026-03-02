@@ -3,14 +3,27 @@ import { startTiming } from "../lib/performanceLogger"
 import racesData from "../data/races.json"
 import { skillPlanSettingsPages } from "../pages/SkillPlanSettings"
 
+/**
+ * Configuration for an individual skill plan (e.g. preFinals, careerComplete).
+ */
 interface SkillPlanSettingsConfig {
+    /** Whether this skill plan is enabled. */
     enabled: boolean
+    /** The spending strategy for this plan. */
     strategy: string
+    /** Whether to buy inherited unique skills. */
     enableBuyInheritedUniqueSkills: boolean
+    /** Whether to buy negative skills. */
     enableBuyNegativeSkills: boolean
+    /** The serialized skill plan data. */
     plan: string
 }
 
+/**
+ * The complete application settings interface.
+ * Organized into category-specific sub-objects for general, racing, skills,
+ * training events, misc, training, stat targets, OCR, and debug settings.
+ */
 export interface Settings {
     // General settings
     general: {
@@ -153,6 +166,13 @@ export interface Settings {
         recordingFrameRate: number
         recordingResolutionScale: number
     }
+
+    // Discord settings
+    discord: {
+        enableDiscordNotifications: boolean
+        discordToken: string
+        discordUserID: string
+    }
 }
 
 // Set the default settings.
@@ -182,7 +202,7 @@ export const defaultSettings: Settings = {
                 raceName: race.name,
                 date: race.date,
                 priority: index,
-            })),
+            }))
         ),
         racingPlanData: JSON.stringify(racesData),
         minFansThreshold: 0,
@@ -334,23 +354,47 @@ export const defaultSettings: Settings = {
         recordingFrameRate: 30,
         recordingResolutionScale: 1.0,
     },
+    discord: {
+        enableDiscordNotifications: false,
+        discordToken: "",
+        discordUserID: "",
+    },
 }
 
+/**
+ * Context value interface for the BotState provider.
+ * Exposes application-wide state including readiness, settings, and app metadata.
+ */
 export interface BotStateProviderProps {
+    /** Whether the bot/app is ready (initialized and settings loaded). */
     readyStatus: boolean
+    /** Setter for the ready status. */
     setReadyStatus: (readyStatus: boolean) => void
+    /** The default settings used for reset and comparison. */
     defaultSettings: Settings
+    /** The current application settings. */
     settings: Settings
+    /** Setter for the application settings. */
     setSettings: (settings: Settings | ((prev: Settings) => Settings)) => void
+    /** The application name. */
     appName: string
+    /** Setter for the application name. */
     setAppName: (appName: string) => void
+    /** The application version string. */
     appVersion: string
+    /** Setter for the application version. */
     setAppVersion: (appVersion: string) => void
 }
 
 export const BotStateContext = createContext<BotStateProviderProps>({} as BotStateProviderProps)
 
-// https://stackoverflow.com/a/60130448 and https://stackoverflow.com/a/60198351
+/**
+ * Provider component for the BotState context.
+ * Manages application-wide state including readiness, settings, and metadata.
+ * Settings updates are wrapped with performance timing.
+ * @param children The child components to render within the provider.
+ * @returns The bot state context provider.
+ */
 export const BotStateProvider = ({ children }: any): React.ReactElement => {
     const [readyStatus, setReadyStatus] = useState<boolean>(false)
     const [appName, setAppName] = useState<string>("")
@@ -359,7 +403,10 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     // Create a deep copy of default settings to avoid reference issues.
     const [settings, setSettings] = useState<Settings>(() => JSON.parse(JSON.stringify(defaultSettings)))
 
-    // Wrapped setSettings with performance logging.
+    /**
+     * Wrapped setSettings with performance logging.
+     * @param update The update to apply to the settings.
+     */
     const setSettingsWithLogging = useCallback((update: Settings | ((prev: Settings) => Settings)) => {
         const endTiming = startTiming("bot_state_set_settings", "state")
 
@@ -381,17 +428,20 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     }, [])
 
     // Memoize the provider value to prevent cascading re-renders.
-    const providerValues = useMemo<BotStateProviderProps>(() => ({
-        readyStatus,
-        setReadyStatus,
-        defaultSettings,
-        settings,
-        setSettings: setSettingsWithLogging,
-        appName,
-        setAppName,
-        appVersion,
-        setAppVersion,
-    }), [readyStatus, settings, appName, appVersion, setSettingsWithLogging])
+    const providerValues = useMemo<BotStateProviderProps>(
+        () => ({
+            readyStatus,
+            setReadyStatus,
+            defaultSettings,
+            settings,
+            setSettings: setSettingsWithLogging,
+            appName,
+            setAppName,
+            appVersion,
+            setAppVersion,
+        }),
+        [readyStatus, settings, appName, appVersion, setSettingsWithLogging]
+    )
 
     return <BotStateContext.Provider value={providerValues}>{children}</BotStateContext.Provider>
 }

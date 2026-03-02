@@ -24,6 +24,7 @@ import SkillPlanSettings, { skillPlanSettingsPages } from "./pages/SkillPlanSett
 import EventLogVisualizer from "./pages/EventLogVisualizer"
 import ImportSettingsPreview from "./pages/ImportSettingsPreview"
 import DebugSettings from "./pages/DebugSettings"
+import DiscordSettings from "./pages/DiscordSettings"
 import DrawerContent from "./components/DrawerContent"
 import { NAV_THEME } from "./lib/theme"
 
@@ -54,6 +55,7 @@ function SettingsStack() {
             <Stack.Screen name="EventLogVisualizer" component={EventLogVisualizer} />
             <Stack.Screen name="ImportSettingsPreview" component={ImportSettingsPreview} />
             <Stack.Screen name="DebugSettings" component={DebugSettings} />
+            <Stack.Screen name="DiscordSettings" component={DiscordSettings} />
         </Stack.Navigator>
     )
 }

@@ -443,9 +443,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 				debugName = "AgendaHeader${index + 1}"
 			)
 			
-			// Clean up the detected text.
-			var cleanedText = detectedText.trim()
-			
+			// Clean up the detected text and remove any OCR noise characters like '|' or '!'.
+			var cleanedText = detectedText.replace("|", "").replace("!", "").trim()
+
 			// Handle OCR edge case: "Agenda I" should be "Agenda 1".
 			if (cleanedText.equals("Agenda I", ignoreCase = true)) {
 				cleanedText = "Agenda 1"

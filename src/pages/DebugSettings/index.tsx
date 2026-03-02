@@ -12,6 +12,11 @@ import WarningContainer from "../../components/WarningContainer"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
+/**
+ * The Debug Settings page.
+ * Provides controls for debug mode, template matching confidence/scale, screen recording settings (bit rate, frame rate, resolution), and
+ * diagnostic tests (template matching, OCR, date, race list, aptitudes).
+ */
 const DebugSettings = () => {
     usePerformanceLogging("DebugSettings")
     const { colors } = useTheme()
@@ -29,7 +34,7 @@ const DebugSettings = () => {
                     backgroundColor: colors.background,
                 },
             }),
-        [colors],
+        [colors]
     )
 
     return (
@@ -40,6 +45,7 @@ const DebugSettings = () => {
                 <ScrollView ref={scrollViewRef} nestedScrollEnabled={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
                     <View className="m-1">
                         <View style={{ marginTop: 16 }}>
+                            {/* Enable Debug Mode Checkbox */}
                             <CustomCheckbox
                                 searchId="enable-debug-mode"
                                 checked={bsc.settings.debug.enableDebugMode}
@@ -57,6 +63,7 @@ const DebugSettings = () => {
                                 <WarningContainer style={{ marginTop: 8 }}>⚠️ Significantly extends the average runtime of the bot due to increased IO operations.</WarningContainer>
                             )}
 
+                            {/* Template Match Confidence Slider */}
                             <CustomSlider
                                 searchId="template-match-confidence"
                                 value={bsc.settings.debug.templateMatchConfidence}
@@ -83,6 +90,7 @@ const DebugSettings = () => {
                                 description="Sets the minimum confidence level for template matching with 1080p as the baseline. Consider lowering this to something like 0.7 or 70% at lower resolutions. Making it too low will cause the bot to match on too many things as false positives."
                             />
 
+                            {/* Template Match Custom Scale Slider */}
                             <CustomSlider
                                 searchId="template-match-custom-scale"
                                 value={bsc.settings.debug.templateMatchCustomScale}
@@ -113,6 +121,7 @@ const DebugSettings = () => {
 
                             <CustomTitle title="Screen Recording Settings" description="Configure the quality settings for screen recording." />
 
+                            {/* Enable Screen Recording Checkbox */}
                             <CustomCheckbox
                                 searchId="enable-screen-recording"
                                 checked={bsc.settings.debug.enableScreenRecording}
@@ -126,6 +135,7 @@ const DebugSettings = () => {
                                 description="Records the screen while the bot is running. The mp4 file will be saved to the /recordings folder of the app's data directory. Note that performance and battery life may be impacted while recording."
                             />
 
+                            {/* Recording Bit Rate Slider */}
                             <CustomSlider
                                 searchId="recording-bit-rate"
                                 searchCondition={bsc.settings.debug.enableScreenRecording}
@@ -154,6 +164,7 @@ const DebugSettings = () => {
                                 description="Sets the video bit rate for screen recording. Higher values produce better quality but larger file sizes."
                             />
 
+                            {/* Recording Frame Rate Select */}
                             <CustomSelect
                                 searchId="recording-frame-rate"
                                 searchCondition={bsc.settings.debug.enableScreenRecording}
@@ -177,6 +188,7 @@ const DebugSettings = () => {
                                 style={{ marginTop: 8, marginBottom: 16 }}
                             />
 
+                            {/* Recording Resolution Scale Slider */}
                             <CustomSlider
                                 searchId="recording-resolution-scale"
                                 searchCondition={bsc.settings.debug.enableScreenRecording}
@@ -214,6 +226,7 @@ const DebugSettings = () => {
                                 {"⚠️ Only one debug test can be enabled at a time. Enabling a test will automatically disable the others.\n\nHaving Debug Mode enabled will output more helpful logs."}
                             </WarningContainer>
 
+                            {/* Checkboxes for enabling Debug Tests */}
                             <CustomCheckbox
                                 searchId="debug-template-matching-test"
                                 checked={bsc.settings.debug.debugMode_startTemplateMatchingTest}

@@ -3,28 +3,28 @@ import { Animated, ViewStyle, View, LayoutChangeEvent, NativeSyntheticEvent, Nat
 import { FlashList, FlashListProps } from "@shopify/flash-list"
 import { getIndicatorPositionStyle } from "./helpers.ts"
 
-type CustomIndicatorProps<T> = {
-    // Animated value controlling indicator's translation.
+type CustomIndicatorProps = {
+    /** Animated value controlling indicator's translation. */
     indicatorPosition: Animated.Value
-    // Animated value controlling indicator's scale.
+    /** Animated value controlling indicator's scale. */
     indicatorScale: Animated.Value
-    // Whether the scroll direction is horizontal.
+    /** Whether the scroll direction is horizontal. */
     horizontal: boolean
-    // Length (width/height) of the indicator thumb.
+    /** Length (width/height) of the indicator thumb. */
     indicatorSize: number
-    // Maximum distance indicator can travel within the track.
+    /** Maximum distance indicator can travel within the track. */
     scrollableTrackLength: number
-    // Whether scroll direction is inverted.
+    /** Whether scroll direction is inverted. */
     inverted: boolean
-    // Reference to FlashList for programmatic scrolling.
+    /** Reference to FlashList for programmatic scrolling. */
     flashListRef: React.RefObject<any>
-    // Total content size of the list.
+    /** Total content size of the list. */
     contentSize: number
-    // Viewport size of the list.
+    /** Viewport size of the list. */
     visibleSize: number
-    // Style positioning the indicator.
+    /** Style positioning the indicator. */
     indicatorPositionStyle: ViewStyle
-    // Style defining the indicator’s appearance.
+    /** Style defining the indicator's appearance. */
     indicatorStyle: ViewStyle
 }
 
@@ -33,8 +33,20 @@ type CustomIndicatorProps<T> = {
  * - Dragging the indicator moves the content.
  * - Scrolling the content moves the indicator.
  * - Gesture handling ensures smooth, precise control.
+ *
+ * @param indicatorPosition Animated value controlling indicator's translation.
+ * @param indicatorScale Animated value controlling indicator's scale.
+ * @param horizontal Whether the scroll direction is horizontal.
+ * @param indicatorSize Length (width/height) of the indicator thumb.
+ * @param scrollableTrackLength Maximum distance indicator can travel within the track.
+ * @param inverted Whether scroll direction is inverted.
+ * @param flashListRef Reference to FlashList for programmatic scrolling.
+ * @param contentSize Total content size of the list.
+ * @param visibleSize Viewport size of the list.
+ * @param indicatorPositionStyle Style positioning the indicator.
+ * @param indicatorStyle Style defining the indicator's appearance.
  */
-const CustomIndicator = <T,>({
+const CustomIndicator = ({
     indicatorPosition,
     indicatorScale,
     horizontal,
@@ -46,7 +58,7 @@ const CustomIndicator = <T,>({
     visibleSize,
     indicatorPositionStyle,
     indicatorStyle,
-}: CustomIndicatorProps<T>) => {
+}: CustomIndicatorProps) => {
     // Store offset at drag start to calculate relative motion.
     const dragStartOffset = useRef(0)
 
@@ -161,30 +173,30 @@ const CustomIndicator = <T,>({
 }
 
 type CustomScrollViewProps<T> = {
-    // Props passed directly to FlashList.
+    /** Props passed directly to FlashList. */
     targetProps?: Partial<FlashListProps<T>>
-    // Indicator position: left/right/top/bottom or percentage.
+    /** Indicator position: left/right/top/bottom or percentage. */
     position?: string | number
-    // Scroll orientation.
+    /** Scroll orientation. */
     horizontal?: boolean
-    // Hide scrollbar if true.
+    /** Hide scrollbar if true. */
     hideScrollbar?: boolean
-    // Always show scrollbar if true.
+    /** Always show scrollbar if true. */
     persistentScrollbar?: boolean
-    // Styling for scrollbar indicator.
+    /** Styling for scrollbar indicator. */
     indicatorStyle?: ViewStyle
-    // Container view styling.
+    /** Container view styling. */
     containerStyle?: ViewStyle
-    // Child elements (alternative to data prop).
+    /** Child elements (alternative to data prop). */
     children?: React.ReactNode | React.ReactNode[]
-    // Minimum pixel size of indicator.
+    /** Minimum pixel size of indicator. */
     minIndicatorSize?: number
-    // Enable custom indicator (WIP). When false, uses native Android scrollbar.
+    /** Enable custom indicator (WIP). When false, uses native Android scrollbar. */
     enableCustomIndicator?: boolean
 }
 
 /**
- * CustomScrollView wraps a FlashList and provides a custom draggable scrollbar indicator.
+ * CustomScrollView wraps a `FlashList` and provides a custom draggable scrollbar indicator.
  * - The indicator size and position are calculated based on content size and viewport size.
  * - Scroll events update the indicator position and scale.
  * - Dragging the indicator scrolls the content in sync.
@@ -199,143 +211,170 @@ type CustomScrollViewProps<T> = {
  * 2. Dragging the content itself:
  *    - `onScroll` updates the indicator position to match the content offset.
  *    - This keeps the indicator in sync without any user interaction with the thumb.
+ *
+ * @param targetProps Props passed directly to `FlashList`.
+ * @param position Indicator position: left/right/top/bottom or percentage.
+ * @param horizontal Scroll orientation.
+ * @param hideScrollbar Hide scrollbar if true.
+ * @param persistentScrollbar Always show scrollbar if true.
+ * @param indicatorStyle Styling for scrollbar indicator.
+ * @param containerStyle Container view styling.
+ * @param children Child elements (alternative to data prop).
+ * @param minIndicatorSize Minimum pixel size of indicator.
+ * @param enableCustomIndicator Enable custom indicator (WIP). When false, uses native Android scrollbar.
  */
-export const CustomScrollView = forwardRef<any, CustomScrollViewProps<any>>(({
-    targetProps,
-    position = "right",
-    horizontal = false,
-    hideScrollbar = false,
-    persistentScrollbar = false,
-    indicatorStyle = {},
-    containerStyle = { flex: 1 },
-    children,
-    minIndicatorSize,
-    enableCustomIndicator = false,
-}, ref) => {
-    // Total size of the content inside the scroll view (width for horizontal, height for vertical).
-    const [contentSize, setContentSize] = useState(1)
+export const CustomScrollView = forwardRef<any, CustomScrollViewProps<any>>(
+    (
+        {
+            targetProps,
+            position = "right",
+            horizontal = false,
+            hideScrollbar = false,
+            persistentScrollbar = false,
+            indicatorStyle = {},
+            containerStyle = { flex: 1 },
+            children,
+            minIndicatorSize,
+            enableCustomIndicator = false,
+        },
+        ref
+    ) => {
+        // Total size of the content inside the scroll view (width for horizontal, height for vertical).
+        const [contentSize, setContentSize] = useState(1)
 
-    // Size of the visible viewport of the scroll view (width for horizontal, height for vertical).
-    const [visibleSize, setVisibleSize] = useState(0)
+        // Size of the visible viewport of the scroll view (width for horizontal, height for vertical).
+        const [visibleSize, setVisibleSize] = useState(0)
 
-    // Size orthogonal to the scroll direction (height for horizontal, width for vertical).
-    const [orthogonalSize, setOrthogonalSize] = useState(0)
+        // Size orthogonal to the scroll direction (height for horizontal, width for vertical).
+        const [orthogonalSize, setOrthogonalSize] = useState(0)
 
-    // Reference to the FlashList for programmatic scrolling.
-    const flashListRef = useRef<any>(null)
+        // Reference to the FlashList for programmatic scrolling.
+        const flashListRef = useRef<any>(null)
 
-    // Convert children into an array if provided.
-    const childArray = useMemo(() => {
-        return children ? Children.toArray(children) : []
-    }, [children])
+        // Convert children into an array if provided.
+        const childArray = useMemo(() => {
+            return children ? Children.toArray(children) : []
+        }, [children])
 
-    // Compute the indicator size based on the content-to-viewport ratio.
-    const calculatedSize = contentSize > visibleSize ? (visibleSize * visibleSize) / contentSize : visibleSize
+        // Compute the indicator size based on the content-to-viewport ratio.
+        const calculatedSize = contentSize > visibleSize ? (visibleSize * visibleSize) / contentSize : visibleSize
 
-    // Ensure the indicator is at least minIndicatorSize, if provided.
-    const indicatorSize = minIndicatorSize !== undefined ? Math.max(calculatedSize, minIndicatorSize) : calculatedSize
+        // Ensure the indicator is at least minIndicatorSize, if provided.
+        const indicatorSize = minIndicatorSize !== undefined ? Math.max(calculatedSize, minIndicatorSize) : calculatedSize
 
-    // Maximum distance the indicator can travel along the scroll track.
-    // This ensures the indicator stays fully inside the viewport.
-    const scrollableTrackLength = visibleSize > indicatorSize ? visibleSize - indicatorSize : 1
+        // Maximum distance the indicator can travel along the scroll track.
+        // This ensures the indicator stays fully inside the viewport.
+        const scrollableTrackLength = visibleSize > indicatorSize ? visibleSize - indicatorSize : 1
 
-    // Animated value controlling the translation of the indicator along the track.
-    const indicatorPosition = useRef(new Animated.Value(0)).current
+        // Animated value controlling the translation of the indicator along the track.
+        const indicatorPosition = useRef(new Animated.Value(0)).current
 
-    // Animated value controlling the scale of the indicator for visual feedback.
-    const indicatorScale = useRef(new Animated.Value(1)).current
+        // Animated value controlling the scale of the indicator for visual feedback.
+        const indicatorScale = useRef(new Animated.Value(1)).current
 
-    // Called when the FlashList content size changes.
-    const handleContentSizeChange = (width: number, height: number) => {
-        setContentSize(horizontal ? width : height)
-    }
-
-    // Called when the FlashList layout changes. Updates visible and orthogonal size for scroll calculations.
-    const handleLayoutChange = (event: LayoutChangeEvent) => {
-        const { width, height } = event.nativeEvent.layout
-        setVisibleSize(horizontal ? width : height)
-        setOrthogonalSize(horizontal ? height : width)
-    }
-
-    // Called on scroll events to update indicator position and scale.
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        // Current scroll offset along the scroll direction.
-        const contentOffset = horizontal ? event.nativeEvent.contentOffset.x : event.nativeEvent.contentOffset.y
-
-        // Maximum scrollable distance of the content.
-        const maxContentOffset = contentSize - visibleSize
-
-        // Compute proportional indicator offset along the track.
-        const indicatorOffset = maxContentOffset > 0 ? (contentOffset * scrollableTrackLength) / maxContentOffset : 0
-
-        // Update the indicator translation.
-        indicatorPosition.setValue(indicatorOffset)
-
-        // Update the indicator scale for visual feedback while scrolling.
-        indicatorScale.setValue(indicatorOffset >= 0 ? (indicatorSize + 2 * scrollableTrackLength - 2 * indicatorOffset) / indicatorSize : (indicatorSize + 2 * indicatorOffset) / indicatorSize)
-    }
-
-    // Forward the ref to the FlashList so parent components can control scrolling.
-    useEffect(() => {
-        if (ref) {
-            if (typeof ref === "function") {
-                ref(flashListRef.current)
-            } else {
-                ref.current = flashListRef.current
-            }
+        /**
+         * Callback fired when the FlashList content size changes.
+         * @param width The width of the content.
+         * @param height The height of the content.
+         */
+        const handleContentSizeChange = (width: number, height: number) => {
+            setContentSize(horizontal ? width : height)
         }
-    }, [ref, flashListRef])
 
-    return (
-        <View style={containerStyle}>
-            <FlashList
-                ref={flashListRef}
-                data={children ? (childArray as any) : (targetProps?.data as any)}
-                renderItem={children ? ({ item }: any) => <View style={{ width: "100%" }}>{item}</View> : (targetProps?.renderItem as any)}
-                horizontal={horizontal}
-                showsVerticalScrollIndicator={!hideScrollbar && !enableCustomIndicator && !horizontal}
-                showsHorizontalScrollIndicator={!hideScrollbar && !enableCustomIndicator && horizontal}
-                onContentSizeChange={enableCustomIndicator ? handleContentSizeChange : targetProps?.onContentSizeChange}
-                onLayout={(e) => {
-                    if (enableCustomIndicator) {
-                        handleLayoutChange(e)
-                    }
-                    // Preserve user-provided onLayout if it exists.
-                    if (typeof targetProps?.onLayout === "function") {
-                        targetProps.onLayout(e)
-                    }
-                }}
-                // Update onScroll every 16ms (~60fps) for smooth indicator movement.
-                scrollEventThrottle={enableCustomIndicator ? 16 : targetProps?.scrollEventThrottle}
-                onScroll={(e) => {
-                    if (enableCustomIndicator) {
-                        handleScroll(e)
-                    }
-                    // Preserve user-provided onScroll if it exists.
-                    if (typeof targetProps?.onScroll === "function") {
-                        targetProps.onScroll(e)
-                    }
-                }}
-                {...(targetProps as any)}
-            />
+        /**
+         * Callback fired when the FlashList layout changes.
+         * Updates visible and orthogonal size for scroll calculations.
+         * @param event The layout change event.
+         */
+        const handleLayoutChange = (event: LayoutChangeEvent) => {
+            const { width, height } = event.nativeEvent.layout
+            setVisibleSize(horizontal ? width : height)
+            setOrthogonalSize(horizontal ? height : width)
+        }
 
-            {enableCustomIndicator && (persistentScrollbar || indicatorSize < visibleSize) && (
-                <CustomIndicator
-                    indicatorPosition={indicatorPosition}
-                    indicatorScale={indicatorScale}
+        /**
+         * Callback fired on scroll events to update indicator position and scale.
+         * @param event The scroll event.
+         */
+        const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            // Current scroll offset along the scroll direction.
+            const contentOffset = horizontal ? event.nativeEvent.contentOffset.x : event.nativeEvent.contentOffset.y
+
+            // Maximum scrollable distance of the content.
+            const maxContentOffset = contentSize - visibleSize
+
+            // Compute proportional indicator offset along the track.
+            const indicatorOffset = maxContentOffset > 0 ? (contentOffset * scrollableTrackLength) / maxContentOffset : 0
+
+            // Update the indicator translation.
+            indicatorPosition.setValue(indicatorOffset)
+
+            // Update the indicator scale for visual feedback while scrolling.
+            indicatorScale.setValue(indicatorOffset >= 0 ? (indicatorSize + 2 * scrollableTrackLength - 2 * indicatorOffset) / indicatorSize : (indicatorSize + 2 * indicatorOffset) / indicatorSize)
+        }
+
+        // Forward the ref to the FlashList so parent components can control scrolling.
+        useEffect(() => {
+            if (ref) {
+                if (typeof ref === "function") {
+                    ref(flashListRef.current)
+                } else {
+                    ref.current = flashListRef.current
+                }
+            }
+        }, [ref, flashListRef])
+
+        return (
+            <View style={containerStyle}>
+                <FlashList
+                    ref={flashListRef}
+                    data={children ? (childArray as any) : (targetProps?.data as any)}
+                    renderItem={children ? ({ item }: any) => <View style={{ width: "100%" }}>{item}</View> : (targetProps?.renderItem as any)}
                     horizontal={horizontal}
-                    indicatorSize={indicatorSize}
-                    scrollableTrackLength={scrollableTrackLength}
-                    inverted={false}
-                    flashListRef={flashListRef}
-                    contentSize={contentSize}
-                    visibleSize={visibleSize}
-                    indicatorPositionStyle={getIndicatorPositionStyle(horizontal, position, orthogonalSize, indicatorStyle.width as number)}
-                    indicatorStyle={indicatorStyle}
+                    showsVerticalScrollIndicator={!hideScrollbar && !enableCustomIndicator && !horizontal}
+                    showsHorizontalScrollIndicator={!hideScrollbar && !enableCustomIndicator && horizontal}
+                    onContentSizeChange={enableCustomIndicator ? handleContentSizeChange : targetProps?.onContentSizeChange}
+                    onLayout={(e) => {
+                        if (enableCustomIndicator) {
+                            handleLayoutChange(e)
+                        }
+                        // Preserve user-provided onLayout if it exists.
+                        if (typeof targetProps?.onLayout === "function") {
+                            targetProps.onLayout(e)
+                        }
+                    }}
+                    // Update onScroll every 16ms (~60fps) for smooth indicator movement.
+                    scrollEventThrottle={enableCustomIndicator ? 16 : targetProps?.scrollEventThrottle}
+                    onScroll={(e) => {
+                        if (enableCustomIndicator) {
+                            handleScroll(e)
+                        }
+                        // Preserve user-provided onScroll if it exists.
+                        if (typeof targetProps?.onScroll === "function") {
+                            targetProps.onScroll(e)
+                        }
+                    }}
+                    {...(targetProps as any)}
                 />
-            )}
-        </View>
-    )
-})
+
+                {enableCustomIndicator && (persistentScrollbar || indicatorSize < visibleSize) && (
+                    <CustomIndicator
+                        indicatorPosition={indicatorPosition}
+                        indicatorScale={indicatorScale}
+                        horizontal={horizontal}
+                        indicatorSize={indicatorSize}
+                        scrollableTrackLength={scrollableTrackLength}
+                        inverted={false}
+                        flashListRef={flashListRef}
+                        contentSize={contentSize}
+                        visibleSize={visibleSize}
+                        indicatorPositionStyle={getIndicatorPositionStyle(horizontal, position, orthogonalSize, indicatorStyle.width as number)}
+                        indicatorStyle={indicatorStyle}
+                    />
+                )}
+            </View>
+        )
+    }
+)
 
 export default CustomScrollView

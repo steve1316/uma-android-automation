@@ -40,6 +40,12 @@ const excludedEventNames = new Set([
     "A Team at Last",
 ])
 
+/**
+ * The Training Event Settings page.
+ * Allows configuration of special event option overrides (holiday, race results,
+ * training failures, misc), character/support event overrides via a searchable modal,
+ * and energy prioritization preferences.
+ */
 const TrainingEventSettings = () => {
     usePerformanceLogging("TrainingEventSettings")
     const { colors } = useTheme()
@@ -109,6 +115,11 @@ const TrainingEventSettings = () => {
         { value: "Blue Bloom, like Rice Shower suggested", label: "Blue Bloom (Rice Shower)" },
     ]
 
+    /**
+     * Update a training event setting.
+     * @param key The key of the setting to update.
+     * @param value The value to set the setting to.
+     */
     const updateTrainingEventSetting = (key: keyof typeof settings.trainingEvent, value: any) => {
         setSettings({
             ...bsc.settings,
@@ -119,6 +130,12 @@ const TrainingEventSettings = () => {
         })
     }
 
+    /**
+     * Update a specific field for a special event override.
+     * @param eventName The name of the special event (e.g., `"New Year's Resolutions"`).
+     * @param field The field to update (`selectedOption` or `requiresConfirmation`).
+     * @param value The new value for the field.
+     */
     const updateSpecialEventOverride = (eventName: string, field: "selectedOption" | "requiresConfirmation", value: any) => {
         setSettings({
             ...bsc.settings,
@@ -135,8 +152,10 @@ const TrainingEventSettings = () => {
         })
     }
 
-    // Build a flat list of all events with their character/support names.
-    // Use the full data files so users can search through all events, not just selected ones.
+    /**
+     * Build a flattened list of all available events from character and support data.
+     * Filters out excluded events and events with fewer than two options.
+     */
     const allEvents = useMemo(() => {
         const events: Array<{ key: string; characterOrSupport: string; eventName: string; options: string[]; type: "character" | "support" }> = []
 
@@ -183,7 +202,9 @@ const TrainingEventSettings = () => {
         return events
     }, [])
 
-    // Filter events based on search query and exclude already-overridden events.
+    /**
+     * Filter the available events based on search query and existing overrides.
+     */
     const filteredEvents = useMemo(() => {
         const characterOverrides = characterEventOverrides || {}
         const supportOverrides = supportEventOverrides || {}
@@ -205,6 +226,11 @@ const TrainingEventSettings = () => {
         })
     }, [allEvents, eventOverrideSearchQuery, characterEventOverrides, supportEventOverrides])
 
+    /**
+     * Add or update an event override for a specific character or support event.
+     * @param eventKey The unique key identifying the event.
+     * @param optionIndex The index of the selected option.
+     */
     const updateEventOverride = (eventKey: string, optionIndex: number) => {
         const isCharacter = allEvents.find((e) => e.key === eventKey)?.type === "character"
 
@@ -236,6 +262,10 @@ const TrainingEventSettings = () => {
         setSelectedEventForOption(null)
     }
 
+    /**
+     * Remove an event override for a specific character or support event.
+     * @param eventKey The unique key identifying the event to remove.
+     */
     const removeEventOverride = (eventKey: string) => {
         const isCharacter = allEvents.find((e) => e.key === eventKey)?.type === "character"
 
@@ -262,7 +292,9 @@ const TrainingEventSettings = () => {
         }
     }
 
-    // Get all currently set overrides.
+    /**
+     * Retrieve a list of all current character and support event overrides.
+     */
     const currentOverrides = useMemo(() => {
         const overrides: Array<{ key: string; characterOrSupport: string; eventName: string; optionIndex: number; options: string[] }> = []
         const characterOverrides = characterEventOverrides || {}
@@ -295,7 +327,10 @@ const TrainingEventSettings = () => {
         return overrides
     }, [characterEventOverrides, supportEventOverrides, allEvents])
 
-    // Render function for event items - memoized for performance.
+    /**
+     * Render a single event item for the selection list.
+     * @param event The event data to render.
+     */
     const renderEventItem = useCallback(({ item: event }: { item: { key: string; characterOrSupport: string; eventName: string; options: string[]; type: "character" | "support" } }) => {
         return (
             <TouchableOpacity
@@ -317,6 +352,11 @@ const TrainingEventSettings = () => {
         )
     }, [])
 
+    /**
+     * Extract a unique key for an event item in the list.
+     * @param item The event item.
+     * @returns The unique key.
+     */
     const keyExtractor = useCallback((item: { key: string; characterOrSupport: string; eventName: string; options: string[]; type: "character" | "support" }) => item.key, [])
 
     const styles = useMemo(
@@ -492,7 +532,7 @@ const TrainingEventSettings = () => {
                     padding: 20,
                 },
             }),
-        [colors],
+        [colors]
     )
 
     return (

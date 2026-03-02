@@ -15,6 +15,12 @@ import { skillPlanSettingsPages } from "../SkillPlanSettings"
 import InfoContainer from "../../components/InfoContainer"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
+/**
+ * The Skill Settings page.
+ * Provides configuration for automated skill purchasing including skill point
+ * thresholds, running style / track distance / track surface filters, and
+ * navigation links to individual Skill Plan Settings sub-pages.
+ */
 const SkillSettings = () => {
     usePerformanceLogging("SkillSettings")
     const { colors } = useTheme()
@@ -40,6 +46,11 @@ const SkillSettings = () => {
         }
     }, [bsc.settings.skills.plans.skillPointCheck.enabled])
 
+    /**
+     * Update a skill setting.
+     * @param key The key of the setting to update.
+     * @param value The value to set the setting to.
+     */
     const updateSkillsSetting = (key: string, value: any) => {
         setSettings({
             ...bsc.settings,
@@ -97,7 +108,7 @@ const SkillSettings = () => {
                     marginTop: 2,
                 },
             }),
-        [colors],
+        [colors]
     )
 
     return (

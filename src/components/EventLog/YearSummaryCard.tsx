@@ -4,95 +4,106 @@ import type { YearSummary } from "../../lib/eventLogParser"
 import { useTheme } from "../../context/ThemeContext"
 
 type Props = {
+    /** The year summary data including action counts, stat gains, and elapsed time. */
     summary: YearSummary
 }
 
+/**
+ * Displays a summary card for a single year's event log data.
+ * Shows total actions (energy, mood, injury, race, training), stat gains per training type,
+ * and elapsed time. Appends "+ Finals" to the title for Senior Year if finals data is present.
+ * @param summary The year summary data.
+ */
 const YearSummaryCard: React.FC<Props> = ({ summary }) => {
     const { colors } = useTheme()
 
-    const styles = useMemo(() => StyleSheet.create({
-        container: {
-            paddingVertical: 16,
-            paddingHorizontal: 16,
-            borderRadius: 8,
-            borderWidth: 1,
-            marginBottom: 12,
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-        },
-        headerRow: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 12,
-        },
-        title: {
-            fontSize: 20,
-            fontWeight: "bold",
-            flex: 1,
-            color: colors.foreground,
-        },
-        timeContainer: {
-            alignItems: "flex-end",
-        },
-        timeFormatted: {
-            fontSize: 18,
-            fontWeight: "600",
-            marginBottom: 2,
-            color: colors.foreground,
-        },
-        timeHuman: {
-            fontSize: 12,
-            color: colors.lightlyMuted,
-        },
-        section: {
-            marginBottom: 12,
-        },
-        sectionTitle: {
-            fontSize: 16,
-            fontWeight: "600",
-            marginBottom: 8,
-            color: colors.foreground,
-        },
-        actionRow: {
-            gap: 8,
-        },
-        actionItem: {
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-        },
-        actionLabel: {
-            fontSize: 14,
-            marginRight: 8,
-            minWidth: 120,
-            color: colors.lightlyMuted,
-        },
-        actionValue: {
-            fontSize: 14,
-            fontWeight: "600",
-            color: colors.foreground,
-        },
-        statRow: {
-            gap: 8,
-        },
-        statItem: {
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-        },
-        statLabel: {
-            fontSize: 14,
-            marginRight: 8,
-            minWidth: 110,
-            color: colors.lightlyMuted,
-        },
-        statValue: {
-            fontSize: 14,
-            fontWeight: "600",
-            color: colors.foreground,
-        },
-    }), [colors])
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                container: {
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    marginBottom: 12,
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                },
+                headerRow: {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    marginBottom: 12,
+                },
+                title: {
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    flex: 1,
+                    color: colors.foreground,
+                },
+                timeContainer: {
+                    alignItems: "flex-end",
+                },
+                timeFormatted: {
+                    fontSize: 18,
+                    fontWeight: "600",
+                    marginBottom: 2,
+                    color: colors.foreground,
+                },
+                timeHuman: {
+                    fontSize: 12,
+                    color: colors.lightlyMuted,
+                },
+                section: {
+                    marginBottom: 12,
+                },
+                sectionTitle: {
+                    fontSize: 16,
+                    fontWeight: "600",
+                    marginBottom: 8,
+                    color: colors.foreground,
+                },
+                actionRow: {
+                    gap: 8,
+                },
+                actionItem: {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 4,
+                },
+                actionLabel: {
+                    fontSize: 14,
+                    marginRight: 8,
+                    minWidth: 120,
+                    color: colors.lightlyMuted,
+                },
+                actionValue: {
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: colors.foreground,
+                },
+                statRow: {
+                    gap: 8,
+                },
+                statItem: {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 4,
+                },
+                statLabel: {
+                    fontSize: 14,
+                    marginRight: 8,
+                    minWidth: 110,
+                    color: colors.lightlyMuted,
+                },
+                statValue: {
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: colors.foreground,
+                },
+            }),
+        [colors]
+    )
 
     // Build the title string, including "+ Finals" for Senior Year if the logs covered the Finals days (turns 73-75).
     const titleText = summary.hasFinals ? `${summary.year} Year + Finals` : `${summary.year} Year`

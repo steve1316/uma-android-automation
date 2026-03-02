@@ -27,7 +27,7 @@ class UnityCup(game: Game) : Campaign(game) {
     override val TAG: String = "[${MainActivity.loggerTag}]UnityCup"
 	private var tutorialDisabled = false
     private var bIsFinals: Boolean = false
-    private var selectedOpponentIndex: Int = -1
+    private var selectedOpponentIndex: Int = 0
     private var bOverrideOpponentSelection: Boolean = false
 
     /**
@@ -63,7 +63,19 @@ class UnityCup(game: Game) : Campaign(game) {
                     dialog.ok(imageUtils = game.imageUtils)
                 } else {
                     dialog.close(imageUtils = game.imageUtils)
+                    if (selectedOpponentIndex >= 2) {
+                        MessageLog.w(TAG, "[UNITY_CUP] Could not determine any opponent with sufficient double circle predictions. Selecting the 2nd opponent as a fallback.")
+                        selectedOpponentIndex = 1
+                        bOverrideOpponentSelection = true
+                    } else {
+                        selectedOpponentIndex++
+                    }
                 }
+                // Since we're incrementing a value in here, we want to delay before
+                // returning to ensure that we do not accidentally call handleDialogs()
+                // and end up right back in here and instantly increment again before
+                // this dialog has a chance to close.
+                game.wait(0.5, skipWaitingForLoading = true)
                 return Pair(true, dialog)
             }
             else -> return Pair(false, dialog)
@@ -144,7 +156,7 @@ class UnityCup(game: Game) : Campaign(game) {
                 // Go to opponent selection screen.
                 game.findAndTapImage("unitycup_race", sourceBitmap = sourceBitmap) -> {
                     MessageLog.d(TAG, "[UNITY_CUP] Going to opponent selection screen...")
-                    selectedOpponentIndex = -1
+                    selectedOpponentIndex = 0
                     bOverrideOpponentSelection = false
                 }
                 game.findAndTapImage("unitycup_final_race", sourceBitmap = sourceBitmap) -> {
@@ -153,24 +165,22 @@ class UnityCup(game: Game) : Campaign(game) {
                 }
                 // Handle opponent selection.
                 ButtonSelectOpponent.check(imageUtils = game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                    val opponents = LabelUnityCupOpponentSelectionLaurel.findAll(game.imageUtils, sourceBitmap = sourceBitmap)
+                    val opponents: ArrayList<Point> = LabelUnityCupOpponentSelectionLaurel.findAll(game.imageUtils, sourceBitmap = sourceBitmap)
                     if (opponents.size != 3) {
                         MessageLog.e(TAG, "[UNITY_CUP] Failed to detect all three opponents on opponent selection screen.")
                         return false
                     }
 
-                    if (selectedOpponentIndex >= 2) {
-                        MessageLog.w(TAG, "[UNITY_CUP] Could not determine any opponent with sufficient double circle predictions. Selecting the 2nd opponent as a fallback.")
-                        selectedOpponentIndex = 1
-                        bOverrideOpponentSelection = true
-                    } else {
-                        selectedOpponentIndex++
-                    }
+                    selectedOpponentIndex = selectedOpponentIndex.coerceIn(0, opponents.lastIndex)
                     val opponent = opponents[selectedOpponentIndex]
                     game.gestureUtils.tap(opponent.x, opponent.y, LabelUnityCupOpponentSelectionLaurel.template.path)
-                    MessageLog.d(TAG, "[UNITY CUP] Selecting opponent #${selectedOpponentIndex} at ${opponent}")
+                    // Tiny delay to allow the opponent selection click to register fully.
+                    game.wait(0.1, skipWaitingForLoading = true)
+                    MessageLog.d(TAG, "[UNITY_CUP] Selecting opponent #${selectedOpponentIndex + 1} at ${opponent}")
                     ButtonSelectOpponent.click(imageUtils = game.imageUtils, sourceBitmap = sourceBitmap)
-                    game.wait(0.5, skipWaitingForLoading = true)
+                    // Clicking SelectOpponent requires connect to server. Don't skip
+                    // waiting for loading otherwise we might miss handling a dialog.
+                    game.wait(0.5)
                 }
                 // If the skip button is locked, need to manually run the race.
                 ButtonViewResultsLocked.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {

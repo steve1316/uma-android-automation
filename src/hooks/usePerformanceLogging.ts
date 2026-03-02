@@ -3,8 +3,7 @@ import { startTiming, markNavigationEnd } from "../lib/performanceLogger"
 
 /**
  * A custom hook that logs component lifecycle events (mount, unmount, re-render).
- * All logs are gated by PerformanceLogger.ENABLED.
- *
+ * All logs are gated by `PerformanceLogger.ENABLED`.
  * @param componentName - The name of the component to track.
  */
 export const usePerformanceLogging = (componentName: string) => {

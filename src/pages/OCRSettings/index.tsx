@@ -8,6 +8,11 @@ import CustomCheckbox from "../../components/CustomCheckbox"
 import PageHeader from "../../components/PageHeader"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
+/**
+ * The OCR Settings page.
+ * Provides controls for OCR threshold, confidence level, automatic retry behavior,
+ * and hiding OCR comparison result logs during training event detection.
+ */
 const OCRSettings = () => {
     usePerformanceLogging("OCRSettings")
     const { colors } = useTheme()
@@ -43,7 +48,7 @@ const OCRSettings = () => {
                     marginBottom: 24,
                 },
             }),
-        [colors],
+        [colors]
     )
 
     return (
@@ -72,7 +77,6 @@ const OCRSettings = () => {
 
                         <View style={styles.section}>
                             <CustomCheckbox
-                                id="enable-automatic-ocr-retry"
                                 checked={enableAutomaticOCRRetry}
                                 onCheckedChange={(checked) => updateOCRSetting("enableAutomaticOCRRetry", checked)}
                                 label="Enable Automatic OCR Retry"

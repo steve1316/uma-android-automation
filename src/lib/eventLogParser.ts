@@ -1,49 +1,77 @@
 export type LogFileInput = {
+    /** The name of the file. */
     name: string
+    /** The content of the file. */
     content: string
 }
 
 export type DayActions = {
+    /** Whether energy occurred. */
     energy: boolean
+    /** Whether mood occurred. */
     mood: boolean
+    /** Whether injury occurred. */
     injury: boolean
+    /** Whether training occurred. */
     training: boolean
+    /** Whether race occurred. */
     race: boolean
 }
 
 export type DayRecord = {
+    /** The kind of record. */
     kind: "day"
+    /** The day number. */
     dayNumber: number
+    /** The date text. */
     dateText?: string
+    /** The summary of the day. */
     summary: string
+    /** The actions that occurred on the day. */
     actions: DayActions
+    /** The name of the file. */
     fileName: string
+    /** The triggers that occurred on the day. */
     triggers?: DayTriggers
+    /** The year of the day. */
     year?: string
+    /** The training type of the day. */
     trainingType?: string
+    /** The training stat gains of the day. */
     trainingStatGains?: number[]
-    timestamp?: number // Timestamp in milliseconds from file start (HH*3600000 + MM*60000 + SS*1000 + mmm)
+    /** The timestamp of the day in milliseconds from file start (HH*3600000 + MM*60000 + SS*1000 + mmm). */
+    timestamp?: number
 }
 
 export type GapRecord = {
+    /** The kind of record. */
     kind: "gap"
+    /** The start day number. */
     from: number
+    /** The end day number. */
     to: number
 }
 
 export type FileDividerRecord = {
+    /** The kind of record. */
     kind: "fileDivider"
+    /** The name of the file. */
     fileName: string
 }
 
 export type ParseError = {
+    /** The message of the error. */
     message: string
+    /** The name of the file. */
     fileName: string
 }
 
 export type ParseResult = {
+    /** The records parsed from the log files. */
     records: Array<DayRecord | GapRecord | FileDividerRecord>
+    /** The errors that occurred during parsing. */
     errors: ParseError[]
+    /** The metadata of the parsing. */
     meta: {
         firstDay?: number
         lastDay?: number
@@ -86,10 +114,18 @@ const REGEX = {
 
 /** Generic matcher that supports substring contains checks only. */
 type LineMatcher = {
+    /** The substrings to match. */
     substr?: string[]
+    /** The substrings to exclude. */
     negativeSubstr?: string[]
 }
 
+/**
+ * Checks if a line matches a matcher.
+ * @param line The line to check.
+ * @param matcher The matcher to use.
+ * @returns True if the line matches the matcher, false otherwise.
+ */
 function matchesLine(line: string, matcher: LineMatcher): boolean {
     const l = line
     if (matcher.negativeSubstr && matcher.negativeSubstr.some((s) => l.toLowerCase().includes(s.toLowerCase()))) return false
@@ -115,13 +151,23 @@ const MATCHERS: Record<ActionKey, LineMatcher> = {
     },
 }
 
+/**
+ * Sanitizes a summary by removing leading and trailing whitespace and truncating it if it is too long.
+ * @param text The summary to sanitize.
+ * @returns The sanitized summary.
+ */
 function sanitizeSummary(text?: string): string {
     if (!text) return ""
     const trimmed = text.trim()
-    // Keep concise.
     return trimmed.length > 140 ? trimmed.slice(0, 137) + "..." : trimmed
 }
 
+/**
+ * Composes a summary for a day based on the actions that occurred.
+ * @param actions The actions that occurred on the day.
+ * @param firstNotable The first notable action that occurred on the day.
+ * @returns The summary for the day.
+ */
 function composeSummary(actions: DayActions, firstNotable?: string): string {
     const labels: string[] = []
     if (actions.training) labels.push("Training")
@@ -138,6 +184,9 @@ function composeSummary(actions: DayActions, firstNotable?: string): string {
 /**
  * Determines the year for a given day number and date text.
  * Finals (turns 73-75) are assigned to "Senior" year.
+ * @param dayNumber The day number.
+ * @param dateText The date text.
+ * @returns The year for the day or undefined if no year could be determined.
  */
 function determineYear(dayNumber: number, dateText?: string): string | undefined {
     // Finals occur at turns 73, 74, and 75, and belong to Senior Year.
@@ -158,6 +207,11 @@ function determineYear(dayNumber: number, dateText?: string): string | undefined
     return undefined
 }
 
+/**
+ * Parses the log files and returns the parsed records.
+ * @param files The log files to parse.
+ * @returns The parsed records.
+ */
 export function parseLogs(files: LogFileInput[]): ParseResult {
     const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name))
     const errors: ParseError[] = []
@@ -173,8 +227,8 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
             year?: string
             trainingType?: string
             trainingStatGains?: number[]
-            ended?: boolean // True if day ended with [END] or "Now saving Message Log"
-            timestamp?: number // Timestamp in milliseconds from file start
+            ended?: boolean // True if day ended with [END] or "Now saving Message Log".
+            timestamp?: number // Timestamp in milliseconds from file start.
         }
     >()
 
@@ -190,9 +244,9 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
         // First pass: detect if this file starts at a day earlier than lastDaySeen.
         let firstDayInThisFile: number | undefined
         for (const line of lines) {
-            const m = line.match(REGEX.dateTurn)
-            if (m) {
-                firstDayInThisFile = parseInt(m[1], 10)
+            const match = line.match(REGEX.dateTurn)
+            if (match) {
+                firstDayInThisFile = parseInt(match[1], 10)
                 break
             }
         }
@@ -230,9 +284,9 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
                 pendingDateText = dateFormatted[1].trim()
             }
 
-            const m = line.match(REGEX.dateTurn)
-            if (m) {
-                const detectedDay = parseInt(m[1], 10)
+            const match = line.match(REGEX.dateTurn)
+            if (match) {
+                const detectedDay = parseInt(match[1], 10)
                 foundAnyDay = true
                 if (firstDaySeen === undefined) firstDaySeen = detectedDay
                 if (lastDaySeen === undefined || detectedDay > lastDaySeen) lastDaySeen = detectedDay
@@ -411,17 +465,29 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
     }
 }
 
+/**
+ * Formats a gap record into a human-readable string.
+ * @param gap The gap record to format.
+ * @returns A string representing the gap.
+ */
 export function formatGapText(gap: GapRecord): string {
     return gap.from === gap.to ? `Day ${gap.from} missing.` : `Days ${gap.from}–${gap.to} missing.`
 }
 
 export type YearSummary = {
+    /** The year this summary represents. */
     year: string
+    /** The number of energy days in this year. */
     energyCount: number
+    /** The number of mood days in this year. */
     moodCount: number
+    /** The number of injury days in this year. */
     injuryCount: number
+    /** The number of race days in this year. */
     raceCount: number
+    /** The number of training days in this year. */
     trainingCount: number
+    /** The total stat gains for this year. */
     totalStatGains: {
         speed: number
         stamina: number
@@ -429,6 +495,7 @@ export type YearSummary = {
         guts: number
         wit: number
     }
+    /** The total stat gains for each training type in this year. */
     trainingCounts: {
         speed: number
         stamina: number
@@ -436,19 +503,32 @@ export type YearSummary = {
         guts: number
         wit: number
     }
-    elapsedTimeMs?: number // Elapsed time in milliseconds for this year
-    elapsedTimeFormatted?: string // "HH:MM:SS"
-    elapsedTimeHuman?: string // "X hours and Y minutes"
-    hasFinals?: boolean // True if this year summary includes Finals days (turns 73-75)
+    /** The elapsed time in milliseconds for this year. */
+    elapsedTimeMs?: number
+    /** The elapsed time in "HH:MM:SS" format for this year. */
+    elapsedTimeFormatted?: string
+    /** The elapsed time in "X hours and Y minutes" format for this year. */
+    elapsedTimeHuman?: string
+    /** True if this year summary includes Finals days (turns 73-75). */
+    hasFinals?: boolean
 }
 
 export type YearSummariesResult = {
+    /** The summaries for each year. */
     summaries: YearSummary[]
+    /** The total elapsed time in milliseconds for all years. */
     totalElapsedTimeMs?: number
+    /** The total elapsed time in "HH:MM:SS" format for all years. */
     totalElapsedTimeFormatted?: string
+    /** The total elapsed time in "X hours and Y minutes" format for all years. */
     totalElapsedTimeHuman?: string
 }
 
+/**
+ * Formats elapsed time in milliseconds into "HH:MM:SS" and "X hours and Y minutes" formats.
+ * @param ms The elapsed time in milliseconds.
+ * @returns An object containing the formatted and human-readable elapsed time.
+ */
 function formatElapsedTime(ms: number): { formatted: string; human: string } {
     const totalSeconds = Math.floor(ms / 1000)
     const hours = Math.floor(totalSeconds / 3600)
@@ -473,6 +553,11 @@ function formatElapsedTime(ms: number): { formatted: string; human: string } {
     return { formatted, human }
 }
 
+/**
+ * Aggregates statistics for each year.
+ * @param records The records to aggregate.
+ * @returns The aggregated year summaries.
+ */
 export function aggregateYearSummaries(records: DayRecord[]): YearSummariesResult {
     // Filter to only days with valid year field.
     const daysWithYear = records.filter((r) => r.year)

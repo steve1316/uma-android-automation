@@ -5,18 +5,40 @@ import { Text } from "../ui/text"
 import { useTheme } from "../../context/ThemeContext"
 
 interface CustomButtonProps extends PressableProps {
+    /** The visual style variant of the button. */
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+    /** The size preset for the button. */
     size?: "default" | "sm" | "lg" | "icon"
+    /** Optional custom style for the button. */
     style?: ViewStyle
+    /** Optional NativeWind class name. */
     className?: string
+    /** Whether the button is disabled. */
     disabled?: boolean
+    /** Whether to show a loading spinner. */
     isLoading?: boolean
+    /** Optional custom font size for the button text. */
     fontSize?: number
+    /** Optional icon element to render alongside the button text. */
     icon?: React.ReactElement
+    /** Whether the icon appears to the left or right of the text. */
     iconPosition?: "left" | "right"
+    /** The button label content. */
     children: React.ReactNode
 }
 
+/**
+ * A themed, configurable button component with support for multiple variants, icons, and loading state.
+ * Automatically applies theme-aware colors based on the selected variant and dark/light mode.
+ * @param variant The visual style variant of the button.
+ * @param size The size preset for the button.
+ * @param style Optional custom style.
+ * @param disabled Whether the button is disabled.
+ * @param isLoading Whether to show a loading spinner.
+ * @param icon Optional icon element.
+ * @param iconPosition Whether the icon appears left or right.
+ * @param children The button label content.
+ */
 const CustomButton: React.FC<CustomButtonProps> = ({
     variant = "default",
     size = "default",
@@ -32,7 +54,10 @@ const CustomButton: React.FC<CustomButtonProps> = ({
 }) => {
     const { colors, isDark } = useTheme()
 
-    // Determine the background color based on variant and theme.
+    /**
+     * Determine the background color based on variant and theme.
+     * @returns The background color for the button.
+     */
     const getBackgroundColor = () => {
         if (disabled) return { opacity: 0.5 }
 
@@ -52,7 +77,10 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         }
     }
 
-    // Determine the text color based on variant and theme.
+    /**
+     * Determine the text color based on variant and theme.
+     * @returns The text color for the button.
+     */
     const getTextColor = () => {
         if (disabled) return { opacity: 0.5 }
 

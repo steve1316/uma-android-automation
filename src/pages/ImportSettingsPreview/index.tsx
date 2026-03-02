@@ -12,10 +12,17 @@ import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
  * Route params passed from the settings file manager when navigating to this screen.
  */
 interface ImportSettingsPreviewParams {
+    /** The list of setting changes that will be applied on import. */
     changes: SettingsChange[]
+    /** The file URI of the imported settings JSON file. */
     fileUri: string
 }
 
+/**
+ * The Import Settings Preview page.
+ * Displays a grouped, categorized diff of all settings changes that will result
+ * from importing a settings file, and provides confirm/cancel actions.
+ */
 const ImportSettingsPreview = () => {
     usePerformanceLogging("ImportSettingsPreview")
     const { colors, isDark } = useTheme()
@@ -28,7 +35,7 @@ const ImportSettingsPreview = () => {
     const changes = params.changes || []
     const fileUri = params.fileUri || ""
 
-    // Group changes by category.
+    // Group changes by category and return an object with the category as the key and the changes as the value.
     const groupedChanges = useMemo(() => {
         return changes.reduce((acc, change) => {
             if (!acc[change.category]) {
@@ -146,9 +153,13 @@ const ImportSettingsPreview = () => {
                     backgroundColor: colors.background,
                 },
             }),
-        [colors],
+        [colors]
     )
 
+    /**
+     * Handle the confirm action.
+     * Imports the settings file and resets the stack to `SettingsMain`.
+     */
     const handleConfirm = async () => {
         if (fileUri) {
             await importSettings(fileUri)
@@ -158,17 +169,20 @@ const ImportSettingsPreview = () => {
             CommonActions.reset({
                 index: 0,
                 routes: [{ name: "SettingsMain" }],
-            }),
+            })
         )
     }
 
+    /**
+     * Handle the cancel action.
+     * Resets the stack to `SettingsMain`, removing `ImportSettingsPreview` from history.
+     */
     const handleCancel = () => {
-        // Reset the stack to SettingsMain, removing ImportSettingsPreview from history.
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
                 routes: [{ name: "SettingsMain" }],
-            }),
+            })
         )
     }
 

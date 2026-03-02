@@ -11,15 +11,13 @@ export type SettingsCategory = "training" | "trainingStatTarget"
 
 /**
  * Hook for managing profiles.
- *
- * @param onError - Optional callback to handle errors for UI display (e.g., Snackbar).
+ * @param onError - Optional callback to handle errors for UI display (e.g., `Snackbar`).
  */
 export const useProfileManager = (onError?: (message: string) => void) => {
     const { profiles, currentProfileName, isLoading, loadProfiles, loadCurrentProfileName, setCurrentProfileName } = useProfileContext()
 
     /**
      * Find a profile by ID in the profiles array.
-     *
      * @param id - The ID of the profile to find.
      * @returns The profile with the given ID, or undefined if not found.
      */
@@ -27,12 +25,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
         (id: number): Profile | undefined => {
             return profiles.find((p) => p.id === id)
         },
-        [profiles],
+        [profiles]
     )
 
     /**
      * Find a profile by name in the profiles array.
-     *
      * @param name - The name of the profile to find.
      * @returns The profile with the given name, or undefined if not found.
      */
@@ -40,12 +37,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
         (name: string): Profile | undefined => {
             return profiles.find((p) => p.name === name)
         },
-        [profiles],
+        [profiles]
     )
 
     /**
      * Check if a profile name already exists (case-insensitive).
-     *
      * @param name - The name of the profile to check.
      * @param excludeId - The ID of the profile to exclude from the check.
      * @returns True if the name already exists, false otherwise.
@@ -54,12 +50,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
         (name: string, excludeId?: number): boolean => {
             return profiles.some((p) => p.id !== excludeId && p.name.toLowerCase() === name.toLowerCase())
         },
-        [profiles],
+        [profiles]
     )
 
     /**
      * Compare current settings with a profile to show differences.
-     *
      * @param profile - The profile to compare with.
      * @param currentSettings - The current settings.
      * @param categoriesToCompare - The categories to compare. If not provided, compares all categories in the profile.
@@ -98,7 +93,6 @@ export const useProfileManager = (onError?: (message: string) => void) => {
 
     /**
      * Create a new profile from current settings.
-     *
      * @param name - The name of the profile to create.
      * @param settings - The settings to create the profile with.
      * @returns A promise that resolves when the profile is created.
@@ -139,12 +133,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
                 return 0
             }
         },
-        [loadProfiles, profiles, hasNameConflict, onError],
+        [loadProfiles, profiles, hasNameConflict, onError]
     )
 
     /**
      * Update an existing profile.
-     *
      * @param id - The ID of the profile to update.
      * @param updates - The updates to apply to the profile.
      * @returns A promise that resolves when the profile is updated.
@@ -155,7 +148,7 @@ export const useProfileManager = (onError?: (message: string) => void) => {
             updates: {
                 name?: string
                 settings?: Partial<Settings>
-            },
+            }
         ): Promise<void> => {
             try {
                 const existingProfile = findProfileById(id)
@@ -199,12 +192,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
                 onError?.(errorMessage)
             }
         },
-        [profiles, loadProfiles, findProfileById, hasNameConflict, onError],
+        [profiles, loadProfiles, findProfileById, hasNameConflict, onError]
     )
 
     /**
      * Delete a profile.
-     *
      * @param id - The ID of the profile to delete.
      * @returns A promise that resolves when the profile is deleted.
      */
@@ -243,12 +235,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
                 onError?.(errorMessage)
             }
         },
-        [profiles, currentProfileName, loadProfiles, findProfileById, setCurrentProfileName, onError],
+        [profiles, currentProfileName, loadProfiles, findProfileById, setCurrentProfileName, onError]
     )
 
     /**
      * Switch to a profile and apply its settings immediately.
-     *
      * @param profileName - The name of the profile to switch to.
      * @returns A promise that resolves when the profile is switched to.
      */
@@ -281,12 +272,11 @@ export const useProfileManager = (onError?: (message: string) => void) => {
                 return null
             }
         },
-        [profiles, findProfileByName, setCurrentProfileName, onError],
+        [profiles, findProfileByName, setCurrentProfileName, onError]
     )
 
     /**
      * Get the current active profile.
-     *
      * @returns The current active profile, or null if no profile is active.
      */
     const getCurrentProfile = useCallback((): Profile | null => {
@@ -299,7 +289,6 @@ export const useProfileManager = (onError?: (message: string) => void) => {
     /**
      * Overwrite a profile's settings with current settings.
      * This applies the profile's settings to the current settings.
-     *
      * @param profileId - The ID of the profile to overwrite the settings of.
      * @param applySettings - The function to apply the profile's settings to the current settings.
      * @returns A promise that resolves when the profile settings are overwritten.
@@ -324,7 +313,7 @@ export const useProfileManager = (onError?: (message: string) => void) => {
                 onError?.(errorMessage)
             }
         },
-        [profiles, findProfileById, onError],
+        [profiles, findProfileById, onError]
     )
 
     return {

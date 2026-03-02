@@ -8,20 +8,40 @@ import { useTheme } from "../../context/ThemeContext"
 import { Grip } from "lucide-react-native"
 
 interface PriorityItem {
+    /** The unique identifier for this item. */
     id: string
+    /** The display label for this item. */
     label: string
+    /** Optional description text displayed below the label. */
     description?: string | null
 }
 
 interface DraggablePriorityListProps {
+    /** The full list of available priority items. */
     items: PriorityItem[]
+    /** The IDs of currently selected items, in priority order. */
     selectedItems: string[]
+    /** Callback fired when items are selected or deselected. */
     onSelectionChange: (selectedItems: string[]) => void
+    /** Callback fired when the order of selected items changes via drag. */
     onOrderChange: (orderedItems: string[]) => void
+    /** Optional NativeWind class name. */
     className?: string
+    /** Optional custom style for the container. */
     style?: ViewStyle
 }
 
+/**
+ * A drag-and-drop list that allows users to select items and reorder them by priority.
+ * Selected items display a numbered badge and a drag handle for reordering.
+ * Uses `react-native-draglist` for gesture-based drag interactions.
+ * @param items The full list of available priority items.
+ * @param selectedItems The IDs of currently selected items, in priority order.
+ * @param onSelectionChange Callback fired when items are selected or deselected.
+ * @param onOrderChange Callback fired when the order of selected items changes via drag.
+ * @param className Optional NativeWind class name.
+ * @param style Optional custom style for the container.
+ */
 const DraggablePriorityList: React.FC<DraggablePriorityListProps> = ({ items, selectedItems, onSelectionChange, onOrderChange, className = "", style }) => {
     const { colors, isDark } = useTheme()
 
@@ -32,10 +52,19 @@ const DraggablePriorityList: React.FC<DraggablePriorityListProps> = ({ items, se
     const [contentHeight, setContentHeight] = useState(0)
     const [containerHeight, setContainerHeight] = useState(0)
 
+    /**
+     * Callback fired when the container layout changes.
+     * @param event The layout event.
+     */
     const handleContainerLayout = (event: LayoutChangeEvent) => {
         setContainerHeight(event.nativeEvent.layout.height)
     }
 
+    /**
+     * Callback fired when the content size changes.
+     * @param width The width of the content.
+     * @param height The height of the content.
+     */
     const handleContentSizeChange = (width: number, height: number) => {
         setContentHeight(height)
     }
@@ -50,15 +79,20 @@ const DraggablePriorityList: React.FC<DraggablePriorityListProps> = ({ items, se
 
         // Get deselected items that should remain visible.
         const deselectedItems = items.map((item) => item.id).filter((id) => !selectedItems.includes(id))
-        
+
         // Use the selectedItems order as-is, then append deselected items.
         const finalOrdered = [...selectedItems, ...deselectedItems]
         setOrderedItems(finalOrdered)
-        
+
         // Update drag order ref with the selected items in their order.
         dragOrderRef.current = selectedItems
     }, [selectedItems, items])
 
+    /**
+     * Callback fired when the order of items changes.
+     * @param fromIndex The index of the item being moved.
+     * @param toIndex The index where the item is moved to.
+     */
     const handleReordered = async (fromIndex: number, toIndex: number) => {
         const copy = [...orderedItems]
         const [removed] = copy.splice(fromIndex, 1)
@@ -73,18 +107,28 @@ const DraggablePriorityList: React.FC<DraggablePriorityListProps> = ({ items, se
         onOrderChange(selectedInNewOrder)
     }
 
+    /**
+     * Toggles the selection state of an item.
+     * @param itemId The ID of the item to toggle.
+     */
     const toggleItem = (itemId: string) => {
         const newSelection = selectedItems.includes(itemId) ? selectedItems.filter((id) => id !== itemId) : [...selectedItems, itemId]
 
         onSelectionChange(newSelection)
     }
 
+    /**
+     * Scrolls the list to the top.
+     */
     const scrollToTop = () => {
         if (dragListRef.current && dragListRef.current.scrollToIndex) {
             dragListRef.current.scrollToIndex({ index: 0, animated: true })
         }
     }
 
+    /**
+     * Scrolls the list to the bottom.
+     */
     const scrollToBottom = () => {
         if (dragListRef.current && dragListRef.current.scrollToIndex) {
             const lastIndex = orderedItems.length - 1
@@ -92,6 +136,11 @@ const DraggablePriorityList: React.FC<DraggablePriorityListProps> = ({ items, se
         }
     }
 
+    /**
+     * Renders a single item in the list.
+     * @param info The render item information.
+     * @returns The rendered item.
+     */
     const renderItem = (info: DragListRenderItemInfo<PriorityItem>) => {
         const { item, onDragStart, onDragEnd } = info
         const isSelected = selectedItems.includes(item.id)

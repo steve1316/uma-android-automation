@@ -4,17 +4,36 @@ import { useTheme } from "../../context/ThemeContext"
 import SearchableItem from "../SearchableItem"
 
 interface CustomTitleProps {
+    /** The title text to display. */
     title: string
+    /** Optional description text displayed below the title. */
     description?: string
+    /** Optional custom style for the title text. */
     style?: TextStyle
-    // Search props
+    /** Optional search ID for registering this item in the search index. */
     searchId?: string
+    /** Optional override for the searchable title (defaults to title). */
     searchTitle?: string
+    /** Optional override for the searchable description. */
     searchDescription?: string
+    /** Optional condition controlling whether this item is registered in the search index. */
     searchCondition?: boolean
+    /** Optional ID of the parent searchable item for hierarchical search. */
     parentId?: string
 }
 
+/**
+ * A themed section title component with optional description and search integration.
+ * Wraps content in a `SearchableItem` when a `searchId` is provided.
+ * @param title The title text to display.
+ * @param description Optional description text displayed below the title.
+ * @param style Optional custom style for the title text.
+ * @param searchId Optional search ID for registering this item in the search index.
+ * @param searchTitle Optional override for the searchable title (defaults to title).
+ * @param searchDescription Optional override for the searchable description.
+ * @param searchCondition Optional condition controlling whether this item is registered in the search index.
+ * @param parentId Optional ID of the parent searchable item for hierarchical search.
+ */
 const CustomTitle = ({ title, description, style, searchId, searchTitle, searchDescription, searchCondition, parentId }: CustomTitleProps) => {
     const { colors } = useTheme()
 
@@ -35,7 +54,7 @@ const CustomTitle = ({ title, description, style, searchId, searchTitle, searchD
                     lineHeight: 20,
                 },
             }),
-        [colors],
+        [colors]
     )
 
     const content = (

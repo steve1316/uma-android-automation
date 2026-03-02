@@ -4,66 +4,108 @@ import { logWithTimestamp, logErrorWithTimestamp } from "./logger"
 
 // The schema for the database.
 export interface DatabaseSettings {
+    /** The unique identifier for the setting. */
     id: number
+    /** The category of the setting. */
     category: string
+    /** The key of the setting. */
     key: string
+    /** The value of the setting. */
     value: string
+    /** The timestamp of when the setting was last updated. */
     updated_at: string
 }
 
 export interface DatabaseRace {
+    /** The unique identifier for the race. */
     id: number
+    /** The key of the race. */
     key: string
+    /** The name of the race. */
     name: string
+    /** The date of the race. */
     date: string
+    /** The race track of the race. */
     raceTrack: string
+    /** The course of the race. */
     course: string | null
+    /** The direction of the race. */
     direction: string
+    /** The grade of the race. */
     grade: string
+    /** The terrain of the race. */
     terrain: string
+    /** The distance type of the race. */
     distanceType: string
+    /** The distance of the race in meters. */
     distanceMeters: number
+    /** The number of fans for the race. */
     fans: number
+    /** The number of turns for the race. */
     turnNumber: number
+    /** The formatted name of the race. */
     nameFormatted: string
 }
 
 export interface DatabaseSkill {
+    /** The unique identifier for the skill. */
     id: number
+    /** The key of the skill. */
     key: string
+    /** The skill ID. */
     skill_id: number
+    /** The skill ID for the inherited version of the skill. Same as ID if skill can't be inherited. */
     gene_id: number
+    /** The name of the skill. */
     name_en: string
+    /** The description of the skill. */
     desc_en: string
+    /** The icon ID of the skill. */
     icon_id: number
+    /** The cost of the skill. */
     cost: number
+    /** The evaluation point of the skill. */
     eval_pt: number
+    /** The point ratio of the skill. */
     pt_ratio: number
+    /** The rarity of the skill. */
     rarity: number
+    /** The condition of the skill. */
     condition: string
+    /** The precondition of the skill. */
     precondition: string
+    /** Whether the skill is inherited. */
     inherited: boolean
+    /** The community tier of the skill. */
     community_tier: number | null
+    /** The versions of the skill. */
     versions: number[] | null
+    /** The upgrade of the skill. */
     upgrade: number | null
+    /** The downgrade of the skill. */
     downgrade: number | null
 }
 
 export interface DatabaseProfile {
+    /** The unique identifier for the profile. */
     id: number
+    /** The name of the profile. */
     name: string
+    /** The settings of the profile. */
     settings: string
+    /** The timestamp of when the profile was created. */
     created_at: string
+    /** The timestamp of when the profile was last updated. */
     updated_at: string
 }
 
 /**
- * Database utility class for managing settings persistence with SQLite.
+ * Database utility class for managing settings persistence with `SQLite`.
  * Stores settings as key-value pairs organized by category for efficient querying.
  */
 export class DatabaseManager {
     private DATABASE_NAME = "settings.db"
-    private STRING_ONLY_SETTINGS = ["racingPlan", "racingPlanData"]
+    private STRING_ONLY_SETTINGS = ["racingPlan", "racingPlanData", "discordToken", "discordUserID"]
     private TABLE_SETTINGS = "settings"
     private TABLE_RACES = "races"
     private TABLE_SKILLS = "skills"
@@ -77,7 +119,6 @@ export class DatabaseManager {
 
     /**
      * Serialize a value to a string for storage.
-     *
      * @param value - The value to serialize.
      * @returns The serialized string value.
      */
@@ -87,7 +128,6 @@ export class DatabaseManager {
 
     /**
      * Deserialize a value from a string, handling string-only settings.
-     *
      * @param key - The setting key to check if it should remain as a string.
      * @param value - The string value to deserialize.
      * @returns The deserialized value.
@@ -109,7 +149,6 @@ export class DatabaseManager {
 
     /**
      * Ensure the database is initialized, throwing an error if not.
-     *
      * @throws Error if database is not initialized.
      */
     private ensureInitialized(): void {
@@ -120,7 +159,6 @@ export class DatabaseManager {
 
     /**
      * Initialize the database and create tables if they don't exist.
-     *
      * @returns A promise that resolves when the database is initialized.
      */
     async initialize(): Promise<void> {
@@ -154,7 +192,6 @@ export class DatabaseManager {
 
     /**
      * Perform the database initialization.
-     *
      * @returns A promise that resolves when the database is initialized.
      */
     private async _performInitialization(): Promise<void> {
@@ -282,7 +319,6 @@ export class DatabaseManager {
 
     /**
      * Migrate profiles table schema from old to new format (settings JSON).
-     *
      * @returns A promise that resolves when the profiles table is migrated.
      */
     private async migrateProfilesSchema(): Promise<void> {
@@ -319,7 +355,6 @@ export class DatabaseManager {
 
     /**
      * Create the new profiles table for migration.
-     *
      * @returns A promise that resolves when the new profiles table is created.
      */
     private async createProfilesMigrationTable(): Promise<void> {
@@ -339,9 +374,8 @@ export class DatabaseManager {
 
     /**
      * Migrate profiles data from old schema to new schema.
-     *
-     * @param hasTrainingSettings - Whether the training_settings column exists.
-     * @param hasTrainingStatTarget - Whether the trainingStatTarget_settings column exists.
+     * @param hasTrainingSettings - Whether the `training_settings` column exists.
+     * @param hasTrainingStatTarget - Whether the `trainingStatTarget_settings` column exists.
      * @returns A promise that resolves when the profiles are migrated.
      */
     private async migrateProfilesData(hasTrainingSettings: boolean, hasTrainingStatTarget: boolean): Promise<void> {
@@ -374,7 +408,6 @@ export class DatabaseManager {
 
     /**
      * Complete the profiles migration by replacing the old table with the new one.
-     *
      * @returns A promise that resolves when the migration is completed.
      */
     private async completeProfilesMigration(): Promise<void> {
@@ -395,7 +428,6 @@ export class DatabaseManager {
 
     /**
      * Save settings to database by category and key.
-     *
      * @param category - The category of the setting to save.
      * @param key - The key of the setting to save.
      * @param value - The value of the setting to save.
@@ -434,8 +466,7 @@ export class DatabaseManager {
 
     /**
      * Execute a database operation with queue management to prevent concurrent operations.
-     * Note: This is a queue system, not SQLite transactions. SQLite transactions are handled within the operations.
-     *
+     * Note: This is a queue system, not `SQLite` transactions. `SQLite` transactions are handled within the operations.
      * @param operation - The operation to execute.
      * @returns A promise that resolves when the operation is executed.
      */
@@ -477,7 +508,6 @@ export class DatabaseManager {
 
     /**
      * Save multiple settings in a single transaction for better performance.
-     *
      * @param settings - The settings to save.
      * @returns A promise that resolves when the settings are saved.
      */
@@ -535,7 +565,6 @@ export class DatabaseManager {
 
     /**
      * Load a specific setting from database.
-     *
      * @param category - The category of the setting to load.
      * @param key - The key of the setting to load.
      * @returns The value of the setting, or null if not found.
@@ -564,7 +593,6 @@ export class DatabaseManager {
 
     /**
      * Load all settings from database.
-     *
      * @returns A promise that resolves with a record of settings organized by category and key.
      */
     async loadAllSettings(): Promise<Record<string, Record<string, any>>> {
@@ -598,7 +626,6 @@ export class DatabaseManager {
 
     /**
      * Save multiple races using prepared statements for better performance and security.
-     *
      * @param races - The races to save.
      * @returns A promise that resolves when the races are saved.
      */
@@ -669,7 +696,6 @@ export class DatabaseManager {
 
     /**
      * Clear all races from the database.
-     *
      * @returns A promise that resolves when the races are cleared.
      */
     async clearRaces(): Promise<void> {
@@ -694,7 +720,6 @@ export class DatabaseManager {
 
     /**
      * Save multiple skills using prepared statements for better performance and security.
-     *
      * @param skills - The skills to save.
      * @returns A promise that resolves when the skills are saved.
      */
@@ -720,7 +745,7 @@ export class DatabaseManager {
 
                 // Execute all skills in batch using prepared statement.
                 for (const skill of skills) {
-                    let versions: string = "";
+                    let versions: string = ""
                     if (skill.versions !== null) {
                         versions = skill.versions.join(",")
                     }
@@ -773,7 +798,6 @@ export class DatabaseManager {
 
     /**
      * Clear all skills from the database.
-     *
      * @returns A promise that resolves when the skills are cleared.
      */
     async clearSkills(): Promise<void> {
@@ -794,7 +818,6 @@ export class DatabaseManager {
 
     /**
      * Check if the database is properly initialized.
-     *
      * @returns True if the database is initialized, false otherwise.
      */
     isInitialized(): boolean {
@@ -815,7 +838,6 @@ export class DatabaseManager {
 
     /**
      * Get all profiles from the database.
-     *
      * @returns A promise that resolves with an array of all profiles.
      */
     async getAllProfiles(): Promise<DatabaseProfile[]> {
@@ -836,7 +858,6 @@ export class DatabaseManager {
 
     /**
      * Get a single profile by ID.
-     *
      * @param id - The ID of the profile to load.
      * @returns A promise that resolves with the profile of the given ID, or null if not found.
      */
@@ -858,7 +879,6 @@ export class DatabaseManager {
 
     /**
      * Save a profile (create or update).
-     *
      * @param profile - The profile to save.
      * @returns A promise that resolves with the ID of the saved profile.
      */
@@ -925,7 +945,6 @@ export class DatabaseManager {
 
     /**
      * Delete a profile by ID.
-     *
      * @param id - The ID of the profile to delete.
      * @returns A promise that resolves when the profile is deleted.
      */
@@ -948,7 +967,6 @@ export class DatabaseManager {
 
     /**
      * Get the current active profile name from settings.
-     *
      * @returns A promise that resolves with the current active profile name, or null if no profile is active.
      */
     async getCurrentProfileName(): Promise<string | null> {
@@ -968,7 +986,6 @@ export class DatabaseManager {
 
     /**
      * Set the current active profile name in settings.
-     *
      * @param profileName - The name of the profile to set as active.
      * @returns A promise that resolves when the current active profile name is set or null if no profile is active.
      */

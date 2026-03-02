@@ -909,8 +909,13 @@ class CharacterScraper(BaseScraper):
         self._sort_by_value(driver, "implemented")
 
         # Get all character links.
-        character_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-dc9ce0a6-0')]")
-        all_character_items = character_grid.find_elements(By.CSS_SELECTOR, "a.sc-3c5fe984-1")
+        try:
+            character_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'characters_page_character_list')]")
+        except NoSuchElementException:
+            # Fallback to general lookup just in case.
+            character_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-dc9ce0a6-0')]")
+        
+        all_character_items = character_grid.find_elements(By.CSS_SELECTOR, "a[href^='/umamusume/characters/']")
         # Filter out hidden elements using Selenium's is_displayed() method.
         character_items = [item for item in all_character_items if item.is_displayed()]
 
@@ -965,7 +970,7 @@ class SupportCardScraper(BaseScraper):
 
         # Get all support card links.
         support_card_grid = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-dc9ce0a6-0')]")
-        all_support_card_items = support_card_grid.find_elements(By.CSS_SELECTOR, "a.sc-3c5fe984-1")
+        all_support_card_items = support_card_grid.find_elements(By.CSS_SELECTOR, "a[href^='/umamusume/supports/']")
         # Filter out hidden elements using Selenium's is_displayed() method.
         filtered_support_card_items = [item for item in all_support_card_items if item.is_displayed()]
 
@@ -1024,27 +1029,25 @@ class RaceScraper(BaseScraper):
 
         self.handle_cookie_consent(driver)
 
-        # Get references to all the races in the list.
-        race_items = driver.find_elements(By.XPATH, ".//div[contains(@class, 'sc-5615e33d-0')]")
+        # Get references to all the races in the list by locating their race banner images.
+        race_images = driver.find_elements(By.CSS_SELECTOR, "img[src*='/race_banners/']")
 
         # Pop the first 2 races (Junior Make Debut and Junior Maiden Race).
-        race_items = race_items[2:]
+        race_images = race_images[2:]
 
         # Pop the last 7 races (URA Finals, Grand Masters, Twinkle Star Climax).
-        race_items = race_items[:-7]
+        race_images = race_images[:-7]
 
-        logging.info(f"Found {len(race_items)} races.")
-
-        race_details_links = [item.find_element(By.XPATH, ".//div[contains(@class, 'sc-9a731efd-2')]") for item in race_items]
+        logging.info(f"Found {len(race_images)} races.")
 
         ad_banner_closed = False
 
         # Iterate through each race.
-        for i, link in enumerate(race_details_links):
+        for i, link in enumerate(race_images):
             ad_banner_closed = self.handle_ad_banner(driver, ad_banner_closed)
 
-            logging.info(f"Opening race ({i + 1}/{len(race_details_links)})")
-            link.click()
+            logging.info(f"Opening race ({i + 1}/{len(race_images)})")
+            self.safe_click(driver, link)
             time.sleep(0.5)
 
             # Acquire the elements needed to scrape the race information.
@@ -1070,7 +1073,7 @@ class RaceScraper(BaseScraper):
                     ),
                     "raceTrack": info_map.get("Racetrack"),
                     "course": info_map.get("Course"),
-                    "direction": "Right" if info_map.get("Direction") and info_map.get("Direction") == "Clockwise" else "Left",
+                    "direction": "Right" if info_map.get("Direction") in ["Clockwise", "Right"] else "Left",
                     "grade": info_map.get("Grade"),
                     "terrain": info_map.get("Terrain"),
                     "distanceType": info_map.get("Distance (type)"),
@@ -1102,8 +1105,8 @@ class RaceScraper(BaseScraper):
                 self.data[unique_key] = race_data
 
             # Close the dialog.
-            dialog_close_button = driver.find_element(By.XPATH, "//div[contains(@class, 'sc-a145bdd2-1')]")
-            dialog_close_button.click()
+            dialog_close_button = driver.find_element(By.XPATH, "//div[@role='dialog']").find_element(By.CSS_SELECTOR, "img[src='/images/ui/close.png']")
+            self.safe_click(driver, dialog_close_button)
             time.sleep(0.5)
 
         self.save_data()

@@ -861,12 +861,18 @@ class Training(private val game: Game) {
                 Thread {
                     val startTimeStatGains = System.currentTimeMillis()
                     try {
-                        val statGainResult = game.imageUtils.determineStatGainFromTraining(statName, sourceBitmap, skillPointsLocation!!)
-                        result.statGains = statGainResult.statGains
-                        result.statGainRowValues = statGainResult.rowValuesMap
+                        if (skillPointsLocation != null) {
+                            val statGainResult = game.imageUtils.determineStatGainFromTraining(statName, sourceBitmap, skillPointsLocation)
+                            result.statGains = statGainResult.statGains
+                            result.statGainRowValues = statGainResult.rowValuesMap
+                        } else {
+                            MessageLog.w(TAG, "[TRAINING] Skill points location was not found during OCR. Skipping stat gain detection for $statName.")
+                            result.statGains = StatName.entries.associateWith { 0 }.toMap()
+                            result.statGainRowValues = emptyMap()
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, "[ERROR] Error in determineStatGainFromTraining: ${e.stackTraceToString()}")
-                        result.statGains = StatName.values().associateWith { 0 }.toMap()
+                        result.statGains = StatName.entries.associateWith { 0 }.toMap()
                         result.statGainRowValues = emptyMap()
                     } finally {
                         latch.countDown()
@@ -879,7 +885,12 @@ class Training(private val game: Game) {
                 Thread {
                     val startTimeFailureChance = System.currentTimeMillis()
                     try {
-                        result.failureChance = game.imageUtils.findTrainingFailureChance(sourceBitmap, failureChanceLocation!!)
+                        if (failureChanceLocation != null) {
+                            result.failureChance = game.imageUtils.findTrainingFailureChance(sourceBitmap, failureChanceLocation)
+                        } else {
+                            MessageLog.w(TAG, "[TRAINING] Failure chance location was not found during OCR. Skipping failure chance detection for $statName.")
+                            result.failureChance = -1
+                        }
                     } catch (e: Exception) {
                         MessageLog.e(TAG, "Error in findTrainingFailureChance: ${e.stackTraceToString()}")
                         result.failureChance = -1

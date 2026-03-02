@@ -9,12 +9,22 @@ import { BotStateContext } from "../../context/BotStateContext"
 import { skillPlanSettingsPages } from "../../pages/SkillPlanSettings"
 
 interface MenuItem {
+    /** The route name used for navigation. */
     name: string
+    /** The display label shown in the drawer. */
     label: string
+    /** Function returning the Ionicons icon name based on focused state. */
     icon: (focused: boolean) => string
+    /** Optional nested menu items for expandable sections. */
     nested?: MenuItem[]
 }
 
+/**
+ * Custom drawer content component that renders a styled navigation sidebar.
+ * Supports multi-level nested menu items with expand/collapse functionality,
+ * active route highlighting, and deferred navigation for smooth drawer animations.
+ * @param props The drawer content component props from React Navigation.
+ */
 const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
     const { colors } = useTheme()
     const { state, navigation } = props
@@ -24,6 +34,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["Settings"]))
     const previousDrawerStatus = useRef<string | undefined>(undefined)
 
+    // List of nested routes under Settings.
     const settingsNestedRoutes = [
         "TrainingSettings",
         "TrainingEventSettings",
@@ -32,6 +43,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
         "RacingPlanSettings",
         "SkillSettings",
         ...Object.values(skillPlanSettingsPages).flatMap((item) => item.name),
+        "DiscordSettings",
         "DebugSettings",
     ]
 
@@ -154,7 +166,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                     fontWeight: "500",
                 },
             }),
-        [colors],
+        [colors]
     )
 
     // Define the menu item configurations for the drawer.
@@ -212,6 +224,11 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                     icon: () => "eye-outline",
                 },
                 {
+                    name: "DiscordSettings",
+                    label: "Discord Settings",
+                    icon: () => "logo-discord",
+                },
+                {
                     name: "DebugSettings",
                     label: "Debug Settings",
                     icon: () => "bug-outline",
@@ -222,8 +239,9 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
 
     /**
      * Gets the current active screen name, handling nested navigators.
-     * If on Settings stack, returns the nested screen name (e.g., "TrainingSettings").
-     * Otherwise returns the drawer route name (e.g., "Home").
+     * If on Settings stack, returns the nested screen name (e.g., `TrainingSettings`).
+     * Otherwise returns the drawer route name (e.g., `Home`).
+     * @returns The current active screen name.
      */
     const getCurrentActiveScreen = (): string => {
         const drawerRoute = state.routes[state.index]
@@ -286,7 +304,10 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
         }
     }, [state.index, state.routes, drawerStatus])
 
-    // Toggle the expanded state of a section in the drawer.
+    /**
+     * Toggles the expanded state of a section in the drawer.
+     * @param sectionName The name of the section to toggle.
+     */
     const toggleSection = (sectionName: string) => {
         setExpandedSections((prev) => {
             const newSet = new Set(prev)
@@ -299,8 +320,11 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
         })
     }
 
-    // Navigate to a route and close the drawer.
-    // For nested routes, we navigate to the Settings drawer and then the specific screen.
+    /**
+     * Navigates to a route and closes the drawer.
+     * For nested routes, we navigate to the Settings drawer and then the specific screen.
+     * @param routeName The name of the route to navigate to.
+     */
     const handleNavigation = (routeName: string) => {
         // Mark the start of the navigation for performance tracking.
         markNavigationStart(routeName)
@@ -321,7 +345,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                     CommonActions.navigate({
                         name: "Settings",
                         params: { screen: "SettingsMain", initial: false },
-                    }),
+                    })
                 )
             } else {
                 // Settings sub-pages: navigate to Settings drawer, then to the specific screen.
@@ -329,29 +353,44 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                     CommonActions.navigate({
                         name: "Settings",
                         params: { screen: routeName, initial: false },
-                    }),
+                    })
                 )
             }
         }, 0)
     }
 
-    // Navigate to a parent route and close the drawer.
+    /**
+     * Navigates to a parent route and closes the drawer.
+     * @param item The menu item to navigate to.
+     */
     const handleParentNavigation = (item: MenuItem) => {
         handleNavigation(item.name)
     }
 
-    // Stop event propagation to prevent the navigation from happening when the chevron is pressed.
+    /**
+     * Stops event propagation to prevent the navigation from happening when the chevron is pressed.
+     * @param e The event object.
+     * @param item The menu item.
+     */
     const handleChevronPress = (e: any, item: MenuItem) => {
         e.stopPropagation()
         toggleSection(item.name)
     }
 
-    // Check if a section is expanded.
+    /**
+     * Checks if a section is expanded.
+     * @param sectionName The name of the section to check.
+     * @returns True if the section is expanded, false otherwise.
+     */
     const isSectionExpanded = (sectionName: string) => {
         return expandedSections.has(sectionName)
     }
 
-    // Check if a route is active.
+    /**
+     * Checks if a route is active.
+     * @param routeName The name of the route to check.
+     * @returns True if the route is active, false otherwise.
+     */
     const isRouteActive = (routeName: string) => {
         const currentScreen = getCurrentActiveScreen()
         // Settings menu item is active when on SettingsMain.
@@ -361,7 +400,12 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
         return currentScreen === routeName
     }
 
-    // Recursive component to render menu items at any nesting level.
+    /**
+     * Recursively renders menu items at any nesting level.
+     * @param item The menu item to render.
+     * @param level The nesting level.
+     * @returns The rendered menu item.
+     */
     const renderMenuItem = (item: MenuItem, level: number = 0) => {
         const isActive = isRouteActive(item.name)
         const isExpanded = item.nested ? isSectionExpanded(item.name) : false

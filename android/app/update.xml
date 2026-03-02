@@ -1,47 +1,17 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.0.0</latestVersion>
+    <latestVersion>5.1.1</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.0.0 - Changelog
+v5.1.1 - Changelog
 
 New
 ---
-- New Automatic Skill Point spending system. Special thanks to @Sj-Si for its implementation!
-- Add handling for `Pre-OP or above` and `G3 or above` racing criterias.
-- Add negative weight for training event options for negative bond gains.
-- Add a new frontend option to set the team name choice for Unity Cup in the `Training Event Settings` page under the `Miscellaneous Events` section.
-- Add edge case handling of loading the user's in-game race agenda after losing debut race and then winning one maiden race.
-- Add new options in the `Debug Settings` page to enable screen recording along with some configurable options.
-- Add handling for edge cases where training options are restricted like Gold Ship's.
-- Add new options to the `Racing Settings` page to allow using the daily free retry if `Disable Race Retries` is enabled and `Complete Career on Failure` will have the bot do the cleanup when running out of retries during a mandatory race and will stop at the Career Completion page instead of stopping early.
-- Add a new option in the `Racing Settings` page to ignore the warning about consecutive races. This is in preparation for the upcoming `Trackblazer` scenario this March.
-
-Adjustments
----
-- Update game data up to `Mihono Bourbon (Valentine) 2026-02-17`.
-- Bump Automation Library to `2.4.2`.
-- Performance improvements including caching expensive OCR operations and reworking certain workflow loops.
-- Made the detection and analysis of Training Events faster.
-- Logging has been improved for selection decisions during training analysis to be much more detailed.
-- Print skipped and blacklisted trainings when logging the selection reasoning.
-- Scroll the list of races to find an eligible race if fans/pre-OP requirement is active to ensure that these requirements are completed as soon as possible.
-- During training analysis, friendship bar analysis will now be performed for scenario-specific trainer supports like `Etsuko Otonashi` and `Yayoi Akikawa`.
-- Reworked `scoreUnityCupTraining()` to prioritize raw stat gains followed by the Spirit Explosion Gauges.
-- Remove warning in `Training Settings` page about the Unity Cup training prioritization.
-- Stop training when near the stat cap minus 100 with a one-time allowance to go over the cap. This ensures the selection of very good training options that would have otherwise been skipped especially in the Finals when we would be at or near the stat cap buffer.
-- Skip checking for racing requirements if it is the Summer to focus on training.
-- Updated the event log parser to be able to read the new log message changes for the `Event Log Visualizer` page.
+- Update `Automation Library` to version `2.4.6` to have the app remember the floating overlay button location from now on.
 
 Fixed
 ---
-- Fix edge case where OCR incorrectly detects the failure chance as higher than 100% with manual corrections.
-- Fix inverted condition for manual boosting of main stat gains compared to side-effect stat gains.
-- Fix bug where racing requirements were sometimes not being fulfilled due to energy/mood recovery, racing plan conflicts, and other edge cases.
-- Fix bug where Profile modal on devices with higher DPIs had the bottom cut off.
-- Fix bug where app reloads the Profile which overwrites any unsaved changes to the `Training Settings` page.
-- Fix bug where the `Select` component from `React Native Reusables` would not scroll.
-- Fix bug where Junior Year race strategy was sometimes not being properly reset.
+- Fix possible edge case for race skips not being initiated.
     </releaseNotes>
   </update>
 </AppUpdater>
