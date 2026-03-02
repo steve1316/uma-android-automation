@@ -224,8 +224,8 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
 
     const keyExtractor = useCallback((item: Skill) => `${item.id.toString()}${item.name_en}`, [])
 
-    /**
-     * Update a skill plan setting.
+    /** Update a skill plan setting.
+     *
      * @param key The key of the setting to update.
      * @param value The value to set the setting to.
      */
@@ -248,6 +248,10 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [bsc.settings, planKey, setSettings]
     )
 
+    /** Displays a snackbar popup with a message.
+     *
+     * @param msg - The message to display in the snackbar.
+     */
     const showSnackbar = useCallback(
         (msg: string) => {
             if (!searchModalVisible) {
@@ -268,6 +272,10 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [searchModalVisible, snackbarTimeoutRef, setSnackbarMessage, setSnackbarVisible]
     )
 
+    /** Removes a skill from the planned skill IDs.
+     *
+     * @param skill - The Skill interface to remove.
+     */
     const removeSkillFromPlan = useCallback(
         (skill: Skill) => {
             const newPlanIds: number[] = planIds.filter((id) => id !== skill.id)
@@ -278,6 +286,10 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [planIds, updateSkillsSetting]
     )
 
+    /** Adds a skill to the planned skill IDs.
+     *
+     * @param skill - The Skill interface to add.
+     */
     const addSkillToPlan = useCallback(
         (skill: Skill) => {
             if (planIds.includes(skill.id)) {
@@ -294,13 +306,12 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [planIds, updateSkillsSetting, showSnackbar]
     )
 
-    /**
-     * Remove all skills from the current skill plan.
-     */
+    /** Remove all skills from the current skill plan. */
     const clearAllSkillsFromPlan = useCallback(() => {
         updateSkillsSetting("plan", "")
     }, [updateSkillsSetting])
 
+    /** Hides the snackbar and resets it whenever it is dismissed. */
     const onDismissSnackbar = useCallback(() => {
         setSnackbarVisible(false)
         setSnackbarMessage("")
@@ -460,6 +471,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [colors]
     )
 
+    /** Renders the options for this page. */
     const renderOptions = useCallback(() => {
         return (
             <>
@@ -511,6 +523,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         )
     }, [defaultSettings, updateSkillsSetting, planKey, strategy, enableBuyInheritedUniqueSkills, enableBuyNegativeSkills])
 
+    /** Renders a single skill item in a list. */
     const renderSelectedSkillItem = useCallback(
         (item: Skill) => (
             <SkillItemCard item={item}>
@@ -528,6 +541,10 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [removeSkillFromPlan]
     )
 
+    /** Renders a single skill item in the Selected Skills modal.
+     *
+     * @param item - The Skill interface of the item to render.
+     */
     const renderSelectedSkillsModalSkillItem: ListRenderItem<Skill> = useCallback(
         ({ item }: { item: Skill }) => {
             return renderSelectedSkillItem(item)
@@ -535,8 +552,13 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [renderSelectedSkillItem]
     )
 
+    /** Renders a single skill item in the Search skills modal.
+     *
+     * @param item - The Skill interface of the item to render.
+     */
     const renderSearchModalSkillItem: ListRenderItem<Skill> = useCallback(({ item }: { item: Skill }) => <SkillItemCard item={item} onPress={() => addSkillToPlan(item)} />, [addSkillToPlan])
 
+    /** Renders the list of all selected skills. */
     const renderSelectedSkillsList = useCallback(
         () => (
             <View style={styles.section}>
@@ -572,6 +594,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [selectedSkillsModalData, clearAllSkillsFromPlan, renderSelectedSkillItem, setSelectedSkillsModalVisible]
     )
 
+    /** Renders the modal of all selected skills. */
     const renderSelectedSkillsModal = useCallback(
         () => (
             <Modal
@@ -611,6 +634,7 @@ const SkillPlanSettings: FC<SkillPlanSettingsProps> = ({ planKey, name, title, d
         [selectedSkillsModalData, selectedSkillsModalVisible, setSelectedSkillsModalVisible, renderSelectedSkillsModalSkillItem, keyExtractor]
     )
 
+    /** Renders the Skill Selection modal. */
     const renderSkillSelectionModal = useCallback(
         () => (
             <Modal
