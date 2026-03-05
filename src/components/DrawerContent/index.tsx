@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect, useContext, useRef } from "react"
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native"
 import { DrawerContentScrollView, DrawerContentComponentProps, useDrawerStatus } from "@react-navigation/drawer"
 import { CommonActions } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
+import { Avatar, AvatarImage } from "../ui/avatar"
 import { markNavigationStart } from "../../lib/performanceLogger"
 import { useTheme } from "../../context/ThemeContext"
 import { BotStateContext } from "../../context/BotStateContext"
@@ -55,11 +56,17 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                     backgroundColor: colors.card,
                 },
                 header: {
-                    paddingTop: 40,
-                    paddingBottom: 24,
+                    paddingBottom: 12,
                     paddingHorizontal: 20,
                     borderBottomWidth: 1,
                     borderBottomColor: colors.border,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                },
+                headerTextContainer: {
+                    flex: 1,
+                    justifyContent: "center",
                 },
                 headerTitle: {
                     fontSize: 24,
@@ -164,6 +171,21 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                 doubleNestedItemTextActive: {
                     color: colors.primary,
                     fontWeight: "500",
+                },
+                footer: {
+                    padding: 20,
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                },
+                footerButton: {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                },
+                footerText: {
+                    fontSize: 16,
+                    color: colors.primary,
+                    fontWeight: "600",
                 },
             }),
         [colors]
@@ -474,13 +496,28 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
     }
 
     return (
-        <DrawerContentScrollView {...props} style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
+        <>
+            <DrawerContentScrollView {...props} style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Uma Android Automation</Text>
-                <Text style={styles.headerSubtitle}>{bsc.appVersion}</Text>
+                <View style={styles.headerTextContainer}>
+                    <Text style={styles.headerTitle}>Uma Android Automation</Text>
+                    <Text style={styles.headerSubtitle}>{bsc.appVersion}</Text>
+                </View>
+                <Avatar alt="UAA" style={{ width: 72, height: 72 }}>
+                    <AvatarImage source={require("../../assets/app_icon.png")} />
+                </Avatar>
             </View>
             <View style={styles.menuContainer}>{menuItems.map((item) => renderMenuItem(item, 0))}</View>
         </DrawerContentScrollView>
+        <View style={styles.footer}>
+            <TouchableOpacity onPress={() => Linking.openURL("https://github.com/steve1316/uma-android-automation")} activeOpacity={0.7}>
+                <View style={styles.footerButton}>
+                    <Ionicons name="logo-github" size={32} color={colors.primary} style={{ marginRight: 8 }} />
+                    <Text style={styles.footerText}>Go to GitHub</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    </>
     )
 }
 

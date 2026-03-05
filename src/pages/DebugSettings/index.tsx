@@ -1,5 +1,5 @@
-import { useMemo, useContext, useRef } from "react"
-import { View, Text, ScrollView, StyleSheet } from "react-native"
+import { useMemo, useContext, useRef, useState, useEffect } from "react"
+import { View, Text, ScrollView, StyleSheet, NativeModules, Linking } from "react-native"
 import { useTheme } from "../../context/ThemeContext"
 import { BotStateContext } from "../../context/BotStateContext"
 import CustomSlider from "../../components/CustomSlider"
@@ -9,6 +9,7 @@ import CustomSelect from "../../components/CustomSelect"
 import { Separator } from "../../components/ui/separator"
 import PageHeader from "../../components/PageHeader"
 import WarningContainer from "../../components/WarningContainer"
+import InfoContainer from "../../components/InfoContainer"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
@@ -23,6 +24,16 @@ const DebugSettings = () => {
     const bsc = useContext(BotStateContext)
     const scrollViewRef = useRef<ScrollView>(null)
 
+    const [deviceIp, setDeviceIp] = useState<string>("<phone-ip>")
+
+    useEffect(() => {
+        if (bsc.settings.debug.enableRemoteLogViewer) {
+            NativeModules.StartModule.getDeviceIpAddress()
+                .then((ip: string) => setDeviceIp(ip))
+                .catch(() => setDeviceIp("<phone-ip>"))
+        }
+    }, [bsc.settings.debug.enableRemoteLogViewer])
+
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -32,6 +43,24 @@ const DebugSettings = () => {
                     justifyContent: "center",
                     margin: 10,
                     backgroundColor: colors.background,
+                },
+                infoBlock: {
+                    marginTop: 12,
+                },
+                infoLabel: {
+                    fontWeight: "bold",
+                    color: colors.foreground,
+                    fontSize: 14,
+                    lineHeight: 22,
+                    includeFontPadding: false,
+                },
+                infoDescription: {
+                    fontSize: 14,
+                    color: colors.foreground,
+                    opacity: 0.7,
+                    lineHeight: 22,
+                    includeFontPadding: false,
+                    marginTop: 2,
                 },
             }),
         [colors]
@@ -116,6 +145,102 @@ const DebugSettings = () => {
                                 showLabels={true}
                                 description="Manually set the scale to do template matching. The Basic Template Matching Test can help find your recommended scale. Making it too low or too high will cause the bot to match on too little or too many things as false positives."
                             />
+
+                            <Separator style={{ marginVertical: 16 }} />
+
+                            <CustomTitle title="Remote Log Viewer" description="Stream logs in real-time to a browser on your local network. Both devices must be on the same WiFi." />
+
+                            <CustomCheckbox
+                                searchId="settings-enable-remote-log-viewer"
+                                checked={bsc.settings.debug.enableRemoteLogViewer}
+                                onCheckedChange={(checked) => {
+                                    bsc.setSettings({
+                                        ...bsc.settings,
+                                        debug: { ...bsc.settings.debug, enableRemoteLogViewer: checked },
+                                    })
+                                }}
+                                label="Enable Remote Log Viewer"
+                                description="Starts an HTTP server on this device when the bot runs. Open the URL shown below in a browser on your computer to view logs in real-time."
+                            />
+
+                            <View style={bsc.settings.debug.enableRemoteLogViewer ? {} : { display: "none" }}>
+                                <CustomSlider
+                                    searchId="settings-remote-log-viewer-port"
+                                    searchCondition={bsc.settings.debug.enableRemoteLogViewer}
+                                    parentId="settings-enable-remote-log-viewer"
+                                    value={bsc.settings.debug.remoteLogViewerPort}
+                                    placeholder={bsc.defaultSettings.debug.remoteLogViewerPort}
+                                    onValueChange={(value) => {
+                                        bsc.setSettings({
+                                            ...bsc.settings,
+                                            debug: { ...bsc.settings.debug, remoteLogViewerPort: value },
+                                        })
+                                    }}
+                                    onSlidingComplete={(value) => {
+                                        bsc.setSettings({
+                                            ...bsc.settings,
+                                            debug: { ...bsc.settings.debug, remoteLogViewerPort: value },
+                                        })
+                                    }}
+                                    min={1024}
+                                    max={65535}
+                                    step={1}
+                                    showValue={true}
+                                    showLabels={true}
+                                    label="Server Port"
+                                    description="Port number for the log stream server. Change only if the default conflicts with another service."
+                                />
+
+                                <InfoContainer>
+                                    <View>
+                                        <Text style={styles.infoDescription}>📡 When the bot is running, open this URL in a browser:</Text>
+                                        <Text
+                                            style={[styles.infoLabel, { marginTop: 8, textDecorationLine: "underline" }]}
+                                            onPress={() => Linking.openURL(`http://${deviceIp === "10.0.2.15" ? "localhost" : deviceIp}:${bsc.settings.debug.remoteLogViewerPort}`)}
+                                        >
+                                            http://{deviceIp === "10.0.2.15" ? "localhost" : deviceIp}:{bsc.settings.debug.remoteLogViewerPort}
+                                        </Text>
+                                        <Text style={[styles.infoDescription, { marginTop: 8 }]}>Both devices must be on the same WiFi network.</Text>
+                                        <Text style={[styles.infoDescription, { marginTop: 8 }]}>
+                                            Note that connecting to the remote log viewer may take a minute or two to establish the connection for the first time.
+                                        </Text>
+
+                                        <View style={styles.infoBlock}>
+                                            {deviceIp === "10.0.2.15" ? (
+                                                <>
+                                                    <Text style={styles.infoLabel}>⚠️ Emulator detected!</Text>
+                                                    <Text style={styles.infoDescription}>Direct connection to the virtual IP {deviceIp} will fail.</Text>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Text style={styles.infoLabel}>✅ Real device detected or Network Bridge enabled!</Text>
+                                                    <Text style={styles.infoDescription}>Direct connection to the IP {deviceIp} should work.</Text>
+                                                </>
+                                            )}
+                                        </View>
+
+                                        <Separator style={{ marginTop: 16, backgroundColor: "white" }} />
+
+                                        <Text style={[styles.infoLabel, { marginTop: 16 }]}>If using an Emulator, you have two connection options:</Text>
+
+                                        <View style={styles.infoBlock}>
+                                            <Text style={styles.infoLabel}>Option 1:</Text>
+                                            <Text style={styles.infoDescription}>
+                                                In your Emulator settings, enable "Network Bridging" or the equivalent, and restart the emulator to get a real IP.
+                                            </Text>
+                                        </View>
+
+                                        <View style={styles.infoBlock}>
+                                            <Text style={styles.infoLabel}>Option 2 (Access on Computer only):</Text>
+                                            <Text style={styles.infoDescription}>Run these commands on your computer (port may vary) to use your emulator's localhost URL:</Text>
+                                            <Text style={[styles.infoLabel, { marginTop: 8 }]}>
+                                                adb connect localhost:5555{"\n"}
+                                                adb forward tcp:{bsc.settings.debug.remoteLogViewerPort} tcp:{bsc.settings.debug.remoteLogViewerPort}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </InfoContainer>
+                            </View>
 
                             <Separator style={{ marginVertical: 16 }} />
 

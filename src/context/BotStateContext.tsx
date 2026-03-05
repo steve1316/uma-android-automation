@@ -31,6 +31,8 @@ export interface Settings {
         enablePopupCheck: boolean
         enableCraneGameAttempt: boolean
         enableStopBeforeFinals: boolean
+        enableStopAtDate: boolean
+        stopAtDate: string
         waitDelay: number
     }
 
@@ -165,6 +167,8 @@ export interface Settings {
         recordingBitRate: number
         recordingFrameRate: number
         recordingResolutionScale: number
+        enableRemoteLogViewer: boolean
+        remoteLogViewerPort: number
     }
 
     // Discord settings
@@ -182,6 +186,8 @@ export const defaultSettings: Settings = {
         enablePopupCheck: false,
         enableCraneGameAttempt: false,
         enableStopBeforeFinals: false,
+        enableStopAtDate: false,
+        stopAtDate: "Senior January Early",
         waitDelay: 0.5,
     },
     racing: {
@@ -353,6 +359,8 @@ export const defaultSettings: Settings = {
         recordingBitRate: 6,
         recordingFrameRate: 30,
         recordingResolutionScale: 1.0,
+        enableRemoteLogViewer: false,
+        remoteLogViewerPort: 9000,
     },
     discord: {
         enableDiscordNotifications: false,
