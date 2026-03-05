@@ -25,6 +25,7 @@
         "@react-navigation/native-stack": "^7.9.0",
         "@rn-primitives/accordion": "^1.2.0",
         "@rn-primitives/alert-dialog": "^1.2.0",
+        "@rn-primitives/avatar": "^1.2.0",
         "@rn-primitives/checkbox": "^1.2.0",
         "@rn-primitives/label": "^1.2.0",
         "@rn-primitives/popover": "^1.2.0",

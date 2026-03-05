@@ -20,6 +20,10 @@
     <!--Grants permission to download and update the application's Firebase Machine Learning OCR.-->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--Grants permission to get the device's IP address for the Remote Log Viewer.-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!--Enables Battery Optimization coming from the Automation Library.-->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application

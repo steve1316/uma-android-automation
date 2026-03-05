@@ -14,6 +14,9 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.utils.GameDate
+import com.steve1316.uma_android_automation.types.DateYear
+import com.steve1316.uma_android_automation.types.DateMonth
+import com.steve1316.uma_android_automation.types.DatePhase
 import com.steve1316.uma_android_automation.bot.Trainee
 import com.steve1316.uma_android_automation.bot.SkillPlan
 import com.steve1316.uma_android_automation.bot.SkillDatabase
@@ -65,6 +68,8 @@ class Game(val myContext: Context) {
 	private val enablePopupCheck: Boolean = SettingsHelper.getBooleanSetting("general", "enablePopupCheck")
     private val enableCraneGameAttempt: Boolean = SettingsHelper.getBooleanSetting("general", "enableCraneGameAttempt")
     private val enableStopBeforeFinals: Boolean = SettingsHelper.getBooleanSetting("general", "enableStopBeforeFinals")
+    private val enableStopAtDate: Boolean = SettingsHelper.getBooleanSetting("general", "enableStopAtDate")
+    private val stopAtDate: String = SettingsHelper.getStringSetting("general", "stopAtDate")
     private val waitDelay: Double = SettingsHelper.getDoubleSetting("general", "waitDelay")
 
 	// Initialize Discord settings from SQLite.
@@ -109,6 +114,7 @@ class Game(val myContext: Context) {
     private var recreationDateCompleted: Boolean = false
     private var isFinals: Boolean = false
     private var stopBeforeFinalsInitialTurnNumber: Int = -1
+    private var stopAtDateInitialTurnNumber: Int = -1
     private var scenarioCheckPerformed: Boolean = false
 
     /** Attempts to handle dialogs.
@@ -405,6 +411,50 @@ class Game(val myContext: Context) {
 			stopBeforeFinalsInitialTurnNumber = currentDate.day
 		}
 
+		return false
+	}
+
+	/**
+	 * Checks if the bot should stop at the user specified date.
+	 *
+	 * @return True if the bot should stop. Otherwise false.
+	 */
+	fun checkStopAtDate(): Boolean {
+		if (!enableStopAtDate) {
+			Log.d(TAG, "\n[DATE] Flag is false so skipping Stop at Date check.")
+			return false
+		}
+		
+		MessageLog.i(TAG, "\n[DATE] Checking if bot should stop at the specified date: $stopAtDate with current date ${currentDate}.")
+		
+		val parts = stopAtDate.split(" ")
+		if (parts.size != 3) {
+			MessageLog.e(TAG, "[DATE] Invalid Stop at Date format. Expected 'YEAR MONTH PHASE'")
+			return false
+		}
+		
+		val targetYear = try { DateYear.valueOf(parts[0].uppercase()) } catch (e: IllegalArgumentException) { null }
+		val targetMonth = try { DateMonth.valueOf(parts[1].uppercase()) } catch (e: IllegalArgumentException) { null }
+		val targetPhase = try { DatePhase.valueOf(parts[2].uppercase()) } catch (e: IllegalArgumentException) { null }
+		
+		if (targetYear == null || targetMonth == null || targetPhase == null) {
+			MessageLog.e(TAG, "[DATE] Invalid Stop at Date components.")
+			return false
+		}
+		
+		val targetDay = GameDate.toDay(targetYear, targetMonth, targetPhase)
+		
+		// Track initial turn number on first check to avoid stopping immediately if bot starts after the target date
+		if (stopAtDateInitialTurnNumber == -1) {
+			stopAtDateInitialTurnNumber = currentDate.day
+		}
+		
+		if (currentDate.day >= targetDay && stopAtDateInitialTurnNumber <= targetDay) {
+			MessageLog.i(TAG, "[DATE] Reached target date: $stopAtDate (Turn $targetDay). Stopping bot.")
+			notificationMessage = "Stopping bot at the specified date: $stopAtDate (Turn $targetDay)"
+			return true
+		}
+		
 		return false
 	}
 
@@ -839,7 +889,16 @@ class Game(val myContext: Context) {
 		} else {
             // Send Discord notification that the run has started.
 			if (DiscordUtils.enableDiscordNotifications) {
-				DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! Scenario: $scenario\n```")
+				val enableRemoteLogViewer = SettingsHelper.getBooleanSetting("debug", "enableRemoteLogViewer", false)
+				var logViewerString = ""
+				if (enableRemoteLogViewer) {
+                    // Notify the user that the Remote Log Viewer is enabled and is viewable at the indicated address.
+					val port = SettingsHelper.getIntSetting("debug", "remoteLogViewerPort", 9000)
+					val ipAddress = com.steve1316.uma_android_automation.utils.LogStreamServer.getDeviceIpAddress(myContext)
+					val finalIpAddress = if (ipAddress == "10.0.2.15") "localhost" else ipAddress
+					logViewerString = "\n+ Remote Log Viewer is enabled at http://$finalIpAddress:$port"
+				}
+				DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! Scenario: $scenario$logViewerString\n```")
 			}
 			wait(5.0)
             campaign.start()

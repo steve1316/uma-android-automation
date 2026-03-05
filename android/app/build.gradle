@@ -206,6 +206,10 @@ dependencies {
     implementation(libs.android.cv.automation.library)
     // implementation("com.github.steve1316:automation_library:TAG-SNAPSHOT") // Uncomment this for local testing and replace TAG with the snapshot versionName of the library.
 
+    // NanoHTTPD for the embedded log streaming WebSocket server.
+    implementation(libs.nanohttpd)
+    implementation(libs.nanohttpd.websocket)
+
     // React Native
     implementation(libs.react.android)
     implementation(libs.hermes.android)

@@ -1,5 +1,5 @@
 import scenarios from "../../data/scenarios.json"
-import { useMemo, useContext, useEffect, useState, useRef } from "react"
+import { useMemo, useContext, useEffect, useState, useRef, useCallback } from "react"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import { BotStateContext } from "../../context/BotStateContext"
 import { ScrollView, StyleSheet, Text, View } from "react-native"
@@ -17,6 +17,7 @@ import PageHeader from "../../components/PageHeader"
 import { Separator } from "../../components/ui/separator"
 import WarningContainer from "../../components/WarningContainer"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../components/ui/alert-dialog"
+import SearchableItem from "../../components/SearchableItem"
 import { useSettings } from "../../context/SettingsContext"
 import { useSettingsFileManager } from "../../hooks/useSettingsFileManager"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
@@ -76,6 +77,51 @@ const Settings = () => {
     //////////////////////////////////////////////////
     //////////////////////////////////////////////////
     // Rendering
+
+    const years = [
+        { label: "Junior", value: "Junior" },
+        { label: "Classic", value: "Classic" },
+        { label: "Senior", value: "Senior" },
+    ]
+
+    const months = [
+        { label: "January", value: "January" },
+        { label: "February", value: "February" },
+        { label: "March", value: "March" },
+        { label: "April", value: "April" },
+        { label: "May", value: "May" },
+        { label: "June", value: "June" },
+        { label: "July", value: "July" },
+        { label: "August", value: "August" },
+        { label: "September", value: "September" },
+        { label: "October", value: "October" },
+        { label: "November", value: "November" },
+        { label: "December", value: "December" },
+    ]
+
+    const phases = [
+        { label: "Early", value: "Early" },
+        { label: "Late", value: "Late" },
+    ]
+
+    const handleStopAtDateChange = useCallback(
+        (part: "year" | "month" | "phase", value: string) => {
+            const currentParts = bsc.settings.general.stopAtDate.split(" ")
+            let newYear = currentParts[0] || "Senior"
+            let newMonth = currentParts[1] || "January"
+            let newPhase = currentParts[2] || "Early"
+
+            if (part === "year") newYear = value
+            if (part === "month") newMonth = value
+            if (part === "phase") newPhase = value
+
+            bsc.setSettings({
+                ...bsc.settings,
+                general: { ...bsc.settings.general, stopAtDate: `${newYear} ${newMonth} ${newPhase}` },
+            })
+        },
+        [bsc]
+    )
 
     const renderCampaignPicker = () => {
         return (
@@ -208,6 +254,55 @@ const Settings = () => {
                     description="Stops the bot on turn 72 so you can purchase skills before the final races."
                     className="mt-4"
                 />
+
+                <CustomCheckbox
+                    searchId="settings-stop-at-date"
+                    checked={bsc.settings.general.enableStopAtDate}
+                    onCheckedChange={(checked) => {
+                        bsc.setSettings({
+                            ...bsc.settings,
+                            general: { ...bsc.settings.general, enableStopAtDate: checked },
+                        })
+                    }}
+                    label="Stop at Date"
+                    description="Stops the bot on the specified date."
+                    className="mt-4"
+                />
+
+                {bsc.settings.general.enableStopAtDate && (
+                    <SearchableItem id="settings-stop-at-date" title="Target Date" description="Stops the bot on the specified date." style={{ marginLeft: 16, marginTop: 8 }}>
+                        <Text style={{ fontSize: 16, fontWeight: "600", color: colors.foreground, marginBottom: 8 }}>Target Date</Text>
+                        <View style={{ flexDirection: "row", gap: 8, justifyContent: "space-between" }}>
+                            <View style={{ flex: 1 }}>
+                                <CustomSelect
+                                    placeholder="Year"
+                                    width="100%"
+                                    options={years}
+                                    value={bsc.settings.general.stopAtDate.split(" ")[0]}
+                                    onValueChange={(value) => handleStopAtDateChange("year", value || "Senior")}
+                                />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <CustomSelect
+                                    placeholder="Month"
+                                    width="100%"
+                                    options={months}
+                                    value={bsc.settings.general.stopAtDate.split(" ")[1]}
+                                    onValueChange={(value) => handleStopAtDateChange("month", value || "January")}
+                                />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <CustomSelect
+                                    placeholder="Phase"
+                                    width="100%"
+                                    options={phases}
+                                    value={bsc.settings.general.stopAtDate.split(" ")[2]}
+                                    onValueChange={(value) => handleStopAtDateChange("phase", value || "Early")}
+                                />
+                            </View>
+                        </View>
+                    </SearchableItem>
+                )}
 
                 <CustomCheckbox
                     searchId="settings-crane-game-attempt"

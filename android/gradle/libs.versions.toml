@@ -14,8 +14,9 @@ androidGradleBuildTools = "8.13.0"
 junitJupiter = "6.0.2"
 junitPlatformLauncher = "6.0.2"
 kotlinGradlePlugin = "2.2.0"
-androidCvAutomationLibrary = "2.4.6"
+androidCvAutomationLibrary = "2.4.7"
 lottie = "6.6.9"
+nanohttpd = "2.3.1"
 
 [libraries]
 androidGradleBuildTools = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradleBuildTools" }
@@ -25,6 +26,8 @@ kotlinGradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plu
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 react-native-gradle-plugin = { module = "com.facebook.react:react-native-gradle-plugin" }
 android-cv-automation-library = { module = "com.github.steve1316:android-cv-automation-library", version.ref = "androidCvAutomationLibrary" }
+nanohttpd = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
+nanohttpd-websocket = { module = "org.nanohttpd:nanohttpd-websocket", version.ref = "nanohttpd" }
 react-android = { module = "com.facebook.react:react-android" }
 hermes-android = { module = "com.facebook.react:hermes-android" }
 

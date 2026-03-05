@@ -508,7 +508,12 @@ open class Campaign(game: Game) : DialogHandler(game) {
 
         // Check if bot should stop before the finals.
         if (game.checkFinalsStop()) {
-            throw InterruptedException("Reached finals. Stopping bot...")
+            throw InterruptedException(game.notificationMessage)
+        }
+
+        // Check if bot should stop at the user specified date.
+        if (game.checkStopAtDate()) {
+            throw InterruptedException(game.notificationMessage)
         }
 
         if (!needToRace && !game.racing.encounteredRacingPopup) {

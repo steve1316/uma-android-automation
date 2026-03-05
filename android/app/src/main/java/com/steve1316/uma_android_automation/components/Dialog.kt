@@ -51,7 +51,7 @@ import com.steve1316.automation_library.utils.ImageUtils
 import com.steve1316.automation_library.utils.TextUtils
 
 import com.steve1316.uma_android_automation.MainActivity
-import com.steve1316.uma_android_automation.components.ComponentInterface
+import com.steve1316.uma_android_automation.components.BaseComponentInterface
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_android_automation.types.BoundingBox
 
@@ -247,17 +247,17 @@ interface DialogInterface {
     // Defines all the button components within the dialog.
     // If there is a button used to close the dialog, then it MUST be the first
     // entry in this list.
-    val buttons: List<ComponentInterface>
+    val buttons: List<BaseComponentInterface>
     // The close button is just which ever button is used primarily to close the dialog
     // If not specified, the first button in Buttons will be used.
-    val closeButton: ComponentInterface?
+    val closeButton: BaseComponentInterface?
     // The OK button is typically used in a dialog with two primary buttons
     // and it closes the dialog while accepting the dialog.
     // If not specified, no default is selected unlike the closeButton.
     // This is because some dialogs may have a close button and a checkbox,
     // but no OK button.
     // If there is only one button in the dialog, then okButton will be set to that.
-    val okButton: ComponentInterface?
+    val okButton: BaseComponentInterface?
 
     /** Closes the dialog by clicking the Close button.
      *
@@ -410,7 +410,7 @@ object DialogAccountLink : DialogInterface {
     override val title: String = "Account Link"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonLater,
     )
 }
@@ -426,7 +426,7 @@ object DialogAgeConfirmation : DialogInterface {
     override val title: String = "Age Confirmation"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
     )
 }
@@ -437,7 +437,7 @@ object DialogAgendaDetails : DialogInterface {
     override val title: String = "Agenda Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -447,8 +447,8 @@ object DialogAutoFill : DialogInterface {
     override val name: String = "auto_fill"
     override val title: String = "Auto-Fill"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonEditTeam
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonEditTeam
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
         ButtonEditTeam,
     )
@@ -459,8 +459,8 @@ object DialogAutoSelect : DialogInterface {
     override val name: String = "auto_select"
     override val title: String = "Auto-Select"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -473,7 +473,7 @@ object DialogAllRewardsEarned : DialogInterface {
     override val title: String = "ALL REWARDS EARNED!"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -484,7 +484,7 @@ object DialogBonusUmamusumeDetails : DialogInterface {
     override val title: String = "Bonus Umamusume Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -495,7 +495,7 @@ object DialogBorrowCard : DialogInterface {
     override val title: String = "Borrow Card"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -505,8 +505,8 @@ object DialogBorrowCardConfirmation : DialogInterface {
     override val name: String = "borrow_card_confirmation"
     override val title: String = "Confirmation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
         ButtonOk,
     )
@@ -518,7 +518,7 @@ object DialogCareer : DialogInterface {
     override val title: String = "Career"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -528,8 +528,8 @@ object DialogCareerComplete : DialogInterface {
     override val name: String = "career_complete"
     override val title: String = "Career Complete"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonEditTeam
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonEditTeam
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonToHome,
         ButtonClose,
         ButtonEditTeam,
@@ -553,7 +553,7 @@ object DialogChoices : DialogInterface {
     override val title: String = "Choices"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -563,8 +563,8 @@ object DialogCompleteCareer : DialogInterface {
     override val name: String = "complete_career"
     override val title: String = "Complete Career"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonFinish
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonFinish
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonFinish,
     )
@@ -575,8 +575,8 @@ object DialogConcertSkipConfirmation : DialogInterface {
     override val name: String = "concert_skip_confirmation"
     override val title: String = "Confirmation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -588,8 +588,8 @@ object DialogConfirmAutoSelect : DialogInterface {
     override val name: String = "confirm_auto_select"
     override val title: String = "Confirm Auto-Select"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -602,7 +602,7 @@ object DialogConfirmExchange : DialogInterface {
     override val title: String = "Confirm Exchange"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -613,7 +613,7 @@ object DialogConnectionError : DialogInterface {
     override val title: String = "Connection Error"
     override val closeButton = null
     override val okButton = ButtonRetry
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonTitleScreen,
         ButtonRetry,
     )
@@ -636,7 +636,7 @@ object DialogConsecutiveRaceWarning : DialogInterface {
     override val title: String = "Warning"
     override val closeButton = null
     override val okButton = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
     )
@@ -648,7 +648,7 @@ object DialogContinueCareer : DialogInterface {
     override val title: String = "Continue Career"
     override val closeButton = null
     override val okButton = ButtonResume
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonResume,
     )
@@ -659,8 +659,8 @@ object DialogConfirmRestoreRP : DialogInterface {
     override val name: String = "confirm_restore_rp"
     override val title: String = "Confirm"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRestore
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRestore
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonNo,
         ButtonRestore,
     )
@@ -671,8 +671,8 @@ object DialogDailySale : DialogInterface {
     override val name: String = "daily_sale"
     override val title: String = "Daily Sale"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonShop
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonShop
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonShop,
     )
@@ -684,7 +684,7 @@ object DialogDateChanged : DialogInterface {
     override val title: String = "Date Changed"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonOk,
     )
 }
@@ -694,8 +694,8 @@ object DialogDisplaySettings : DialogInterface {
     override val name: String = "display_settings"
     override val title: String = "Display Settings"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
     )
@@ -706,8 +706,8 @@ object DialogDownloadError : DialogInterface {
     override val name: String = "download_error"
     override val title: String = "Download Error"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRetry
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRetry
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonTitleScreen,
         ButtonRetry,
     )
@@ -719,7 +719,7 @@ object DialogEpithet : DialogInterface {
     override val title: String = "Epithet"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonConfirmExclamation,
         Checkbox,
     )
@@ -732,7 +732,7 @@ object DialogEpithets : DialogInterface {
     override val title: String = "Epithets"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -742,8 +742,8 @@ object DialogExternalLink : DialogInterface {
     override val name: String = "external_link"
     override val title: String = "External Link"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
     )
@@ -755,7 +755,7 @@ object DialogFans : DialogInterface {
     override val title: String = "Fans"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -766,7 +766,7 @@ object DialogFeaturedCards : DialogInterface {
     override val title: String = "Featured Cards"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -776,8 +776,8 @@ object DialogFinalConfirmation : DialogInterface {
     override val name: String = "final_confirmation"
     override val title: String = "Final Confirmation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonStartCareer
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonStartCareer
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonStartCareer,
     )
@@ -788,8 +788,8 @@ object DialogFollowTrainer : DialogInterface {
     override val name: String = "follow_trainer"
     override val title: String = "Follow Trainer"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonFollow
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonFollow
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonFollow,
     )
@@ -800,8 +800,8 @@ object DialogGiveUp : DialogInterface {
     override val name: String = "give_up"
     override val title: String = "Give Up"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonGiveUp
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonGiveUp
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonGiveUp,
     )
@@ -812,8 +812,8 @@ object DialogGoalNotReached : DialogInterface {
     override val name: String = "goal_not_reached"
     override val title: String = "Goal Not Reached"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRace
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRace
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonRace,
     )
@@ -825,7 +825,7 @@ object DialogGoals : DialogInterface {
     override val title: String = "Goals"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -836,7 +836,7 @@ object DialogHelpAndGlossary : DialogInterface {
     override val title: String = "Help & Glossary"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -846,8 +846,8 @@ object DialogInfirmary : DialogInterface {
     override val name: String = "infirmary"
     override val title: String = "Infirmary"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -859,8 +859,8 @@ object DialogInsufficientFans : DialogInterface {
     override val name: String = "insufficient_fans"
     override val title: String = "Insufficient Fans"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRace
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRace
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonRace,
     )
@@ -871,8 +871,8 @@ object DialogItemsSelected : DialogInterface {
     override val name: String = "items_selected"
     override val title: String = "Items Selected"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRaceExclamationShiftedUp
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRaceExclamationShiftedUp
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonRaceExclamationShiftedUp,
     )
@@ -884,7 +884,7 @@ object DialogLog : DialogInterface {
     override val title: String = "Log"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -895,7 +895,7 @@ object DialogMenu : DialogInterface {
     override val title: String = "Menu"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
         ButtonOptions,
         ButtonSaveAndExit,
@@ -909,7 +909,7 @@ object DialogMoodEffect : DialogInterface {
     override val title: String = "Mood Effect"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -920,7 +920,7 @@ object DialogMyAgendas : DialogInterface {
     override val title: String = "My Agendas"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -931,7 +931,7 @@ object DialogNoRetries : DialogInterface {
     override val title: String = "No Retries"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonEndCareer,
     )
 }
@@ -942,7 +942,7 @@ object DialogNotices : DialogInterface {
     override val title: String = "Notices"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -953,7 +953,7 @@ object DialogOpenSoon : DialogInterface {
     override val title: String = "Open Soon!"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -964,7 +964,7 @@ object DialogCareerEventDetails : DialogInterface {
     override val title: String = "Career Event Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -975,7 +975,7 @@ object DialogCareerProfile : DialogInterface {
     override val title: String = "Career Profile"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -985,8 +985,8 @@ object DialogOptions : DialogInterface {
     override val name: String = "options"
     override val title: String = "Options"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonSave
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonSave
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonSave,
     )
@@ -998,7 +998,7 @@ object DialogPerks : DialogInterface {
     override val title: String = "Perks"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1009,7 +1009,7 @@ object DialogPlacing : DialogInterface {
     override val title: String = "Placing"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1019,8 +1019,8 @@ object DialogPresents : DialogInterface {
     override val name: String = "presents"
     override val title: String = "Presents"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonCollectAll
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonCollectAll
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
         ButtonCollectAll,
     )
@@ -1041,7 +1041,7 @@ object DialogPurchaseAlarmClock : DialogInterface {
     override val title: String = "Purchase Alarm Clock"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
     )
 }
@@ -1052,7 +1052,7 @@ object DialogPurchaseCarats : DialogInterface {
     override val title: String = "Purchase Carats"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1062,8 +1062,8 @@ object DialogPurchaseDailyRaceTicket : DialogInterface {
     override val name: String = "purchase_daily_race_ticket"
     override val title: String = "Purchase Daily Race Ticket"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
     )
@@ -1075,7 +1075,7 @@ object DialogRaceDetails : DialogInterface {
     override val title: String = "Race Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonRace,
         ButtonRaceExclamation,
@@ -1103,8 +1103,8 @@ object DialogRacePlayback : DialogInterface {
     override val name: String = "race_playback"
     override val title: String = "Race Playback"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -1118,8 +1118,8 @@ object DialogRaceRecommendations : DialogInterface {
     override val name: String = "race_recommendations"
     override val title: String = "Race Recommendations"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonConfirm
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonConfirm
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonConfirm,
         ButtonRaceRecommendationsCenterStage,
         ButtonRaceRecommendationsPathToFame,
@@ -1133,8 +1133,8 @@ object DialogRecreation : DialogInterface {
     override val name: String = "recreation"
     override val title: String = "Recreation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -1147,7 +1147,7 @@ object DialogRegistrationComplete : DialogInterface {
     override val title: String = "Registration Complete"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1158,7 +1158,7 @@ object DialogRequestFulfilled : DialogInterface {
     override val title: String = "REQUEST FULFILLED"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1168,8 +1168,8 @@ object DialogRest : DialogInterface {
     override val name: String = "rest"
     override val title: String = "Rest"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         Checkbox,
@@ -1182,8 +1182,8 @@ object DialogRestAndRecreation : DialogInterface {
     override val name: String = "rest_and_recreation"
     override val title: String = "Rest & Recreation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
     )
@@ -1195,7 +1195,7 @@ object DialogRewardsCollected : DialogInterface {
     override val title: String = "Rewards Collected"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1206,7 +1206,7 @@ object DialogRunners : DialogInterface {
     override val title: String = "Runners"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1216,8 +1216,8 @@ object DialogScheduledRaceAvailable : DialogInterface {
     override val name: String = "scheduled_race_available"
     override val title: String = "Scheduled Race Available"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRace
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRace
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
         ButtonRace,
     )
@@ -1229,7 +1229,7 @@ object DialogScheduledRaces : DialogInterface {
     override val title: String = "Scheduled Races"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1239,8 +1239,8 @@ object DialogScheduleSettings : DialogInterface {
     override val name: String = "schedule_settings"
     override val title: String = "Schedule Settings"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonSaveSchedule
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonSaveSchedule
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonSaveSchedule,
     )
@@ -1252,7 +1252,7 @@ object DialogSessionError : DialogInterface {
     override val title: String = "Session Error"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonTitleScreen,
     )
 }
@@ -1263,7 +1263,7 @@ object DialogSkillDetails : DialogInterface {
     override val title: String = "Skill Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1273,8 +1273,8 @@ object DialogSkillListConfirmation : DialogInterface {
     override val name: String = "skill_list_confirmation"
     override val title: String = "Confirmation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonLearn
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonLearn
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonLearn,
     )
@@ -1285,8 +1285,8 @@ object DialogSkillListConfirmExit : DialogInterface {
     override val name: String = "skill_list_confirm_exit"
     override val title: String = "Confirm"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
     )
@@ -1298,7 +1298,7 @@ object DialogSkillsLearned : DialogInterface {
     override val title: String = "Skills Learned"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1309,7 +1309,7 @@ object DialogSongAcquired : DialogInterface {
     override val title: String = "Song Acquired"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1320,7 +1320,7 @@ object DialogSparkDetails : DialogInterface {
     override val title: String = "Spark Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1331,7 +1331,7 @@ object DialogSparks : DialogInterface {
     override val title: String = "Sparks"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1341,8 +1341,8 @@ object DialogSpecialMissions : DialogInterface {
     override val name: String = "special_missions"
     override val title: String = "Special Missions"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonCollectAll
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonCollectAll
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonOk,
         ButtonCollectAll,
     )
@@ -1353,8 +1353,8 @@ object DialogStrategy : DialogInterface {
     override val name: String = "strategy"
     override val title: String = "Strategy"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonConfirm
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonConfirm
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonConfirm,
         ButtonRaceStrategyFront,
@@ -1370,7 +1370,7 @@ object DialogStoryUnlocked : DialogInterface {
     override val title: String = "Story Unlocked"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonToHome,
     )
 }
@@ -1380,8 +1380,8 @@ object DialogTeamInfo : DialogInterface {
     override val name: String = "team_info"
     override val title: String = "Team Info"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonEditTeam
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonEditTeam
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
         ButtonEditTeam,
     )
@@ -1393,7 +1393,7 @@ object DialogTrophyWon : DialogInterface {
     override val title: String = "TROPHY WON!"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1403,8 +1403,8 @@ object DialogTryAgain : DialogInterface {
     override val name: String = "try_again"
     override val title: String = "Try Again"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonTryAgain
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonTryAgain
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonTryAgain,
     )
@@ -1416,7 +1416,7 @@ object DialogUmamusumeClass : DialogInterface {
     override val title: String = "Umamusume Class"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1427,7 +1427,7 @@ object DialogUmamusumeDetails : DialogInterface {
     override val title: String = "Umamusume Details"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1438,7 +1438,7 @@ object DialogUnityCupAvailable : DialogInterface {
     override val title: String = "Unity Cup Available"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1448,8 +1448,8 @@ object DialogUnityCupConfirmation : DialogInterface {
     override val name: String = "unity_cup_confirmation"
     override val title: String = "Confirmation"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonBeginShowdown
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonBeginShowdown
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonBeginShowdown,
     )
@@ -1461,7 +1461,7 @@ object DialogUnlockRequirements : DialogInterface {
     override val title: String = "Unlock Requirements"
     override val closeButton = null
     override val okButton = null
-    override val buttons: List<ComponentInterface> = listOf(
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonClose,
     )
 }
@@ -1471,8 +1471,8 @@ object DialogUnmetRequirements : DialogInterface {
     override val name: String = "unmet_requirements"
     override val title: String = "Unmet Requirements"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonRace
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonRace
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonRace,
     )
@@ -1483,8 +1483,8 @@ object DialogViewStory : DialogInterface {
     override val name: String = "view_story"
     override val title: String = "View Story"
     override val closeButton = null
-    override val okButton: ComponentInterface = ButtonOk
-    override val buttons: List<ComponentInterface> = listOf(
+    override val okButton: BaseComponentInterface = ButtonOk
+    override val buttons: List<BaseComponentInterface> = listOf(
         ButtonCancel,
         ButtonOk,
         RadioLandscape,

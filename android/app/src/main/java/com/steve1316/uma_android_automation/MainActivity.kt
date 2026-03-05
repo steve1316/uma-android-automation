@@ -26,7 +26,7 @@ class MainActivity : ReactActivity() {
 
 	// This ViewGroup holds the Lottie animated splash screen that is displayed during app startup and allows for cleanup.
 	private var splashViewGroup: ViewGroup? = null
-	private val splashDuration = 2000L
+	private val splashDuration = 1500L
 
 	override fun onCreate(savedInstanceState: Bundle?) {
         // State restoration needs to be null to avoid crash with react-native-screens.
