@@ -176,7 +176,27 @@ const searchConfig: SearchOption[] = [
             "Set target values for each stat based on race distance. These stat targets are derived from past Champion Meetings. The bot will prioritize training stats that are below these targets.",
         page: "TrainingSettings",
     },
-
+    {
+        id: "training-year-milestone-targets",
+        title: "Training Year Milestone Targets",
+        description:
+            "Controls how aggressively the bot paces stat training across the three in-game years. The bot will target a scaled percentage of your stat targets during Junior and Classic Year, ramping up to the full target by Senior Year.",
+        page: "TrainingSettings",
+    },
+    {
+        id: "classic-milestone-percent",
+        title: "Junior Year Milestone (Classic Start)",
+        description: "Percentage of the primary stat targets to aim for by the end of Junior Year (start of Classic). Default: 33%.",
+        page: "TrainingSettings",
+        parentId: "training-year-milestone-targets",
+    },
+    {
+        id: "senior-milestone-percent",
+        title: "Classic Year Milestone (Senior Start)",
+        description: "Percentage of the primary stat targets to aim for by the end of Classic Year (start of Senior). Default: 66%.",
+        page: "TrainingSettings",
+        parentId: "training-year-milestone-targets",
+    },
     // ============================================================
     // Training Event Settings
     // ============================================================
