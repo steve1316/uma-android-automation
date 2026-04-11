@@ -97,6 +97,12 @@ class Training(private val game: Game, private val campaign: Campaign) {
     /** The minimum stat gain required for using a Good-Luck Charm. */
     private val minStatGainForCharm = SettingsHelper.getIntSetting("scenarioOverrides", "trackblazerMinStatGainForCharm", 30)
 
+    /** Classic Year milestone percentage (applied to primary stat targets during Junior Year). */
+    private val trackblazerClassicMilestonePct: Int = SettingsHelper.getIntSetting("training", "classicMilestonePercent", 33)
+
+    /** Senior Year milestone percentage (applied to primary stat targets during Classic Year). */
+    private val trackblazerSeniorMilestonePct: Int  = SettingsHelper.getIntSetting("training", "seniorMilestonePercent", 66)
+
     /** Map of current stat targets. */
     private var statTargets: Map<StatName, Int> = emptyMap()
 
@@ -1689,7 +1695,7 @@ class Training(private val game: Game, private val campaign: Campaign) {
             TrainingConfig(
                 currentStats = campaign.trainee.stats.asMap(),
                 statPrioritization = statPrioritization,
-                statTargets = campaign.trainee.getStatTargetsByDistance(),
+                statTargets = campaign.trainee.getPhaseStatTargets(campaign.date.year),
                 currentDate = campaign.date,
                 scenario = game.scenario,
                 enableRainbowTrainingBonus = enableRainbowTrainingBonus,
@@ -1758,18 +1764,27 @@ class Training(private val game: Game, private val campaign: Campaign) {
         sb.appendLine("Scoring Mode: $scoringMode")
         sb.appendLine("Current Date: ${campaign.date}")
 
-        // Show current stats.
+        // Show current stats dynamically with TitleCase keys.
         val currentStats = config.currentStats
-        sb.appendLine(
-            "Current Stats: Speed=${currentStats[StatName.SPEED]}, Stam=${currentStats[StatName.STAMINA]}, Pow=${currentStats[StatName.POWER]}, Guts=${currentStats[StatName.GUTS]}, Wit=${currentStats[StatName.WIT]}",
-        )
+        val statNames = StatName.entries
+        val currentStatsFormatted = statNames.joinToString(", ") {
+            "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${currentStats[it]}"
+        }
+        sb.appendLine("Current Stats: $currentStatsFormatted")
 
-        // Show stat targets for context.
+        // Show stat targets for context dynamically.
         val targets = config.statTargets
         val preferredDistance = campaign.trainee.trackDistance
-        sb.appendLine(
-            "Stat Targets ($preferredDistance): Speed=${targets[StatName.SPEED]}, Stam=${targets[StatName.STAMINA]}, Pow=${targets[StatName.POWER]}, Guts=${targets[StatName.GUTS]}, Wit=${targets[StatName.WIT]}",
-        )
+        val phaseLabel = when (config.currentDate.year) {
+            DateYear.JUNIOR  -> "Junior → Classic milestone ~${trackblazerClassicMilestonePct}%"
+            DateYear.CLASSIC -> "Classic → Senior milestone ~${trackblazerSeniorMilestonePct}%"
+            DateYear.SENIOR  -> "Senior / Full target 100%"
+        }
+
+        val targetsFormatted = statNames.joinToString(", ") {
+            "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${targets[it]}"
+        }
+        sb.appendLine("Stat Targets ($preferredDistance) [$phaseLabel]: $targetsFormatted")
 
         // Compute completion percentages for each stat.
         val completionPercentages =
