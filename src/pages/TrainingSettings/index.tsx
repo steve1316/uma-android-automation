@@ -685,7 +685,7 @@ const TrainingSettings = () => {
                                 description="Set target values for each stat based on race distance. These stat targets are derived from past Champion Meetings. The bot will prioritize training stats that are below these targets."
                                 searchId="stat-targets-by-distance"
                             />
-                        </View>
+
 
                         {/* Distance Stat Targets Accordion */}
                         <CustomAccordion
@@ -965,6 +965,66 @@ const TrainingSettings = () => {
                                 },
                             ]}
                         />
+                        </View>
+                        {/* Training Year Milestone Targets */}
+                        <View style={styles.section}>
+                            <CustomTitle
+                                title="Training Year Milestone Targets"
+                                description={
+                                    `Controls how aggressively the bot paces stat training during the Pre-debut, Junior and Classic Years.\n\n` +
+                                    `The bot will target a scaled percentage of your stat targets prior to the Senior Year, ` +
+                                    `ramping up to the full stat targets by the Finale. For example, with milestone targets of 33% / 66%, a Speed ` +
+                                    `target of 1200 becomes ~396 in Junior Year and ~792 in Classic Year. This optimizes early-career statlines for better starting race results.\n\n` +
+                                    `Set both sliders to 100% to disable milestone pacing and always target the full statline.`
+                                }
+                                searchId="training-year-milestone-targets"
+                            />
+                            <SearchableItem
+                                searchId="classic-milestone-percent"
+                                searchTitle="Junior Year Milestone (Classic Year Start)"
+                                searchDescription="Percentage of the primary stat targets to aim for by the end of Junior Year (start of Classic)."
+                            >
+                                <CustomSlider
+                                    value={trainingSettings.classicMilestonePercent}
+                                    placeholder={defaultSettings.training.classicMilestonePercent}
+                                    onValueChange={(value) => updateTrainingSetting("classicMilestonePercent", value)}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    label="Junior Year Milestone (Classic Year Start)"
+                                    labelUnit="%"
+                                    showValue={true}
+                                    showLabels={true}
+                                />
+                            </SearchableItem>
+                            <Text style={[styles.label, { fontSize: 14, color: colors.foreground, opacity: 0.7, marginTop: 4 }]}>
+                                The bot will aim for this % of your stat targets during Junior Year. Default: 33%.
+                            </Text>
+                        </View>
+
+                        <View style={styles.section}>
+                            <SearchableItem
+                                searchId="senior-milestone-percent"
+                                searchTitle="Classic Year Milestone (Senior Year Start)"
+                                searchDescription="Percentage of the primary stat targets to aim for by the end of Classic Year (start of Senior)."
+                            >
+                                <CustomSlider
+                                    value={trainingSettings.seniorMilestonePercent}
+                                    placeholder={defaultSettings.training.seniorMilestonePercent}
+                                    onValueChange={(value) => updateTrainingSetting("seniorMilestonePercent", value)}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    label="Classic Year Milestone (Senior Year Start)"
+                                    labelUnit="%"
+                                    showValue={true}
+                                    showLabels={true}
+                                />
+                            </SearchableItem>
+                            <Text style={[styles.label, { fontSize: 14, color: colors.foreground, opacity: 0.7, marginTop: 4 }]}>
+                                The bot will aim for this % of your stat targets during Classic Year. Default: 66%.
+                            </Text>
+                        </View>
                     </View>
                 </ScrollView>
             </SearchPageProvider>
