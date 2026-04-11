@@ -118,6 +118,8 @@ export interface Settings {
         enablePrioritizeSkillHints: boolean
         enableTrainingAnalysisValidation: boolean
         enableYoloStatDetection: boolean
+        classicMilestonePercent: number
+        seniorMilestonePercent: number
     }
 
     // Training Stat Target settings
@@ -345,6 +347,8 @@ export const defaultSettings: Settings = {
         enablePrioritizeSkillHints: false,
         enableTrainingAnalysisValidation: false,
         enableYoloStatDetection: false,
+        classicMilestonePercent: 33,
+        seniorMilestonePercent: 66,
     },
     trainingStatTarget: {
         trainingSprintStatTarget_speedStatTarget: 1200,
