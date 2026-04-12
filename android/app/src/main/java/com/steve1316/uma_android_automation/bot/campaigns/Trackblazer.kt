@@ -1141,7 +1141,9 @@ class Trackblazer(game: Game) : Campaign(game) {
         // Reset Whistle Check: Use if recommendations are poor.
         // We define "poor" as no training being selected or certain other conditions.
         // Block whistling during irregular training evaluations.
-        if (date.day >= 13 && !bUsedWhistleToday && trainingSelected == null && !bIsIrregularTraining && !training.needsEnergyRecovery) {
+
+        // Limit automated whistle usage to during summer or near end of senior (Turns 37-40, >60)
+        if ((date.day in 37..40 || date.day > 60) && !bUsedWhistleToday && trainingSelected == null && !bIsIrregularTraining && !training.needsEnergyRecovery) {
             val hasWhistle = (currentInventory["Reset Whistle"] ?: 0) > 0
             if (hasWhistle) {
                 MessageLog.i(TAG, "[TRACKBLAZER] No suitable training found. Using Reset Whistle.")
@@ -1247,50 +1249,49 @@ class Trackblazer(game: Game) : Campaign(game) {
         val artisanHammerCount = currentInventory["Artisan Cleat Hammer"] ?: 0
         val glowSticksCount = currentInventory["Glow Sticks"] ?: 0
 
-        val hasMasterHammer =
-            if (date.day == 73) {
-                // Save the last Master Cleat Hammer for the Semi-Final and Final (turns 74-75).
-                masterHammerCount >= 2
+        // Master Hammer Logic
+        val canUseMasterHammer = if (date.day < 73) {
+            if (masterHammerCount >= 4) {
+                grade == RaceGrade.G1 || grade == RaceGrade.G2
+            } else if (masterHammerCount == 3) {
+                grade == RaceGrade.G1
             } else {
-                masterHammerCount > 0
+                false // Requires at least 3 to use one (saving 2)
             }
-        val hasArtisanHammer =
-            if (date.day == 73) {
-                // Save the last Artisan Cleat Hammer for the Semi-Final and Final (turns 74-75).
-                artisanHammerCount >= 2
-            } else {
-                artisanHammerCount > 0
-            }
-        val hasGlowSticks =
-            if (date.day in 73..74) {
-                // Save the last Glow Stick for the Finals (turn 75).
-                glowSticksCount >= 2
-            } else {
-                glowSticksCount > 0
-            }
+        } else {
+            // Finale conservation: Ensure enough Master Hammers for remaining finale races
+            val hasEnough = if (date.day == 73) masterHammerCount >= 2 else masterHammerCount > 0
+            hasEnough && grade == RaceGrade.G1
+        }
 
-        val hammerToUse =
-            if (grade == RaceGrade.G1) {
-                if (hasMasterHammer) {
-                    "Master Cleat Hammer"
-                } else if (hasArtisanHammer) {
-                    "Artisan Cleat Hammer"
-                } else {
-                    null
-                }
-            } else if (grade == RaceGrade.G2 || grade == RaceGrade.G3) {
-                if (hasArtisanHammer) "Artisan Cleat Hammer" else null
+        // Artisan Hammer Logic: No finale conservation needed
+        val canUseArtisanHammer = if (artisanHammerCount >= 2) {
+            true // Can be used in any race
+        } else if (artisanHammerCount == 1) {
+            if (masterHammerCount > 2) {
+                true // Can be used in any race since we have excess master hammers
             } else {
-                null
+                grade == RaceGrade.G1 // Held for G1s when we only have 2 or fewer master hammers
             }
+        } else {
+            false
+        }
 
-        val useGlowSticks =
-            if (date.day >= 73) {
-                // During Finale races (turns 73-75), ignore the standard 20k fan requirement.
-                grade == RaceGrade.G1 && hasGlowSticks
-            } else {
-                grade == RaceGrade.G1 && fans >= 20000 && hasGlowSticks
-            }
+        // Determine which hammer to use (Master is evaluated first, prioritizing it for G1)
+        val hammerToUse = if (canUseMasterHammer) {
+            "Master Cleat Hammer"
+        } else if (canUseArtisanHammer) {
+            "Artisan Cleat Hammer"
+        } else {
+            null
+        }
+
+        // Glow Sticks Logic
+        val useGlowSticks = fans >= 20000 && if (date.day in 73..74) {
+            glowSticksCount >= 2
+        } else {
+            glowSticksCount > 0
+        }
 
         if (hammerToUse != null || useGlowSticks) {
             MessageLog.i(TAG, "[TRACKBLAZER] Suitable race items found in inventory (Hammer: $hammerToUse, Glow Sticks: $useGlowSticks). Opening Training Items dialog.")
@@ -1316,11 +1317,12 @@ class Trackblazer(game: Game) : Campaign(game) {
                 }
             }
         } else {
-            if (date.day == 73 && (masterHammerCount > 0 || artisanHammerCount > 0 || glowSticksCount > 0)) {
+            if (date.day == 73 && (masterHammerCount > 0 || glowSticksCount > 0)) {
+                // Artisan Hammer is no longer logged here since it doesn't get conserved
                 MessageLog.i(
                     TAG,
                     "[TRACKBLAZER] Conserving race items for Semi-Final/Final (turns 74-75). " +
-                        "Hammer: ${masterHammerCount + artisanHammerCount}, Glow Sticks: $glowSticksCount.",
+                        "Master Hammer: $masterHammerCount, Glow Sticks: $glowSticksCount.",
                 )
             } else {
                 MessageLog.i(TAG, "[TRACKBLAZER] No relevant race items in cached inventory for $grade.")
