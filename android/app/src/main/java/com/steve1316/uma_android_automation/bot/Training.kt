@@ -101,7 +101,7 @@ class Training(private val game: Game, private val campaign: Campaign) {
     private val trackblazerClassicMilestonePct: Int = SettingsHelper.getIntSetting("training", "classicMilestonePercent", 33)
 
     /** Senior Year milestone percentage (applied to primary stat targets during Classic Year). */
-    private val trackblazerSeniorMilestonePct: Int  = SettingsHelper.getIntSetting("training", "seniorMilestonePercent", 66)
+    private val trackblazerSeniorMilestonePct: Int = SettingsHelper.getIntSetting("training", "seniorMilestonePercent", 66)
 
     /** Map of current stat targets. */
     private var statTargets: Map<StatName, Int> = emptyMap()
@@ -327,6 +327,12 @@ class Training(private val game: Game, private val campaign: Campaign) {
         fun getCurrentStatCap(statName: StatName, config: TrainingConfig): Int {
             return getScenarioStatCap(config.scenario, statName)
         }
+
+        /**
+         * Maximum allowed deviation from the peer median before a failure chance reading is treated as an OCR outlier.
+         * Also relaxes more significant failure rate adjustments from support cards that reduce energy cost/failure protection.
+         */
+        private const val FAILURE_CHANCE_OUTLIER_TOLERANCE = 35
 
         /**
          * Score the training option based on friendship bar progress.
@@ -939,7 +945,13 @@ class Training(private val game: Game, private val campaign: Campaign) {
 
             // Perform full validation.
 
-            val activeStat: StatName? = getActiveStat(timeoutMs)
+            // Give getActiveStat a dedicated sub-budget so it cannot consume the entire
+            // timeout before the click and header poll have a chance to run.
+            // Reserve at least POST_CLICK_BUDGET_MS for the header detection loop after clicking.
+            val postClickBudgetMs = 3000
+            val activeStatBudgetMs = (timeoutMs - postClickBudgetMs).coerceAtLeast(1000)
+
+            val activeStat: StatName? = getActiveStat(activeStatBudgetMs)
             if (activeStat == null) {
                 MessageLog.w(TAG, "[WARN] goToStat:: getActiveStat returned null.")
                 return false
@@ -951,18 +963,20 @@ class Training(private val game: Game, private val campaign: Campaign) {
                 return true
             }
 
-            // Now click on the desired stat button.
             button.click(game.imageUtils)
 
-            // Now wait for the header to be detected.
-            // In case the previous operations took too long, we still want to do
-            // at least one check for the header before we time out since it doesn't
-            // take hardly any time to check just once.
+            // Small delay to allow the stats to appear before checking to avoid accidental skips
+            game.wait(0.1, skipWaitingForLoading = true)
+
+            // Poll for the header using whatever budget remains, with a guaranteed
+            // minimum of postClickBudgetMs regardless of how long getActiveStat took.
+
+            val postClickDeadline = System.currentTimeMillis() + postClickBudgetMs
             do {
                 if (header.check(game.imageUtils)) {
                     return true
                 }
-            } while (System.currentTimeMillis() - startTime < timeoutMs)
+            } while (System.currentTimeMillis() < postClickDeadline)
 
             MessageLog.w(TAG, "[WARN] goToStat:: Timed out while waiting for $statName training header.")
             return false
@@ -979,11 +993,20 @@ class Training(private val game: Game, private val campaign: Campaign) {
 
         // Check if failure chance is acceptable: either within regular threshold or within risky threshold (if enabled).
         // This acts as an early exit from training analysis to speed up training.
-        val failureChance: Int = game.imageUtils.findTrainingFailureChance(tries = 3)
-        if (failureChance == -1) {
-            MessageLog.w(TAG, "[WARN] analyzeTrainings:: Skipping training due to not being able to confirm whether or not the bot is at the Training screen.")
-            return
-        }
+        val failureChanceRaw: Int = game.imageUtils.findTrainingFailureChance(tries = 3)
+
+        // If OCR could not read the initial failure chance, fall back to an energy-based estimate
+        // rather than bailing out of the whole analysis. A -1 here often just means the OCR
+        // region was unclear, not that we are actually outside the Training screen.
+        val failureChance: Int =
+            if (failureChanceRaw == -1) {
+                val estimated = estimateFailureChanceFromEnergy()
+                MessageLog.w(TAG, "[WARN] analyzeTrainings:: Initial failure chance OCR returned -1. Using energy-based estimate of $estimated% to proceed.")
+                estimated
+            } else {
+                failureChanceRaw
+            }
+
         val isWithinRegularThreshold = failureChance <= maximumFailureChance
         val isWithinRiskyThreshold = enableRiskyTraining && failureChance <= riskyTrainingMaxFailureChance
         val isFinals = campaign.checkFinals()
@@ -1229,8 +1252,34 @@ class Training(private val game: Game, private val campaign: Campaign) {
                     }
 
                     if (result.failureChance == -1) {
-                        MessageLog.w(TAG, "[WARN] analyzeTrainings:: Failed to analyze failure chance for $statName.")
-                        continue
+                        // Both per-stat OCR and the initial screen read failed. Use energy-based estimate as final fallback.
+                        val estimated = estimateFailureChanceFromEnergy(statName)
+                        MessageLog.w(TAG, "[WARN] analyzeTrainings:: Failed to analyze failure chance for $statName. Using energy-based estimate of $estimated%.")
+                        result.failureChance = estimated
+                    }
+
+                    // Outlier correction for singleTraining: compare against already-committed non-Wit entries.
+                    if (result.name != StatName.WIT) {
+                        val peers =
+                            trainingMap.values
+                                .filter { it.name != StatName.WIT }
+                                .map { it.failureChance }
+                        if (peers.isNotEmpty()) {
+                            val peerMedian =
+                                peers.sorted().let { s ->
+                                    if (s.size % 2 == 0) (s[s.size / 2 - 1] + s[s.size / 2]) / 2 else s[s.size / 2]
+                                }
+                            if (kotlin.math.abs(result.failureChance - peerMedian) > FAILURE_CHANCE_OUTLIER_TOLERANCE) {
+                                val corrected = estimateFailureChanceFromEnergy(statName)
+                                MessageLog.w(
+                                    TAG,
+                                    "[WARN] analyzeTrainings:: $statName failure chance (${result.failureChance}%) " +
+                                        "deviates from committed peer median ($peerMedian%) by more than ${FAILURE_CHANCE_OUTLIER_TOLERANCE}%. " +
+                                        "Replacing with energy-based estimate of $corrected%.",
+                                )
+                                result.failureChance = corrected
+                            }
+                        }
                     }
 
                     // For Risky Training, filter out trainings that exceed the effective failure chance threshold or do not meet the minimum main stat gain threshold.
@@ -1312,12 +1361,17 @@ class Training(private val game: Game, private val campaign: Campaign) {
                 }
 
                 // Apply the initial failure chance as a fallback if OCR failed during individual stat analysis.
+                // Note: `failureChance` is always resolved at this point — it is either a real OCR read
+                // or an energy-based estimate computed earlier in this function.
                 for (result in analysisResults) {
                     if (result.failureChance == -1) {
                         MessageLog.i(TAG, "[TRAINING] [${result.name}] Failure chance OCR failed. Falling back to the initial robustly read value of $failureChance%.")
                         result.failureChance = failureChance
                     }
                 }
+
+                // Correct any outlier failure chance readings caused by OCR misreads.
+                correctOutlierFailureChances(analysisResults)
 
                 // Process results and populate training maps.
                 processAnalysisResults(analysisResults, ignoreFailureChance, isIrregularEvaluation, test)
@@ -1470,6 +1524,98 @@ class Training(private val game: Game, private val campaign: Campaign) {
         trainingMap.clear()
         skippedTrainingMap.clear()
         restrictedTrainingNames.clear()
+    }
+
+    /**
+     * Estimate the failure chance for a training based on the trainee's current energy level.
+     *
+     * Last-resort fallback when OCR fails to read the failure chance percentage
+     * from the screen (i.e. [findTrainingFailureChance] returns -1 on both the
+     * initial screen read and the per-stat thread read).
+     *
+     * Standard stats (Speed, Stamina, Power, Guts):
+     *
+     * A linear model derived from [campaign.trainee.energy] (range 1-100).
+     * Energy at 50 or above contributes 0% failure. Each point below 50 adds +2%.
+     *   - energy = 50  -> 0%
+     *   - energy = 30  -> 40%
+     *   - energy = 10  -> 80%
+     *   - energy = 0   -> 100%
+     *
+     * Wit follows a much steeper exponential decay curve. Calibrated from four observed points:
+     *   - energy = 30 ->  5%
+     *   - energy = 20 -> 25%
+     *   - energy = 10 -> 50%
+     *   - energy =  0 -> 80%
+
+     * The curve reaches ~0% around energy = 33, so anything above that clamps to 0.
+     *
+     * @param statName The stat whose training screen is being estimated. Defaults to null,
+     *                 which applies the standard linear model.
+     * @return An estimated failure chance in the range [0, 100].
+     */
+    private fun estimateFailureChanceFromEnergy(statName: StatName? = null): Int {
+        val energy = campaign.trainee.energy.coerceIn(0, 100)
+
+        val estimated =
+            if (statName == StatName.WIT) {
+                // Exponential decay: f(e) = 161.4 * 0.9793^e - 81.4
+                val raw = 161.4 * (0.9793.pow(energy.toDouble())) - 81.4
+                raw.toInt()
+            } else {
+                if (energy >= 50) 0 else (50 - energy) * 2
+            }
+
+        val clamped = estimated.coerceIn(0, 100)
+        val statLabel = statName?.name ?: "standard"
+        MessageLog.w(TAG, "[WARN] estimateFailureChanceFromEnergy:: OCR could not read failure chance ($statLabel). Estimating from energy ($energy) -> $clamped%.")
+        return clamped
+    }
+
+    /**
+     * Detects and corrects outlier failure chance readings among non-Wit training results.
+     *
+     * OCR occasionally misreads a single stat's failure chance dramatically (e.g. reading 7% when
+     * all other stats are clustered around 70%). This method flags any non-Wit result whose
+     * failure chance deviates from the median of the other non-Wit results by more than
+     * [FAILURE_CHANCE_OUTLIER_TOLERANCE], and replaces it with an energy-based estimate.
+     * This function does not currently take account of support cards that have failure
+     * protection, however the failure tolerance can be used to adjust for those until
+     * a more proper solution is made to handle support cards with those unique perks.
+     *
+     * Wit is excluded because it uses a fundamentally different failure curve.
+     * At least two non-Wit peers must exist for a comparison to be meaningful;
+     * if fewer are available the list is returned unchanged.
+     *
+     * @param results The full list of [TrainingAnalysisResult] for the current turn.
+     */
+    private fun correctOutlierFailureChances(results: List<TrainingAnalysisResult>) {
+        val nonWitResults = results.filter { it.name != StatName.WIT && it.failureChance >= 0 }
+
+        // Need at least 2 peers to detect an outlier meaningfully.
+        if (nonWitResults.size < 2) return
+
+        // Use median of non-Wit peers as the reference point (robust against a single bad read).
+        val sorted = nonWitResults.map { it.failureChance }.sorted()
+        val median =
+            if (sorted.size % 2 == 0) {
+                (sorted[sorted.size / 2 - 1] + sorted[sorted.size / 2]) / 2
+            } else {
+                sorted[sorted.size / 2]
+            }
+
+        for (result in nonWitResults) {
+            if (kotlin.math.abs(result.failureChance - median) > FAILURE_CHANCE_OUTLIER_TOLERANCE) {
+                val corrected = estimateFailureChanceFromEnergy(result.name)
+                MessageLog.w(
+                    TAG,
+                    "[WARN] correctOutlierFailureChances:: ${result.name} failure chance (${result.failureChance}%) " +
+                        "deviates from peer median ($median%) by more than ${FAILURE_CHANCE_OUTLIER_TOLERANCE}%. " +
+                        "Replacing with energy-based estimate of $corrected%.",
+                )
+                result.failureChance = corrected
+            }
+        }
     }
 
     /**
@@ -1764,26 +1910,29 @@ class Training(private val game: Game, private val campaign: Campaign) {
         sb.appendLine("Scoring Mode: $scoringMode")
         sb.appendLine("Current Date: ${campaign.date}")
 
-        // Show current stats dynamically with TitleCase keys.
+        // Show current stats.
         val currentStats = config.currentStats
         val statNames = StatName.entries
-        val currentStatsFormatted = statNames.joinToString(", ") {
-            "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${currentStats[it]}"
-        }
+        val currentStatsFormatted =
+            statNames.joinToString(", ") {
+                "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${currentStats[it]}"
+            }
         sb.appendLine("Current Stats: $currentStatsFormatted")
 
-        // Show stat targets for context dynamically.
+        // Show stat targets for context.
         val targets = config.statTargets
         val preferredDistance = campaign.trainee.trackDistance
-        val phaseLabel = when (config.currentDate.year) {
-            DateYear.JUNIOR  -> "Junior → Classic milestone ~${trackblazerClassicMilestonePct}%"
-            DateYear.CLASSIC -> "Classic → Senior milestone ~${trackblazerSeniorMilestonePct}%"
-            DateYear.SENIOR  -> "Senior / Full target 100%"
-        }
+        val phaseLabel =
+            when (config.currentDate.year) {
+                DateYear.JUNIOR -> "Junior → Classic milestone ~$trackblazerClassicMilestonePct%"
+                DateYear.CLASSIC -> "Classic → Senior milestone ~$trackblazerSeniorMilestonePct%"
+                DateYear.SENIOR -> "Senior → Stat targets (100%)"
+            }
 
-        val targetsFormatted = statNames.joinToString(", ") {
-            "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${targets[it]}"
-        }
+        val targetsFormatted =
+            statNames.joinToString(", ") {
+                "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${targets[it]}"
+            }
         sb.appendLine("Stat Targets ($preferredDistance) [$phaseLabel]: $targetsFormatted")
 
         // Compute completion percentages for each stat.
@@ -2199,6 +2348,9 @@ class Training(private val game: Game, private val campaign: Campaign) {
             // Dismiss any popup warning about a scheduled race.
             ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
             game.waitForLoading()
+
+            // firstTrainingCheck necessary to leave looping mood state.
+            firstTrainingCheck = false
 
             MessageLog.v(TAG, "[TRAINING] Process to execute training completed.")
         } else {
