@@ -332,13 +332,14 @@ class Trainee {
 
         // Read configurable milestone percentages from settings (defaults: 33% and 66%).
         val classicMilestonePct: Int = SettingsHelper.getIntSetting("training", "classicMilestonePercent", 33)
-        val seniorMilestonePct: Int  = SettingsHelper.getIntSetting("training", "seniorMilestonePercent", 66)
+        val seniorMilestonePct: Int = SettingsHelper.getIntSetting("training", "seniorMilestonePercent", 66)
 
-        val multiplier: Double = when (year) {
-            DateYear.JUNIOR  -> classicMilestonePct / 100.0
-            DateYear.CLASSIC -> seniorMilestonePct  / 100.0
-            DateYear.SENIOR  -> 1.0
-        }
+        val multiplier: Double =
+            when (year) {
+                DateYear.JUNIOR -> classicMilestonePct / 100.0
+                DateYear.CLASSIC -> seniorMilestonePct / 100.0
+                DateYear.SENIOR -> 1.0
+            }
 
         // Senior (multiplier == 1.0) returns the primary map untouched.
         return if (multiplier == 1.0) {
@@ -941,6 +942,7 @@ class Trainee {
         }
         MessageLog.v(TAG, "[TRAINEE] Stats: $stats")
         MessageLog.v(TAG, "[TRAINEE] Energy: $energy%")
+        MessageLog.v(TAG, "[TRAINEE] Mood: ${mood.name}")
         MessageLog.v(TAG, "[TRAINEE] Fans: $fans")
         MessageLog.v(TAG, "[TRAINEE] Skill Points: $skillPoints")
         val trackString = "Turf=${trackSurfaceAptitudes[TrackSurface.TURF]}, Dirt=${trackSurfaceAptitudes[TrackSurface.DIRT]}"
