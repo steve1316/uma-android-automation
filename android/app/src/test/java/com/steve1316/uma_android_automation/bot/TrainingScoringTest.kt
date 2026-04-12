@@ -4,6 +4,7 @@ import com.steve1316.uma_android_automation.bot.Training.Companion.calculateMisc
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRawTrainingScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRelationshipScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateStatEfficiencyScore
+import com.steve1316.uma_android_automation.bot.Training.Companion.crossValidateFailureChances
 import com.steve1316.uma_android_automation.bot.Training.Companion.getFinaleStatBonus
 import com.steve1316.uma_android_automation.bot.Training.Companion.getRemainingFinaleRaces
 import com.steve1316.uma_android_automation.bot.Training.Companion.scoreFriendshipTraining
@@ -1196,5 +1197,120 @@ class TrainingScoringTest {
         val score = calculateRawTrainingScore(config, training)
 
         assertTrue(score > 0.0, "Stat at 1060 should be allowed on turn 75 with no finale adjustment (effective cap = 1100)")
+    }
+
+    // ── Cross-validate failure chances ──────────────────────────────────────
+
+    @Test
+    @DisplayName("crossValidateFailureChances corrects OCR misread where Speed is far below Stamina")
+    fun testCrossValidate_bugScenario() {
+        val input =
+            listOf(
+                StatName.SPEED to 1,
+                StatName.STAMINA to 68,
+                StatName.POWER to 70,
+                StatName.GUTS to 73,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(68, result[StatName.SPEED], "Speed should be corrected up to match Stamina")
+        assertEquals(68, result[StatName.STAMINA])
+        assertEquals(70, result[StatName.POWER])
+        assertEquals(73, result[StatName.GUTS])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances corrects a chain of low values")
+    fun testCrossValidate_chainCorrection() {
+        val input =
+            listOf(
+                StatName.SPEED to 1,
+                StatName.STAMINA to 1,
+                StatName.POWER to 68,
+                StatName.GUTS to 73,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(68, result[StatName.SPEED])
+        assertEquals(68, result[StatName.STAMINA])
+        assertEquals(68, result[StatName.POWER])
+        assertEquals(73, result[StatName.GUTS])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances does not correct small differences")
+    fun testCrossValidate_noCorrection() {
+        val input =
+            listOf(
+                StatName.SPEED to 25,
+                StatName.STAMINA to 28,
+                StatName.POWER to 30,
+                StatName.GUTS to 35,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(25, result[StatName.SPEED])
+        assertEquals(28, result[StatName.STAMINA])
+        assertEquals(30, result[StatName.POWER])
+        assertEquals(35, result[StatName.GUTS])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances returns single result unchanged")
+    fun testCrossValidate_singleResult() {
+        val input = listOf(StatName.SPEED to 5)
+        val result = crossValidateFailureChances(input)
+        assertEquals(5, result[StatName.SPEED])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances handles two results with large gap")
+    fun testCrossValidate_twoResultsLargeGap() {
+        val input =
+            listOf(
+                StatName.SPEED to 1,
+                StatName.GUTS to 68,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(68, result[StatName.SPEED], "Speed should be corrected up to match Guts")
+        assertEquals(68, result[StatName.GUTS])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances leaves equal values unchanged")
+    fun testCrossValidate_allEqual() {
+        val input =
+            listOf(
+                StatName.SPEED to 50,
+                StatName.STAMINA to 50,
+                StatName.POWER to 50,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(50, result[StatName.SPEED])
+        assertEquals(50, result[StatName.STAMINA])
+        assertEquals(50, result[StatName.POWER])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances does not correct at exactly the threshold boundary")
+    fun testCrossValidate_exactThreshold() {
+        val input =
+            listOf(
+                StatName.SPEED to 10,
+                StatName.STAMINA to 30,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(10, result[StatName.SPEED], "Difference of exactly 20 should not trigger correction")
+        assertEquals(30, result[StatName.STAMINA])
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances corrects just above the threshold boundary")
+    fun testCrossValidate_aboveThreshold() {
+        val input =
+            listOf(
+                StatName.SPEED to 10,
+                StatName.STAMINA to 31,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(31, result[StatName.SPEED], "Difference of 21 should trigger correction")
+        assertEquals(31, result[StatName.STAMINA])
     }
 }
