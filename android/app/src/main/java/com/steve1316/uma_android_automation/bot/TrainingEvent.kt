@@ -572,13 +572,14 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
                                         20
                                     }
                                 selectionWeight[rewardIndex] += finalEnergyValue
+                                // Mood adjustments are more prioritized, as bonus training effectiveness is significant.
                             } else if (line.lowercase().contains("mood")) {
                                 val moodMultiplier =
                                     when (campaign.trainee.mood) {
-                                        Mood.AWFUL -> 150
-                                        Mood.BAD -> 120
-                                        Mood.NORMAL -> 100
-                                        Mood.GOOD -> 80
+                                        Mood.AWFUL -> 175
+                                        Mood.BAD -> 150
+                                        Mood.NORMAL -> 125
+                                        Mood.GOOD -> 100
                                         Mood.GREAT -> 0
                                     }
                                 val moodWeight = if (formattedLine.contains("-")) -150 else moodMultiplier
