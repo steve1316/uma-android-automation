@@ -18,8 +18,8 @@ const searchConfig: SearchOption[] = [
     // ============================================================
     {
         id: "settings-popup-check",
-        title: "Stop on Unexpected Popups",
-        description: "Stops the bot when an unexpected popup with a Cancel button is detected (e.g. lack of fans or trophies). You will need to dismiss the popup and restart the bot manually.",
+        title: "Enable Popup Check",
+        description: "Enables check for warning popups like lack of fans or lack of trophies gained. Stops the bot if detected for the user to deal with them manually.",
         page: "SettingsMain",
     },
     {
@@ -185,14 +185,14 @@ const searchConfig: SearchOption[] = [
     },
     {
         id: "classic-milestone-percent",
-        title: "Junior Year Milestone (Classic Start)",
+        title: "Junior Year Milestone (Classic Year Start)",
         description: "Percentage of the primary stat targets to aim for by the end of Junior Year (start of Classic). Default: 33%.",
         page: "TrainingSettings",
         parentId: "training-year-milestone-targets",
     },
     {
         id: "senior-milestone-percent",
-        title: "Classic Year Milestone (Senior Start)",
+        title: "Classic Year Milestone (Senior Year Start)",
         description: "Percentage of the primary stat targets to aim for by the end of Classic Year (start of Senior). Default: 66%.",
         page: "TrainingSettings",
         parentId: "training-year-milestone-targets",
