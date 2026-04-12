@@ -351,9 +351,10 @@ class Training(private val game: Game, private val campaign: Campaign) {
          * Cross-validate failure chances and return corrected values.
          *
          * Failure chances are monotonically non-decreasing in training order
-         * (Speed <= Stamina <= Power <= Guts <= Wit). If an earlier training's
-         * failure chance is significantly lower than the next, it is likely an
-         * OCR misread and should be corrected upward.
+         * (Speed <= Stamina <= Power <= Guts). Wit is excluded because it
+         * naturally has a lower failure chance than the other trainings.
+         * If an earlier training's failure chance is significantly lower than
+         * the next, it is likely an OCR misread and should be corrected upward.
          *
          * @param failureChances List of ([StatName], failureChance) pairs with valid (>= 0) values.
          * @param suspiciousJumpThreshold Minimum difference to consider suspicious.
@@ -363,9 +364,13 @@ class Training(private val game: Game, private val campaign: Campaign) {
             failureChances: List<Pair<StatName, Int>>,
             suspiciousJumpThreshold: Int = 20,
         ): Map<StatName, Int> {
-            if (failureChances.size < 2) return failureChances.toMap()
+            // Wit is excluded from cross-validation as it naturally has a lower failure chance.
+            val witEntry = failureChances.filter { it.first == StatName.WIT }
+            val withoutWit = failureChances.filter { it.first != StatName.WIT }
 
-            val sorted = failureChances.sortedBy { it.first.ordinal }.toMutableList()
+            if (withoutWit.size < 2) return failureChances.toMap()
+
+            val sorted = withoutWit.sortedBy { it.first.ordinal }.toMutableList()
 
             // Walk backwards: correct any value that is suspiciously lower than its successor.
             for (i in sorted.size - 2 downTo 0) {
@@ -376,7 +381,7 @@ class Training(private val game: Game, private val campaign: Campaign) {
                 }
             }
 
-            return sorted.toMap()
+            return (sorted + witEntry).toMap()
         }
 
         /**

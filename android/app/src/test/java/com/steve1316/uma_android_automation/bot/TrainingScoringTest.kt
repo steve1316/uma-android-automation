@@ -1313,4 +1313,33 @@ class TrainingScoringTest {
         assertEquals(31, result[StatName.SPEED], "Difference of 21 should trigger correction")
         assertEquals(31, result[StatName.STAMINA])
     }
+
+    @Test
+    @DisplayName("crossValidateFailureChances excludes Wit from cross-validation")
+    fun testCrossValidate_witExcluded() {
+        val input =
+            listOf(
+                StatName.SPEED to 1,
+                StatName.STAMINA to 68,
+                StatName.POWER to 70,
+                StatName.GUTS to 73,
+                StatName.WIT to 28,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(68, result[StatName.SPEED], "Speed should be corrected up to match Stamina")
+        assertEquals(28, result[StatName.WIT], "Wit should not be affected by cross-validation")
+    }
+
+    @Test
+    @DisplayName("crossValidateFailureChances passes through Wit when only Wit and one other stat present")
+    fun testCrossValidate_witWithSingleStat() {
+        val input =
+            listOf(
+                StatName.SPEED to 5,
+                StatName.WIT to 28,
+            )
+        val result = crossValidateFailureChances(input)
+        assertEquals(5, result[StatName.SPEED], "Speed should be unchanged with only one non-Wit stat")
+        assertEquals(28, result[StatName.WIT], "Wit should be passed through unchanged")
+    }
 }
