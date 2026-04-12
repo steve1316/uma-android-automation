@@ -368,7 +368,7 @@ ${longTargetsString}
 ✨ Trackblazer Irregular Training Min Gain: ${settings.scenarioOverrides?.trackblazerIrregularTrainingMinStatGain}
 
 ---------- Misc Options ----------
-🔍 Popup Check: ${settings.general.enablePopupCheck ? "✅" : "❌"}
+🛑 Stop on Unexpected Popups: ${settings.general.enablePopupCheck ? "✅" : "❌"}
 🔍 Enable Crane Game Attempt: ${settings.general.enableCraneGameAttempt ? "✅" : "❌"}
 🛑 Stop Before Finals: ${settings.general.enableStopBeforeFinals ? "✅" : "❌"}
 🛑 Stop At Date: ${settings.general.enableStopAtDate ? `✅ (${settings.general.stopAtDates.join(", ")})` : "❌"}
