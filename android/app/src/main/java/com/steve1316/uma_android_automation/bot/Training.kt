@@ -348,6 +348,38 @@ class Training(private val game: Game, private val campaign: Campaign) {
         }
 
         /**
+         * Cross-validate failure chances and return corrected values.
+         *
+         * Failure chances are monotonically non-decreasing in training order
+         * (Speed <= Stamina <= Power <= Guts <= Wit). If an earlier training's
+         * failure chance is significantly lower than the next, it is likely an
+         * OCR misread and should be corrected upward.
+         *
+         * @param failureChances List of ([StatName], failureChance) pairs with valid (>= 0) values.
+         * @param suspiciousJumpThreshold Minimum difference to consider suspicious.
+         * @return Map of [StatName] to corrected failure chance.
+         */
+        fun crossValidateFailureChances(
+            failureChances: List<Pair<StatName, Int>>,
+            suspiciousJumpThreshold: Int = 20,
+        ): Map<StatName, Int> {
+            if (failureChances.size < 2) return failureChances.toMap()
+
+            val sorted = failureChances.sortedBy { it.first.ordinal }.toMutableList()
+
+            // Walk backwards: correct any value that is suspiciously lower than its successor.
+            for (i in sorted.size - 2 downTo 0) {
+                val (currentName, currentChance) = sorted[i]
+                val (_, nextChance) = sorted[i + 1]
+                if (nextChance - currentChance > suspiciousJumpThreshold) {
+                    sorted[i] = currentName to nextChance
+                }
+            }
+
+            return sorted.toMap()
+        }
+
+        /**
          * Score the training option based on friendship bar progress.
          *
          * This method prefers training options with the least relationship progress, specifically focusing on blue bars.
@@ -1348,6 +1380,9 @@ class Training(private val game: Game, private val campaign: Campaign) {
                     }
                 }
 
+                // Cross-validate failure chances across trainings to correct OCR misreads.
+                normalizeFailureChances(analysisResults)
+
                 // Process results and populate training maps.
                 processAnalysisResults(analysisResults, ignoreFailureChance, isIrregularEvaluation, test)
 
@@ -1499,6 +1534,35 @@ class Training(private val game: Game, private val campaign: Campaign) {
         trainingMap.clear()
         skippedTrainingMap.clear()
         restrictedTrainingNames.clear()
+    }
+
+    /**
+     * Cross-validate and normalize failure chances across all training results.
+     *
+     * Failure chances are monotonically non-decreasing in training order
+     * (Speed <= Stamina <= Power <= Guts <= Wit). If an earlier training's
+     * failure chance is significantly lower than the next, it is likely an
+     * OCR misread and should be corrected upward.
+     *
+     * @param results The list of [TrainingAnalysisResult] to normalize.
+     */
+    private fun normalizeFailureChances(results: List<TrainingAnalysisResult>) {
+        val validResults = results.filter { it.failureChance >= 0 }
+        if (validResults.size < 2) return
+
+        val input = validResults.map { it.name to it.failureChance }
+        val corrected = crossValidateFailureChances(input)
+
+        for (result in validResults) {
+            val newValue = corrected[result.name] ?: continue
+            if (newValue != result.failureChance) {
+                MessageLog.w(
+                    TAG,
+                    "[WARN] normalizeFailureChances:: ${result.name} failure chance corrected from ${result.failureChance}% to $newValue% based on cross-validation with neighboring trainings.",
+                )
+                result.failureChance = newValue
+            }
+        }
     }
 
     /**
