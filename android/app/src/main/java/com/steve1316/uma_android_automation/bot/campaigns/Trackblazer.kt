@@ -1176,11 +1176,31 @@ class Trackblazer(game: Game) : Campaign(game) {
         if (trainingSelected != null) {
             training.executeTraining(trainingSelected)
         } else {
-            MessageLog.i(TAG, "[TRACKBLAZER] Still no suitable training found. Backing out to rest/recollect.")
-            ButtonBack.click(game.imageUtils)
-            game.wait(1.0)
-            if (checkMainScreen()) {
-                recoverEnergy()
+            // Most optimal action must be taken if no suitable training is found to avoid a dead/wasted turn.
+            // Resting has 62.5% chance of being +50 energy, Shrine (remove status conditions) has 30% chance in recreation.
+            if (trainee.mood <= Mood.NORMAL || trainee.energy <= 50) {
+                MessageLog.i(TAG, "[TRACKBLAZER] Still no suitable training found. Backing out for recovery.")
+
+                // firstTrainingCheck is false since there is no suitable training (breaks looping on recovery/energy)
+                training.firstTrainingCheck = false
+                ButtonBack.click(game.imageUtils)
+                game.wait(1.0)
+
+                if (checkMainScreen()) {
+                    if (trainee.mood == Mood.AWFUL || (trainee.mood <= Mood.NORMAL && trainee.energy >= 20)) {
+                        MessageLog.i(TAG, "[TRACKBLAZER] Mood is ${trainee.mood}. Attempting to recover mood.")
+                        recoverMood()
+                    } else {
+                        MessageLog.i(TAG, "[TRACKBLAZER] Energy is ${trainee.energy}%. Attempting to recover energy.")
+                        recoverEnergy()
+                    }
+                }
+            } else {
+                // Force a training (Only Wit if negative conditions to avoid possible stat reductions such as Slow Metabolism)
+                // 80 Energy is optimal for Wit, as there may be post events that provide additional energy.
+                val forcedStat = if (trainee.energy >= 80 && trainee.currentNegativeStatuses.isNotEmpty()) StatName.SPEED else StatName.WIT
+                MessageLog.i(TAG, "[TRACKBLAZER] Still no suitable training found. Energy (${trainee.energy}%) and Mood (${trainee.mood}) are sufficient. Forcing $forcedStat training.")
+                training.executeTraining(forcedStat)
             }
         }
 
