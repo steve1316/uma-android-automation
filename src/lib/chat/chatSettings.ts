@@ -4,7 +4,7 @@ import { databaseManager } from "../database"
  * Persistence layer for the user-tunable chat parameters.
  *
  * Lives outside `BotStateContext`, under category `"chat"`, so values are NOT included in settings exports.
- * Each tuning value is read directly from SQLite at chat-call time (see [loadChatTuning]) rather than mirrored
+ * Each tuning value is read directly from SQLite at chat-call time (see `loadChatTuning`) rather than mirrored
  * into the React context, which keeps the LLM Settings sliders authoritative without a round-trip through
  * `bsc.setSettings`.
  */
@@ -15,7 +15,7 @@ export const CHAT_CATEGORY = "chat"
 /**
  * Stable key strings for the three generation-tuning sliders shown on the LLM Settings page.
  *
- * Centralized so reads ([loadChatTuning]) and writes ([saveTuning]) cannot drift out of sync, and so a future
+ * Centralized so reads (`loadChatTuning`) and writes (`saveTuning`) cannot drift out of sync, and so a future
  * rename only has to touch this one map.
  */
 export const SETTING_KEYS = {
@@ -36,10 +36,10 @@ export const DEFAULTS = {
 } as const
 
 /**
- * Snapshot of all three tuning values, returned by [loadChatTuning].
+ * Snapshot of all three tuning values, returned by `loadChatTuning`.
  *
  * The Chat page reads this once per query and forwards each value to the corresponding stage of the pipeline:
- * `llmCitationCharCap` to [trimToCap], `modelContextWindow` to `llamaRunner.ensureContext`, and
+ * `llmCitationCharCap` to `trimToCap`, `modelContextWindow` to `llamaRunner.ensureContext`, and
  * `maxOutputTokens` to `llamaRunner.chat`.
  */
 export interface ChatTuning {
@@ -52,9 +52,9 @@ export interface ChatTuning {
 }
 
 /**
- * Load all three tuning values from SQLite, falling back to [DEFAULTS] for any that aren't set yet.
+ * Load all three tuning values from SQLite, falling back to `DEFAULTS` for any that aren't set yet.
  *
- * @returns A complete [ChatTuning] snapshot - any value not yet persisted is filled from [DEFAULTS], and a
+ * @returns A complete `ChatTuning` snapshot - any value not yet persisted is filled from `DEFAULTS`, and a
  *   thrown DB error returns a fresh defaults clone so the caller never has to handle null.
  */
 export async function loadChatTuning(): Promise<ChatTuning> {
@@ -77,7 +77,7 @@ export async function loadChatTuning(): Promise<ChatTuning> {
 /**
  * Persist a single tuning value to SQLite. Fire-and-forget - failures are swallowed (DB layer logs them).
  *
- * @param key Logical name of the tuning value, constrained to a key of [SETTING_KEYS] so renames stay typesafe.
+ * @param key Logical name of the tuning value, constrained to a key of `SETTING_KEYS` so renames stay typesafe.
  * @param value New value to store. The slider widgets emit pre-clamped numbers; no extra validation is done here.
  */
 export function saveTuning<K extends keyof typeof SETTING_KEYS>(key: K, value: number): void {
@@ -85,11 +85,11 @@ export function saveTuning<K extends keyof typeof SETTING_KEYS>(key: K, value: n
 }
 
 /**
- * Cap a per-citation expanded text snippet to [maxChars], breaking on a word boundary and adding an ellipsis.
+ * Cap a per-citation expanded text snippet to `maxChars`, breaking on a word boundary and adding an ellipsis.
  *
  * @param text Raw expanded section text to trim.
  * @param maxChars Inclusive character cap; values at or below this length are returned unchanged.
- * @returns Either [text] verbatim or a trimmed prefix ending at the last space inside the cap, with an ellipsis
+ * @returns Either `text` verbatim or a trimmed prefix ending at the last space inside the cap, with an ellipsis
  *   appended. Falls back to a hard cut when no space appears within the cap.
  */
 export function trimToCap(text: string, maxChars: number): string {

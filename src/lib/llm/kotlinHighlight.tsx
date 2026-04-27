@@ -11,7 +11,7 @@ import React from "react"
 import { Text, type TextStyle } from "react-native"
 
 /**
- * Reserved Kotlin keywords plus the soft modifiers commonly seen in declarations. Used by [tokenize] to mark a
+ * Reserved Kotlin keywords plus the soft modifiers commonly seen in declarations. Used by `tokenize` to mark a
  * bare identifier as a keyword token. Keep in sorted order so additions are easy to spot in diffs.
  */
 const KEYWORDS = new Set([
@@ -89,14 +89,14 @@ const KEYWORDS = new Set([
 const LITERALS = new Set(["true", "false", "null"])
 
 /**
- * Token classification produced by [tokenize] and consumed by [KotlinCode]. `plain` covers whitespace,
+ * Token classification produced by `tokenize` and consumed by `KotlinCode`. `plain` covers whitespace,
  * punctuation, and any identifier that didn't match a more specific category.
  */
 type TokenKind = "comment" | "string" | "number" | "keyword" | "literal" | "type" | "annotation" | "plain"
 
 /**
- * Color palette for the highlighter. Each field is the foreground color used when [tokenize] classifies a
- * token as the corresponding [TokenKind]; new token kinds must add a matching field here so the palette stays
+ * Color palette for the highlighter. Each field is the foreground color used when `tokenize` classifies a
+ * token as the corresponding `TokenKind`; new token kinds must add a matching field here so the palette stays
  * exhaustive.
  */
 export interface KotlinPalette {
@@ -108,9 +108,9 @@ export interface KotlinPalette {
     string: string
     /** Color for integer, hex, and floating-point number literals (with optional `L`/`F` suffix). */
     number: string
-    /** Color for reserved Kotlin keywords from [KEYWORDS]. */
+    /** Color for reserved Kotlin keywords from `KEYWORDS`. */
     keyword: string
-    /** Color for the boolean and null literals in [LITERALS]. */
+    /** Color for the boolean and null literals in `LITERALS`. */
     literal: string
     /** Color for capitalized identifiers (treated as type names) and backticked identifiers. */
     type: string
@@ -148,16 +148,16 @@ export const LIGHT_PALETTE: KotlinPalette = {
 const TOKEN_RE =
     /("""[\s\S]*?""")|(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*")|('(?:\\.|[^'\\])')|(`[^`\n]+`)|(@[A-Za-z_][A-Za-z0-9_]*)|(0[xX][0-9a-fA-F_]+[Ll]?|\d[\d_]*\.\d[\d_]*[fFLl]?|\d[\d_]*[fFLl]?)|([A-Za-z_][A-Za-z0-9_]*)|([\s\S])/g
 
-/** One classified slice of source text emitted by [tokenize]. */
+/** One classified slice of source text emitted by `tokenize`. */
 interface Token {
-    /** What flavor of source construct this slice represents; drives palette lookup in [KotlinCode]. */
+    /** What flavor of source construct this slice represents; drives palette lookup in `KotlinCode`. */
     kind: TokenKind
     /** Verbatim characters from the input source, preserving whitespace and original casing. */
     value: string
 }
 
 /**
- * Lex [src] into an ordered list of [Token]s in a single regex pass.
+ * Lex `src` into an ordered list of `Token`s in a single regex pass.
  *
  * The matcher walks left-to-right; each successful match is classified by which alternation group fired, and
  * any characters skipped between the previous match and the current one are emitted as a `plain` token so the
@@ -165,7 +165,7 @@ interface Token {
  * the global regex's stateful lastIndex from a prior invocation.
  *
  * @param src Kotlin source text to tokenize. May contain newlines; comments and triple-quoted strings span them.
- * @returns Ordered tokens whose concatenated `value`s recreate [src] verbatim.
+ * @returns Ordered tokens whose concatenated `value`s recreate `src` verbatim.
  */
 function tokenize(src: string): Token[] {
     const tokens: Token[] = []
@@ -194,22 +194,22 @@ function tokenize(src: string): Token[] {
     return tokens
 }
 
-/** Props for [KotlinCode]. */
+/** Props for `KotlinCode`. */
 interface KotlinCodeProps {
     /** Kotlin source to render. Newlines are preserved; the parent should wrap or scroll as needed. */
     text: string
-    /** Color scheme to apply; pass [DARK_PALETTE] or [LIGHT_PALETTE] (or a custom palette) based on the active theme. */
+    /** Color scheme to apply; pass `DARK_PALETTE` or `LIGHT_PALETTE` (or a custom palette) based on the active theme. */
     palette: KotlinPalette
     /** Optional `Text` style applied to the outer wrapper - typically used to override font size or line height. */
     style?: TextStyle
 }
 
 /**
- * Renders [text] as syntax-highlighted Kotlin via nested Text spans. The outer Text owns layout (font, line
+ * Renders `text` as syntax-highlighted Kotlin via nested Text spans. The outer Text owns layout (font, line
  * height, padding from the parent View) and the inner spans only set `color`.
  *
  * @param text Kotlin source to render; tokenization is memoized on this prop.
- * @param palette Color scheme to apply per token kind. Pass [DARK_PALETTE] or [LIGHT_PALETTE].
+ * @param palette Color scheme to apply per token kind. Pass `DARK_PALETTE` or `LIGHT_PALETTE`.
  * @param style Optional `Text` style merged onto the outer wrapper - typically used to override font size or
  *   line height for compact citation cards.
  * @returns A React Native `Text` element tree representing the highlighted source.

@@ -11,7 +11,7 @@
 
 /**
  * Fold inline GitHub-flavored HTML tags into markdown equivalents the marked tokenizer can style.
- * `<details>`/`<summary>` are NOT folded here - they're handled separately by [splitDetails] so we can render
+ * `<details>`/`<summary>` are NOT folded here - they're handled separately by `splitDetails` so we can render
  * them as collapsible sections instead of static text.
  *
  * @param md Raw markdown string, possibly containing inline `<strong>`/`<b>`/`<em>`/`<i>`/`<br>` tags.
@@ -27,13 +27,13 @@ export function foldHtmlTags(md: string): string {
 
 /**
  * Matches a complete `<details>...<summary>...</summary>...</details>` block, capturing the summary text in
- * group 1 and the body content in group 2. The `g` flag is required so [splitDetails] can iterate over every
+ * group 1 and the body content in group 2. The `g` flag is required so `splitDetails` can iterate over every
  * occurrence; lastIndex is reset on entry to avoid carrying state between calls.
  */
 const DETAILS_RE = /<details[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi
 
 /**
- * Output element of [splitDetails]: either a stretch of plain markdown or a complete details block. Tagged
+ * Output element of `splitDetails`: either a stretch of plain markdown or a complete details block. Tagged
  * union so the renderer can treat collapsibles distinctly without re-parsing the markdown.
  */
 export type MdSegment = { kind: "md"; text: string } | { kind: "details"; summary: string; body: string }
@@ -46,7 +46,7 @@ export type MdSegment = { kind: "md"; text: string } | { kind: "details"; summar
  *
  * @param md Raw markdown source, possibly containing zero or more `<details><summary>...</summary>...</details>`
  *   blocks.
- * @returns Ordered list of [MdSegment]s covering the entire input. Adjacent plain-markdown stretches are kept
+ * @returns Ordered list of `MdSegment`s covering the entire input. Adjacent plain-markdown stretches are kept
  *   as a single `md` segment, and each complete details block becomes its own `details` segment with the
  *   `<summary>` and body text already trimmed.
  */
@@ -69,10 +69,10 @@ export function splitDetails(md: string): MdSegment[] {
  * escaped digit ("1\. ") for ordered ones, so marked won't reparse them as lists. Each line gets a trailing
  * hard-break (two spaces) so consecutive items become separate visual lines inside one paragraph instead of
  * being collapsed by markdown's whitespace folding. Avoids the entire RN flex-marker layout class of bugs at
- * the cost of nested-block-content inside list items, which the chatbot rarely produces. Calls [foldHtmlTags]
+ * the cost of nested-block-content inside list items, which the chatbot rarely produces. Calls `foldHtmlTags`
  * first so any inline `<strong>`/`<em>` markers inside list items get the same treatment.
  *
- * @param md Raw markdown to flatten. Inline HTML tags handled by [foldHtmlTags] are folded first.
+ * @param md Raw markdown to flatten. Inline HTML tags handled by `foldHtmlTags` are folded first.
  * @returns Markdown where every `- item` / `* item` / `+ item` line becomes `• item  ` and every `N. item`
  *   becomes `N\. item  `, with non-list lines passed through untouched.
  */

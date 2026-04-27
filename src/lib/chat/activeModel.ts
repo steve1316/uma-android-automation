@@ -22,14 +22,14 @@ export interface DownloadedModel {
     path: string
     /** File size in bytes; used by the LLM Settings UI to show "~NN MB" for each model. */
     sizeBytes: number
-    /** Last-modified epoch millis; the fallback ordering in [resolveActiveModel] uses the bridge order, not this. */
+    /** Last-modified epoch millis; the fallback ordering in `resolveActiveModel` uses the bridge order, not this. */
     lastModifiedMillis: number
 }
 
 /**
- * Minimal projection of [DownloadedModel] used by callers that only need to load and identify the model.
+ * Minimal projection of `DownloadedModel` used by callers that only need to load and identify the model.
  *
- * Returned by [resolveActiveModel] so call sites don't accidentally branch on metadata they shouldn't trust
+ * Returned by `resolveActiveModel` so call sites don't accidentally branch on metadata they shouldn't trust
  * (e.g. `sizeBytes` is not refreshed once a model is loaded).
  */
 export interface ResolvedModel {
@@ -43,7 +43,7 @@ export interface ResolvedModel {
  * Resolve which downloaded GGUF model the chat pipeline should use.
  *
  * Resolution order:
- *  1. Honor the user's explicit selection from [ACTIVE_MODEL_SETTING] when that filename is still present on
+ *  1. Honor the user's explicit selection from `ACTIVE_MODEL_SETTING` when that filename is still present on
  *     disk.
  *  2. Fall back to the first entry returned by `LLMChatModule.listModels()` so a freshly-downloaded model
  *     becomes usable without a settings round-trip.
