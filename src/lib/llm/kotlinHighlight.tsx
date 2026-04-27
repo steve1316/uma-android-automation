@@ -163,6 +163,9 @@ interface Token {
  * any characters skipped between the previous match and the current one are emitted as a `plain` token so the
  * full input is preserved exactly. `TOKEN_RE.lastIndex` is reset on entry to make the function safe against
  * the global regex's stateful lastIndex from a prior invocation.
+ *
+ * @param src Kotlin source text to tokenize. May contain newlines; comments and triple-quoted strings span them.
+ * @returns Ordered tokens whose concatenated `value`s recreate [src] verbatim.
  */
 function tokenize(src: string): Token[] {
     const tokens: Token[] = []
@@ -201,8 +204,16 @@ interface KotlinCodeProps {
     style?: TextStyle
 }
 
-/** Renders [text] as syntax-highlighted Kotlin via nested Text spans. The outer Text owns layout (font, line
- *  height, padding from the parent View) and the inner spans only set `color`. */
+/**
+ * Renders [text] as syntax-highlighted Kotlin via nested Text spans. The outer Text owns layout (font, line
+ * height, padding from the parent View) and the inner spans only set `color`.
+ *
+ * @param text Kotlin source to render; tokenization is memoized on this prop.
+ * @param palette Color scheme to apply per token kind. Pass [DARK_PALETTE] or [LIGHT_PALETTE].
+ * @param style Optional `Text` style merged onto the outer wrapper - typically used to override font size or
+ *   line height for compact citation cards.
+ * @returns A React Native `Text` element tree representing the highlighted source.
+ */
 export function KotlinCode({ text, palette, style }: KotlinCodeProps) {
     const tokens = React.useMemo(() => tokenize(text), [text])
     return (

@@ -51,7 +51,12 @@ export interface ChatTuning {
     modelContextWindow: number
 }
 
-/** Load all three tuning values from SQLite, falling back to [DEFAULTS] for any that aren't set yet. */
+/**
+ * Load all three tuning values from SQLite, falling back to [DEFAULTS] for any that aren't set yet.
+ *
+ * @returns A complete [ChatTuning] snapshot - any value not yet persisted is filled from [DEFAULTS], and a
+ *   thrown DB error returns a fresh defaults clone so the caller never has to handle null.
+ */
 export async function loadChatTuning(): Promise<ChatTuning> {
     try {
         const [maxOut, capRaw, ctx] = await Promise.all([
@@ -69,12 +74,24 @@ export async function loadChatTuning(): Promise<ChatTuning> {
     }
 }
 
-/** Persist a single tuning value to SQLite. Fire-and-forget - failures are swallowed (DB layer logs them). */
+/**
+ * Persist a single tuning value to SQLite. Fire-and-forget - failures are swallowed (DB layer logs them).
+ *
+ * @param key Logical name of the tuning value, constrained to a key of [SETTING_KEYS] so renames stay typesafe.
+ * @param value New value to store. The slider widgets emit pre-clamped numbers; no extra validation is done here.
+ */
 export function saveTuning<K extends keyof typeof SETTING_KEYS>(key: K, value: number): void {
     databaseManager.saveSetting(CHAT_CATEGORY, SETTING_KEYS[key], value, true).catch(() => undefined)
 }
 
-/** Cap a per-citation expanded text snippet to [maxChars], breaking on a word boundary and adding an ellipsis. */
+/**
+ * Cap a per-citation expanded text snippet to [maxChars], breaking on a word boundary and adding an ellipsis.
+ *
+ * @param text Raw expanded section text to trim.
+ * @param maxChars Inclusive character cap; values at or below this length are returned unchanged.
+ * @returns Either [text] verbatim or a trimmed prefix ending at the last space inside the cap, with an ellipsis
+ *   appended. Falls back to a hard cut when no space appears within the cap.
+ */
 export function trimToCap(text: string, maxChars: number): string {
     if (text.length <= maxChars) return text
     const slice = text.slice(0, maxChars)

@@ -13,6 +13,10 @@
  * Fold inline GitHub-flavored HTML tags into markdown equivalents the marked tokenizer can style.
  * `<details>`/`<summary>` are NOT folded here - they're handled separately by [splitDetails] so we can render
  * them as collapsible sections instead of static text.
+ *
+ * @param md Raw markdown string, possibly containing inline `<strong>`/`<b>`/`<em>`/`<i>`/`<br>` tags.
+ * @returns Markdown with those inline HTML tags rewritten to `**bold**`, `*italic*`, and hard-break sequences
+ *   so the marked renderer can style them natively.
  */
 export function foldHtmlTags(md: string): string {
     return md
@@ -39,6 +43,12 @@ export type MdSegment = { kind: "md"; text: string } | { kind: "details"; summar
  * rendered as a Pressable collapsible by `MarkdownView`; everything else falls through to the marked
  * pipeline. Stray `<details>`/`</details>`/`<summary>` tags that don't form a complete block are left
  * as-is and stripped by the marked html-token renderer downstream.
+ *
+ * @param md Raw markdown source, possibly containing zero or more `<details><summary>...</summary>...</details>`
+ *   blocks.
+ * @returns Ordered list of [MdSegment]s covering the entire input. Adjacent plain-markdown stretches are kept
+ *   as a single `md` segment, and each complete details block becomes its own `details` segment with the
+ *   `<summary>` and body text already trimmed.
  */
 export function splitDetails(md: string): MdSegment[] {
     const segments: MdSegment[] = []
@@ -61,6 +71,10 @@ export function splitDetails(md: string): MdSegment[] {
  * being collapsed by markdown's whitespace folding. Avoids the entire RN flex-marker layout class of bugs at
  * the cost of nested-block-content inside list items, which the chatbot rarely produces. Calls [foldHtmlTags]
  * first so any inline `<strong>`/`<em>` markers inside list items get the same treatment.
+ *
+ * @param md Raw markdown to flatten. Inline HTML tags handled by [foldHtmlTags] are folded first.
+ * @returns Markdown where every `- item` / `* item` / `+ item` line becomes `• item  ` and every `N. item`
+ *   becomes `N\. item  `, with non-list lines passed through untouched.
  */
 export function flattenLists(md: string): string {
     return foldHtmlTags(md)

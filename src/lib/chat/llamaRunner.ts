@@ -98,6 +98,8 @@ const DEFAULT_STOP = ["</s>", "<|im_end|>", "<|end|>", "<end_of_turn>", "<|eot_i
  * Load (or reuse) a llama.rn context for [modelPath]. If a context for a different path is already loaded,
  * release it first. If [opts] differ from the cached load (notably `nCtx`), reload as well.
  *
+ * @param modelPath Absolute path on disk to the GGUF file to load.
+ * @param opts Load-time options; missing fields fall back to the defaults documented on [LoadOptions].
  * @returns The loaded context, or `null` if the load failed (an error is also re-thrown to the caller via the
  *   underlying llama.rn promise rejection).
  */
@@ -145,6 +147,11 @@ export async function ensureContext(modelPath: string, opts: LoadOptions = {}): 
  * Streams individual tokens to [onToken] as they arrive (so the UI can render a live partial answer); the resolved
  * promise carries the full concatenated text and llama.rn's `timings` block after generation finishes.
  *
+ * @param opts Generation parameters; see [ChatOptions] for per-field defaults.
+ * @param onToken Optional callback invoked once per generated token while streaming. Receives the bare token
+ *   string. Pass to drive a live partial-answer view; omit when the caller only needs the final text.
+ * @returns The full answer text and the engine's timing/token counters (or `null` stats when llama.rn omits
+ *   the timings block).
  * @throws If [ensureContext] hasn't been called or the load failed.
  */
 export async function chat(opts: ChatOptions, onToken?: (token: string) => void): Promise<ChatResult> {
@@ -169,7 +176,14 @@ export async function chat(opts: ChatOptions, onToken?: (token: string) => void)
     }
 }
 
-/** Pull the timing block out of llama.rn's completion result. Returns null if it's missing or malformed. */
+/**
+ * Pull the timing block out of llama.rn's completion result.
+ *
+ * @param result Raw object returned by `LlamaContext.completion`. Shape is loosely typed (`any`) because
+ *   llama.rn's TypeScript declarations don't include `timings` on every release.
+ * @returns A populated [ChatStats] when [result.timings] is present, otherwise `null` so callers can render
+ *   the answer card without a stats footer.
+ */
 function extractStats(result: any): ChatStats | null {
     const t = result?.timings
     if (!t) return null
@@ -186,12 +200,21 @@ function extractStats(result: any): ChatStats | null {
 /**
  * Return [value] when it is a finite number, otherwise [fallback]. Defends [extractStats] against the
  * `NaN`/`undefined`/string entries that older llama.rn builds occasionally emit in the timings block.
+ *
+ * @param value Candidate value pulled from the timings block; may be any type.
+ * @param fallback Replacement returned when [value] is not a finite number.
+ * @returns [value] verbatim when it satisfies `Number.isFinite`, otherwise [fallback].
  */
 function numberOr(value: any, fallback: number): number {
     return typeof value === "number" && Number.isFinite(value) ? value : fallback
 }
 
-/** Release the currently-loaded context, freeing RAM. Safe to call when nothing is loaded. */
+/**
+ * Release the currently-loaded context, freeing RAM. Safe to call when nothing is loaded.
+ *
+ * @returns A promise that resolves once the underlying llama.rn release call has settled; failures during
+ *   release are swallowed (the context may already be in a bad state) and do not propagate.
+ */
 export async function release(): Promise<void> {
     if (currentContext) {
         try {
@@ -205,12 +228,21 @@ export async function release(): Promise<void> {
     currentLoadOpts = {}
 }
 
-/** Reports whether a context is currently loaded. Useful for the UI to disable Chat input until a model is ready. */
+/**
+ * Reports whether a context is currently loaded. Useful for the UI to disable Chat input until a model is ready.
+ *
+ * @returns `true` when a llama.rn context is held in memory, `false` otherwise.
+ */
 export function isLoaded(): boolean {
     return currentContext !== null
 }
 
-/** Path of the currently-loaded model, if any. */
+/**
+ * Path of the currently-loaded model, if any.
+ *
+ * @returns Absolute filesystem path passed to [ensureContext] for the live context, or `null` when no
+ *   context is loaded.
+ */
 export function loadedModelPath(): string | null {
     return currentModelPath
 }
@@ -220,6 +252,10 @@ export function loadedModelPath(): string | null {
  *
  * Lets [ensureContext] decide whether the cached context can be reused or must be torn down and rebuilt - any
  * tunable that affects the engine state (notably `nCtx`) needs a reload to take effect.
+ *
+ * @param a One [LoadOptions] to compare; typically the cached `currentLoadOpts`.
+ * @param b The other [LoadOptions]; typically the caller's incoming `opts`.
+ * @returns `true` when both option sets resolve to the same effective values after defaulting.
  */
 function optsEqual(a: LoadOptions, b: LoadOptions): boolean {
     return (a.nCtx ?? 4096) === (b.nCtx ?? 4096) && (a.nGpuLayers ?? 0) === (b.nGpuLayers ?? 0) && (a.useMlock ?? true) === (b.useMlock ?? true)
