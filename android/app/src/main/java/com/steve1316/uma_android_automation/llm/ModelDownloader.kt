@@ -166,16 +166,25 @@ class ModelDownloader(private val context: Context) {
     /**
      * Resolved destination file for the on-demand MiniLM embedder ONNX. Always returns the same path so
      * [downloadEmbedder], [isEmbedderDownloaded], and [deleteEmbedder] agree.
+     *
+     * @return Absolute [File] handle for the embedder ONNX (whether or not it exists yet).
      */
     fun embedderFile(): File = File(embedderDir, EMBEDDER_FILENAME)
 
-    /** True when the embedder ONNX is fully downloaded and non-empty. */
+    /**
+     * True when the embedder ONNX is fully downloaded and non-empty.
+     *
+     * @return `true` if [embedderFile] exists on-disk with a non-zero size, otherwise `false`.
+     */
     fun isEmbedderDownloaded(): Boolean = embedderFile().let { it.isFile && it.length() > 0 }
 
     /**
      * Start downloading the MiniLM embedder ONNX from [url] into [embedderFile]. Same flow semantics as
      * [download]; the system notification is labeled distinctly so the user can tell the two downloads apart
      * if both run back-to-back.
+     *
+     * @param url HTTPS URL of the embedder ONNX file (HuggingFace mirror).
+     * @return Cold [Flow] that begins the download when collected.
      */
     fun downloadEmbedder(url: String): Flow<State> =
         downloadTo(
@@ -186,7 +195,11 @@ class ModelDownloader(private val context: Context) {
             authToken = null,
         )
 
-    /** Remove the downloaded embedder ONNX, if present. */
+    /**
+     * Remove the downloaded embedder ONNX, if present.
+     *
+     * @return `true` when a file was deleted, `false` when nothing was on-disk to remove.
+     */
     fun deleteEmbedder(): Boolean = embedderFile().let { if (it.isFile) it.delete() else false }
 
     /**
@@ -198,6 +211,7 @@ class ModelDownloader(private val context: Context) {
      * @param title Title shown in the system notification shade.
      * @param description Description shown beneath the title in the notification shade.
      * @param authToken Optional Bearer token sent in the `Authorization` header for gated downloads.
+     * @return Cold [Flow] that begins the download when collected.
      */
     private fun downloadTo(
         url: String,

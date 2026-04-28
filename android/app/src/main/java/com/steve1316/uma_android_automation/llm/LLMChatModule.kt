@@ -223,6 +223,8 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
     /**
      * Resolve with `true` when the embedder ONNX is downloaded and ready for use, otherwise `false`. Synchronous
      * existence + size check; the JS side calls this on Chat/LLM Settings page focus to decide which UI to render.
+     *
+     * @param promise Resolves with a [Boolean] indicating whether the embedder ONNX is on-disk and non-empty.
      */
     @ReactMethod
     fun isEmbedderReady(promise: Promise) {
@@ -293,6 +295,9 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
     /**
      * Hex-encoded SHA-256 of [file]. Streams through a 64 KB buffer so a 22 MB ONNX doesn't materialize twice in
      * the heap during verification.
+     *
+     * @param file File whose contents are hashed.
+     * @return Lowercase hex SHA-256 digest of [file]'s bytes.
      */
     private fun sha256Hex(file: java.io.File): String {
         val md = java.security.MessageDigest.getInstance("SHA-256")
@@ -332,6 +337,8 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
      * Map a [ModelDownloader.State] into an [EVENT_DOWNLOAD_STATE] payload and forward it to JS.
      *
      * @param state The latest snapshot from the download flow.
+     * @param kind Discriminator routed to the JS listener so chat-model and embedder downloads can share the
+     *   same event channel without colliding; defaults to `chat` for backward compatibility.
      */
     private fun emitDownloadState(state: ModelDownloader.State, kind: String = "chat") {
         when (state) {
@@ -350,6 +357,8 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
      * @param soFar Bytes downloaded so far.
      * @param total Total expected bytes, or 0 when unknown.
      * @param error Optional error description; included in the payload when non-null.
+     * @param kind Discriminator written into the payload so JS listeners can route chat-model vs. embedder
+     *   download events; defaults to `chat`.
      */
     private fun emitDownloadStateRaw(status: String, soFar: Long, total: Long, error: String?, kind: String = "chat") {
         val map: WritableMap = Arguments.createMap()

@@ -23,6 +23,9 @@ export const EMBEDDER_SIZE_BYTES = 22_972_370
  *
  * Backed by `LLMChatModule.isEmbedderReady`; safe to call frequently because the bridge does only a stat-style
  * existence check (no file read).
+ *
+ * @returns Promise resolving to `true` when the embedder ONNX is downloaded and non-empty, otherwise `false`
+ *   (also `false` when the bridge call throws, so callers don't need their own try/catch).
  */
 export async function isEmbedderReady(): Promise<boolean> {
     try {
