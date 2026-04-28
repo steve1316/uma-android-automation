@@ -6,8 +6,16 @@ import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.util.Log
 import com.steve1316.automation_library.data.SharedData
+import java.io.File
 import java.nio.LongBuffer
 import kotlin.math.sqrt
+
+/**
+ * Thrown when callers attempt to use the embedder before its ONNX file has been downloaded. The bridge translates
+ * this into a typed JS error so the Ask the Docs UI can surface a "download the engine" CTA instead of a generic
+ * "search failed" message.
+ */
+class EmbedderNotInstalledException : RuntimeException("Embedder ONNX is not installed; download it from LLM Settings first.")
 
 /**
  * Produces fixed-size sentence embeddings from text using MiniLM-L6-v2 (int8 quantized) via ONNX Runtime.
@@ -18,9 +26,13 @@ import kotlin.math.sqrt
  *
  * Reuses the existing [ai.onnxruntime] dependency already bundled for YOLOv8 detection.
  *
- * @property context The application context for loading the model and vocab from assets.
+ * @property context The application context for loading the bundled vocab from assets.
+ * @property modelFile External-storage path to the downloaded MiniLM ONNX. Constructed by the orchestrator from
+ *   `ModelDownloader.embedderFile()` so the location stays in lockstep with the downloader. The constructor
+ *   throws [EmbedderNotInstalledException] when the file is missing - callers must download via
+ *   `LLMChatModule.downloadEmbedder` before instantiating this class.
  */
-class EmbeddingService(private val context: Context) {
+class EmbeddingService(private val context: Context, private val modelFile: File) {
     /** Process-wide ONNX Runtime environment; cheap singleton handle reused across sessions. */
     private val ortEnv: OrtEnvironment = OrtEnvironment.getEnvironment()
 
@@ -34,10 +46,7 @@ class EmbeddingService(private val context: Context) {
         /** Logger tag for this class. */
         private const val TAG = "${SharedData.loggerTag}EmbeddingService"
 
-        /** Asset path of the int8-quantized MiniLM-L6-v2 ONNX model. */
-        private const val MODEL_PATH = "llm/minilm-l6-v2-int8.onnx"
-
-        /** Asset path of the BERT-style vocab.txt paired with [MODEL_PATH]. */
+        /** Asset path of the BERT-style vocab.txt; still bundled because it is small and tied to the embedder version. */
         private const val VOCAB_PATH = "llm/minilm-l6-v2-vocab.txt"
 
         /** Output embedding dimensionality - fixed by the MiniLM-L6-v2 architecture. */
@@ -120,15 +129,20 @@ class EmbeddingService(private val context: Context) {
     }
 
     /**
-     * Load the ONNX model bytes from assets, create the [session], and initialize the [tokenizer] from the paired
-     * vocab. Errors are logged so [embed] can short-circuit gracefully rather than crashing the host process.
+     * Load the ONNX model bytes from external storage and the BERT vocab from assets, then create the [session]
+     * and [tokenizer]. Throws [EmbedderNotInstalledException] when [modelFile] is missing so callers can route the
+     * user to the LLM Settings download CTA; other errors are logged so [embed] can short-circuit gracefully
+     * rather than crashing the host process.
      */
     private fun load() {
+        if (!modelFile.isFile || modelFile.length() == 0L) throw EmbedderNotInstalledException()
         try {
-            val modelBytes = context.assets.open(MODEL_PATH).readBytes()
+            val modelBytes = modelFile.readBytes()
             session = ortEnv.createSession(modelBytes)
             tokenizer = context.assets.open(VOCAB_PATH).use { WordPieceTokenizer.fromVocabStream(it) }
-            Log.i(TAG, "load:: MiniLM model and vocab loaded (${modelBytes.size / 1024} KB model)")
+            Log.i(TAG, "load:: MiniLM model and vocab loaded (${modelBytes.size / 1024} KB model from ${modelFile.absolutePath})")
+        } catch (e: EmbedderNotInstalledException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "load:: failed to initialize: ${e.message}", e)
         }

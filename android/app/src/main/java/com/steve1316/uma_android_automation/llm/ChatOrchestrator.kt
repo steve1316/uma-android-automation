@@ -185,9 +185,24 @@ class ChatOrchestrator(private val context: Context) {
         synchronized(this) {
             // Re-check inside the lock so a thread that lost the race doesn't create a second instance.
             embedder?.let { return it }
-            val created = EmbeddingService(context)
+            // Construction throws [EmbedderNotInstalledException] when the user hasn't downloaded the ONNX yet;
+            // let it propagate so the bridge can translate it into a typed JS rejection rather than the silent
+            // null path used for generic failures.
+            val created = EmbeddingService(context, downloader.embedderFile())
             embedder = created
             return created
+        }
+    }
+
+    /**
+     * Drop the cached embedder so the next call to [ensureEmbedder] reloads the ONNX from disk. Used by the
+     * bridge after [ModelDownloader.downloadEmbedder] completes (or after [ModelDownloader.deleteEmbedder] runs)
+     * so the in-memory state matches the on-disk state without requiring an app restart.
+     */
+    fun resetEmbedder() {
+        synchronized(this) {
+            embedder?.close()
+            embedder = null
         }
     }
 

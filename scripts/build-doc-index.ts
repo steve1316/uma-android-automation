@@ -8,6 +8,7 @@
  *
  * Run with: `yarn tsx scripts/build-doc-index.ts`
  */
+import * as crypto from "node:crypto"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import * as ort from "onnxruntime-node"
@@ -15,11 +16,20 @@ import { chunkKotlinFile, findKotlinFiles } from "./lib/kotlinChunker"
 
 const REPO_ROOT = path.resolve(__dirname, "..")
 const ASSET_DIR = path.join(REPO_ROOT, "android/app/src/main/assets/llm")
+const CACHE_DIR = path.join(REPO_ROOT, ".cache/embedder")
 const KOTLIN_SRC_DIR = path.join(REPO_ROOT, "android/app/src/main/java/com/steve1316/uma_android_automation")
-const MODEL_PATH = path.join(ASSET_DIR, "minilm-l6-v2-int8.onnx")
 const VOCAB_PATH = path.join(ASSET_DIR, "minilm-l6-v2-vocab.txt")
 const OUTPUT_PATH = path.join(ASSET_DIR, "doc_index.bin")
 const HASH_PATH = path.join(ASSET_DIR, "doc_index.sources.sha256")
+
+/**
+ * Source-of-truth pair for the MiniLM-L6-v2 int8 ONNX. Mirrors `EMBEDDER_URL` / `EMBEDDER_SHA256` in
+ * `src/lib/chat/embedder.ts`; both ends MUST stay in lockstep so the runtime ONNX users download is
+ * byte-for-byte identical to the one used here when generating `doc_index.bin`.
+ */
+const EMBEDDER_URL = "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/onnx/model_quantized.onnx"
+const EMBEDDER_SHA256 = "afdb6f1a0e45b715d0bb9b11772f032c399babd23bfc31fed1c170afc848bdb1"
+const MODEL_PATH = path.join(CACHE_DIR, "minilm-l6-v2-int8.onnx")
 
 const MAGIC = "UMADOCIX"
 const VERSION = 2
@@ -245,7 +255,40 @@ function unescapeTsString(s: string): string {
 // Embedder
 // ----------------------------------------------------------------------------
 
+/**
+ * Ensure the MiniLM ONNX is present on-disk at MODEL_PATH and matches EMBEDDER_SHA256. Cached under .cache/
+ * so subsequent indexer runs don't re-download. On hash mismatch the file is removed and a fresh download is
+ * attempted exactly once.
+ */
+async function ensureEmbedderCached(): Promise<void> {
+    fs.mkdirSync(CACHE_DIR, { recursive: true })
+    if (fs.existsSync(MODEL_PATH)) {
+        const actual = sha256File(MODEL_PATH)
+        if (actual === EMBEDDER_SHA256) return
+        console.warn(`Cached embedder hash mismatch (got ${actual}); re-downloading.`)
+        fs.rmSync(MODEL_PATH)
+    }
+    console.log(`Downloading embedder from ${EMBEDDER_URL}...`)
+    const res = await fetch(EMBEDDER_URL)
+    if (!res.ok) throw new Error(`Embedder download failed: ${res.status} ${res.statusText}`)
+    const buf = Buffer.from(await res.arrayBuffer())
+    fs.writeFileSync(MODEL_PATH, buf)
+    const actual = sha256File(MODEL_PATH)
+    if (actual !== EMBEDDER_SHA256) {
+        fs.rmSync(MODEL_PATH)
+        throw new Error(`Embedder SHA-256 mismatch: expected ${EMBEDDER_SHA256}, got ${actual}`)
+    }
+    console.log(`  cached at ${MODEL_PATH} (${(buf.length / 1024 / 1024).toFixed(1)} MB)`)
+}
+
+function sha256File(filePath: string): string {
+    const hash = crypto.createHash("sha256")
+    hash.update(fs.readFileSync(filePath))
+    return hash.digest("hex")
+}
+
 async function embedAll(chunks: Chunk[]): Promise<Float32Array[]> {
+    await ensureEmbedderCached()
     const tokenizer = WordPieceTokenizer.fromVocabFile(VOCAB_PATH)
     const session = await ort.InferenceSession.create(MODEL_PATH)
     const embeddings: Float32Array[] = []

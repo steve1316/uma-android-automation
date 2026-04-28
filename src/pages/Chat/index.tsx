@@ -14,6 +14,7 @@ import * as llamaRunner from "../../lib/chat/llamaRunner"
 import * as verifier from "../../lib/chat/groundingVerifier"
 import { loadChatTuning, trimToCap, type ChatTuning } from "../../lib/chat/chatSettings"
 import { ACTIVE_MODEL_SETTING, resolveActiveModel } from "../../lib/chat/activeModel"
+import { isEmbedderReady } from "../../lib/chat/embedder"
 
 const HISTORY_CATEGORY = "chat"
 const HISTORY_KEY = "questionHistory"
@@ -64,6 +65,7 @@ const Chat = () => {
     const [tuning, setTuning] = useState<ChatTuning | null>(null)
     const [activeModelFilename, setActiveModelFilename] = useState<string | null | undefined>(undefined)
     const [downloadedModels, setDownloadedModels] = useState<string[]>([])
+    const [embedderReady, setEmbedderReady] = useState<boolean | null>(null)
 
     const refreshActiveModel = useCallback(async () => {
         const resolved = await resolveActiveModel()
@@ -73,6 +75,11 @@ const Chat = () => {
             setDownloadedModels(Array.isArray(list) ? list.map((m: { filename: string }) => m.filename) : [])
         } catch {
             setDownloadedModels([])
+        }
+        try {
+            setEmbedderReady(await isEmbedderReady())
+        } catch {
+            setEmbedderReady(false)
         }
     }, [])
 
@@ -283,6 +290,16 @@ const Chat = () => {
                 modelStatus: { fontSize: 12, color: colors.foreground },
                 modelStatusInactive: { fontSize: 12, color: colors.mutedForeground, fontStyle: "italic", marginBottom: 8 },
                 modelSelectorRow: { flexDirection: "row" as const, alignItems: "center" as const, gap: 8, marginBottom: 8 },
+                embedderCta: {
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 8,
+                    padding: 12,
+                    marginVertical: 12,
+                    backgroundColor: colors.card,
+                },
+                embedderCtaTitle: { color: colors.foreground, fontSize: 14, fontWeight: "600" as const, marginBottom: 4 },
+                embedderCtaBody: { color: colors.mutedForeground, fontSize: 13, lineHeight: 18 },
                 modelSelectorControl: { flex: 1 },
                 historyHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12, marginBottom: 6 },
                 historyTitle: { fontSize: 12, fontWeight: "600", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 0.5 },
@@ -388,21 +405,30 @@ const Chat = () => {
                 <Text style={styles.modelStatusInactive}>No model · retrieve-only mode</Text>
             )}
 
-            <View style={styles.inputColumn}>
-                <TextInput
-                    style={styles.input}
-                    value={query}
-                    onChangeText={setQuery}
-                    placeholder="Ask a question about the app..."
-                    placeholderTextColor={colors.mutedForeground}
-                    multiline
-                    textAlignVertical="top"
-                    editable={!isSearching}
-                />
-                <CustomButton variant="primary" onPress={handleSearch} isLoading={isSearching} disabled={isSearching || query.trim().length === 0 || !tuning}>
-                    Ask
-                </CustomButton>
-            </View>
+            {embedderReady === false ? (
+                <View style={styles.embedderCta}>
+                    <Text style={styles.embedderCtaTitle}>Engine not installed</Text>
+                    <Text style={styles.embedderCtaBody}>
+                        Ask the Docs needs to download a small embedder (~22 MB) before it can search the documentation. Open LLM Settings to start the download.
+                    </Text>
+                </View>
+            ) : (
+                <View style={styles.inputColumn}>
+                    <TextInput
+                        style={styles.input}
+                        value={query}
+                        onChangeText={setQuery}
+                        placeholder="Ask a question about the app..."
+                        placeholderTextColor={colors.mutedForeground}
+                        multiline
+                        textAlignVertical="top"
+                        editable={!isSearching}
+                    />
+                    <CustomButton variant="primary" onPress={handleSearch} isLoading={isSearching} disabled={isSearching || query.trim().length === 0 || !tuning}>
+                        Ask
+                    </CustomButton>
+                </View>
+            )}
 
             <ScrollView keyboardShouldPersistTaps="handled">
                 {history.length > 0 && (

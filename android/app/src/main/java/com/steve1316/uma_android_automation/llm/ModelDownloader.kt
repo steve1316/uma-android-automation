@@ -32,6 +32,12 @@ class ModelDownloader(private val context: Context) {
         /** Subdirectory of `getExternalFilesDir(...)` that holds downloaded `.gguf` model files. */
         private const val LLM_DIR = "llm"
 
+        /** Subdirectory holding the on-demand MiniLM embedder (`minilm-l6-v2-int8.onnx`). Separate from [LLM_DIR] so [listModels] only enumerates GGUF chat models. */
+        private const val EMBEDDER_DIR = "llm/embedder"
+
+        /** Filename of the embedder ONNX, mirrored on the JS side via the search/UI constants. */
+        private const val EMBEDDER_FILENAME = "minilm-l6-v2-int8.onnx"
+
         /** Interval between [DownloadManager] cursor polls while a download is in flight. */
         private const val POLL_INTERVAL_MS = 500L
     }
@@ -45,6 +51,11 @@ class ModelDownloader(private val context: Context) {
      */
     private val baseDir: File by lazy {
         context.getExternalFilesDir(LLM_DIR) ?: File(context.filesDir, LLM_DIR).also { it.mkdirs() }
+    }
+
+    /** Directory holding the on-demand embedder ONNX. Mirrors [baseDir]'s fallback semantics for parity. */
+    private val embedderDir: File by lazy {
+        context.getExternalFilesDir(EMBEDDER_DIR) ?: File(context.filesDir, EMBEDDER_DIR).also { it.mkdirs() }
     }
 
     /**
@@ -144,16 +155,67 @@ class ModelDownloader(private val context: Context) {
      * @return Cold [Flow] that begins the download when collected.
      */
     fun download(url: String, filename: String, authToken: String? = null): Flow<State> =
+        downloadTo(
+            url = url,
+            destination = fileFor(filename),
+            title = "Uma Chat Model",
+            description = "Downloading the on-device chatbot model.",
+            authToken = authToken,
+        )
+
+    /**
+     * Resolved destination file for the on-demand MiniLM embedder ONNX. Always returns the same path so
+     * [downloadEmbedder], [isEmbedderDownloaded], and [deleteEmbedder] agree.
+     */
+    fun embedderFile(): File = File(embedderDir, EMBEDDER_FILENAME)
+
+    /** True when the embedder ONNX is fully downloaded and non-empty. */
+    fun isEmbedderDownloaded(): Boolean = embedderFile().let { it.isFile && it.length() > 0 }
+
+    /**
+     * Start downloading the MiniLM embedder ONNX from [url] into [embedderFile]. Same flow semantics as
+     * [download]; the system notification is labeled distinctly so the user can tell the two downloads apart
+     * if both run back-to-back.
+     */
+    fun downloadEmbedder(url: String): Flow<State> =
+        downloadTo(
+            url = url,
+            destination = embedderFile(),
+            title = "Ask the Docs Engine",
+            description = "Downloading the on-device documentation chatbot's embedder.",
+            authToken = null,
+        )
+
+    /** Remove the downloaded embedder ONNX, if present. */
+    fun deleteEmbedder(): Boolean = embedderFile().let { if (it.isFile) it.delete() else false }
+
+    /**
+     * Generic [DownloadManager]-backed download into an explicit [destination]. Both the GGUF chat-model path
+     * and the embedder path go through here.
+     *
+     * @param url HTTPS URL of the file to download.
+     * @param destination Absolute target file; replaced if it already exists.
+     * @param title Title shown in the system notification shade.
+     * @param description Description shown beneath the title in the notification shade.
+     * @param authToken Optional Bearer token sent in the `Authorization` header for gated downloads.
+     */
+    private fun downloadTo(
+        url: String,
+        destination: File,
+        title: String,
+        description: String,
+        authToken: String? = null,
+    ): Flow<State> =
         flow {
-            val dest = fileFor(filename)
-            // Only replace this specific filename if it already exists; other downloaded models stay on-device so the
-            // user can keep multiple variants and swap between them from LLM Settings.
-            if (dest.exists()) dest.delete()
+            destination.parentFile?.mkdirs()
+            // Only replace this specific destination if it already exists; siblings stay on-device so other
+            // downloads (e.g. additional GGUF variants) survive a single replace.
+            if (destination.exists()) destination.delete()
             val request =
                 DownloadManager.Request(Uri.parse(url))
-                    .setTitle("Uma Chat Model")
-                    .setDescription("Downloading the on-device chatbot model.")
-                    .setDestinationUri(Uri.fromFile(dest))
+                    .setTitle(title)
+                    .setDescription(description)
+                    .setDestinationUri(Uri.fromFile(destination))
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                     .setAllowedOverMetered(false)
             if (!authToken.isNullOrBlank()) request.addRequestHeader("Authorization", "Bearer ${authToken.trim()}")

@@ -94,6 +94,9 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
                     array.pushMap(map)
                 }
                 promise.resolve(array)
+            } catch (e: EmbedderNotInstalledException) {
+                Log.w(TAG, "searchDocs:: embedder not installed")
+                promise.reject("E_EMBEDDER_NOT_INSTALLED", e.message, e)
             } catch (e: Exception) {
                 Log.e(TAG, "searchDocs:: failed: ${e.message}", e)
                 promise.reject("E_SEARCH_FAILED", e.message, e)
@@ -217,8 +220,94 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
         orchestrator.activeModelFilename = filename.trim().ifEmpty { null }
     }
 
+    /**
+     * Resolve with `true` when the embedder ONNX is downloaded and ready for use, otherwise `false`. Synchronous
+     * existence + size check; the JS side calls this on Chat/LLM Settings page focus to decide which UI to render.
+     */
+    @ReactMethod
+    fun isEmbedderReady(promise: Promise) {
+        promise.resolve(orchestrator.modelDownloader().isEmbedderDownloaded())
+    }
+
+    /**
+     * Start downloading the MiniLM embedder ONNX from [url] and verify the resulting bytes match [expectedSha256].
+     * Progress is streamed through the same [EVENT_DOWNLOAD_STATE] channel as [downloadModel], discriminated by
+     * the `kind: "embedder"` field on each event payload. On hash mismatch the partial file is deleted and a
+     * `failed` event with `error="sha256-mismatch"` is emitted so the UI can prompt the user to retry.
+     *
+     * @param url HTTPS URL of the ONNX model file (HuggingFace mirror).
+     * @param expectedSha256 Lowercase hex SHA-256 the downloaded bytes must match.
+     * @param promise Resolves once the download is enqueued, rejects when one is already running.
+     */
+    @ReactMethod
+    fun downloadEmbedder(url: String, expectedSha256: String, promise: Promise) {
+        val existing = downloadJob
+        if (existing != null && existing.isActive) {
+            promise.reject("E_ALREADY_DOWNLOADING", "A download is already in progress.")
+            return
+        }
+        downloadJob =
+            scope.launch {
+                try {
+                    orchestrator.modelDownloader().downloadEmbedder(url).collect { state ->
+                        if (state is ModelDownloader.State.Complete) {
+                            val file = orchestrator.modelDownloader().embedderFile()
+                            val actual = sha256Hex(file)
+                            if (!actual.equals(expectedSha256.trim(), ignoreCase = true)) {
+                                Log.e(TAG, "downloadEmbedder:: sha mismatch expected=$expectedSha256 actual=$actual")
+                                file.delete()
+                                emitDownloadStateRaw("failed", 0, 0, "sha256-mismatch", "embedder")
+                                return@collect
+                            }
+                            // Drop any cached embedder so the next chat call reloads against the newly downloaded ONNX.
+                            orchestrator.resetEmbedder()
+                            emitDownloadState(state, "embedder")
+                        } else {
+                            emitDownloadState(state, "embedder")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "downloadEmbedder:: failed: ${e.message}", e)
+                    emitDownloadStateRaw("error", 0, 0, e.message, "embedder")
+                }
+            }
+        promise.resolve(null)
+    }
+
+    /**
+     * Delete the on-disk embedder ONNX and drop the cached [EmbeddingService] so the next chat call cleanly
+     * surfaces "not installed" again.
+     *
+     * @param promise Resolves with `true` when a file was removed, `false` otherwise.
+     */
+    @ReactMethod
+    fun deleteEmbedder(promise: Promise) {
+        val deleted = orchestrator.modelDownloader().deleteEmbedder()
+        orchestrator.resetEmbedder()
+        promise.resolve(deleted)
+    }
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Hex-encoded SHA-256 of [file]. Streams through a 64 KB buffer so a 22 MB ONNX doesn't materialize twice in
+     * the heap during verification.
+     */
+    private fun sha256Hex(file: java.io.File): String {
+        val md = java.security.MessageDigest.getInstance("SHA-256")
+        java.io.FileInputStream(file).use { input ->
+            val buf = ByteArray(64 * 1024)
+            while (true) {
+                val read = input.read(buf)
+                if (read <= 0) break
+                md.update(buf, 0, read)
+            }
+        }
+        val sb = StringBuilder(md.digestLength * 2)
+        for (b in md.digest()) sb.append(String.format("%02x", b))
+        return sb.toString()
+    }
 
     /**
      * Derive a local filename from the model URL's last path segment, falling back to a generic name when the URL
@@ -244,13 +333,13 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
      *
      * @param state The latest snapshot from the download flow.
      */
-    private fun emitDownloadState(state: ModelDownloader.State) {
+    private fun emitDownloadState(state: ModelDownloader.State, kind: String = "chat") {
         when (state) {
-            is ModelDownloader.State.Pending -> emitDownloadStateRaw("pending", 0, 0, null)
-            is ModelDownloader.State.Running -> emitDownloadStateRaw("running", state.bytesDownloaded, state.bytesTotal, null)
-            is ModelDownloader.State.Paused -> emitDownloadStateRaw("paused", state.bytesDownloaded, state.bytesTotal, null)
-            is ModelDownloader.State.Complete -> emitDownloadStateRaw("complete", 0, 0, null)
-            is ModelDownloader.State.Failed -> emitDownloadStateRaw("failed", 0, 0, "reason=${state.failureReason}")
+            is ModelDownloader.State.Pending -> emitDownloadStateRaw("pending", 0, 0, null, kind)
+            is ModelDownloader.State.Running -> emitDownloadStateRaw("running", state.bytesDownloaded, state.bytesTotal, null, kind)
+            is ModelDownloader.State.Paused -> emitDownloadStateRaw("paused", state.bytesDownloaded, state.bytesTotal, null, kind)
+            is ModelDownloader.State.Complete -> emitDownloadStateRaw("complete", 0, 0, null, kind)
+            is ModelDownloader.State.Failed -> emitDownloadStateRaw("failed", 0, 0, "reason=${state.failureReason}", kind)
         }
     }
 
@@ -262,8 +351,9 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
      * @param total Total expected bytes, or 0 when unknown.
      * @param error Optional error description; included in the payload when non-null.
      */
-    private fun emitDownloadStateRaw(status: String, soFar: Long, total: Long, error: String?) {
+    private fun emitDownloadStateRaw(status: String, soFar: Long, total: Long, error: String?, kind: String = "chat") {
         val map: WritableMap = Arguments.createMap()
+        map.putString("kind", kind)
         map.putString("status", status)
         map.putDouble("bytesDownloaded", soFar.toDouble())
         map.putDouble("bytesTotal", total.toDouble())

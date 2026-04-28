@@ -843,6 +843,19 @@ const searchConfig: SearchOption[] = [
         page: "LLMSettings",
     },
     {
+        id: "llm-embedder-engine",
+        title: "Ask the Docs Engine",
+        description:
+            "On-demand MiniLM embedder (~22 MB) downloaded from Hugging Face. Required for both retrieve-only search and the chat model. Kept out of the APK so users who never enable Ask the Docs don't pay the bytes; downloaded once and cached locally.",
+        page: "LLMSettings",
+    },
+    {
+        id: "llm-embedder-delete",
+        title: "Delete Ask the Docs Engine",
+        description: "Removes the downloaded MiniLM embedder ONNX from disk to reclaim ~22 MB. The engine can be re-downloaded any time.",
+        page: "LLMSettings",
+    },
+    {
         id: "llm-model-url",
         title: "Chat Model URL",
         description:

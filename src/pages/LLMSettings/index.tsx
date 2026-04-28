@@ -12,6 +12,7 @@ import InfoContainer from "../../components/InfoContainer"
 import { databaseManager } from "../../lib/database"
 import { DEFAULTS as TUNING_DEFAULTS, saveTuning } from "../../lib/chat/chatSettings"
 import { ACTIVE_MODEL_SETTING } from "../../lib/chat/activeModel"
+import { EMBEDDER_SHA256, EMBEDDER_SIZE_BYTES, EMBEDDER_URL, isEmbedderReady } from "../../lib/chat/embedder"
 
 const MODEL_URL_SETTING = { category: "chat", key: "modelUrl" } as const
 /**
@@ -66,6 +67,8 @@ const filenameFromUrl = (url: string): string => {
 }
 
 interface DownloadState {
+    /** Discriminator emitted by `LLMChatModule.emitDownloadState`; routes the event to the chat-model UI or the embedder UI. */
+    kind?: "chat" | "embedder"
     status: "pending" | "running" | "paused" | "complete" | "failed" | "error"
     bytesDownloaded: number
     bytesTotal: number
@@ -90,6 +93,8 @@ const LLMSettings = () => {
     const bsc = useContext(BotStateContext)
     const enableAskTheDocs = bsc.settings.chat?.enableAskTheDocs ?? false
     const [downloadState, setDownloadState] = useState<DownloadState | null>(null)
+    const [embedderState, setEmbedderState] = useState<DownloadState | null>(null)
+    const [embedderReady, setEmbedderReady] = useState(false)
     const [hfToken, setHfToken] = useState("")
     const [modelUrl, setModelUrl] = useState(DEFAULT_MODEL_URL)
     const [downloadedModels, setDownloadedModels] = useState<DownloadedModel[]>([])
@@ -218,13 +223,25 @@ const LLMSettings = () => {
     useEffect(() => {
         const emitter = new NativeEventEmitter(NativeModules.LLMChatModule)
         const sub = emitter.addListener("LLMChatModule.DownloadState", (state: DownloadState) => {
-            setDownloadState(state)
-            if (state.status === "complete" || state.status === "failed" || state.status === "error") {
-                refreshModels()
+            // Route by `kind`; legacy events without the field default to chat-model so older bridges keep working.
+            if (state.kind === "embedder") {
+                setEmbedderState(state)
+                if (state.status === "complete" || state.status === "failed" || state.status === "error") {
+                    isEmbedderReady().then(setEmbedderReady).catch(() => undefined)
+                }
+            } else {
+                setDownloadState(state)
+                if (state.status === "complete" || state.status === "failed" || state.status === "error") {
+                    refreshModels()
+                }
             }
         })
         return () => sub.remove()
     }, [refreshModels])
+
+    useEffect(() => {
+        isEmbedderReady().then(setEmbedderReady).catch(() => undefined)
+    }, [])
 
     const handleDownload = useCallback(() => {
         if (modelUrl === CUSTOM_URL_SENTINEL || modelUrl.trim().length === 0) {
@@ -256,6 +273,56 @@ const LLMSettings = () => {
         await NativeModules.LLMChatModule.cancelDownload()
         setDownloadState(null)
     }, [])
+
+    const handleDownloadEmbedder = useCallback(() => {
+        Alert.alert(
+            "Download Ask the Docs engine?",
+            `Fetches the MiniLM embedding model (~${Math.round(EMBEDDER_SIZE_BYTES / 1024 / 1024)} MB) used to retrieve grounding excerpts. Required before any chat or retrieve-only search works. Prefer Wi-Fi.`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Download",
+                    onPress: async () => {
+                        try {
+                            await NativeModules.LLMChatModule.downloadEmbedder(EMBEDDER_URL, EMBEDDER_SHA256)
+                        } catch (e: any) {
+                            Alert.alert("Download failed to start", e?.message ?? "Unknown error")
+                        }
+                    },
+                },
+            ]
+        )
+    }, [])
+
+    const handleDeleteEmbedder = useCallback(() => {
+        Alert.alert("Delete the Ask the Docs engine?", `Removes the MiniLM model (~${Math.round(EMBEDDER_SIZE_BYTES / 1024 / 1024)} MB). You can re-download it any time from this page.`, [
+            { text: "Cancel", style: "cancel" },
+            {
+                text: "Delete",
+                style: "destructive",
+                onPress: async () => {
+                    await NativeModules.LLMChatModule.deleteEmbedder()
+                    setEmbedderReady(false)
+                    setEmbedderState(null)
+                },
+            },
+        ])
+    }, [])
+
+    const isEmbedderDownloading = embedderState?.status === "running" || embedderState?.status === "pending" || embedderState?.status === "paused"
+
+    const embedderProgressText = useMemo(() => {
+        if (!embedderState) return null
+        if (embedderState.status === "complete") return "Engine downloaded."
+        if (embedderState.status === "failed" || embedderState.status === "error") return `Engine download failed${embedderState.error ? ` (${embedderState.error})` : ""}.`
+        const total = embedderState.bytesTotal
+        const done = embedderState.bytesDownloaded
+        if (total > 0) {
+            const pct = Math.round((done / total) * 100)
+            return `Downloading: ${pct}% (${(done / 1024 / 1024).toFixed(1)} / ${(total / 1024 / 1024).toFixed(1)} MB)`
+        }
+        return "Preparing download..."
+    }, [embedderState])
 
     const handleDelete = useCallback(() => {
         const totalMB = Math.round(downloadedModels.reduce((acc, m) => acc + m.sizeBytes, 0) / 1024 / 1024)
@@ -382,6 +449,33 @@ const LLMSettings = () => {
 
                 {enableAskTheDocs && (
                     <>
+                        <View style={styles.section}>
+                            <Text style={styles.sectionLabel}>Ask the Docs Engine</Text>
+                            <Text style={styles.hint}>
+                                The MiniLM embedder (~{Math.round(EMBEDDER_SIZE_BYTES / 1024 / 1024)} MB) powers documentation retrieval. It is downloaded on demand to keep the APK small; both
+                                retrieve-only search and the chat model require it. Hosted on Hugging Face; no token required.
+                            </Text>
+                            <Text style={styles.statusRow}>{embedderReady ? `✅ Installed (~${Math.round(EMBEDDER_SIZE_BYTES / 1024 / 1024)} MB)` : "❌ Not installed"}</Text>
+                            {embedderProgressText && <Text style={styles.hint}>{embedderProgressText}</Text>}
+                            <View style={styles.buttonRow}>
+                                {!embedderReady && !isEmbedderDownloading && (
+                                    <CustomButton variant="primary" onPress={handleDownloadEmbedder}>
+                                        Download engine
+                                    </CustomButton>
+                                )}
+                                {isEmbedderDownloading && (
+                                    <CustomButton variant="destructive" onPress={handleCancel}>
+                                        Cancel
+                                    </CustomButton>
+                                )}
+                                {embedderReady && !isEmbedderDownloading && (
+                                    <CustomButton variant="destructive" onPress={handleDeleteEmbedder}>
+                                        Delete engine
+                                    </CustomButton>
+                                )}
+                            </View>
+                        </View>
+
                         <View style={styles.section}>
                             <Text style={styles.sectionLabel}>Chat Model (llama.cpp / GGUF)</Text>
                             {downloadedModels.length === 0 && <Text style={styles.statusRow}>Not downloaded</Text>}
