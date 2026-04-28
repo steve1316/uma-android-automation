@@ -221,6 +221,35 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
     }
 
     /**
+     * Snapshot the device's runtime capabilities relevant to picking and running a chat model.
+     *
+     * Drives the diagnostic + preset-recommendation row on the LLM Settings page; called once on focus, not in
+     * a hot path, so the `/proc/cpuinfo` parse is acceptable.
+     *
+     * @param promise Resolves with `{ totalRamBytes, availRamBytes, cpuFeatures: string[], abi: string }`.
+     */
+    @ReactMethod
+    fun getDeviceCapabilities(promise: Promise) {
+        try {
+            val activityManager = reactContext.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            val mem = android.app.ActivityManager.MemoryInfo()
+            activityManager.getMemoryInfo(mem)
+            val features = parseCpuFeatures()
+            val map: WritableMap = Arguments.createMap()
+            map.putDouble("totalRamBytes", mem.totalMem.toDouble())
+            map.putDouble("availRamBytes", mem.availMem.toDouble())
+            val featureArr = Arguments.createArray()
+            for (f in features) featureArr.pushString(f)
+            map.putArray("cpuFeatures", featureArr)
+            map.putString("abi", android.os.Build.SUPPORTED_ABIS.firstOrNull() ?: "unknown")
+            promise.resolve(map)
+        } catch (e: Exception) {
+            Log.e(TAG, "getDeviceCapabilities:: failed: ${e.message}", e)
+            promise.reject("E_DEVICE_CAPS", e.message, e)
+        }
+    }
+
+    /**
      * Resolve with `true` when the embedder ONNX is downloaded and ready for use, otherwise `false`. Synchronous
      * existence + size check; the JS side calls this on Chat/LLM Settings page focus to decide which UI to render.
      *
@@ -331,6 +360,31 @@ class LLMChatModule(private val reactContext: ReactApplicationContext) : ReactCo
         val isModel = last.endsWith(".gguf", ignoreCase = true) || last.endsWith(".task", ignoreCase = true)
 
         return if (last.isNotEmpty() && isModel) last else "chat-model.gguf"
+    }
+
+    /**
+     * Parse `/proc/cpuinfo` for the ARM `Features:` line and return its tokens. Used by the LLM Settings page
+     * to decide which CPU-feature variant of llama.rn would have loaded (and to show the user their tier).
+     *
+     * Returns an empty list on any parse failure so the UI can fall back to a generic "v8 baseline" label
+     * rather than misreport features.
+     */
+    private fun parseCpuFeatures(): List<String> {
+        return try {
+            val cpuinfo = java.io.File("/proc/cpuinfo")
+            if (!cpuinfo.canRead()) return emptyList()
+            cpuinfo.useLines { lines ->
+                for (line in lines) {
+                    if (line.startsWith("Features")) {
+                        return@useLines line.substringAfter(':').trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }
+                    }
+                }
+                emptyList<String>()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "parseCpuFeatures:: ${e.message}")
+            emptyList()
+        }
     }
 
     /**

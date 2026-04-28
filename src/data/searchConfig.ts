@@ -843,6 +843,13 @@ const searchConfig: SearchOption[] = [
         page: "LLMSettings",
     },
     {
+        id: "llm-device-fitness",
+        title: "Device Fitness",
+        description:
+            "Diagnostic row showing total/available RAM, the CPU-feature acceleration tier llama.rn picked (v8 baseline vs v8.2+dotprod), and the recommended chat-model preset based on free RAM. Driven by `LLMChatModule.getDeviceCapabilities()`.",
+        page: "LLMSettings",
+    },
+    {
         id: "llm-embedder-engine",
         title: "Ask the Docs Engine",
         description:

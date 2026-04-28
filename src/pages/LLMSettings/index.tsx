@@ -13,6 +13,16 @@ import { databaseManager } from "../../lib/database"
 import { DEFAULTS as TUNING_DEFAULTS, saveTuning } from "../../lib/chat/chatSettings"
 import { ACTIVE_MODEL_SETTING } from "../../lib/chat/activeModel"
 import { EMBEDDER_SHA256, EMBEDDER_SIZE_BYTES, EMBEDDER_URL, isEmbedderReady } from "../../lib/chat/embedder"
+import {
+    accelerationTier,
+    accelerationTierLabel,
+    type DeviceCapabilities,
+    formatBytes,
+    loadDeviceCapabilities,
+    PRESET_RAM_REQUIREMENTS_BYTES,
+    presetFitsRam,
+    recommendedPreset,
+} from "../../lib/chat/deviceCapabilities"
 
 const MODEL_URL_SETTING = { category: "chat", key: "modelUrl" } as const
 /**
@@ -95,6 +105,7 @@ const LLMSettings = () => {
     const [downloadState, setDownloadState] = useState<DownloadState | null>(null)
     const [embedderState, setEmbedderState] = useState<DownloadState | null>(null)
     const [embedderReady, setEmbedderReady] = useState(false)
+    const [deviceCaps, setDeviceCaps] = useState<DeviceCapabilities | null>(null)
     const [hfToken, setHfToken] = useState("")
     const [modelUrl, setModelUrl] = useState(DEFAULT_MODEL_URL)
     const [downloadedModels, setDownloadedModels] = useState<DownloadedModel[]>([])
@@ -245,7 +256,13 @@ const LLMSettings = () => {
         isEmbedderReady()
             .then(setEmbedderReady)
             .catch(() => undefined)
+        loadDeviceCapabilities()
+            .then(setDeviceCaps)
+            .catch(() => undefined)
     }, [])
+
+    const tier = useMemo(() => accelerationTier(deviceCaps?.cpuFeatures ?? []), [deviceCaps])
+    const recommended = useMemo(() => recommendedPreset(deviceCaps), [deviceCaps])
 
     const handleDownload = useCallback(() => {
         if (modelUrl === CUSTOM_URL_SENTINEL || modelUrl.trim().length === 0) {
@@ -253,25 +270,46 @@ const LLMSettings = () => {
             return
         }
         const preset = MODEL_PRESETS.find((p) => p.url === modelUrl && p.url !== CUSTOM_URL_SENTINEL)
-        const title = preset ? `Download ${preset.label.split(" (")[0]}?` : "Download custom model?"
-        const body = preset
-            ? `${preset.label}\n\n${preset.detail}\n\nGated on Hugging Face - accept the license on the model page and paste a read-access token below before downloading. Prefer Wi-Fi.`
-            : `Downloading from:\n${modelUrl}\n\nGated models require an accepted license and a read-access token. Prefer Wi-Fi.`
-        Alert.alert(title, body, [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Download",
-                onPress: async () => {
-                    try {
-                        NativeModules.LLMChatModule.setAuthToken(hfToken.trim())
-                        await NativeModules.LLMChatModule.downloadModel(modelUrl.trim() || DEFAULT_MODEL_URL)
-                    } catch (e: any) {
-                        Alert.alert("Download failed to start", e?.message ?? "Unknown error")
-                    }
+        const startDownload = () => {
+            const title = preset ? `Download ${preset.label.split(" (")[0]}?` : "Download custom model?"
+            const body = preset
+                ? `${preset.label}\n\n${preset.detail}\n\nGated on Hugging Face - accept the license on the model page and paste a read-access token below before downloading. Prefer Wi-Fi.`
+                : `Downloading from:\n${modelUrl}\n\nGated models require an accepted license and a read-access token. Prefer Wi-Fi.`
+            Alert.alert(title, body, [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Download",
+                    onPress: async () => {
+                        try {
+                            NativeModules.LLMChatModule.setAuthToken(hfToken.trim())
+                            await NativeModules.LLMChatModule.downloadModel(modelUrl.trim() || DEFAULT_MODEL_URL)
+                        } catch (e: any) {
+                            Alert.alert("Download failed to start", e?.message ?? "Unknown error")
+                        }
+                    },
                 },
-            },
-        ])
-    }, [hfToken, modelUrl])
+            ])
+        }
+        // Pre-download fit check: if the device's free RAM is below the preset's known requirement, ask
+        // for explicit confirmation before kicking off a download that would crash the model loader. Custom
+        // URLs aren't in the requirements table; let those through unchecked.
+        if (!presetFitsRam(deviceCaps, modelUrl)) {
+            const required = PRESET_RAM_REQUIREMENTS_BYTES.find((p) => modelUrl.includes(p.urlSubstring))
+            const avail = deviceCaps ? formatBytes(deviceCaps.availRamBytes) : "?"
+            Alert.alert(
+                "Device may not have enough RAM",
+                required
+                    ? `${required.label} typically needs ~${formatBytes(required.requiredAvailRamBytes)} of free RAM, but only ${avail} is available right now. Loading the model may crash. Download anyway?`
+                    : `Free RAM is low (${avail}). Loading this model may crash. Download anyway?`,
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Download anyway", style: "destructive", onPress: startDownload },
+                ]
+            )
+            return
+        }
+        startDownload()
+    }, [deviceCaps, hfToken, modelUrl])
 
     const handleCancel = useCallback(async () => {
         await NativeModules.LLMChatModule.cancelDownload()
@@ -453,6 +491,24 @@ const LLMSettings = () => {
 
                 {enableAskTheDocs && (
                     <>
+                        <View style={styles.section}>
+                            <Text style={styles.sectionLabel}>Device Fitness</Text>
+                            {deviceCaps ? (
+                                <>
+                                    <Text style={styles.statusRow}>
+                                        RAM: {formatBytes(deviceCaps.totalRamBytes)} ({formatBytes(deviceCaps.availRamBytes)} free) · Acceleration: {accelerationTierLabel(tier)}
+                                    </Text>
+                                    <Text style={styles.hint}>
+                                        {recommended
+                                            ? `Recommended preset based on free RAM: ${recommended.label}.`
+                                            : "Free RAM is below the threshold for any preset. Generation may crash; consider closing background apps before downloading."}
+                                    </Text>
+                                </>
+                            ) : (
+                                <Text style={styles.hint}>Reading device capabilities...</Text>
+                            )}
+                        </View>
+
                         <View style={styles.section}>
                             <Text style={styles.sectionLabel}>Ask the Docs Engine</Text>
                             <Text style={styles.hint}>
