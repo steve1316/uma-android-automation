@@ -137,6 +137,20 @@ android {
     packagingOptions {
         jniLibs {
             useLegacyPackaging (findProperty('expo.useLegacyPackaging')?.toBoolean() ?: false)
+            // Trim llama.rn CPU-feature variants we don't ship. The remaining variants (no-feature fallback,
+            // v8, v8_2, v8_2_dotprod) still cover every arm64-v8a device that runs the rest of the app today;
+            // i8mm and hexagon_opencl acceleration is dropped because the device population that benefits is
+            // tiny relative to the ~16 MB compressed APK saving. If a future llama.rn version renames these
+            // variants, these globs silently stop matching and the APK silently grows - re-check after every
+            // llama.rn bump.
+            excludes += [
+                "**/librnllama_v8_2_i8mm.so",
+                "**/librnllama_jni_v8_2_i8mm.so",
+                "**/librnllama_v8_2_dotprod_i8mm.so",
+                "**/librnllama_jni_v8_2_dotprod_i8mm.so",
+                "**/librnllama_v8_2_dotprod_i8mm_hexagon_opencl.so",
+                "**/librnllama_jni_v8_2_dotprod_i8mm_hexagon_opencl.so",
+            ]
         }
     }
     androidResources {
