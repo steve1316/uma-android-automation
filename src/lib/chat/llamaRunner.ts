@@ -210,6 +210,22 @@ function numberOr(value: any, fallback: number): number {
 }
 
 /**
+ * Abort the in-flight `completion()` call on the current context, if any. The pending [chat] promise resolves
+ * shortly afterward with whatever text was generated up to the abort. Safe to call when nothing is running.
+ *
+ * @returns A promise that resolves once llama.rn has acknowledged the stop request; failures are swallowed
+ *   because there is nothing meaningful the caller can do (the stream is already torn down).
+ */
+export async function stop(): Promise<void> {
+    if (!currentContext) return
+    try {
+        await currentContext.stopCompletion()
+    } catch {
+        // Ignore: stop is best-effort and the underlying completion will resolve on its own.
+    }
+}
+
+/**
  * Release the currently-loaded context, freeing RAM. Safe to call when nothing is loaded.
  *
  * @returns A promise that resolves once the underlying llama.rn release call has settled; failures during

@@ -60,6 +60,7 @@ const Chat = () => {
     const [streamingTokens, setStreamingTokens] = useState(0)
     const [streamingTokensPerSec, setStreamingTokensPerSec] = useState(0)
     const [isSearching, setIsSearching] = useState(false)
+    const [isAborting, setIsAborting] = useState(false)
     const [searched, setSearched] = useState(false)
     const [history, setHistory] = useState<string[]>([])
     const [tuning, setTuning] = useState<ChatTuning | null>(null)
@@ -214,10 +215,16 @@ const Chat = () => {
             setResult(null)
         } finally {
             setIsSearching(false)
+            setIsAborting(false)
             setPartialAnswer("")
             refreshActiveModel().catch(() => undefined)
         }
     }, [query, tuning])
+
+    const handleStop = useCallback(async () => {
+        setIsAborting(true)
+        await llamaRunner.stop()
+    }, [])
 
     const handleHistoryTap = useCallback((q: string) => {
         setQuery(q)
@@ -424,9 +431,15 @@ const Chat = () => {
                         textAlignVertical="top"
                         editable={!isSearching}
                     />
-                    <CustomButton variant="primary" onPress={handleSearch} isLoading={isSearching} disabled={isSearching || query.trim().length === 0 || !tuning}>
-                        Ask
-                    </CustomButton>
+                    {isSearching ? (
+                        <CustomButton variant="destructive" onPress={handleStop} disabled={isAborting}>
+                            {isAborting ? "Stopping..." : "Stop"}
+                        </CustomButton>
+                    ) : (
+                        <CustomButton variant="primary" onPress={handleSearch} disabled={query.trim().length === 0 || !tuning}>
+                            Ask
+                        </CustomButton>
+                    )}
                 </View>
             )}
 
