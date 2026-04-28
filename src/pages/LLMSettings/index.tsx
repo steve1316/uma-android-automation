@@ -227,7 +227,9 @@ const LLMSettings = () => {
             if (state.kind === "embedder") {
                 setEmbedderState(state)
                 if (state.status === "complete" || state.status === "failed" || state.status === "error") {
-                    isEmbedderReady().then(setEmbedderReady).catch(() => undefined)
+                    isEmbedderReady()
+                        .then(setEmbedderReady)
+                        .catch(() => undefined)
                 }
             } else {
                 setDownloadState(state)
@@ -240,7 +242,9 @@ const LLMSettings = () => {
     }, [refreshModels])
 
     useEffect(() => {
-        isEmbedderReady().then(setEmbedderReady).catch(() => undefined)
+        isEmbedderReady()
+            .then(setEmbedderReady)
+            .catch(() => undefined)
     }, [])
 
     const handleDownload = useCallback(() => {
