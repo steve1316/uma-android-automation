@@ -102,6 +102,38 @@ export function presetFitsRam(caps: DeviceCapabilities | null, presetUrl: string
     return caps.availRamBytes >= match.requiredAvailRamBytes
 }
 
+/**
+ * Multiplier applied to a model file's on-disk size to estimate runtime RAM. Covers the GGUF weight load plus
+ * KV cache, llama.rn JNI overhead, and React Native runtime. Hand-tuned against the three Qwen presets so the
+ * preset thresholds line up with the file sizes; conservative enough to err on the side of warning.
+ */
+export const RUNTIME_RAM_OVERHEAD_FACTOR = 1.5
+
+/**
+ * Issue a `HEAD` request against [url] and return the parsed `Content-Length` in bytes.
+ *
+ * Used for the pre-download fit check on custom GGUF URLs that aren't in `PRESET_RAM_REQUIREMENTS_BYTES`.
+ * Falls open: returns `null` on any network error or missing/zero `Content-Length` so the caller can skip the
+ * warning rather than block a legitimate download just because the server didn't advertise size.
+ *
+ * @param url Fully-qualified HTTPS URL to the model file.
+ * @param authToken Optional Bearer token forwarded as `Authorization`; required for gated Hugging Face repos.
+ */
+export async function fetchModelSizeBytes(url: string, authToken?: string | null): Promise<number | null> {
+    try {
+        const headers: Record<string, string> = {}
+        if (authToken && authToken.trim().length > 0) headers["Authorization"] = `Bearer ${authToken.trim()}`
+        const res = await fetch(url, { method: "HEAD", headers })
+        if (!res.ok) return null
+        const len = res.headers.get("content-length")
+        if (!len) return null
+        const n = Number.parseInt(len, 10)
+        return Number.isFinite(n) && n > 0 ? n : null
+    } catch {
+        return null
+    }
+}
+
 /** Format [bytes] as a short string like `5.2 GB` or `812 MB`. */
 export function formatBytes(bytes: number): string {
     const gb = bytes / 1024 / 1024 / 1024

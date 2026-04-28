@@ -17,11 +17,13 @@ import {
     accelerationTier,
     accelerationTierLabel,
     type DeviceCapabilities,
+    fetchModelSizeBytes,
     formatBytes,
     loadDeviceCapabilities,
     PRESET_RAM_REQUIREMENTS_BYTES,
     presetFitsRam,
     recommendedPreset,
+    RUNTIME_RAM_OVERHEAD_FACTOR,
 } from "../../lib/chat/deviceCapabilities"
 
 const MODEL_URL_SETTING = { category: "chat", key: "modelUrl" } as const
@@ -264,7 +266,7 @@ const LLMSettings = () => {
     const tier = useMemo(() => accelerationTier(deviceCaps?.cpuFeatures ?? []), [deviceCaps])
     const recommended = useMemo(() => recommendedPreset(deviceCaps), [deviceCaps])
 
-    const handleDownload = useCallback(() => {
+    const handleDownload = useCallback(async () => {
         if (modelUrl === CUSTOM_URL_SENTINEL || modelUrl.trim().length === 0) {
             Alert.alert("No URL specified", "Paste a .gguf URL into the Custom field before downloading.")
             return
@@ -290,23 +292,35 @@ const LLMSettings = () => {
                 },
             ])
         }
-        // Pre-download fit check: if the device's free RAM is below the preset's known requirement, ask
-        // for explicit confirmation before kicking off a download that would crash the model loader. Custom
-        // URLs aren't in the requirements table; let those through unchecked.
+        const warnTooLarge = (message: string) => {
+            Alert.alert("Device may not have enough RAM", message, [
+                { text: "Cancel", style: "cancel" },
+                { text: "Download anyway", style: "destructive", onPress: startDownload },
+            ])
+        }
+        // Pre-download fit check for known presets: compare against the preset's hand-tuned RAM requirement.
         if (!presetFitsRam(deviceCaps, modelUrl)) {
             const required = PRESET_RAM_REQUIREMENTS_BYTES.find((p) => modelUrl.includes(p.urlSubstring))
             const avail = deviceCaps ? formatBytes(deviceCaps.availRamBytes) : "?"
-            Alert.alert(
-                "Device may not have enough RAM",
+            warnTooLarge(
                 required
                     ? `${required.label} typically needs ~${formatBytes(required.requiredAvailRamBytes)} of free RAM, but only ${avail} is available right now. Loading the model may crash. Download anyway?`
-                    : `Free RAM is low (${avail}). Loading this model may crash. Download anyway?`,
-                [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Download anyway", style: "destructive", onPress: startDownload },
-                ]
+                    : `Free RAM is low (${avail}). Loading this model may crash. Download anyway?`
             )
             return
+        }
+        // Pre-download fit check for custom URLs: HEAD the file to read Content-Length, scale by the runtime
+        // overhead factor, and warn if it overshoots free RAM. Falls open on HEAD/Content-Length failures so
+        // a server that doesn't support HEAD doesn't block legitimate downloads.
+        if (!preset && deviceCaps) {
+            const sizeBytes = await fetchModelSizeBytes(modelUrl, hfToken)
+            if (sizeBytes && sizeBytes * RUNTIME_RAM_OVERHEAD_FACTOR > deviceCaps.availRamBytes) {
+                const estRam = sizeBytes * RUNTIME_RAM_OVERHEAD_FACTOR
+                warnTooLarge(
+                    `This model is ${formatBytes(sizeBytes)} on disk and typically needs ~${formatBytes(estRam)} of free RAM, but only ${formatBytes(deviceCaps.availRamBytes)} is available right now. Loading the model may crash. Download anyway?`
+                )
+                return
+            }
         }
         startDownload()
     }, [deviceCaps, hfToken, modelUrl])
