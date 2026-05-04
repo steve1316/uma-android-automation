@@ -100,7 +100,7 @@ const TrainingEventSettings = () => {
     ]
     const victoryOptions = [
         { value: "Option 1: Energy -15 and random stat gain", label: "Option 1: Energy -15 and random stat gain" },
-        { value: "Option 2: Energy -5 and random stat gain", label: "Option 2: Energy -5 and random stat gain" },
+        { value: "Option 2: Energy -5/-20 and random stat gain", label: "Option 2: Energy -5/-20 and random stat gain" },
     ]
     const solidShowingOptions = [
         { value: "Option 1: Energy -15 and random stat gain", label: "Option 1: Energy -15 and random stat gain" },
