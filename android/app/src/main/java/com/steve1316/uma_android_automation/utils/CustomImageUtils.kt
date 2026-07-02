@@ -162,10 +162,6 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @property statBlock The underlying stat block used for analysis, if any.
      */
     data class BarFillResult(val statName: StatName, val fillPercent: Double, val filledSegments: Int, val dominantColor: String, val statBlock: StatBlock? = null) {
-        /** Whether this bar represents a Rainbow training. */
-        val isRainbow: Boolean
-            get() = statBlock != null && statBlock.name == statName.name && dominantColor == "orange"
-
         /** Whether this bar belongs to a trainer support character. */
         val isTrainerSupport: Boolean
             get() = statBlock != null && statBlock.name == "trainer_support"
