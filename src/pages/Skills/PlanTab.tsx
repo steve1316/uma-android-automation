@@ -13,7 +13,11 @@ import { Row } from "../../components/ui/row"
 import { Switch } from "../../components/ui/switch"
 import { Input } from "../../components/ui/input"
 import SearchableItem from "../../components/SearchableItem"
-import CustomSelect from "../../components/CustomSelect"
+import { SheetModal } from "../../components/ui/sheet-modal"
+import { ModalRadioRow } from "../../components/ui/modal-list"
+import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
 import CustomButton from "../../components/CustomButton"
 import CustomScrollView from "../../components/CustomScrollView"
 import WarningContainer from "../../components/WarningContainer"
@@ -50,6 +54,13 @@ interface Skill {
 
 const skillData: Skill[] = Object.values(skillsData)
 
+/** Automated skill-point spending strategies. `label` shows in the modal, `chipLabel` in the row chip, `description` explains each option in the modal. */
+const SKILL_STRATEGY_OPTIONS = [
+    { value: "default", label: "Do Not Spend Remaining Points", chipLabel: "Off", description: "Leaves any leftover skill points unspent." },
+    { value: "optimize_skills", label: "Best Skills First", chipLabel: "Best Skills First", description: "Buys from a community tier list, best skills first. Optimizes rank within each tier." },
+    { value: "optimize_rank", label: "Optimize Rank", chipLabel: "Optimize Rank", description: "Buys whatever maximizes trainee rank. Avoid for TT or CM." },
+] as const
+
 /** Props for `PlanTab`. */
 interface PlanTabProps {
     /** Which plan to render (matches a key in `skillPlanSettingsPages`). */
@@ -65,6 +76,8 @@ interface PlanTabProps {
  */
 const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
     const { colors } = useTheme()
+    const modalShellStyles = useModalShellStyles()
+    const [strategyPickerOpen, setStrategyPickerOpen] = useState(false)
     const config = skillPlanSettingsPages[planKey]
     const { skills, updateSkills } = useContext(SkillsContext)
 
@@ -142,7 +155,6 @@ const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
                 hostPad: { padding: SPACING.md },
                 sectionDescription: { ...TYPE.caption, color: colors.textMuted, lineHeight: 18 },
                 subsectionTitle: { ...TYPE.body, color: colors.text, fontWeight: "600", marginBottom: SPACING.xs },
-                strategyDescription: { ...TYPE.caption, color: colors.textMuted, lineHeight: 18, marginTop: SPACING.xs },
                 listHeader: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.sm, gap: SPACING.sm },
                 listHelperText: { ...TYPE.caption, color: colors.textMuted, lineHeight: 18 },
                 modeTabsRow: { flexDirection: "row", marginBottom: SPACING.sm, gap: 8 },
@@ -224,8 +236,8 @@ const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
         return null
     }
 
-    const strategyLabel: string =
-        strategy === "default" ? "Do Not Spend Remaining Points" : strategy === "optimize_skills" ? "Best Skills First" : strategy === "optimize_rank" ? "Optimize Rank" : strategy
+    const currentStrategy = SKILL_STRATEGY_OPTIONS.find((o) => o.value === strategy)
+    const strategyLabel: string = currentStrategy?.label ?? strategy
     const excludedCategories: string[] = []
     if (excludeGreenSkills) excludedCategories.push("Green")
     if (excludeRedSkills) excludedCategories.push("Red")
@@ -299,31 +311,18 @@ const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
             </Section>
 
             <Section label="Strategy & Planned Skills">
-                <View style={styles.hostPad}>
-                    <Text style={styles.subsectionTitle}>Automated Skill Point Spending Strategy</Text>
-                    <CustomSelect
-                        options={[
-                            { value: "default", label: "Do Not Spend Remaining Points" },
-                            { value: "optimize_skills", label: "Best Skills First" },
-                            { value: "optimize_rank", label: "Optimize Rank" },
-                        ]}
-                        value={strategy}
-                        defaultValue={defaultSettings.skills.plans[planKey].strategy}
-                        onValueChange={(value) => updatePlanSetting("strategy", value)}
-                        placeholder="Select Strategy"
+                <View>
+                    <Row
+                        title="Automated Skill Point Spending Strategy"
+                        description="What the bot does with leftover skill points after buying your planned skills."
+                        onPress={() => setStrategyPickerOpen(true)}
+                        right={<ValuePill label={currentStrategy?.chipLabel ?? "Select Strategy"} />}
                     />
-                    {strategy == "optimize_rank" && <WarningContainer>Warning: Optimize Rank ignores any of the Skill Style Overrides set in the Skills page.</WarningContainer>}
-                    <Text style={styles.strategyDescription}>
-                        This option determines what the bot does with any remaining skill points after it has purchased all of the skills from the Planned Skills section and the other options on this
-                        page.
-                    </Text>
-                    <Text style={styles.strategyDescription}>
-                        Best Skills First will use a community skill tier list to purchase better skills first and then within each tier it will attempt to optimize rank since the skills within each
-                        tier are not ordered.
-                    </Text>
-                    <Text style={styles.strategyDescription}>
-                        Optimize Rank will purchase skills in a way which will result in the highest trainee rank. Avoid this option if you wish to train an uma up for TT or CM.
-                    </Text>
+                    {strategy === "optimize_rank" && (
+                        <WarningContainer style={{ marginHorizontal: SPACING.md, marginBottom: SPACING.md }}>
+                            Warning: Optimize Rank ignores any of the Skill Style Overrides set in the Skills page.
+                        </WarningContainer>
+                    )}
                 </View>
 
                 <View style={styles.hostPad}>
@@ -443,6 +442,27 @@ const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
                     </View>
                 </View>
             </View>
+            <SheetModal
+                visible={strategyPickerOpen}
+                onRequestClose={() => setStrategyPickerOpen(false)}
+                header={<ModalHeader title="SKILL POINT STRATEGY" onClose={() => setStrategyPickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {SKILL_STRATEGY_OPTIONS.map((option) => (
+                        <ModalRadioRow
+                            key={option.value}
+                            label={option.label}
+                            description={option.description}
+                            selected={option.value === strategy}
+                            onPress={() => {
+                                updatePlanSetting("strategy", option.value)
+                                setStrategyPickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
         </View>
     )
 }
