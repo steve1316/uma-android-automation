@@ -1,14 +1,15 @@
 import React, { useMemo, useContext, useEffect, useState, useRef, useCallback } from "react"
 import { View, Text, ScrollView, StyleSheet, Pressable, InteractionManager, LayoutAnimation } from "react-native"
 import { SheetModal } from "../../components/ui/sheet-modal"
-import { ModalCheckRow, ModalFooterChip } from "../../components/ui/modal-list"
+import { ModalCheckRow, ModalFooterChip, ModalRadioRow } from "../../components/ui/modal-list"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
 import { Snackbar } from "react-native-paper"
 import { useTheme } from "../../context/ThemeContext"
 import { TrainingContext, GeneralMiscContext, BotMetaContext, defaultSettings, Settings } from "../../context/BotStateContext"
 import CustomSlider from "../../components/CustomSlider"
 import DraggablePriorityList from "../../components/DraggablePriorityList"
-import CustomSelect from "../../components/CustomSelect"
 import ProfileSelector from "../../components/ProfileSelector"
 import { useSettings } from "../../context/SettingsContext"
 import { useProfileManager } from "../../hooks/useProfileManager"
@@ -34,6 +35,14 @@ import Ionicons from "@react-native-vector-icons/ionicons"
 import { TrainingScoringSandbox } from "../../components/TrainingScoringSandbox"
 import { TrainingScoringAdvanced } from "../../components/TrainingScoringAdvanced"
 import { StickySandboxButton } from "../../components/TrainingScoringAdvanced/StickySandboxButton"
+
+/** Preferred race distance options for the training-target distance picker. */
+const PREFERRED_DISTANCE_OPTIONS = ["Auto", "Sprint", "Mile", "Medium", "Long"] as const
+
+/** Explanation for the ambiguous "Auto" distance value. The concrete distances are self-explanatory and intentionally omitted. */
+const PREFERRED_DISTANCE_DESCRIPTIONS: Partial<Record<(typeof PREFERRED_DISTANCE_OPTIONS)[number], string>> = {
+    Auto: "Picks the distance based on your character's aptitudes.",
+}
 
 /**
  * The Training Settings page.
@@ -75,6 +84,7 @@ const TrainingSettings = () => {
     }, [])
     const [scoringSandboxOpen, setScoringSandboxOpen] = useState(false)
     const [advancedExpanded, setAdvancedExpanded] = useState(false)
+    const [distancePickerOpen, setDistancePickerOpen] = useState(false)
 
     // Initialize local state from settings, with fallback to defaults.
     const [statPrioritizationItems, setStatPrioritizationItems] = useState<string[]>(() =>
@@ -649,9 +659,21 @@ const TrainingSettings = () => {
                                         />
                                     </View>
 
-                                    <ToggleSetting id="disable-training-on-maxed-stats" title="Disable Training on Maxed Stats" description="When enabled, training will be skipped for stats that have reached their maximum value." checked={disableTrainingOnMaxedStat} onCheckedChange={(checked) => updateTrainingSetting("disableTrainingOnMaxedStat", checked)} />
+                                    <ToggleSetting
+                                        id="disable-training-on-maxed-stats"
+                                        title="Disable Training on Maxed Stats"
+                                        description="When enabled, training will be skipped for stats that have reached their maximum value."
+                                        checked={disableTrainingOnMaxedStat}
+                                        onCheckedChange={(checked) => updateTrainingSetting("disableTrainingOnMaxedStat", checked)}
+                                    />
 
-                                    <ToggleSetting id="enable-riskier-training" title="Enable Riskier Training" description="When enabled, trainings with high main stat gains will use a separate, higher maximum failure chance threshold." checked={enableRiskyTraining} onCheckedChange={(checked) => updateTrainingSetting("enableRiskyTraining", checked)} />
+                                    <ToggleSetting
+                                        id="enable-riskier-training"
+                                        title="Enable Riskier Training"
+                                        description="When enabled, trainings with high main stat gains will use a separate, higher maximum failure chance threshold."
+                                        checked={enableRiskyTraining}
+                                        onCheckedChange={(checked) => updateTrainingSetting("enableRiskyTraining", checked)}
+                                    />
                                     {enableRiskyTraining && (
                                         <View style={styles.sliderShell}>
                                             <CustomSlider
@@ -691,13 +713,37 @@ const TrainingSettings = () => {
                                         </View>
                                     )}
 
-                                    <ToggleSetting id="enable-prioritize-skill-hints" title="Prioritize Skill Hints" description="When enabled, the bot will prioritize acquiring skill hints, bypassing stat prioritization and blacklist, while still being constrained by the failure chance thresholds." checked={enablePrioritizeSkillHints} onCheckedChange={(checked) => updateTrainingSetting("enablePrioritizeSkillHints", checked)} />
-                                    <ToggleSetting id="must-rest-before-summer" title="Must Rest before Summer" description="Optimizes June Late Phase in Classic and Senior Years for Summer Training. If Energy < 70%, it will Rest. If Energy >= 70% and Mood < Great, it will recover Mood. If Energy >= 70% and Mood is Great, it will train Wit." checked={mustRestBeforeSummer} onCheckedChange={(checked) => updateTrainingSetting("mustRestBeforeSummer", checked)} />
-                                    <ToggleSetting id="train-wit-during-finale" title="Train Wit During Finale" description="When enabled, the bot will train Wit during URA finale turns (73, 74, 75) instead of recovering energy or mood, even if the failure chance is high." checked={trainWitDuringFinale} onCheckedChange={(checked) => updateTrainingSetting("trainWitDuringFinale", checked)} />
+                                    <ToggleSetting
+                                        id="enable-prioritize-skill-hints"
+                                        title="Prioritize Skill Hints"
+                                        description="When enabled, the bot will prioritize acquiring skill hints, bypassing stat prioritization and blacklist, while still being constrained by the failure chance thresholds."
+                                        checked={enablePrioritizeSkillHints}
+                                        onCheckedChange={(checked) => updateTrainingSetting("enablePrioritizeSkillHints", checked)}
+                                    />
+                                    <ToggleSetting
+                                        id="must-rest-before-summer"
+                                        title="Must Rest before Summer"
+                                        description="Optimizes June Late Phase in Classic and Senior Years for Summer Training. If Energy < 70%, it will Rest. If Energy >= 70% and Mood < Great, it will recover Mood. If Energy >= 70% and Mood is Great, it will train Wit."
+                                        checked={mustRestBeforeSummer}
+                                        onCheckedChange={(checked) => updateTrainingSetting("mustRestBeforeSummer", checked)}
+                                    />
+                                    <ToggleSetting
+                                        id="train-wit-during-finale"
+                                        title="Train Wit During Finale"
+                                        description="When enabled, the bot will train Wit during URA finale turns (73, 74, 75) instead of recovering energy or mood, even if the failure chance is high."
+                                        checked={trainWitDuringFinale}
+                                        onCheckedChange={(checked) => updateTrainingSetting("trainWitDuringFinale", checked)}
+                                    />
                                 </Section>
 
                                 <Section label="Scoring">
-                                    <ToggleSetting id="enable-training-level-weighting" title="Weight Score by Training Level" description="When enabled (Year 2+), the bot reads each training's level (1-5) via OCR and boosts the score for trainings whose stat sits in the top 3 of your Stat Prioritization list. Helps the bot stick with stats you've invested in. OCR is skipped during Pre-Debut, Junior, and Summer." checked={enableTrainingLevelWeighting} onCheckedChange={(checked) => updateTrainingSetting("enableTrainingLevelWeighting", checked)} />
+                                    <ToggleSetting
+                                        id="enable-training-level-weighting"
+                                        title="Weight Score by Training Level"
+                                        description="When enabled (Year 2+), the bot reads each training's level (1-5) via OCR and boosts the score for trainings whose stat sits in the top 3 of your Stat Prioritization list. Helps the bot stick with stats you've invested in. OCR is skipped during Pre-Debut, Junior, and Summer."
+                                        checked={enableTrainingLevelWeighting}
+                                        onCheckedChange={(checked) => updateTrainingSetting("enableTrainingLevelWeighting", checked)}
+                                    />
                                     <SearchableItem
                                         id="enable-rainbow-training-bonus"
                                         title="Enable Rainbow Training Bonus"
@@ -768,24 +814,17 @@ const TrainingSettings = () => {
                                         <Row
                                             title="Preferred Distance"
                                             description="Set the preferred race distance for training targets. Auto picks based on character aptitudes."
-                                            right={
-                                                <CustomSelect
-                                                    value={preferredDistanceOverride}
-                                                    onValueChange={(value) => updateTrainingSetting("preferredDistanceOverride", value)}
-                                                    options={[
-                                                        { label: "Auto", value: "Auto" },
-                                                        { label: "Sprint", value: "Sprint" },
-                                                        { label: "Mile", value: "Mile" },
-                                                        { label: "Medium", value: "Medium" },
-                                                        { label: "Long", value: "Long" },
-                                                    ]}
-                                                    placeholder="Select distance"
-                                                    width={140}
-                                                />
-                                            }
+                                            onPress={() => setDistancePickerOpen(true)}
+                                            right={<ValuePill label={preferredDistanceOverride} />}
                                         />
                                     </SearchableItem>
-                                    <ToggleSetting id="disable-stat-targets" title="Disable Stat Targets" description="When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to the in-game stat cap (1200), so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list." checked={disableStatTargets} onCheckedChange={(checked) => updateTrainingSetting("disableStatTargets", checked)} />
+                                    <ToggleSetting
+                                        id="disable-stat-targets"
+                                        title="Disable Stat Targets"
+                                        description="When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to the in-game stat cap (1200), so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list."
+                                        checked={disableStatTargets}
+                                        onCheckedChange={(checked) => updateTrainingSetting("disableStatTargets", checked)}
+                                    />
 
                                     {/* Per-distance stat targets stay nested inside the Distance section so the whole distance domain reads as one block. */}
                                     <View style={disableStatTargets ? { opacity: 0.5 } : undefined} pointerEvents={disableStatTargets ? "none" : "auto"}>
@@ -1182,6 +1221,27 @@ const TrainingSettings = () => {
             >
                 <Text style={{ color: "#000" }}>{snackbarMessage}</Text>
             </Snackbar>
+            <SheetModal
+                visible={distancePickerOpen}
+                onRequestClose={() => setDistancePickerOpen(false)}
+                header={<ModalHeader title="PREFERRED DISTANCE" onClose={() => setDistancePickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {PREFERRED_DISTANCE_OPTIONS.map((option) => (
+                        <ModalRadioRow
+                            key={option}
+                            label={option}
+                            description={PREFERRED_DISTANCE_DESCRIPTIONS[option]}
+                            selected={option === preferredDistanceOverride}
+                            onPress={() => {
+                                updateTrainingSetting("preferredDistanceOverride", option)
+                                setDistancePickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
         </View>
     )
 }
