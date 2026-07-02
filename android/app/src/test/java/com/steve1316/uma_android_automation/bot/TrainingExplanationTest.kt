@@ -1,10 +1,13 @@
 package com.steve1316.uma_android_automation.bot
 
 import com.steve1316.uma_android_automation.bot.Training.Companion.defaultScoringModeFor
+import com.steve1316.uma_android_automation.bot.Training.Companion.formatDecisionTrace
+import com.steve1316.uma_android_automation.bot.Training.Companion.formatScoreBreakdown
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatSelectionRankingLine
 import com.steve1316.uma_android_automation.bot.Training.Companion.friendshipKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.statEfficiencyKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.unityCupKeyFactors
+import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_android_automation.bot.Training.TrainingConfig
 import com.steve1316.uma_android_automation.bot.Training.TrainingOption
 import com.steve1316.uma_android_automation.types.DateMonth
@@ -92,6 +95,29 @@ class TrainingExplanationTest {
         assertTrue(line.contains("1.32x higher"), line)
         assertTrue(line.contains("[mode: Stat Efficiency (Year 2+)]"), line)
         assertFalse(line.contains("points"), "Ranking line must not use the ambiguous 'points' wording: $line")
+    }
+
+    @Test
+    @DisplayName("Decision trace lists the mode, the selection, and every candidate score highest-first")
+    fun testDecisionTraceFormat() {
+        val line = formatDecisionTrace("Unity Cup (Spirit Gauge)", StatName.GUTS, mapOf(StatName.POWER to 196.25, StatName.GUTS to 746.90))
+        assertTrue(line.contains("Unity Cup (Spirit Gauge)"), line)
+        assertTrue(line.contains("selected=GUTS"), line)
+        assertTrue(line.contains("GUTS=746.90"), line)
+        assertTrue(line.contains("POWER=196.25"), line)
+        // Highest score should appear before the lower one.
+        assertTrue(line.indexOf("GUTS=746.90") < line.indexOf("POWER=196.25"), "Scores should be ranked highest-first: $line")
+    }
+
+    @Test
+    @DisplayName("Score breakdown shows each weighted factor and the applied multipliers")
+    fun testScoreBreakdownFormat() {
+        val breakdown = RawScoreBreakdown(statScoreWeighted = 100.0, relationshipScoreWeighted = 10.0, miscScoreWeighted = 15.0, rainbowMultiplier = 2.0, anticipatoryMultiplier = 1.10, total = 275.0)
+        val line = formatScoreBreakdown(StatName.SPEED, breakdown)
+        assertTrue(line.contains("SPEED"), line)
+        assertTrue(line.contains("statEff=100.00"), line)
+        assertTrue(line.contains("2.00") && line.contains("1.10"), line)
+        assertTrue(line.contains("275.00"), line)
     }
 
     @Test

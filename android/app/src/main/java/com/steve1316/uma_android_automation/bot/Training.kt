@@ -30,6 +30,7 @@ import com.steve1316.uma_android_automation.types.DateYear
 import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_scoring.TrainingScoringConstants
 import org.opencv.core.Point
 import java.util.concurrent.ConcurrentHashMap
@@ -47,6 +48,7 @@ import com.steve1316.uma_scoring.getFinaleStatBonus as sharedGetFinaleStatBonus
 import com.steve1316.uma_scoring.getRemainingFinaleRaces as sharedGetRemainingFinaleRaces
 import com.steve1316.uma_scoring.getScenarioStatCap as sharedGetScenarioStatCap
 import com.steve1316.uma_scoring.levelBoostMultiplier as sharedLevelBoostMultiplier
+import com.steve1316.uma_scoring.rawTrainingScoreComponents as sharedRawTrainingScoreComponents
 import com.steve1316.uma_scoring.scoringConstantsFromMap as sharedScoringConstantsFromMap
 
 /**
@@ -694,6 +696,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         /** Adapter for the shared `calculateRawTrainingScore`. The shared function applies the full composition pipeline (stat efficiency + relationship + misc, rainbow + anticipatory multipliers). */
         fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption): Double = sharedCalculateRawTrainingScore(config.toScoring(), training.toScoring())
 
+        /** Adapter for the shared `rawTrainingScoreComponents`. Returns the per-factor decomposition whose `total` equals `calculateRawTrainingScore` for the same inputs. */
+        fun rawTrainingScoreComponents(config: TrainingConfig, training: TrainingOption): RawScoreBreakdown = sharedRawTrainingScoreComponents(config.toScoring(), training.toScoring())
+
         /**
          * Resolve the default scoring mode from the campaign date. Pure so the mode selection can be unit-tested without a live [Game] / [Campaign].
          *
@@ -813,6 +818,33 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             val excludedNote = if (numExcluded > 0) " ($numExcluded training(s) excluded from ranking: skipped)" else ""
             return "Selected $selectedName (score ${String.format("%.2f", selectedScore)}) over runner-up $runnerUpName (score ${String.format("%.2f", runnerUpScore)})$ratioNote [mode: $modeLabel]$excludedNote"
         }
+
+        /**
+         * Format a compact, greppable decision-trace line: the scoring mode, the selection, and every candidate's final score highest-first. This gives a reader (or a log tool)
+         * the full ranking behind a pick in one line, which is the machine-readable answer to "why was this training chosen?".
+         *
+         * @param modeLabel The scoring mode label.
+         * @param selectedName The selected training stat, or null if none was selected.
+         * @param scores Map of each candidate training stat to its final score.
+         * @return The formatted decision-trace line.
+         */
+        fun formatDecisionTrace(modeLabel: String, selectedName: StatName?, scores: Map<StatName, Double>): String {
+            val ranked = scores.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.key}=${String.format("%.2f", it.value)}" }
+            return "Decision trace | mode=$modeLabel | selected=${selectedName ?: "none"} | scores: $ranked"
+        }
+
+        /**
+         * Format the per-factor breakdown of a stat-efficiency raw score: each weighted component and the multipliers that were applied, ending in the total. Only meaningful for
+         * the stat-efficiency composition (the mode whose score is built by [rawTrainingScoreComponents]).
+         *
+         * @param name The training stat this breakdown is for.
+         * @param breakdown The per-factor decomposition from [rawTrainingScoreComponents].
+         * @return The formatted breakdown line.
+         */
+        fun formatScoreBreakdown(name: StatName, breakdown: RawScoreBreakdown): String =
+            "Breakdown [$name]: statEff=${String.format("%.2f", breakdown.statScoreWeighted)}, rel=${String.format("%.2f", breakdown.relationshipScoreWeighted)}, " +
+                "misc=${String.format("%.2f", breakdown.miscScoreWeighted)}, xRainbow=${String.format("%.2f", breakdown.rainbowMultiplier)}, " +
+                "xAnticip=${String.format("%.2f", breakdown.anticipatoryMultiplier)} => ${String.format("%.2f", breakdown.total)}"
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2183,6 +2215,13 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Output all collected key factors.
             keyFactors.forEach { factor ->
                 sb.appendLine("Key factor: $factor")
+            }
+
+            // Structured decision trace (verbose channel, additive - not consumed by the frontend log parsers) plus a per-factor breakdown for stat-efficiency picks.
+            sb.appendLine(formatDecisionTrace(scoringMode.label, selected.name, scores.mapKeys { it.key.name }))
+            if (scoringMode == TrainingScoringMode.STAT_EFFICIENCY) {
+                sb.appendLine(formatScoreBreakdown(selected.name, rawTrainingScoreComponents(config, selected)))
+                secondBest?.let { sb.appendLine(formatScoreBreakdown(it.first.name, rawTrainingScoreComponents(config, it.first))) }
             }
         } else if (scores.isNotEmpty() || skippedScores.isNotEmpty()) {
             sb.appendLine("")
