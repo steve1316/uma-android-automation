@@ -58,6 +58,39 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.text.replace
 
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Rainbow-ring detection constants
+
+// The rainbow glow around a rainbow-training button or support circle sweeps through bright pastel green, cyan, and pink. A ring is only accepted when all three co-occur in the glow
+// annulus, which cleanly separated every labeled screenshot (green AND cyan AND pink present -> rainbow; at most two -> not). Hue bands are true OpenCV HSV (0-179) from an RGB->HSV
+// conversion, so the RGBA bitmap must be converted RGBA->RGB->HSV (NOT the BGR->RGB->HSV path the relationship-bar code uses, which swaps red and blue).
+private const val RAINBOW_GLOW_ANNULUS_INNER_PAD = 1
+private const val RAINBOW_GLOW_ANNULUS_OUTER_PAD = 22
+private const val RAINBOW_GLOW_MIN_SATURATION = 50.0
+private const val RAINBOW_GLOW_MIN_VALUE = 165.0
+private const val RAINBOW_GLOW_HUE_PRESENCE_MIN_FRACTION = 0.03
+private const val RAINBOW_GLOW_MIN_HUES_PRESENT = 3
+private const val RAINBOW_GLOW_GREEN_HUE_LOW = 45.0
+private const val RAINBOW_GLOW_GREEN_HUE_HIGH = 82.0
+private const val RAINBOW_GLOW_CYAN_HUE_LOW = 84.0
+private const val RAINBOW_GLOW_CYAN_HUE_HIGH = 104.0
+private const val RAINBOW_GLOW_PINK_HUE_LOW = 148.0
+private const val RAINBOW_GLOW_PINK_HUE_HIGH = 173.0
+
+/**
+ * Whether the three rainbow-glow hue fractions indicate a rainbow ring. A ring is present only when all three pastel hues (green, cyan, pink) each exceed the presence floor, which is
+ * the signature that separates a real rainbow glow from a background that happens to be one of those colors. Pure so it is unit-testable without OpenCV.
+ *
+ * @param greenFraction Fraction of glow-annulus pixels that are bright green.
+ * @param cyanFraction Fraction that are bright cyan.
+ * @param pinkFraction Fraction that are bright pink.
+ * @param minFraction The per-hue presence floor.
+ * @return The number of the three hues that are present (a ring needs all three).
+ */
+internal fun rainbowHuesPresent(greenFraction: Double, cyanFraction: Double, pinkFraction: Double, minFraction: Double = RAINBOW_GLOW_HUE_PRESENCE_MIN_FRACTION): Int =
+    listOf(greenFraction, cyanFraction, pinkFraction).count { it > minFraction }
+
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
     /** OCR threshold for text recognition. */
@@ -129,6 +162,21 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         /** The name of the trainer associated with this bar. */
         val trainerName: String?
             get() = statBlock?.trainerName
+    }
+
+    /**
+     * Result of the rainbow-ring detector for one circular anchor (a support face circle or a training button).
+     *
+     * @property huesPresent How many of the three rainbow-glow hues (green, cyan, pink) are present in the glow annulus. A ring needs all three.
+     * @property greenFraction Fraction of glow-annulus pixels that are bright green.
+     * @property cyanFraction Fraction that are bright cyan.
+     * @property pinkFraction Fraction that are bright pink.
+     * @property brightChromaticFraction Fraction of annulus pixels that are bright and saturated (the overall glow strength).
+     */
+    data class RainbowRingResult(val huesPresent: Int, val greenFraction: Double, val cyanFraction: Double, val pinkFraction: Double, val brightChromaticFraction: Double) {
+        /** Whether the annulus shows a rainbow glow (all three pastel hues co-present). Validated at 100% on the labeled training-screen dataset. */
+        val isRainbow: Boolean
+            get() = huesPresent >= RAINBOW_GLOW_MIN_HUES_PRESENT
     }
 
     /**
@@ -676,6 +724,72 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
 
         return results
+    }
+
+    /**
+     * Detects a rainbow glow ring in the annulus just outside a circular anchor (a support face circle or a training button). Rainbow trainings pulse a bright pastel green/cyan/pink
+     * halo around the circle, so requiring all three hues to co-occur in the annulus separates a real rainbow from a background that merely happens to be one of those colors.
+     *
+     * @param sourceBitmap The screenshot to analyze.
+     * @param centerX The circle center x in screen pixels.
+     * @param centerY The circle center y in screen pixels.
+     * @param radius The circle radius in screen pixels (the glow sits just outside this).
+     * @return A [RainbowRingResult] with the per-hue fractions and whether a ring is present. All-zero when the crop could not be taken.
+     */
+    fun detectRainbowRing(sourceBitmap: Bitmap, centerX: Int, centerY: Int, radius: Int): RainbowRingResult {
+        val outerRadius = radius + RAINBOW_GLOW_ANNULUS_OUTER_PAD
+        val side = outerRadius * 2
+        val cropped =
+            createSafeBitmap(sourceBitmap, centerX - outerRadius, centerY - outerRadius, side, side, "detectRainbowRing") ?: return RainbowRingResult(0, 0.0, 0.0, 0.0, 0.0)
+
+        // Convert RGBA -> RGB -> HSV so the hue is true OpenCV HSV. The relationship-bar path uses BGR->RGB->HSV, which swaps red and blue and is not what these hue bands expect.
+        val rgbaMat = cropped.toMat()
+        val rgbMat = Mat()
+        Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
+        val hsvMat = Mat()
+        Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
+
+        // Build the glow annulus mask (outer filled circle minus inner filled circle), centered in the crop.
+        val cropCenter = Point(outerRadius.toDouble(), outerRadius.toDouble())
+        val annulusMask = Mat.zeros(hsvMat.size(), CvType.CV_8UC1)
+        Imgproc.circle(annulusMask, cropCenter, outerRadius, Scalar(255.0), -1)
+        Imgproc.circle(annulusMask, cropCenter, radius + RAINBOW_GLOW_ANNULUS_INNER_PAD, Scalar(0.0), -1)
+        val annulusTotal = Core.countNonZero(annulusMask)
+        if (annulusTotal <= 0) {
+            listOf(rgbaMat, rgbMat, hsvMat, annulusMask).forEach { it.release() }
+            return RainbowRingResult(0, 0.0, 0.0, 0.0, 0.0)
+        }
+
+        // Bright and saturated pixels only (the glow is luminous), intersected with the annulus.
+        val brightMask = Mat()
+        Core.inRange(hsvMat, Scalar(0.0, RAINBOW_GLOW_MIN_SATURATION, RAINBOW_GLOW_MIN_VALUE), Scalar(179.0, 255.0, 255.0), brightMask)
+        Core.bitwise_and(brightMask, annulusMask, brightMask)
+        val brightChromaticFraction = Core.countNonZero(brightMask).toDouble() / annulusTotal
+
+        // Fraction of annulus pixels in each rainbow hue band (bright and saturated).
+        fun hueFraction(low: Double, high: Double): Double {
+            val hueMask = Mat()
+            Core.inRange(hsvMat, Scalar(low, RAINBOW_GLOW_MIN_SATURATION, RAINBOW_GLOW_MIN_VALUE), Scalar(high, 255.0, 255.0), hueMask)
+            Core.bitwise_and(hueMask, annulusMask, hueMask)
+            val fraction = Core.countNonZero(hueMask).toDouble() / annulusTotal
+            hueMask.release()
+            return fraction
+        }
+        val greenFraction = hueFraction(RAINBOW_GLOW_GREEN_HUE_LOW, RAINBOW_GLOW_GREEN_HUE_HIGH)
+        val cyanFraction = hueFraction(RAINBOW_GLOW_CYAN_HUE_LOW, RAINBOW_GLOW_CYAN_HUE_HIGH)
+        val pinkFraction = hueFraction(RAINBOW_GLOW_PINK_HUE_LOW, RAINBOW_GLOW_PINK_HUE_HIGH)
+
+        listOf(rgbaMat, rgbMat, hsvMat, annulusMask, brightMask).forEach { it.release() }
+
+        val huesPresent = rainbowHuesPresent(greenFraction, cyanFraction, pinkFraction)
+        val result = RainbowRingResult(huesPresent, greenFraction, cyanFraction, pinkFraction, brightChromaticFraction)
+        if (debugMode) {
+            MessageLog.d(
+                TAG,
+                "[DEBUG] detectRainbowRing:: center=($centerX,$centerY) r=$radius green=${decimalFormat.format(greenFraction)} cyan=${decimalFormat.format(cyanFraction)} pink=${decimalFormat.format(pinkFraction)} bright=${decimalFormat.format(brightChromaticFraction)} huesPresent=$huesPresent isRainbow=${result.isRainbow}",
+            )
+        }
+        return result
     }
 
     /**
