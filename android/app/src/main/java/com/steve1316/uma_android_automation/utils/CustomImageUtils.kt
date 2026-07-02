@@ -793,6 +793,62 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Debug helper that runs the rainbow-ring detector on every support face circle in the top-right of the training screen, logs the per-support metrics, and saves an annotated crop so
+     * the face-circle geometry and hue thresholds can be calibrated on-device. Not used in the bot loop. The face circle sits just below-right of its stat-block icon, so the center is
+     * that icon offset by the values below (in the 1080-wide baseline, scaled by relX/relY).
+     *
+     * @param sourceBitmap Optional source bitmap. Defaults to a fresh screenshot.
+     * @return A human-readable summary of the per-support ring metrics and the derived rainbow count.
+     */
+    fun debugRainbowDetection(sourceBitmap: Bitmap? = null): String {
+        val bitmap = sourceBitmap ?: getSourceBitmap()
+
+        // Calibrated support-circle geometry relative to the detected stat-block icon (tune from this test's output/crops).
+        val faceCircleOffsetX = 46
+        val faceCircleOffsetY = 55
+        val faceCircleRadius = 52
+
+        val statBlockComponents =
+            mapOf(
+                StatName.SPEED.name to IconStatBlockSpeed,
+                StatName.STAMINA.name to IconStatBlockStamina,
+                StatName.POWER.name to IconStatBlockPower,
+                StatName.GUTS.name to IconStatBlockGuts,
+                StatName.WIT.name to IconStatBlockWit,
+                "trainer" to IconStatBlockTrainer,
+            )
+
+        // Annotate the top-right region where supports live so the circle placement can be eyeballed.
+        val regionX = displayWidth - displayWidth / 3
+        val annotated = createSafeBitmap(bitmap, regionX, 0, displayWidth / 3, displayHeight - displayHeight / 3, "debugRainbowDetection annotate")?.toMat()
+
+        val sb = StringBuilder("\n========== Rainbow Detection Debug ==========\n")
+        var rainbowCount = 0
+        for ((name, component) in statBlockComponents) {
+            for (point in component.findAll(this, sourceBitmap = bitmap, region = Region.topRightThird)) {
+                val centerX = relX(point.x, faceCircleOffsetX)
+                val centerY = relY(point.y, faceCircleOffsetY)
+                val ring = detectRainbowRing(bitmap, centerX, centerY, faceCircleRadius)
+                if (ring.isRainbow) rainbowCount++
+                sb.appendLine(
+                    "[$name] icon=(${point.x.toInt()},${point.y.toInt()}) circle=($centerX,$centerY r$faceCircleRadius) green=${decimalFormat.format(ring.greenFraction)} cyan=${decimalFormat.format(ring.cyanFraction)} pink=${decimalFormat.format(ring.pinkFraction)} huesPresent=${ring.huesPresent} -> rainbow=${ring.isRainbow}",
+                )
+                if (annotated != null) {
+                    val color = if (ring.isRainbow) Scalar(0.0, 255.0, 0.0) else Scalar(0.0, 0.0, 255.0)
+                    Imgproc.circle(annotated, Point((centerX - regionX).toDouble(), centerY.toDouble()), faceCircleRadius, color, 3)
+                }
+            }
+        }
+        sb.appendLine("Derived numRainbow (support circles with a ring): $rainbowCount")
+        if (annotated != null) {
+            Imgcodecs.imwrite("$matchFilePath/debugRainbowDetection.png", annotated)
+            annotated.release()
+        }
+        MessageLog.i(TAG, sb.toString())
+        return sb.toString()
+    }
+
+    /**
      * Analyzes Spirit Explosion gauges for the Unity Cup scenario.
      *
      * @param sourceBitmap Optional source bitmap to use. Defaults to null.

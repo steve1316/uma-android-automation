@@ -267,6 +267,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 "debugMode_startMainScreenUpdateTest" to this::startMainScreenUpdateTest,
                 "debugMode_startScrollBarDetectionTest" to ::startScrollBarDetectionTest,
                 "debugMode_startSkillListBuyTest" to skillPlan::startSkillListBuyTest,
+                "debugMode_startRainbowDetectionTest" to ::startRainbowDetectionTest,
             )
 
         var bDidAnyTestsRun = false
@@ -278,6 +279,22 @@ abstract class Campaign(game: Game) : Task(game) {
         }
 
         return bDidAnyTestsRun
+    }
+
+    /**
+     * Debug test for rainbow-training detection. Run this while on the Training screen: it repeatedly detects the rainbow glow ring on each support face circle for ~5 seconds (several
+     * animation frames), logging the per-support metrics and the derived rainbow count, and saves an annotated crop each pass so the face-circle geometry and hue thresholds can be
+     * calibrated. The main-screen "is any training rainbow?" gate is a separate multi-frame detector and is not covered here yet.
+     */
+    open fun startRainbowDetectionTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Rainbow Detection test. Point the game at the Training screen so the support face circles are visible.")
+        val passes = 5
+        for (pass in 1..passes) {
+            MessageLog.i(TAG, "[TEST] Rainbow detection pass $pass/$passes:")
+            game.imageUtils.debugRainbowDetection()
+            if (pass < passes) game.wait(1.0)
+        }
+        MessageLog.i(TAG, "[TEST] Rainbow Detection test complete. Check the logged metrics and the saved debugRainbowDetection.png crop to calibrate geometry/thresholds.")
     }
 
     /**
