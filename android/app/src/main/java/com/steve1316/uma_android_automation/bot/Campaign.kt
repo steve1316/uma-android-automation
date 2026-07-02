@@ -139,6 +139,22 @@ internal fun parseMoodRecoveryFloor(name: String): Mood =
     }
 
 /**
+ * Resolves the pre-summer preparation action. Before summer training the trainee wants full energy and a Great mood, so this rests when energy is low, recovers mood when it is not yet
+ * Great, and otherwise trains (Wit). Pure so the priority is unit-testable without a live Campaign.
+ *
+ * @param energy The trainee's current energy percentage.
+ * @param mood The trainee's current mood.
+ * @param firstTrainingCheck Whether this is the first training check of the turn, which defers mood recovery in favor of training.
+ * @return The chosen pre-summer action.
+ */
+internal fun resolvePreSummerAction(energy: Int, mood: Mood, firstTrainingCheck: Boolean): MainScreenAction =
+    when {
+        energy < 70 -> MainScreenAction.REST
+        mood < Mood.GREAT && !firstTrainingCheck -> MainScreenAction.RECOVER_MOOD
+        else -> MainScreenAction.TRAIN
+    }
+
+/**
  * Defines the base campaign class that contains all shared logic for campaign automation.
  *
  * Campaign-specific logic should be implemented in subclasses by overriding the appropriate methods.
@@ -2218,20 +2234,24 @@ abstract class Campaign(game: Game) : Task(game) {
         }
 
         if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {
-            if (trainee.energy < 70) {
-                MessageLog.i(TAG, "[INFO] Energy is low (${trainee.energy}% < 70%). Forcing rest during $date in preparation for Summer Training.")
-                decisionTracer.recordActionChoice(MainScreenAction.REST, "Pre-summer prep (energy ${trainee.energy}% < 70%)")
-                return MainScreenAction.REST
-            } else if (trainee.mood < Mood.GREAT && !training.firstTrainingCheck) {
-                MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) but Mood is not Great (${trainee.mood}). Forcing mood recovery during $date in preparation for Summer Training.")
-                forcedTargetMood = Mood.GREAT
-                decisionTracer.recordActionChoice(MainScreenAction.RECOVER_MOOD, "Pre-summer prep (energy >= 70%, mood ${trainee.mood} < GREAT)")
-                return MainScreenAction.RECOVER_MOOD
-            } else {
-                MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) and mood is Great. Performing Wit training during $date in preparation for Summer Training.")
-                bForcedWitTraining = true
-                decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Pre-summer prep (energy and mood sufficient; forced Wit training)")
-                return MainScreenAction.TRAIN
+            when (resolvePreSummerAction(trainee.energy, trainee.mood, training.firstTrainingCheck)) {
+                MainScreenAction.REST -> {
+                    MessageLog.i(TAG, "[INFO] Energy is low (${trainee.energy}% < 70%). Forcing rest during $date in preparation for Summer Training.")
+                    decisionTracer.recordActionChoice(MainScreenAction.REST, "Pre-summer prep (energy ${trainee.energy}% < 70%)")
+                    return MainScreenAction.REST
+                }
+                MainScreenAction.RECOVER_MOOD -> {
+                    MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) but Mood is not Great (${trainee.mood}). Forcing mood recovery during $date in preparation for Summer Training.")
+                    forcedTargetMood = Mood.GREAT
+                    decisionTracer.recordActionChoice(MainScreenAction.RECOVER_MOOD, "Pre-summer prep (energy >= 70%, mood ${trainee.mood} < GREAT)")
+                    return MainScreenAction.RECOVER_MOOD
+                }
+                else -> {
+                    MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) and mood is Great. Performing Wit training during $date in preparation for Summer Training.")
+                    bForcedWitTraining = true
+                    decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Pre-summer prep (energy and mood sufficient; forced Wit training)")
+                    return MainScreenAction.TRAIN
+                }
             }
         }
 

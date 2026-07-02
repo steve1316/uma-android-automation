@@ -28,4 +28,13 @@ class CampaignDecisionTest {
         assertEquals(Mood.BAD, parseMoodRecoveryFloor("BAD"), "BAD recovers only when Awful, the most training-aggressive floor")
         assertEquals(Mood.GOOD, parseMoodRecoveryFloor("nonsense"), "An unknown value falls back to the base Good floor")
     }
+
+    @Test
+    @DisplayName("Pre-summer prep rests on low energy, recovers mood if not Great, else trains Wit")
+    fun testResolvePreSummerAction() {
+        assertEquals(MainScreenAction.REST, resolvePreSummerAction(energy = 60, mood = Mood.GREAT, firstTrainingCheck = false), "Energy below 70% must rest to prepare for summer")
+        assertEquals(MainScreenAction.RECOVER_MOOD, resolvePreSummerAction(energy = 80, mood = Mood.GOOD, firstTrainingCheck = false), "Enough energy but mood below Great must recover mood")
+        assertEquals(MainScreenAction.TRAIN, resolvePreSummerAction(energy = 80, mood = Mood.GREAT, firstTrainingCheck = false), "Enough energy and Great mood trains Wit")
+        assertEquals(MainScreenAction.TRAIN, resolvePreSummerAction(energy = 80, mood = Mood.GOOD, firstTrainingCheck = true), "The first training check defers mood recovery, so it trains instead")
+    }
 }
