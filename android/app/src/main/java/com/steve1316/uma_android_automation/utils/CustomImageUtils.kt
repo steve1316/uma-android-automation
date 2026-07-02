@@ -89,6 +89,16 @@ private const val RAINBOW_SUPPORT_MIN_RADIUS = 44
 private const val RAINBOW_SUPPORT_MAX_RADIUS = 72
 private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
 
+// The five circular stat buttons along the bottom of the training screen each glow rainbow when that training is a friendship (rainbow) training, even when it is not the selected one.
+// Reading their glow in one screenshot gives a per-stat rainbow map without visiting each training. The buttons sit in fixed horizontal slots, so a glowing circle is mapped to the
+// nearest slot. This gives a yes/no per stat, not the support count, so numRainbow still comes from the support circles.
+private const val RAINBOW_BUTTON_REGION_TOP_FRACTION = 0.76
+private const val RAINBOW_BUTTON_REGION_BOTTOM_FRACTION = 0.95
+private const val RAINBOW_BUTTON_MIN_DIST = 80.0
+private const val RAINBOW_BUTTON_HOUGH_PARAM2 = 42.0
+private const val RAINBOW_BUTTON_MIN_RADIUS = 52
+private const val RAINBOW_BUTTON_MAX_RADIUS = 98
+
 /**
  * Whether the three rainbow-glow hue fractions indicate a rainbow ring. A ring is present only when all three pastel hues (green, cyan, pink) each exceed the presence floor, which is
  * the signature that separates a real rainbow glow from a background that happens to be one of those colors. Pure so it is unit-testable without OpenCV.
@@ -849,6 +859,66 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     fun countRainbowTrainings(sourceBitmap: Bitmap? = null): Int {
         val bitmap = sourceBitmap ?: getSourceBitmap()
         return findSupportFaceCircles(bitmap).count { circle -> detectRainbowRing(bitmap, circle[0], circle[1], circle[2]).isRainbow }
+    }
+
+    /**
+     * Locates the circular stat buttons along the bottom of the training screen using HoughCircles. A few spurious circles (the selected button's larger ring, the nav buttons) may be
+     * returned, but the rainbow-ring test rejects any that are not glowing.
+     *
+     * @param sourceBitmap The screenshot to search.
+     * @return A list of (centerX, centerY, radius) in full-screen pixels for each detected circle.
+     */
+    private fun findStatButtonCircles(sourceBitmap: Bitmap): List<IntArray> {
+        val regionY = (displayHeight * RAINBOW_BUTTON_REGION_TOP_FRACTION).toInt()
+        val regionHeight = (displayHeight * (RAINBOW_BUTTON_REGION_BOTTOM_FRACTION - RAINBOW_BUTTON_REGION_TOP_FRACTION)).toInt()
+        val roi = createSafeBitmap(sourceBitmap, 0, regionY, displayWidth, regionHeight, "findStatButtonCircles") ?: return emptyList()
+
+        val rgbaMat = roi.toMat()
+        val grayMat = Mat()
+        Imgproc.cvtColor(rgbaMat, grayMat, Imgproc.COLOR_RGBA2GRAY)
+        Imgproc.medianBlur(grayMat, grayMat, 5)
+
+        val scale = displayWidth.toDouble() / 1080.0
+        val circles = Mat()
+        Imgproc.HoughCircles(
+            grayMat,
+            circles,
+            Imgproc.HOUGH_GRADIENT,
+            RAINBOW_SUPPORT_HOUGH_DP,
+            RAINBOW_BUTTON_MIN_DIST * scale,
+            RAINBOW_SUPPORT_HOUGH_PARAM1,
+            RAINBOW_BUTTON_HOUGH_PARAM2,
+            (RAINBOW_BUTTON_MIN_RADIUS * scale).toInt(),
+            (RAINBOW_BUTTON_MAX_RADIUS * scale).toInt(),
+        )
+
+        val result = mutableListOf<IntArray>()
+        for (i in 0 until circles.cols()) {
+            val circle = circles.get(0, i) ?: continue
+            result.add(intArrayOf(circle[0].toInt(), circle[1].toInt() + regionY, circle[2].toInt()))
+        }
+        listOf(rgbaMat, grayMat, circles).forEach { it.release() }
+        return result
+    }
+
+    /**
+     * Reads which trainings are rainbow directly from the five bottom stat buttons in a single screenshot, without visiting each training. Each glowing button is mapped to the nearest
+     * fixed horizontal slot. This is a fast per-stat yes/no (not the support count), useful as a pre-check; the scoring `numRainbow` count still comes from `countRainbowTrainings`.
+     *
+     * @param sourceBitmap Optional source bitmap. Defaults to a fresh screenshot.
+     * @return A map from each stat to whether its training button is glowing rainbow.
+     */
+    fun detectRainbowTrainingButtons(sourceBitmap: Bitmap? = null): Map<StatName, Boolean> {
+        val bitmap = sourceBitmap ?: getSourceBitmap()
+        val slotFractions = listOf(StatName.SPEED to 0.145, StatName.STAMINA to 0.324, StatName.POWER to 0.499, StatName.GUTS to 0.678, StatName.WIT to 0.853)
+        val result = slotFractions.associate { it.first to false }.toMutableMap()
+        for (circle in findStatButtonCircles(bitmap)) {
+            if (detectRainbowRing(bitmap, circle[0], circle[1], circle[2]).isRainbow) {
+                val stat = slotFractions.minByOrNull { kotlin.math.abs(it.second * displayWidth - circle[0]) }!!.first
+                result[stat] = true
+            }
+        }
+        return result
     }
 
     /**

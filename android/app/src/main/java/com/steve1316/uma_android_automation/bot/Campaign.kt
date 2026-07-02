@@ -292,6 +292,8 @@ abstract class Campaign(game: Game) : Task(game) {
         for (pass in 1..passes) {
             MessageLog.i(TAG, "[TEST] Rainbow detection pass $pass/$passes:")
             game.imageUtils.debugRainbowDetection()
+            // One-shot per-stat rainbow map read from the five bottom stat buttons.
+            MessageLog.i(TAG, "[TEST] Bottom-row rainbow map: ${game.imageUtils.detectRainbowTrainingButtons()}")
             if (pass < passes) game.wait(1.0)
         }
         MessageLog.i(TAG, "[TEST] Rainbow Detection test complete. Check the logged metrics and the saved debugRainbowDetection.png crop to calibrate geometry/thresholds.")
