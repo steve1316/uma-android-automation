@@ -6,7 +6,6 @@ import type { UserTheme } from "react-native-marked/dist/typescript/theme/types"
 import { KotlinCode, DARK_PALETTE, LIGHT_PALETTE } from "../../components/KotlinCode"
 import { useTheme } from "../../context/ThemeContext"
 import CustomButton from "../../components/CustomButton"
-import CustomSelect from "../../components/CustomSelect"
 import PageHeader from "../../components/PageHeader"
 import { MarkdownView } from "../../components/ChatMarkdown"
 import { databaseManager } from "../../lib/database"
@@ -16,6 +15,11 @@ import { loadChatTuning, trimToCap, type ChatTuning } from "../../lib/chat/chatS
 import { ACTIVE_MODEL_SETTING, resolveActiveModel } from "../../lib/chat/activeModel"
 import { isEmbedderReady } from "../../lib/chat/embedder"
 import { Section } from "../../components/ui/section"
+import { SheetModal } from "../../components/ui/sheet-modal"
+import { ModalRadioRow } from "../../components/ui/modal-list"
+import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
 import InfoCallout from "../../components/ui/info-callout"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
@@ -74,6 +78,7 @@ const BlinkingCursor: React.FC<BlinkingCursorProps> = ({ color }) => {
 
 const Chat = () => {
     const { colors, isDark } = useTheme()
+    const modalShellStyles = useModalShellStyles()
     const [query, setQuery] = useState("")
     const [result, setResult] = useState<ChatResult | null>(null)
     const [partialAnswer, setPartialAnswer] = useState("")
@@ -86,6 +91,7 @@ const Chat = () => {
     const [tuning, setTuning] = useState<ChatTuning | null>(null)
     const [activeModelFilename, setActiveModelFilename] = useState<string | null | undefined>(undefined)
     const [downloadedModels, setDownloadedModels] = useState<string[]>([])
+    const [modelPickerOpen, setModelPickerOpen] = useState(false)
     const [embedderReady, setEmbedderReady] = useState<boolean | null>(null)
 
     const refreshActiveModel = useCallback(async () => {
@@ -417,13 +423,14 @@ const Chat = () => {
                                 <View style={styles.modelSelectorRow}>
                                     <Text style={styles.modelStatus}>Model:</Text>
                                     <View style={styles.modelSelectorControl}>
-                                        <CustomSelect
-                                            options={downloadedModels.map((f) => ({ value: f, label: f }))}
-                                            value={activeModelFilename ?? undefined}
-                                            onValueChange={handleSelectModel}
-                                            placeholder="Select a model"
-                                            groupLabel="Downloaded models"
-                                        />
+                                        <Pressable
+                                            onPress={() => setModelPickerOpen(true)}
+                                            android_ripple={{ color: colors.ripple, foreground: true }}
+                                            accessibilityRole="button"
+                                            style={{ alignSelf: "flex-start" }}
+                                        >
+                                            <ValuePill label={activeModelFilename ?? "Select a model"} />
+                                        </Pressable>
                                     </View>
                                 </View>
                             ) : (
@@ -543,6 +550,26 @@ const Chat = () => {
                 )}
                 {searched && !isSearching && !result && <Text style={styles.emptyText}>No matching documentation found.</Text>}
             </ScrollView>
+            <SheetModal
+                visible={modelPickerOpen}
+                onRequestClose={() => setModelPickerOpen(false)}
+                header={<ModalHeader title="DOWNLOADED MODELS" onClose={() => setModelPickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {downloadedModels.map((f) => (
+                        <ModalRadioRow
+                            key={f}
+                            label={f}
+                            selected={f === activeModelFilename}
+                            onPress={() => {
+                                handleSelectModel(f)
+                                setModelPickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
         </KeyboardAvoidingView>
     )
 }

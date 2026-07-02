@@ -14,6 +14,8 @@ interface SelectOption {
     value: string
     /** The display label for this option. */
     label: string
+    /** Optional muted description rendered below the label inside the dropdown. Use to explain an ambiguous option value. */
+    description?: string
     /** Whether this option is disabled. */
     disabled?: boolean
 }
@@ -27,6 +29,8 @@ interface CustomSelectProps {
     width?: string | number
     /** Optional label displayed above the options in the dropdown. */
     groupLabel?: string
+    /** Optional muted intro line rendered at the top of the dropdown, below the group label. Distinct from `description`, which renders outside the trigger. */
+    menuDescription?: string
     /** Callback fired when the selected value changes. */
     onValueChange?: (value: string | undefined) => void
     /** Optional state setter for two-way binding of the selected value. */
@@ -67,6 +71,7 @@ interface CustomSelectProps {
  * @param options The list of selectable options.
  * @param width The width of the select trigger.
  * @param groupLabel Optional label displayed above the options in the dropdown.
+ * @param menuDescription Optional muted intro line rendered at the top of the dropdown, below the group label.
  * @param onValueChange Callback fired when the selected value changes.
  * @param setValue Optional state setter for two-way binding of the selected value.
  * @param defaultValue The initial default value.
@@ -88,6 +93,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     options = [],
     width = "100%",
     groupLabel,
+    menuDescription,
     onValueChange,
     setValue,
     defaultValue,
@@ -148,7 +154,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 )}
                 <Select onValueChange={handleValueChange} value={value as any} defaultValue={defaultValue as any} disabled={disabled}>
                     <View ref={triggerRef} style={[{ width: width as any }]} onLayout={onTriggerLayout}>
-                        <SelectTrigger disabled={disabled} style={{ backgroundColor: colors.bg, borderColor: colors.borderHair }}>
+                        <SelectTrigger disabled={disabled}>
                             <SelectValue placeholder={value || defaultValue ? (currentLabel ?? "ERROR") : placeholder} style={{ color: colors.text }} />
                         </SelectTrigger>
                     </View>
@@ -156,11 +162,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                         <NativeSelectScrollView>
                             <SelectGroup>
                                 {groupLabel && <SelectLabel>{groupLabel}</SelectLabel>}
+                                {menuDescription && <Text style={{ ...TYPE.caption, color: colors.textMuted, paddingHorizontal: SPACING.sm, paddingBottom: SPACING.xs }}>{menuDescription}</Text>}
                                 {options &&
                                     options.map((option, index) => (
                                         <React.Fragment key={option.value}>
                                             {index > 0 && <SelectSeparator />}
-                                            <SelectItem label={option.label} value={option.value} disabled={option.disabled}>
+                                            <SelectItem label={option.label} value={option.value} disabled={option.disabled} description={option.description}>
                                                 {option.label}
                                             </SelectItem>
                                         </React.Fragment>

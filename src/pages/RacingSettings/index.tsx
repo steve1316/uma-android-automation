@@ -1,12 +1,10 @@
 import { useMemo, useContext, useRef, useCallback, useState } from "react"
 import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import Ionicons from "@react-native-vector-icons/ionicons"
 import { Cpu, ChevronRight } from "lucide-react-native"
 import { useTheme } from "../../context/ThemeContext"
 import { RacingContext, defaultSettings, Settings } from "../../context/BotStateContext"
 import { SearchPageProvider } from "../../context/SearchPageContext"
-import CustomSelect from "../../components/CustomSelect"
 import CustomSlider from "../../components/CustomSlider"
 import PageHeader from "../../components/PageHeader"
 import InfoContainer from "../../components/InfoContainer"
@@ -20,6 +18,8 @@ import { SectionLabel } from "../../components/ui/section-label"
 import { GlassSurface } from "../../components/ui/glass-surface"
 import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalRadioRow } from "../../components/ui/modal-list"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
@@ -29,6 +29,21 @@ import { RADII } from "../../lib/radii"
 const RACE_STRATEGY_OPTIONS = ["Default", "Auto", "Front", "Pace", "Late", "End"] as const
 
 type RaceStrategy = (typeof RACE_STRATEGY_OPTIONS)[number]
+
+/** Short explanations for the ambiguous strategy values. Front/Pace/Late/End are self-explanatory running styles and are intentionally left out. */
+const STRATEGY_OPTION_DESCRIPTIONS: Partial<Record<RaceStrategy, string>> = {
+    Default: "Keeps the running style already set in-game. The bot won't change it.",
+    Auto: "Picks the running style your trainee has the best aptitude for.",
+}
+
+/** Intro line shown at the top of the single-strategy picker modals. */
+const STRATEGY_PICKER_DESCRIPTION = "Pick the running style the bot uses for these races."
+
+/** In-game race agenda slots the user can select from. */
+const RACE_AGENDA_OPTIONS = ["Agenda 1", "Agenda 2", "Agenda 3", "Agenda 4", "Agenda 5", "Agenda 6", "Agenda 7", "Agenda 8"] as const
+
+/** Track distance keys shared by the Junior and Classic/Senior per-distance strategy grids. */
+type PerDistanceKey = "Short" | "Mile" | "Medium" | "Long"
 
 /**
  * The Racing Settings page.
@@ -45,6 +60,8 @@ const RacingSettings = () => {
     // Modal state for the Junior / Original strategy pickers (nav-row + chip pattern).
     const [juniorPickerOpen, setJuniorPickerOpen] = useState(false)
     const [originalPickerOpen, setOriginalPickerOpen] = useState(false)
+    const [agendaPickerOpen, setAgendaPickerOpen] = useState(false)
+    const [perDistancePicker, setPerDistancePicker] = useState<{ year: "junior" | "original"; distance: PerDistanceKey } | null>(null)
 
     // Merge current racing settings with defaults to handle missing properties.
     const racingSettings = { ...defaultSettings.racing, ...racing }
@@ -136,27 +153,6 @@ const RacingSettings = () => {
     )
 
     /**
-     * Render a small cyan pill displaying the current strategy value (for nav rows).
-     * @param label The strategy value to render inside the pill.
-     * @returns A styled `Text` node sized to fit the value.
-     */
-    const renderStrategyPill = (label: string) => (
-        <Text
-            style={{
-                ...TYPE.monoLabel,
-                color: colors.brand,
-                paddingHorizontal: SPACING.sm,
-                paddingVertical: 2,
-                backgroundColor: colors.brandSubtle,
-                borderRadius: RADII.pill,
-                overflow: "hidden",
-            }}
-        >
-            {label}
-        </Text>
-    )
-
-    /**
      * Render the modal contents for a strategy picker.
      * @param current The currently selected strategy.
      * @param onSelect Called when the user picks a new value (the modal close is handled by the caller).
@@ -166,7 +162,7 @@ const RacingSettings = () => {
     const renderStrategyOptions = (current: string, onSelect: (value: RaceStrategy) => void) => (
         <View style={modalShellStyles.modalBodyList}>
             {RACE_STRATEGY_OPTIONS.map((option) => (
-                <ModalRadioRow key={option} label={option} selected={option === current} onPress={() => onSelect(option)} />
+                <ModalRadioRow key={option} label={option} description={STRATEGY_OPTION_DESCRIPTIONS[option]} selected={option === current} onPress={() => onSelect(option)} />
             ))}
         </View>
     )
@@ -181,7 +177,13 @@ const RacingSettings = () => {
                             //////////////////////////////////////////////////////////////////////////////////////////////////
                             Race Behavior */}
                         <Section label="Race Behavior">
-                            <ToggleSetting id="enable-farming-fans" title="Enable Farming Fans" description="When enabled, the bot will start running extra races to gain fans." checked={enableFarmingFans} onCheckedChange={(checked) => updateRacingSetting("enableFarmingFans", checked)} />
+                            <ToggleSetting
+                                id="enable-farming-fans"
+                                title="Enable Farming Fans"
+                                description="When enabled, the bot will start running extra races to gain fans."
+                                checked={enableFarmingFans}
+                                onCheckedChange={(checked) => updateRacingSetting("enableFarmingFans", checked)}
+                            />
                             <View style={{ padding: SPACING.md }}>
                                 <CustomSlider
                                     searchId="days-to-run-extra-races"
@@ -197,13 +199,57 @@ const RacingSettings = () => {
                                     description="Extra races are eligible only on days where current day % value == 0. For example, 5 means days 5, 10, 15, etc. Has no effect when Smart Race Solver is enabled."
                                 />
                             </View>
-                            <ToggleSetting id="ignore-consecutive-race-warning" title="Ignore Consecutive Race Warning" description="When enabled, the bot will ignore the warning popup about consecutive races and continue racing." checked={ignoreConsecutiveRaceWarning} onCheckedChange={(checked) => updateRacingSetting("ignoreConsecutiveRaceWarning", checked)} />
-                            <ToggleSetting id="ignore-low-energy-racing-block" title="Ignore Low Energy Racing Block" description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races." checked={ignoreLowEnergyRacingBlock} onCheckedChange={(checked) => updateRacingSetting("ignoreLowEnergyRacingBlock", checked)} />
-                            <ToggleSetting id="disable-race-retries" title="Disable Race Retries" description="When enabled, the bot will not retry mandatory races if they fail and will stop." checked={disableRaceRetries} onCheckedChange={(checked) => updateRacingSetting("disableRaceRetries", checked)} />
-                            <ToggleSetting id="enable-free-race-retry" title="Allow Daily Free Race Retry" description="When enabled, the bot will attempt to retry a failed mandatory race only if the daily free race retry is available." condition={disableRaceRetries} parentId="disable-race-retries" checked={enableFreeRaceRetry} onCheckedChange={(checked) => updateRacingSetting("enableFreeRaceRetry", checked)} />
-                            <ToggleSetting id="enable-complete-career-on-failure" title="Complete Career on Failure" description="When enabled, the bot will proceed to the career completion screen when a mandatory race fails and retries are exhausted." checked={enableCompleteCareerOnFailure} onCheckedChange={(checked) => updateRacingSetting("enableCompleteCareerOnFailure", checked)} />
-                            <ToggleSetting id="enable-stop-on-mandatory-races" title="Stop on Mandatory Races" description="When enabled, the bot will automatically stop when it encounters a mandatory race, allowing you to manually handle them." checked={enableStopOnMandatoryRaces} onCheckedChange={(checked) => updateRacingSetting("enableStopOnMandatoryRaces", checked)} />
-                            <ToggleSetting id="enable-force-racing" title="Force Racing" description="When enabled, the bot will skip all training, rest, and mood recovery activities and focus exclusively on racing every day." checked={enableForceRacing} onCheckedChange={(checked) => updateRacingSetting("enableForceRacing", checked)} />
+                            <ToggleSetting
+                                id="ignore-consecutive-race-warning"
+                                title="Ignore Consecutive Race Warning"
+                                description="When enabled, the bot will ignore the warning popup about consecutive races and continue racing."
+                                checked={ignoreConsecutiveRaceWarning}
+                                onCheckedChange={(checked) => updateRacingSetting("ignoreConsecutiveRaceWarning", checked)}
+                            />
+                            <ToggleSetting
+                                id="ignore-low-energy-racing-block"
+                                title="Ignore Low Energy Racing Block"
+                                description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races."
+                                checked={ignoreLowEnergyRacingBlock}
+                                onCheckedChange={(checked) => updateRacingSetting("ignoreLowEnergyRacingBlock", checked)}
+                            />
+                            <ToggleSetting
+                                id="disable-race-retries"
+                                title="Disable Race Retries"
+                                description="When enabled, the bot will not retry mandatory races if they fail and will stop."
+                                checked={disableRaceRetries}
+                                onCheckedChange={(checked) => updateRacingSetting("disableRaceRetries", checked)}
+                            />
+                            <ToggleSetting
+                                id="enable-free-race-retry"
+                                title="Allow Daily Free Race Retry"
+                                description="When enabled, the bot will attempt to retry a failed mandatory race only if the daily free race retry is available."
+                                condition={disableRaceRetries}
+                                parentId="disable-race-retries"
+                                checked={enableFreeRaceRetry}
+                                onCheckedChange={(checked) => updateRacingSetting("enableFreeRaceRetry", checked)}
+                            />
+                            <ToggleSetting
+                                id="enable-complete-career-on-failure"
+                                title="Complete Career on Failure"
+                                description="When enabled, the bot will proceed to the career completion screen when a mandatory race fails and retries are exhausted."
+                                checked={enableCompleteCareerOnFailure}
+                                onCheckedChange={(checked) => updateRacingSetting("enableCompleteCareerOnFailure", checked)}
+                            />
+                            <ToggleSetting
+                                id="enable-stop-on-mandatory-races"
+                                title="Stop on Mandatory Races"
+                                description="When enabled, the bot will automatically stop when it encounters a mandatory race, allowing you to manually handle them."
+                                checked={enableStopOnMandatoryRaces}
+                                onCheckedChange={(checked) => updateRacingSetting("enableStopOnMandatoryRaces", checked)}
+                            />
+                            <ToggleSetting
+                                id="enable-force-racing"
+                                title="Force Racing"
+                                description="When enabled, the bot will skip all training, rest, and mood recovery activities and focus exclusively on racing every day."
+                                checked={enableForceRacing}
+                                onCheckedChange={(checked) => updateRacingSetting("enableForceRacing", checked)}
+                            />
                             {enableForceRacing && <WarningContainer>Warning: Enabling this will override all other racing settings and they will be ignored.</WarningContainer>}
                         </Section>
 
@@ -211,7 +257,13 @@ const RacingSettings = () => {
                             //////////////////////////////////////////////////////////////////////////////////////////////////
                             Strategy */}
                         <Section label="Strategy">
-                            <ToggleSetting id="enable-per-distance-strategy" title="Per-Distance Strategy" description="When enabled, allows setting different race strategies for each track distance." checked={enablePerDistanceStrategy} onCheckedChange={(checked) => updateRacingSetting("enablePerDistanceStrategy", checked)} />
+                            <ToggleSetting
+                                id="enable-per-distance-strategy"
+                                title="Per-Distance Strategy"
+                                description="When enabled, allows setting different race strategies for each track distance."
+                                checked={enablePerDistanceStrategy}
+                                onCheckedChange={(checked) => updateRacingSetting("enablePerDistanceStrategy", checked)}
+                            />
 
                             {!enablePerDistanceStrategy ? (
                                 <>
@@ -220,7 +272,7 @@ const RacingSettings = () => {
                                             title="Junior Year Strategy"
                                             description="The race strategy to use for all races during Junior Year."
                                             onPress={() => setJuniorPickerOpen(true)}
-                                            right={renderStrategyPill(juniorYearRaceStrategy)}
+                                            right={<ValuePill label={juniorYearRaceStrategy} />}
                                         />
                                     </SearchableItem>
                                     <SearchableItem
@@ -232,7 +284,7 @@ const RacingSettings = () => {
                                             title="Original Strategy"
                                             description="The race strategy to reset to after Junior Year. The bot will use this strategy for races in Year 2 and beyond."
                                             onPress={() => setOriginalPickerOpen(true)}
-                                            right={renderStrategyPill(originalRaceStrategy)}
+                                            right={<ValuePill label={originalRaceStrategy} />}
                                         />
                                     </SearchableItem>
                                 </>
@@ -247,22 +299,23 @@ const RacingSettings = () => {
                                         <Text style={styles.perDistanceGroupLabel}>JUNIOR YEAR</Text>
                                         <View style={styles.perDistanceBody}>
                                             {(["Short", "Mile", "Medium", "Long"] as const).map((distance) => (
-                                                <View key={`junior-${distance}`} style={styles.perDistanceItem}>
-                                                    <Text style={[TYPE.body, { color: colors.text, flex: 1 }]}>{distance}</Text>
-                                                    <CustomSelect
-                                                        searchId={`junior-strategy-${distance.toLowerCase()}`}
-                                                        searchTitle={`Junior Year ${distance} Distance Strategy`}
-                                                        searchDescription={`The race strategy to use for ${distance.toLowerCase()} distance races during Junior Year.`}
-                                                        width={140}
-                                                        options={RACE_STRATEGY_OPTIONS.map((value) => ({ value, label: value }))}
-                                                        value={juniorYearPerDistanceStrategies?.[distance] ?? "Default"}
-                                                        onValueChange={(value) => {
-                                                            const updated = { ...juniorYearPerDistanceStrategies, [distance]: value }
-                                                            updateRacingSetting("juniorYearPerDistanceStrategies", updated)
-                                                        }}
-                                                        placeholder="Default"
-                                                    />
-                                                </View>
+                                                <SearchableItem
+                                                    key={`junior-${distance}`}
+                                                    id={`junior-strategy-${distance.toLowerCase()}`}
+                                                    title={`Junior Year ${distance} Distance Strategy`}
+                                                    description={`The race strategy to use for ${distance.toLowerCase()} distance races during Junior Year.`}
+                                                >
+                                                    <View style={styles.perDistanceItem}>
+                                                        <Text style={[TYPE.body, { color: colors.text, flex: 1 }]}>{distance}</Text>
+                                                        <Pressable
+                                                            onPress={() => setPerDistancePicker({ year: "junior", distance })}
+                                                            android_ripple={{ color: colors.ripple, foreground: true }}
+                                                            accessibilityRole="button"
+                                                        >
+                                                            <ValuePill label={juniorYearPerDistanceStrategies?.[distance] ?? "Default"} />
+                                                        </Pressable>
+                                                    </View>
+                                                </SearchableItem>
                                             ))}
                                         </View>
                                     </View>
@@ -270,22 +323,23 @@ const RacingSettings = () => {
                                         <Text style={[styles.perDistanceGroupLabel, { paddingTop: 0 }]}>CLASSIC AND SENIOR YEAR</Text>
                                         <View style={styles.perDistanceBody}>
                                             {(["Short", "Mile", "Medium", "Long"] as const).map((distance) => (
-                                                <View key={`original-${distance}`} style={styles.perDistanceItem}>
-                                                    <Text style={[TYPE.body, { color: colors.text, flex: 1 }]}>{distance}</Text>
-                                                    <CustomSelect
-                                                        searchId={`original-strategy-${distance.toLowerCase()}`}
-                                                        searchTitle={`Original ${distance} Distance Strategy`}
-                                                        searchDescription={`The race strategy to use for ${distance.toLowerCase()} distance races in Year 2 and beyond.`}
-                                                        width={140}
-                                                        options={RACE_STRATEGY_OPTIONS.map((value) => ({ value, label: value }))}
-                                                        value={originalPerDistanceStrategies?.[distance] ?? "Default"}
-                                                        onValueChange={(value) => {
-                                                            const updated = { ...originalPerDistanceStrategies, [distance]: value }
-                                                            updateRacingSetting("originalPerDistanceStrategies", updated)
-                                                        }}
-                                                        placeholder="Default"
-                                                    />
-                                                </View>
+                                                <SearchableItem
+                                                    key={`original-${distance}`}
+                                                    id={`original-strategy-${distance.toLowerCase()}`}
+                                                    title={`Original ${distance} Distance Strategy`}
+                                                    description={`The race strategy to use for ${distance.toLowerCase()} distance races in Year 2 and beyond.`}
+                                                >
+                                                    <View style={styles.perDistanceItem}>
+                                                        <Text style={[TYPE.body, { color: colors.text, flex: 1 }]}>{distance}</Text>
+                                                        <Pressable
+                                                            onPress={() => setPerDistancePicker({ year: "original", distance })}
+                                                            android_ripple={{ color: colors.ripple, foreground: true }}
+                                                            accessibilityRole="button"
+                                                        >
+                                                            <ValuePill label={originalPerDistanceStrategies?.[distance] ?? "Default"} />
+                                                        </Pressable>
+                                                    </View>
+                                                </SearchableItem>
                                             ))}
                                         </View>
                                     </View>
@@ -297,7 +351,13 @@ const RacingSettings = () => {
                             //////////////////////////////////////////////////////////////////////////////////////////////////
                             In-Game Race Agenda */}
                         <Section label="In-Game Race Agenda">
-                            <ToggleSetting id="enable-user-in-game-race-agenda" title="Enable User In-Game Race Agenda" description="When enabled, the bot will load your selected in-game race agenda instead of using the racing plan settings. Note that this will disable the farming fans and racing plan settings." checked={enableUserInGameRaceAgenda} onCheckedChange={(checked) => updateRacingSetting("enableUserInGameRaceAgenda", checked)} />
+                            <ToggleSetting
+                                id="enable-user-in-game-race-agenda"
+                                title="Enable User In-Game Race Agenda"
+                                description="When enabled, the bot will load your selected in-game race agenda instead of using the racing plan settings. Note that this will disable the farming fans and racing plan settings."
+                                checked={enableUserInGameRaceAgenda}
+                                onCheckedChange={(checked) => updateRacingSetting("enableUserInGameRaceAgenda", checked)}
+                            />
                             {enableUserInGameRaceAgenda && (
                                 <>
                                     <InfoContainer style={{ marginHorizontal: SPACING.md }}>
@@ -312,24 +372,8 @@ const RacingSettings = () => {
                                         <Row
                                             title="Select Agenda"
                                             description="The in-game race agenda the bot loads when the toggle above is enabled."
-                                            right={
-                                                <CustomSelect
-                                                    placeholder="Agenda 1"
-                                                    width={140}
-                                                    options={[
-                                                        { value: "Agenda 1", label: "Agenda 1" },
-                                                        { value: "Agenda 2", label: "Agenda 2" },
-                                                        { value: "Agenda 3", label: "Agenda 3" },
-                                                        { value: "Agenda 4", label: "Agenda 4" },
-                                                        { value: "Agenda 5", label: "Agenda 5" },
-                                                        { value: "Agenda 6", label: "Agenda 6" },
-                                                        { value: "Agenda 7", label: "Agenda 7" },
-                                                        { value: "Agenda 8", label: "Agenda 8" },
-                                                    ]}
-                                                    value={racingSettings.selectedUserAgenda}
-                                                    onValueChange={(value) => updateRacingSetting("selectedUserAgenda", value)}
-                                                />
-                                            }
+                                            onPress={() => setAgendaPickerOpen(true)}
+                                            right={<ValuePill label={racingSettings.selectedUserAgenda} />}
                                         />
                                     </SearchableItem>
                                     <SearchableItem
@@ -354,8 +398,22 @@ const RacingSettings = () => {
                                             />
                                         </View>
                                     </SearchableItem>
-                                    <ToggleSetting id="limit-races-to-in-game-agenda" title="Limit Extra Races to Agenda" description="When enabled, the bot will override the racing behavior of any scenario such that it will not run any extra races except for the ones scheduled by the selected user's in-game racing agenda." parentId="enable-user-in-game-race-agenda" checked={limitRacesToInGameAgenda} onCheckedChange={(checked) => updateRacingSetting("limitRacesToInGameAgenda", checked)} />
-                                    <ToggleSetting id="skip-summer-training-for-agenda" title="Skip Summer Training for Agenda" description="When enabled, the bot will perform scheduled races from the in-game racing agenda during Summer instead of prioritizing Summer training. Note that this requires 'Enable User In-Game Race Agenda' to be enabled." parentId="enable-user-in-game-race-agenda" checked={skipSummerTrainingForAgenda} onCheckedChange={(checked) => updateRacingSetting("skipSummerTrainingForAgenda", checked)} />
+                                    <ToggleSetting
+                                        id="limit-races-to-in-game-agenda"
+                                        title="Limit Extra Races to Agenda"
+                                        description="When enabled, the bot will override the racing behavior of any scenario such that it will not run any extra races except for the ones scheduled by the selected user's in-game racing agenda."
+                                        parentId="enable-user-in-game-race-agenda"
+                                        checked={limitRacesToInGameAgenda}
+                                        onCheckedChange={(checked) => updateRacingSetting("limitRacesToInGameAgenda", checked)}
+                                    />
+                                    <ToggleSetting
+                                        id="skip-summer-training-for-agenda"
+                                        title="Skip Summer Training for Agenda"
+                                        description="When enabled, the bot will perform scheduled races from the in-game racing agenda during Summer instead of prioritizing Summer training. Note that this requires 'Enable User In-Game Race Agenda' to be enabled."
+                                        parentId="enable-user-in-game-race-agenda"
+                                        checked={skipSummerTrainingForAgenda}
+                                        onCheckedChange={(checked) => updateRacingSetting("skipSummerTrainingForAgenda", checked)}
+                                    />
                                 </>
                             )}
                         </Section>
@@ -405,19 +463,8 @@ const RacingSettings = () => {
                 <SheetModal
                     visible={juniorPickerOpen}
                     onRequestClose={() => setJuniorPickerOpen(false)}
-                    header={
-                        <View style={modalShellStyles.modalHeaderRow}>
-                            <Text style={modalShellStyles.modalTitleMono}>JUNIOR YEAR STRATEGY</Text>
-                            <Pressable
-                                style={modalShellStyles.modalCloseChip}
-                                onPress={() => setJuniorPickerOpen(false)}
-                                android_ripple={{ color: colors.ripple, foreground: true }}
-                                accessibilityLabel="Close"
-                            >
-                                <Ionicons name="close" size={18} color={colors.text} />
-                            </Pressable>
-                        </View>
-                    }
+                    description={STRATEGY_PICKER_DESCRIPTION}
+                    header={<ModalHeader title="JUNIOR YEAR STRATEGY" onClose={() => setJuniorPickerOpen(false)} />}
                     footer={null}
                 >
                     {renderStrategyOptions(juniorYearRaceStrategy, (value) => {
@@ -429,25 +476,55 @@ const RacingSettings = () => {
                 <SheetModal
                     visible={originalPickerOpen}
                     onRequestClose={() => setOriginalPickerOpen(false)}
-                    header={
-                        <View style={modalShellStyles.modalHeaderRow}>
-                            <Text style={modalShellStyles.modalTitleMono}>ORIGINAL STRATEGY</Text>
-                            <Pressable
-                                style={modalShellStyles.modalCloseChip}
-                                onPress={() => setOriginalPickerOpen(false)}
-                                android_ripple={{ color: colors.ripple, foreground: true }}
-                                accessibilityLabel="Close"
-                            >
-                                <Ionicons name="close" size={18} color={colors.text} />
-                            </Pressable>
-                        </View>
-                    }
+                    description={STRATEGY_PICKER_DESCRIPTION}
+                    header={<ModalHeader title="ORIGINAL STRATEGY" onClose={() => setOriginalPickerOpen(false)} />}
                     footer={null}
                 >
                     {renderStrategyOptions(originalRaceStrategy, (value) => {
                         updateRacingSetting("originalRaceStrategy", value)
                         setOriginalPickerOpen(false)
                     })}
+                </SheetModal>
+
+                <SheetModal
+                    visible={agendaPickerOpen}
+                    onRequestClose={() => setAgendaPickerOpen(false)}
+                    header={<ModalHeader title="SELECT AGENDA" onClose={() => setAgendaPickerOpen(false)} />}
+                    footer={null}
+                >
+                    <View style={modalShellStyles.modalBodyList}>
+                        {RACE_AGENDA_OPTIONS.map((option) => (
+                            <ModalRadioRow
+                                key={option}
+                                label={option}
+                                selected={option === racingSettings.selectedUserAgenda}
+                                onPress={() => {
+                                    updateRacingSetting("selectedUserAgenda", option)
+                                    setAgendaPickerOpen(false)
+                                }}
+                            />
+                        ))}
+                    </View>
+                </SheetModal>
+
+                <SheetModal
+                    visible={perDistancePicker !== null}
+                    onRequestClose={() => setPerDistancePicker(null)}
+                    description={STRATEGY_PICKER_DESCRIPTION}
+                    header={<ModalHeader title={perDistancePicker ? `${perDistancePicker.distance.toUpperCase()} STRATEGY` : ""} onClose={() => setPerDistancePicker(null)} />}
+                    footer={null}
+                >
+                    {perDistancePicker &&
+                        renderStrategyOptions(
+                            (perDistancePicker.year === "junior" ? juniorYearPerDistanceStrategies : originalPerDistanceStrategies)?.[perDistancePicker.distance] ?? "Default",
+                            (value) => {
+                                const { year, distance } = perDistancePicker
+                                const key = year === "junior" ? "juniorYearPerDistanceStrategies" : "originalPerDistanceStrategies"
+                                const current = year === "junior" ? juniorYearPerDistanceStrategies : originalPerDistanceStrategies
+                                updateRacingSetting(key, { ...current, [distance]: value })
+                                setPerDistancePicker(null)
+                            }
+                        )}
                 </SheetModal>
             </SearchPageProvider>
         </View>

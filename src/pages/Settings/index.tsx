@@ -14,6 +14,11 @@ import PageHeader from "../../components/PageHeader"
 import { Row } from "../../components/ui/row"
 import { Switch } from "../../components/ui/switch"
 import { Section } from "../../components/ui/section"
+import { SheetModal } from "../../components/ui/sheet-modal"
+import { ModalRadioRow } from "../../components/ui/modal-list"
+import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
 import WarningContainer from "../../components/WarningContainer"
 import InfoContainer from "../../components/InfoContainer"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../components/ui/alert-dialog"
@@ -93,6 +98,8 @@ const Settings = () => {
     const { general, misc, updateGeneral, updateMisc } = useContext(GeneralMiscContext)
     const calStyles = useSeasonCalendarStyles()
     const { colors } = useTheme()
+    const modalShellStyles = useModalShellStyles()
+    const [datingPresetPickerOpen, setDatingPresetPickerOpen] = useState(false)
     // Width for the recreation-cell popovers, computed once instead of per calendar cell.
     const recreationPopoverStyle = useMemo(() => ({ width: Math.min(280, Dimensions.get("window").width - 24) }), [])
     const navigation = useNavigation()
@@ -533,15 +540,12 @@ const Settings = () => {
                                 description="Pick an optimized preset (Pure Passion timed for a summer camp) or Custom to hand-pick turns on the calendar below."
                                 parentId="settings-dating-schedule"
                             >
-                                <View style={{ padding: SPACING.md, paddingBottom: 0 }}>
-                                    <CustomSelect
-                                        placeholder="Preset"
-                                        width="100%"
-                                        options={datingPresetOptions}
-                                        value={general.datingSchedulePreset}
-                                        onValueChange={(value) => handleDatingPresetChange(value || DATING_SCHEDULE_CUSTOM)}
-                                    />
-                                </View>
+                                <Row
+                                    title="Schedule Preset"
+                                    description="Pick an optimized preset (Pure Passion timed for a summer camp) or Custom to hand-pick turns on the calendar below."
+                                    onPress={() => setDatingPresetPickerOpen(true)}
+                                    right={<ValuePill label={datingPresetOptions.find((o) => o.value === general.datingSchedulePreset)?.label ?? "Custom"} />}
+                                />
                                 {general.purePassionTurn > 0 && (
                                     <View style={{ paddingHorizontal: SPACING.md }}>
                                         <InfoContainer>
@@ -739,6 +743,26 @@ const Settings = () => {
                 </AlertDialogContent>
             </AlertDialog>
 
+            <SheetModal
+                visible={datingPresetPickerOpen}
+                onRequestClose={() => setDatingPresetPickerOpen(false)}
+                header={<ModalHeader title="SCHEDULE PRESET" onClose={() => setDatingPresetPickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {datingPresetOptions.map((option) => (
+                        <ModalRadioRow
+                            key={option.value}
+                            label={option.label}
+                            selected={option.value === general.datingSchedulePreset}
+                            onPress={() => {
+                                handleDatingPresetChange(option.value)
+                                setDatingPresetPickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
             <Snackbar visible={snackbarMessage !== null} onDismiss={() => setSnackbarMessage(null)} style={{ backgroundColor: colors.surfaceRaised, borderRadius: 10 }}>
                 {snackbarMessage ?? ""}
             </Snackbar>
