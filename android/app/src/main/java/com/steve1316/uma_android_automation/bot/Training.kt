@@ -154,6 +154,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The maximum failure chance allowed for risky training. */
     private val riskyTrainingMaxFailureChance: Int = SettingsHelper.getIntSetting("training", "riskyTrainingMaxFailureChance")
 
+    /** Whether the expected-value failure gate is active. When on, trainings whose total stat gain is poor value for their failure chance are skipped. */
+    private val enableExpectedValueGate: Boolean = SettingsHelper.getBooleanSetting("training", "enableExpectedValueGate", true)
+
+    /** Required total stat gain per percent of failure chance for the expected-value gate (community rule of thumb: 2.0, i.e. gain must be >= 2x the fail chance). */
+    private val expectedValueGainPerFailPercent: Double = SettingsHelper.getDoubleSetting("training", "expectedValueGainPerFailPercent", 2.0)
+
+    /** Failure chance below which the expected-value gate never fires (low-risk trainings are always allowed). */
+    private val expectedValueMinFailureChance: Int = SettingsHelper.getIntSetting("training", "expectedValueMinFailureChance", 10)
+
     /** Whether to force Wit training during the Finale. */
     private val trainWitDuringFinale: Boolean = SettingsHelper.getBooleanSetting("training", "trainWitDuringFinale")
 
@@ -708,6 +717,20 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          */
         fun defaultScoringModeFor(bIsPreDebut: Boolean, year: DateYear): TrainingScoringMode =
             if (bIsPreDebut || year == DateYear.JUNIOR) TrainingScoringMode.FRIENDSHIP else TrainingScoringMode.STAT_EFFICIENCY
+
+        /**
+         * Expected-value failure gate. A training is poor value when its total stat gain is worth less than the risk it carries - the community rule of thumb "don't train if the
+         * total stat gain is less than `gainPerFailPercent` times the fail chance" (typically 2x). Only bites at or above `minFailureChance`, so low-risk trainings are never gated.
+         * Source: https://docs.google.com/document/d/11X2P7pLuh-k9E7PhRiD20nDX22rNWtCpC1S4IMx_8pQ/edit?tab=t.chehxs4igdlt ("if the stats you gain are less than double the fail chance, don't do it").
+         *
+         * @param totalStatGain Sum of all stat gains from the training.
+         * @param failureChance The training's failure chance percent.
+         * @param gainPerFailPercent Required stat gain per percent of failure chance (e.g. 2.0).
+         * @param minFailureChance Failure chance below which the gate never fires.
+         * @return True when the training should be skipped as poor value for its risk.
+         */
+        fun failsExpectedValueGate(totalStatGain: Int, failureChance: Int, gainPerFailPercent: Double, minFailureChance: Int): Boolean =
+            failureChance >= minFailureChance && totalStatGain < gainPerFailPercent * failureChance
 
         /**
          * Key factors for the Friendship scoring mode. Mirrors `scoreFriendshipTraining`, which ranks purely by relationship-bar color.
@@ -1646,6 +1669,32 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     )
                 skippedTrainingMap[result.name] = skippedTraining
                 continue
+            }
+
+            // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when a Unity Cup
+            // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance).
+            val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
+            val burstExempt = (result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0
+            if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
+                val totalStatGain = result.statGains.values.sum()
+                if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {
+                    MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training: poor value for risk (total gain $totalStatGain < ${expectedValueGainPerFailPercent}x fail ${result.failureChance}%).")
+                    val skippedTraining =
+                        TrainingOption(
+                            name = result.name,
+                            statGains = result.statGains,
+                            correctedStats = result.correctedStats,
+                            failureChance = result.failureChance,
+                            relationshipBars = result.relationshipBars,
+                            numRainbow = result.numRainbow,
+                            extras = result.extras,
+                            numSkillHints = result.numSkillHints,
+                            trainingLevel = result.trainingLevel,
+                            skipReason = "poor value for risk",
+                        )
+                    skippedTrainingMap[result.name] = skippedTraining
+                    continue
+                }
             }
 
             if (!test && isIrregularEvaluation) {

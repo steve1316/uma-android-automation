@@ -1,6 +1,7 @@
 package com.steve1316.uma_android_automation.bot
 
 import com.steve1316.uma_android_automation.bot.Training.Companion.defaultScoringModeFor
+import com.steve1316.uma_android_automation.bot.Training.Companion.failsExpectedValueGate
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatDecisionTrace
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatScoreBreakdown
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatSelectionRankingLine
@@ -126,6 +127,18 @@ class TrainingExplanationTest {
         val zeroRunnerUp = formatSelectionRankingLine(StatName.SPEED, 400.0, StatName.WIT, 0.0, "Unity Cup (Spirit Gauge)", 2)
         assertFalse(zeroRunnerUp.contains("x higher"), "No ratio when runner-up score is 0: $zeroRunnerUp")
         assertTrue(zeroRunnerUp.contains("2 training(s) excluded"), zeroRunnerUp)
+    }
+
+    @Test
+    @DisplayName("Expected-value gate skips only when total gain is below the multiple of fail chance, above the min threshold")
+    fun testExpectedValueGate() {
+        // Community rule source: https://docs.google.com/document/d/11X2P7pLuh-k9E7PhRiD20nDX22rNWtCpC1S4IMx_8pQ/edit?tab=t.chehxs4igdlt ("if the stats you gain are less than double the fail chance, don't do it").
+        // Community rule: 27% fail needs 54+ total gain; 51 total is poor value -> gated.
+        assertTrue(failsExpectedValueGate(totalStatGain = 51, failureChance = 27, gainPerFailPercent = 2.0, minFailureChance = 10))
+        // Exactly 2x the fail chance is acceptable -> not gated.
+        assertFalse(failsExpectedValueGate(totalStatGain = 54, failureChance = 27, gainPerFailPercent = 2.0, minFailureChance = 10))
+        // Below the min-failure threshold the rule never fires, even for tiny gains at low risk.
+        assertFalse(failsExpectedValueGate(totalStatGain = 5, failureChance = 8, gainPerFailPercent = 2.0, minFailureChance = 10))
     }
 
     @Test
