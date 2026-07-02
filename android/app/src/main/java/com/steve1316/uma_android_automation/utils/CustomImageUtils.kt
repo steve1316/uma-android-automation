@@ -72,6 +72,9 @@ private const val RAINBOW_GLOW_MIN_SATURATION = 50.0
 private const val RAINBOW_GLOW_MIN_VALUE = 165.0
 private const val RAINBOW_GLOW_HUE_PRESENCE_MIN_FRACTION = 0.03
 private const val RAINBOW_GLOW_MIN_HUES_PRESENT = 3
+// A real rainbow ring also has one vivid dominant hue. Requiring the strongest hue to clear this bar rejects uniformly-faint look-alikes (e.g. a selected button's sparkles over a
+// multi-colored background), where all three hues barely clear the presence floor. Measured: true rings have a dominant hue >= 0.096, the observed false positive was 0.058.
+private const val RAINBOW_GLOW_DOMINANT_HUE_MIN_FRACTION = 0.08
 private const val RAINBOW_GLOW_GREEN_HUE_LOW = 45.0
 private const val RAINBOW_GLOW_GREEN_HUE_HIGH = 82.0
 private const val RAINBOW_GLOW_CYAN_HUE_LOW = 84.0
@@ -191,9 +194,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @property brightChromaticFraction Fraction of annulus pixels that are bright and saturated (the overall glow strength).
      */
     data class RainbowRingResult(val huesPresent: Int, val greenFraction: Double, val cyanFraction: Double, val pinkFraction: Double, val brightChromaticFraction: Double) {
-        /** Whether the annulus shows a rainbow glow (all three pastel hues co-present). Validated at 100% on the labeled training-screen dataset. */
+        /** Whether the annulus shows a rainbow glow: all three pastel hues co-present and one of them vividly dominant. Validated at 100% on the labeled training-screen dataset. */
         val isRainbow: Boolean
-            get() = huesPresent >= RAINBOW_GLOW_MIN_HUES_PRESENT
+            get() = huesPresent >= RAINBOW_GLOW_MIN_HUES_PRESENT && maxOf(greenFraction, cyanFraction, pinkFraction) >= RAINBOW_GLOW_DOMINANT_HUE_MIN_FRACTION
     }
 
     /**
