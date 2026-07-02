@@ -189,6 +189,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🏃 Running Style Override: ${settings.skills.preferredRunningStyle}
 🛣️ Track Distance Override: ${settings.skills.preferredTrackDistance}
 🛣️ Track Surface Override: ${settings.skills.preferredTrackSurface}
+💧 Prioritize Recovery Skills for Stamina: ${settings.skills.prioritizeRecoveryForStamina ? "✅" : "❌"}
 📅 Pre-Finals Skill Plan: ${settings.skills.plans.preFinals.enabled ? "✅" : "❌"}${
         settings.skills.plans.preFinals.enabled
             ? `\n\t💲 Buy All Negative Skills: ${

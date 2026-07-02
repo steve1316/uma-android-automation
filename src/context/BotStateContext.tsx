@@ -99,6 +99,7 @@ export interface Settings {
         preferredRunningStyle: string
         preferredTrackDistance: string
         preferredTrackSurface: string
+        prioritizeRecoveryForStamina: boolean
         plans: Record<string, SkillPlanSettingsConfig>
     }
 
@@ -326,6 +327,7 @@ export const defaultSettings: Settings = {
         preferredRunningStyle: "inherit",
         preferredTrackDistance: "inherit",
         preferredTrackSurface: "no_preference",
+        prioritizeRecoveryForStamina: true,
         plans: Object.keys(skillPlanSettingsPages).reduce(
             (acc, curr) => {
                 acc[curr] = {

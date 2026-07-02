@@ -711,6 +711,12 @@ const searchConfig: SearchOption[] = [
         description: "Dictates which skills are considered for purchase based on the terrain.",
         page: "Skills",
     },
+    {
+        id: "prioritize-recovery-for-stamina",
+        title: "Prioritize Recovery Skills for Stamina",
+        description: "On Medium/Long builds, nudge recovery skills up the auto-purchase ranking so the trainee holds pace longer. Has no effect on Sprint/Mile builds.",
+        page: "Skills",
+    },
 
     // ============================================================
     // Skill Plan Settings — Skill Point Check
