@@ -65,11 +65,14 @@ const RacingSettings = () => {
         enableFarmingFans,
         ignoreConsecutiveRaceWarning,
         daysToRunExtraRaces,
+        minEnergyForExtraRacing,
         disableRaceRetries,
         enableFreeRaceRetry,
         enableCompleteCareerOnFailure,
         enableStopOnMandatoryRaces,
         enableForceRacing,
+        enableG1DayPreference,
+        g1DayMinRainbowCount,
         juniorYearRaceStrategy,
         originalRaceStrategy,
         enablePerDistanceStrategy,
@@ -194,6 +197,21 @@ const RacingSettings = () => {
                                     description="Extra races are eligible only on days where current day % value == 0. For example, 5 means days 5, 10, 15, etc. Has no effect when Smart Race Solver is enabled."
                                 />
                             </View>
+                            <View style={{ padding: SPACING.md }}>
+                                <CustomSlider
+                                    searchId="min-energy-for-extra-racing"
+                                    value={minEnergyForExtraRacing}
+                                    placeholder={defaultSettings.racing.minEnergyForExtraRacing}
+                                    onValueChange={(value) => updateRacingSetting("minEnergyForExtraRacing", value)}
+                                    min={0}
+                                    max={100}
+                                    step={5}
+                                    label="Minimum Energy for Extra Races"
+                                    showValue={true}
+                                    showLabels={true}
+                                    description="Skip the fan-farming extra race when energy is below this percentage. 0 disables the floor. Only gates the standard fan-farming cadence, never mandatory, scheduled, or solver races."
+                                />
+                            </View>
                             <ToggleSetting
                                 id="ignore-consecutive-race-warning"
                                 title="Ignore Consecutive Race Warning"
@@ -239,6 +257,30 @@ const RacingSettings = () => {
                                 onCheckedChange={(checked) => updateRacingSetting("enableForceRacing", checked)}
                             />
                             {enableForceRacing && <WarningContainer>Warning: Enabling this will override all other racing settings and they will be ignored.</WarningContainer>}
+                            <ToggleSetting
+                                id="enable-g1-day-preference"
+                                title="Prefer Training on G1 Days"
+                                description="On a G1 race day (Classic/Senior years), peek at the trainings first and stay to train when a strong rainbow training is available instead of taking the race."
+                                checked={enableG1DayPreference}
+                                onCheckedChange={(checked) => updateRacingSetting("enableG1DayPreference", checked)}
+                            />
+                            {enableG1DayPreference && (
+                                <View style={{ padding: SPACING.md }}>
+                                    <CustomSlider
+                                        searchId="g1-day-min-rainbow-count"
+                                        value={g1DayMinRainbowCount}
+                                        placeholder={defaultSettings.racing.g1DayMinRainbowCount}
+                                        onValueChange={(value) => updateRacingSetting("g1DayMinRainbowCount", value)}
+                                        min={1}
+                                        max={5}
+                                        step={1}
+                                        label="Minimum Rainbows to Train Over G1"
+                                        showValue={true}
+                                        showLabels={true}
+                                        description="The best training must have at least this many rainbow supports to train instead of racing the G1."
+                                    />
+                                </View>
+                            )}
                         </Section>
 
                         {/* //////////////////////////////////////////////////////////////////////////////////////////////////

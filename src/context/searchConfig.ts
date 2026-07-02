@@ -386,6 +386,25 @@ const searchConfig: SearchOption[] = [
         page: "RacingSettings",
     },
     {
+        id: "min-energy-for-extra-racing",
+        title: "Minimum Energy for Extra Races",
+        description: "Skip the fan-farming extra race when energy is below this percentage. 0 disables the floor. Only gates the standard fan-farming cadence, never mandatory, scheduled, or solver races.",
+        page: "RacingSettings",
+    },
+    {
+        id: "enable-g1-day-preference",
+        title: "Prefer Training on G1 Days",
+        description: "On a G1 race day (Classic/Senior years), peek at the trainings first and stay to train when a strong rainbow training is available instead of taking the race.",
+        page: "RacingSettings",
+    },
+    {
+        id: "g1-day-min-rainbow-count",
+        title: "Minimum Rainbows to Train Over G1",
+        description: "The best training must have at least this many rainbow supports to train instead of racing the G1.",
+        page: "RacingSettings",
+        parentId: "enable-g1-day-preference",
+    },
+    {
         id: "ignore-consecutive-race-warning",
         title: "Ignore Consecutive Race Warning",
         description: "When enabled, the bot will ignore the warning popup about consecutive races and continue racing.",

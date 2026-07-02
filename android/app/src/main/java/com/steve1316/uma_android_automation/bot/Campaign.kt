@@ -155,6 +155,31 @@ internal fun resolvePreSummerAction(energy: Int, mood: Mood, firstTrainingCheck:
     }
 
 /**
+ * Whether the G1-day preference should peek at the training screen this turn. On a G1 race day the bot would normally take the free race, so this runs only when the feature is enabled,
+ * the trainee is past Junior year, it is not summer or the finale, energy clears the extra-racing floor, and a G1 race is actually available. Pure so the gate is unit-testable.
+ *
+ * @param enabled Whether the G1-day preference setting is turned on.
+ * @param year The trainee's current career year.
+ * @param isSummer Whether it is currently a summer turn (trainings differ and racing is skipped).
+ * @param isFinals Whether the finale is underway.
+ * @param energy The trainee's current energy percentage.
+ * @param minEnergy The extra-racing energy floor the trainee must clear to bother evaluating trainings.
+ * @param hasG1Race Whether a G1 race is scheduled for the current turn.
+ * @return True when the pre-screen should enter the training screen to compare a rainbow training against the race.
+ */
+internal fun shouldRunG1DayPreScreen(enabled: Boolean, year: DateYear, isSummer: Boolean, isFinals: Boolean, energy: Int, minEnergy: Int, hasG1Race: Boolean): Boolean =
+    enabled && year > DateYear.JUNIOR && !isSummer && !isFinals && energy >= minEnergy && hasG1Race
+
+/**
+ * Whether a rainbow training is strong enough to stay and train instead of taking the G1 race. The best training's rainbow count must meet the configured threshold. Pure and testable.
+ *
+ * @param bestNumRainbow The highest rainbow count across the analyzed trainings this turn.
+ * @param minRainbowCount The minimum rainbow count that justifies training over racing.
+ * @return True when the best training should be trained rather than skipping to the race.
+ */
+internal fun g1DayPrefersTraining(bestNumRainbow: Int, minRainbowCount: Int): Boolean = bestNumRainbow >= minRainbowCount
+
+/**
  * Defines the base campaign class that contains all shared logic for campaign automation.
  *
  * Campaign-specific logic should be implemented in subclasses by overriding the appropriate methods.
@@ -2282,6 +2307,10 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RECOVER_MOOD
         }
 
+        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, racing.hasG1RacesAtTurn(date.day))) {
+            g1DayPreScreenResult()?.let { return it }
+        }
+
         if (racing.checkEligibilityToStartExtraRacingProcess()) {
             MessageLog.i(TAG, "[INFO] Bot has no injuries, mood is sufficient and extra races can be run today. Setting the action to RACE.")
             decisionTracer.recordActionChoice(MainScreenAction.RACE, "Extra-race eligible (no injury, sufficient mood, eligible day)")
@@ -2290,6 +2319,37 @@ abstract class Campaign(game: Game) : Task(game) {
 
         decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Default fallback after racing/mood/injury checks did not trigger")
         return MainScreenAction.TRAIN
+    }
+
+    /**
+     * Runs the G1-day preference pre-screen. Enters the training screen, analyzes the trainings, and compares the best rainbow count against the threshold to decide whether to stay and
+     * train or back out and race the G1. The analysis is cached, so the follow-up `handleTraining()` reuses it for free when this returns TRAIN. When it returns RACE the cache is cleared
+     * so a stale analysis cannot leak into a later turn. Returns null when the training screen could not be entered, letting the caller fall through to the normal extra-race logic.
+     *
+     * @return TRAIN to stay and train the rainbow, RACE to take the G1 instead, or null when the pre-screen could not run.
+     */
+    private fun g1DayPreScreenResult(): MainScreenAction? {
+        if (!ButtonTraining.click(game.imageUtils)) return null
+        game.wait(0.5)
+
+        training.analyzeTrainings()
+        val bestNumRainbow = training.cachedAnalysisResults?.maxOfOrNull { it.numRainbow } ?: 0
+        val threshold = racing.g1DayMinRainbowCount
+
+        // Back out to the main screen either way. On TRAIN, handleTraining re-enters and reuses the cached analysis; on RACE, the racing flow expects to start from the main screen.
+        ButtonBack.click(game.imageUtils)
+        game.wait(1.0)
+
+        return if (g1DayPrefersTraining(bestNumRainbow, threshold)) {
+            MessageLog.i(TAG, "[INFO] G1-day preference: best training has $bestNumRainbow rainbow(s) >= $threshold. Training instead of racing the G1.")
+            decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "G1-day preference: best training has $bestNumRainbow rainbow(s) >= $threshold threshold")
+            MainScreenAction.TRAIN
+        } else {
+            MessageLog.i(TAG, "[INFO] G1-day preference: best training has only $bestNumRainbow rainbow(s) < $threshold. Racing the G1 instead.")
+            decisionTracer.recordActionChoice(MainScreenAction.RACE, "G1-day preference: best training has only $bestNumRainbow rainbow(s) < $threshold threshold; racing the G1")
+            training.clearAnalysisCache()
+            MainScreenAction.RACE
+        }
     }
 
     /**

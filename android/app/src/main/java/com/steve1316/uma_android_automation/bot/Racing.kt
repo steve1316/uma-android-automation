@@ -81,7 +81,13 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     private val daysToRunExtraRaces: Int = SettingsHelper.getIntSetting("racing", "daysToRunExtraRaces")
 
     /** Minimum energy before the plain fan-farming interval fallback will race. 0 disables it. Gates only the standard cadence, never requirements, the solver, or scenario bypasses. */
-    private val minEnergyForExtraRacing: Int = SettingsHelper.getIntSetting("racing", "minEnergyForExtraRacing", 30)
+    internal val minEnergyForExtraRacing: Int = SettingsHelper.getIntSetting("racing", "minEnergyForExtraRacing", 30)
+
+    /** Whether to prefer training over the free race on a G1 race day when a strong-enough rainbow training is available. Default off. */
+    val enableG1DayPreference: Boolean = SettingsHelper.getBooleanSetting("racing", "enableG1DayPreference")
+
+    /** Minimum rainbow count on the best training that justifies staying to train instead of taking the G1 race when the G1-day preference is enabled. */
+    val g1DayMinRainbowCount: Int = SettingsHelper.getIntSetting("racing", "g1DayMinRainbowCount", 2)
 
     /** Whether to disable race retries. */
     internal val disableRaceRetries: Boolean = SettingsHelper.getBooleanSetting("racing", "disableRaceRetries")
@@ -1453,7 +1459,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
      * @param turnNumber The turn number to check for G1 races.
      * @return True if at least one G1 race exists at the specified turn, false otherwise.
      */
-    private fun hasG1RacesAtTurn(turnNumber: Int): Boolean {
+    internal fun hasG1RacesAtTurn(turnNumber: Int): Boolean {
         val settingsManager = SQLiteSettingsManager(game.myContext)
         if (!settingsManager.isAvailable()) {
             MessageLog.e(TAG, "[ERROR] hasG1RacesAtTurn:: Database not available for G1 race check.")

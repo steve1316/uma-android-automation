@@ -56,11 +56,14 @@ export interface Settings {
         enableFarmingFans: boolean
         ignoreConsecutiveRaceWarning: boolean
         daysToRunExtraRaces: number
+        minEnergyForExtraRacing: number
         disableRaceRetries: boolean
         enableFreeRaceRetry: boolean
         enableCompleteCareerOnFailure: boolean
         enableStopOnMandatoryRaces: boolean
         enableForceRacing: boolean
+        enableG1DayPreference: boolean
+        g1DayMinRainbowCount: number
         enableUserInGameRaceAgenda: boolean
         limitRacesToInGameAgenda: boolean
         skipSummerTrainingForAgenda: boolean
@@ -267,11 +270,14 @@ export const defaultSettings: Settings = {
         enableFarmingFans: false,
         ignoreConsecutiveRaceWarning: false,
         daysToRunExtraRaces: 5,
+        minEnergyForExtraRacing: 30,
         disableRaceRetries: false,
         enableFreeRaceRetry: false,
         enableCompleteCareerOnFailure: false,
         enableStopOnMandatoryRaces: false,
         enableForceRacing: false,
+        enableG1DayPreference: false,
+        g1DayMinRainbowCount: 2,
         enableUserInGameRaceAgenda: false,
         limitRacesToInGameAgenda: true,
         skipSummerTrainingForAgenda: false,
