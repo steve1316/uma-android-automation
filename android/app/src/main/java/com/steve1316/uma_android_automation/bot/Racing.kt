@@ -56,6 +56,15 @@ import org.json.JSONObject
 import org.opencv.core.Point
 
 /**
+ * Whether the trainee has enough energy for a plain fan-farming extra race. A floor of 0 disables the check so it never blocks. Pure so it is unit-testable without a live Racing.
+ *
+ * @param energy The trainee's current energy percentage.
+ * @param minEnergy The minimum energy floor for the fan-farming interval fallback.
+ * @return True when energy is at or above the floor, or the floor is disabled.
+ */
+internal fun hasEnoughEnergyForExtraRacing(energy: Int, minEnergy: Int): Boolean = minEnergy <= 0 || energy >= minEnergy
+
+/**
  * Manage and orchestrate the racing process, including mandatory, maiden, and extra races.
  *
  * @property game A reference to the bot's [Game] instance.
@@ -70,6 +79,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
     /** The number of days to wait between running extra races. */
     private val daysToRunExtraRaces: Int = SettingsHelper.getIntSetting("racing", "daysToRunExtraRaces")
+
+    /** Minimum energy before the plain fan-farming interval fallback will race. 0 disables it. Gates only the standard cadence, never requirements, the solver, or scenario bypasses. */
+    private val minEnergyForExtraRacing: Int = SettingsHelper.getIntSetting("racing", "minEnergyForExtraRacing", 30)
 
     /** Whether to disable race retries. */
     internal val disableRaceRetries: Boolean = SettingsHelper.getBooleanSetting("racing", "disableRaceRetries")
@@ -817,13 +829,15 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             return result
         }
 
-        // Standard racing fallback: race on every Nth day of the racing interval.
-        val result = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0) && !raceRepeatWarningCheck
+        // Standard racing fallback: race on every Nth day of the racing interval, but only when energy is above the fan-farming floor so filler races do not drain the trainee.
+        val hasEnoughEnergy = hasEnoughEnergyForExtraRacing(campaign.trainee.energy, minEnergyForExtraRacing)
+        val result = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0) && !raceRepeatWarningCheck && hasEnoughEnergy
         val fallbackReason =
             when {
                 !enableFarmingFans -> "Farming Fans setting is off"
                 (turnsRemaining % daysToRunExtraRaces) != 0 -> "Not a racing-interval day ($turnsRemaining turns remaining, every $daysToRunExtraRaces days)"
                 raceRepeatWarningCheck -> "Race repeat warning is active"
+                !hasEnoughEnergy -> "Energy ${campaign.trainee.energy}% is below the extra-racing floor of $minEnergyForExtraRacing%"
                 else -> "Standard fallback: every-$daysToRunExtraRaces-day racing window matched"
             }
         campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = fallbackReason)
