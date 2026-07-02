@@ -49,6 +49,14 @@ export type DayRecord = {
     energyType?: string
     /** The type of mood recovery if any. */
     moodType?: string
+    /** The name of the race run if any (e.g. "Niigata Junior Stakes"). */
+    raceName?: string
+    /** The finishing place of the race if any (e.g. "1st"). */
+    racePlace?: string
+    /** Whether the race was won (finished 1st). */
+    raceWon?: boolean
+    /** The scenario/campaign this run was played on (e.g. "Trackblazer"). */
+    scenario?: string
 }
 
 export type GapRecord = {
@@ -67,6 +75,8 @@ export type FileDividerRecord = {
     fileName: string
     /** The name of the trainee detected in this file. */
     traineeName?: string
+    /** The scenario/campaign this run was played on (e.g. "Trackblazer"). */
+    scenario?: string
 }
 
 export type ParseError = {
@@ -101,9 +111,12 @@ const ACTION_KEYS = ["training", "race", "energy", "mood", "injury"] as const
 type ActionKey = (typeof ACTION_KEYS)[number]
 
 const REGEX = {
-    // Example: "[DATE] It is currently Junior Year Late Dec / Turn Number 24.".
-    // New Example: "[DATE] New date: JUNIOR YEAR LATE JANUARY (Turn 2)"
-    dateTurn: /(?:Turn Number|Turn)\s+\(?(\d+)\)?/i,
+    // Matches the turn number from an authoritative per-turn marker only: the parenthesized "(Turn N)" form
+    // (e.g. "[DATE] New date: JUNIOR YEAR LATE JANUARY (Turn 2)", "Current Date: ... (Turn 16)") or the legacy
+    // "Turn Number N" form (e.g. "[DATE] It is currently Junior Year Late Dec / Turn Number 24."). This deliberately
+    // does NOT match bare "Turn N (...)" lines like the Smart Race Solver preview schedule ("  Turn 16 (... G3)"),
+    // which reference future turns and would otherwise create phantom day records with the wrong date.
+    dateTurn: /(?:\(Turn\s+(\d+)\)|Turn\s+Number\s+(\d+))/i,
     // Example: "[INFO] Detected date: Junior Year Late Dec".
     dateDetectedText: /\[INFO\][^\n]*Detected date:\s*(.+)$/i,
     // Example: "[DATE] It is currently Senior Year Late Dec / Turn Number 24."
@@ -123,6 +136,15 @@ const REGEX = {
     timestamp: /^(\d{2}):(\d{2}):(\d{2})\.(\d{3})/,
     // Extract trainee name from content: "[TRAINEE] Detected trainee name: Special Week"
     traineeName: /\[TRAINEE\][^\n]*(?:Detected trainee name|Name):\s*(.+)$/i,
+    // Extract the scenario/campaign from the startup banner: "Campaign Selected: Trackblazer".
+    scenario: /Campaign Selected:\s*(.+)$/i,
+    // Extract the selected race name and grade: 'Selected Race: Niigata Junior Stakes (G3) Rival: true'. The greedy name
+    // capture backtracks so the last parenthesized group is the grade (handles inner parens like "Tenno Sho (Spring)").
+    raceSelected: /Selected Race:\s+(.+)\s+\(([^()]+)\)\s+Rival:/i,
+    // Extract the race name and finishing place from the history line: 'Race "Niigata Junior Stakes" on turn 16 confirmed 1st;'.
+    raceResult: /Race\s+"([^"]+)"\s+on\s+turn\s+\d+\s+confirmed\s+(\w+)/i,
+    // Extract whether the race was won (finished 1st): "Race result detected - 1st place: true.".
+    raceWon: /Race result detected -\s+\d+\w+ place:\s+(true|false)/i,
 }
 
 /** Generic matcher that supports substring contains checks only. */
@@ -172,8 +194,9 @@ const MATCHERS: Record<ActionKey, LineMatcher> = {
         regex: [/\[MOOD\] Successfully recovered mood(?: via (.*?)(\.|$))?/i],
     },
     injury: {
-        substr: ["Injury detected and attempted to heal"],
-        regex: [/\[INJURY\] Injury detected and attempted to heal/i],
+        // Current wording is "[INJURY] Injury detected. Attempting to heal...". The legacy "attempted to heal" form is kept for archived logs.
+        substr: ["Injury detected. Attempting to heal", "Injury detected and attempted to heal"],
+        regex: [/\[INJURY\]\s+Injury detected\.?\s+Attempting to heal/i, /\[INJURY\]\s+Injury detected and attempted to heal/i],
     },
 }
 
@@ -189,6 +212,16 @@ function sanitizeSummary(text?: string): string {
 }
 
 /**
+ * Converts a token to title case, e.g. the uppercase training types the bot now logs ("WIT" -> "Wit").
+ * @param text The token to convert.
+ * @returns The token with the first letter uppercased and the rest lowercased.
+ */
+function toTitleCase(text: string): string {
+    if (!text) return text
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+}
+
+/**
  * Composes a summary for a day based on the actions that occurred.
  * @param day The day data containing actions and granular types.
  * @param firstNotable The first notable action that occurred on the day.
@@ -199,6 +232,7 @@ function composeSummary(
         actions: DayActions
         trainingType?: string
         raceGrade?: string
+        raceName?: string
         energyType?: string
         moodType?: string
     },
@@ -207,10 +241,11 @@ function composeSummary(
     const labels: string[] = []
 
     if (day.actions.training) {
-        labels.push(day.trainingType ? `${day.trainingType} Training` : "Training")
+        labels.push(day.trainingType ? `${toTitleCase(day.trainingType)} Training` : "Training")
     }
     if (day.actions.race) {
-        labels.push(day.raceGrade ? `${day.raceGrade} Race` : "Race")
+        if (day.raceName) labels.push(day.raceGrade ? `${day.raceName} (${day.raceGrade})` : day.raceName)
+        else labels.push(day.raceGrade ? `${day.raceGrade} Race` : "Race")
     }
     if (day.actions.energy) {
         // Normalize energy types for clarity.
@@ -258,7 +293,8 @@ function determineYear(dayNumber: number, dateText?: string): string | undefined
     if (dateText) {
         const yearMatch = dateText.match(REGEX.yearExtract)
         if (yearMatch) {
-            return yearMatch[1]
+            // Normalize to canonical title case ("JUNIOR" -> "Junior") so year grouping in aggregateYearSummaries matches.
+            return toTitleCase(yearMatch[1])
         }
     }
     return undefined
@@ -290,6 +326,10 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
             raceGrade?: string // The grade of the race.
             energyType?: string // The type of energy recovery.
             moodType?: string // The type of mood recovery.
+            raceName?: string // The name of the race run.
+            racePlace?: string // The finishing place of the race.
+            raceWon?: boolean // Whether the race was won (1st place).
+            scenario?: string // The scenario/campaign for this run.
         }
     >()
 
@@ -302,6 +342,7 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
         let foundAnyDay = false
         let pendingDateText: string | undefined
         let fileTraineeName: string | undefined
+        let fileScenario: string | undefined
 
         // Try to extract trainee name from filename prefix.
         // Format example: "Admire_Vega_2026-03-06 16_13_03.txt".
@@ -368,7 +409,7 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
 
             const match = line.match(REGEX.dateTurn)
             if (match) {
-                const detectedDay = parseInt(match[1], 10)
+                const detectedDay = parseInt(match[1] ?? match[2], 10)
                 foundAnyDay = true
                 if (firstDaySeen === undefined) firstDaySeen = detectedDay
                 if (lastDaySeen === undefined || detectedDay > lastDaySeen) lastDaySeen = detectedDay
@@ -402,6 +443,7 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
                             ended: false,
                             timestamp: lineTimestamp,
                             traineeName: fileTraineeName,
+                            scenario: fileScenario,
                             raceGrade: undefined,
                             energyType: undefined,
                             moodType: undefined,
@@ -410,6 +452,9 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
                         const existingDay = dayMap.get(currentDay)!
                         if (!existingDay.traineeName && fileTraineeName) {
                             existingDay.traineeName = fileTraineeName
+                        }
+                        if (!existingDay.scenario && fileScenario) {
+                            existingDay.scenario = fileScenario
                         }
                         if (!existingDay.dateText && pendingDateText) {
                             existingDay.dateText = pendingDateText
@@ -442,6 +487,12 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
                 currentDay = undefined
                 statGainsByType.clear()
                 continue
+            }
+
+            // Capture the scenario/campaign once from the startup banner, which is logged before the first day.
+            if (!fileScenario) {
+                const scenarioMatch = line.match(REGEX.scenario)
+                if (scenarioMatch) fileScenario = scenarioMatch[1].trim()
             }
 
             if (currentDay === undefined) {
@@ -494,6 +545,25 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
                 day.traineeName = traineeMatch[1].trim()
             }
 
+            // Capture the race name (and grade), finishing place, and win result when a race is run this turn.
+            const raceSelectedMatch = line.match(REGEX.raceSelected)
+            if (raceSelectedMatch) {
+                day.raceName = raceSelectedMatch[1].trim()
+                if (!day.raceGrade) day.raceGrade = raceSelectedMatch[2].trim()
+                day.triggers.race.push(line)
+            }
+            const raceResultMatch = line.match(REGEX.raceResult)
+            if (raceResultMatch) {
+                day.raceName = raceResultMatch[1].trim()
+                day.racePlace = raceResultMatch[2].trim()
+                day.triggers.race.push(line)
+            }
+            const raceWonMatch = line.match(REGEX.raceWon)
+            if (raceWonMatch) {
+                day.raceWon = raceWonMatch[1].toLowerCase() === "true"
+                day.triggers.race.push(line)
+            }
+
             for (const key of ACTION_KEYS) {
                 const matcher = MATCHERS[key]
                 if (matchesLine(line, matcher)) {
@@ -544,7 +614,7 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
         // Insert file divider if fileName changes (for consecutive days or after gaps).
         // Also insert at the very beginning for the first file.
         if ((prevFileName && entry.fileName !== prevFileName) || prevFileName === undefined) {
-            records.push({ kind: "fileDivider", fileName: entry.fileName, traineeName: entry.traineeName })
+            records.push({ kind: "fileDivider", fileName: entry.fileName, traineeName: entry.traineeName, scenario: entry.scenario })
         }
 
         records.push({
@@ -563,6 +633,10 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
             raceGrade: entry.raceGrade,
             energyType: entry.energyType,
             moodType: entry.moodType,
+            raceName: entry.raceName,
+            racePlace: entry.racePlace,
+            raceWon: entry.raceWon,
+            scenario: entry.scenario,
         })
         prevDay = d
         prevFileName = entry.fileName
@@ -638,6 +712,8 @@ export type YearSummariesResult = {
     totalElapsedTimeFormatted?: string
     /** The total elapsed time in "X hours and Y minutes" format for all years. */
     totalElapsedTimeHuman?: string
+    /** The scenario/campaign this run was played on (e.g. "Trackblazer"). */
+    scenario?: string
 }
 
 /**
@@ -692,6 +768,8 @@ export function aggregateYearSummaries(records: DayRecord[]): YearSummariesResul
     const summaries: YearSummary[] = []
     const yearOrder = ["Junior", "Classic", "Senior"]
     let totalElapsedTimeMs = 0
+    // The scenario is run-wide. Capture it from the first day that carries one.
+    let scenario: string | undefined
 
     for (const year of yearOrder) {
         const days = yearMap.get(year)
@@ -713,6 +791,9 @@ export function aggregateYearSummaries(records: DayRecord[]): YearSummariesResul
             // Collect trainee name if available.
             if (day.traineeName) {
                 traineeNamesSet.add(day.traineeName)
+            }
+            if (!scenario && day.scenario) {
+                scenario = day.scenario
             }
             // Check if this day is Finals (turns 73-75).
             if (day.dayNumber >= 73 && day.dayNumber <= 75) {
@@ -798,5 +879,6 @@ export function aggregateYearSummaries(records: DayRecord[]): YearSummariesResul
         totalElapsedTimeMs: totalElapsedTimeMs > 0 ? totalElapsedTimeMs : undefined,
         totalElapsedTimeFormatted,
         totalElapsedTimeHuman,
+        scenario,
     }
 }
