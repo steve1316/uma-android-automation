@@ -2,6 +2,13 @@ import React, { useMemo } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import type { YearSummary } from "../../lib/eventLogParser"
 import { useTheme } from "../../context/ThemeContext"
+import { TYPE } from "../../lib/type"
+import { SPACING } from "../../lib/spacing"
+import { RADII } from "../../lib/radii"
+import { ValuePill } from "../ui/value-pill"
+import { StatBar } from "./StatBar"
+import { ACTION_ORDER, ACTION_VISUALS, type ActionKey } from "./actionVisuals"
+import { STATS } from "./constants"
 
 type Props = {
     /** The year summary data including action counts, stat gains, and elapsed time. */
@@ -9,9 +16,8 @@ type Props = {
 }
 
 /**
- * Displays a summary card for a single year's event log data.
- * Shows total actions (energy, mood, injury, race, training), stat gains per training type,
- * and elapsed time. Appends "+ Finals" to the title for Senior Year if finals data is present.
+ * Displays a summary card for a single year: action counts as tinted proportional bars and per-stat training gains as a
+ * five-column strip, with the trainee names and elapsed time in the header. Shows a "Finals" pill for years covering turns 73-75.
  * @param summary The year summary data.
  */
 const YearSummaryCard: React.FC<Props> = ({ summary }) => {
@@ -20,108 +26,44 @@ const YearSummaryCard: React.FC<Props> = ({ summary }) => {
     const styles = useMemo(
         () =>
             StyleSheet.create({
-                container: {
-                    paddingVertical: 16,
-                    paddingHorizontal: 16,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    marginBottom: 12,
-                    backgroundColor: colors.surface,
-                    borderColor: colors.borderHair,
-                },
-                headerRow: {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: 12,
-                },
-                title: {
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    flex: 1,
-                    color: colors.text,
-                },
-                timeContainer: {
-                    alignItems: "flex-end",
-                },
-                timeFormatted: {
-                    fontSize: 18,
-                    fontWeight: "600",
-                    marginBottom: 2,
-                    color: colors.text,
-                },
-                timeHuman: {
-                    fontSize: 12,
-                    color: colors.textMuted,
-                },
-                section: {
-                    marginBottom: 12,
-                },
-                sectionTitle: {
-                    fontSize: 16,
-                    fontWeight: "600",
-                    marginBottom: 8,
-                    color: colors.text,
-                },
-                actionRow: {
-                    gap: 8,
-                },
-                actionItem: {
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 4,
-                },
-                actionLabel: {
-                    fontSize: 14,
-                    marginRight: 8,
-                    minWidth: 120,
-                    color: colors.textMuted,
-                },
-                actionValue: {
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: colors.text,
-                },
-                statRow: {
-                    gap: 8,
-                },
-                statItem: {
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 4,
-                },
-                statLabel: {
-                    fontSize: 14,
-                    marginRight: 8,
-                    minWidth: 110,
-                    color: colors.textMuted,
-                },
-                statValue: {
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: colors.text,
-                },
+                container: { padding: SPACING.lg, borderRadius: RADII.lg, borderWidth: 1, marginBottom: SPACING.md, backgroundColor: colors.surface, borderColor: colors.borderHair },
+                headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: SPACING.md },
+                titleRow: { flexDirection: "row", alignItems: "center", gap: SPACING.sm, flexWrap: "wrap", flex: 1 },
+                title: { ...TYPE.h1, color: colors.text },
+                timeContainer: { alignItems: "flex-end" },
+                timeFormatted: { ...TYPE.monoValue, fontSize: 15, color: colors.text },
+                timeHuman: { ...TYPE.caption, color: colors.textMuted, marginTop: 1 },
+                sectionLabel: { ...TYPE.monoLabel, color: colors.textMuted, marginBottom: SPACING.sm },
+                section: { marginTop: SPACING.md },
+                statStrip: { flexDirection: "row", gap: SPACING.sm },
+                statCol: { flex: 1, alignItems: "center", gap: 2 },
+                statAbbr: { ...TYPE.monoLabel, color: colors.textMuted },
+                statValue: { ...TYPE.monoValue, color: colors.text },
+                statTrack: { width: "100%", height: 4, borderRadius: RADII.pill, backgroundColor: colors.surfaceRaised, overflow: "hidden" },
+                statFill: { height: "100%", borderRadius: RADII.pill, backgroundColor: colors.brand },
+                statCount: { ...TYPE.caption, color: colors.textMuted },
             }),
         [colors]
     )
 
-    // Build the title string, including "+ Finals" for Senior Year if the logs covered the Finals days (turns 73-75).
-    const titleText = summary.hasFinals ? `${summary.year} Year + Finals` : `${summary.year} Year`
+    const countFor: Record<ActionKey, number> = {
+        training: summary.trainingCount,
+        race: summary.raceCount,
+        energy: summary.energyCount,
+        mood: summary.moodCount,
+        injury: summary.injuryCount,
+    }
+    const maxCount = Math.max(1, ...ACTION_ORDER.map((k) => countFor[k]))
+    const maxStat = Math.max(1, ...STATS.map((s) => summary.totalStatGains[s.key]))
 
     return (
         <View style={styles.container}>
             <View style={styles.headerRow}>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.title}>{titleText}</Text>
-                    {summary.traineeNames && summary.traineeNames.length > 0 && (
-                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
-                            {summary.traineeNames.map((name, idx) => (
-                                <View key={idx} style={{ backgroundColor: colors.brand, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.onBrand }}>{name}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    )}
+                    <View style={styles.titleRow}>
+                        <Text style={styles.title}>{summary.year} Year</Text>
+                        {summary.hasFinals && <ValuePill label="Finals" />}
+                    </View>
                 </View>
                 {summary.elapsedTimeFormatted && (
                     <View style={styles.timeContainer}>
@@ -132,44 +74,36 @@ const YearSummaryCard: React.FC<Props> = ({ summary }) => {
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Actions</Text>
-                <View style={styles.actionRow}>
-                    {[
-                        { label: "Recover Energy", count: summary.energyCount },
-                        { label: "Recover Mood", count: summary.moodCount },
-                        { label: "Recover Injury", count: summary.injuryCount },
-                        { label: "Race", count: summary.raceCount },
-                        { label: "Training", count: summary.trainingCount },
-                    ].map(({ label, count }) => (
-                        <View key={label} style={styles.actionItem}>
-                            <Text style={styles.actionLabel}>{label}:</Text>
-                            <Text style={styles.actionValue}>{count}</Text>
-                        </View>
-                    ))}
-                </View>
+                <Text style={styles.sectionLabel}>Actions</Text>
+                {ACTION_ORDER.map((key) => {
+                    const visual = ACTION_VISUALS[key]
+                    const Icon = visual.icon
+                    const tint = colors[visual.colorKey]
+                    return <StatBar key={key} label={visual.label} iconLeft={<Icon size={12} color={tint} />} value={countFor[key]} max={maxCount} color={tint} />
+                })}
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Total Stat Gains</Text>
-                <View style={styles.statRow}>
-                    {[
-                        { label: "Speed", value: summary.totalStatGains.speed, count: summary.trainingCounts.speed },
-                        { label: "Stamina", value: summary.totalStatGains.stamina, count: summary.trainingCounts.stamina },
-                        { label: "Power", value: summary.totalStatGains.power, count: summary.trainingCounts.power },
-                        { label: "Guts", value: summary.totalStatGains.guts, count: summary.trainingCounts.guts },
-                        { label: "Wit", value: summary.totalStatGains.wit, count: summary.trainingCounts.wit },
-                    ].map(({ label, value, count }) => (
-                        <View key={label} style={styles.statItem}>
-                            <Text style={styles.statLabel}>
-                                {label} ({count}):
-                            </Text>
-                            <Text style={styles.statValue}>{value}</Text>
-                        </View>
-                    ))}
+                <Text style={styles.sectionLabel}>Stat Gains</Text>
+                <View style={styles.statStrip}>
+                    {STATS.map(({ abbr, key }) => {
+                        const value = summary.totalStatGains[key]
+                        const count = summary.trainingCounts[key]
+                        return (
+                            <View key={abbr} style={styles.statCol}>
+                                <Text style={styles.statAbbr}>{abbr}</Text>
+                                <Text style={styles.statValue}>{value}</Text>
+                                <View style={styles.statTrack}>
+                                    <View style={[styles.statFill, { width: `${(value / maxStat) * 100}%` }]} />
+                                </View>
+                                <Text style={styles.statCount}>x{count}</Text>
+                            </View>
+                        )
+                    })}
                 </View>
             </View>
         </View>
     )
 }
 
-export default YearSummaryCard
+export default React.memo(YearSummaryCard)
