@@ -126,6 +126,10 @@ export interface TrainingScoringConstants {
     anticipatoryCoefficient: number
     /** Maximum extra multiplier the anticipatory rainbow bonus can contribute (kept below the real rainbow multiplier). */
     anticipatoryCap: number
+    /** Flat Unity Cup bonus for a training that can fill at least one Spirit Explosion gauge. Kept on the stat-efficiency scale so strong stat turns still win. */
+    unityFillBaseBonus: number
+    /** Additional Unity Cup fill bonus per fillable gauge, added on top of `unityFillBaseBonus`. */
+    unityFillPerGaugeBonus: number
 }
 
 /** Default values for `TrainingScoringConstants`, matching the constants currently hardcoded in the Kotlin scoring functions. */
@@ -156,7 +160,7 @@ export const DEFAULT_TRAINING_SCORING_CONSTANTS: TrainingScoringConstants = {
     statWeightWithoutBars: 0.7,
     relationshipWeightWithBars: 0.1,
     miscWeight: 0.3,
-    juniorEarlyGameFlatBonus: 200,
+    juniorEarlyGameFlatBonus: 100,
     relationshipScale: 1.5,
     rainbowMultiplierEnabled: 2,
     rainbowMultiplierDisabled: 1.5,
@@ -165,6 +169,8 @@ export const DEFAULT_TRAINING_SCORING_CONSTANTS: TrainingScoringConstants = {
     anticipatoryMinFillPercent: 50,
     anticipatoryCoefficient: 0.2,
     anticipatoryCap: 0.6,
+    unityFillBaseBonus: 60,
+    unityFillPerGaugeBonus: 40,
 }
 
 /** Bundle of every input the training scoring functions need to score a turn: current state, settings, and the analyzed training options. */

@@ -163,6 +163,8 @@ data class TrainingConfig(
  * @property miscWeight Weight applied to misc score in the raw-score composition.
  * @property juniorEarlyGameFlatBonus Flat score bonus added during Junior Year to encourage gauge filling early.
  * @property relationshipScale Multiplier applied to the aggregate relationship score before adding it to the Unity Cup raw score. Tuned to be a significant bonus without exceeding the rainbow burst threshold.
+ * @property unityFillBaseBonus Flat Unity Cup bonus for a training that can fill at least one Spirit Explosion gauge. Kept on the stat-efficiency scale so strong stat turns still win.
+ * @property unityFillPerGaugeBonus Additional Unity Cup fill bonus per fillable gauge, added on top of `unityFillBaseBonus`.
  * @property rainbowMultiplierEnabled Multiplier applied to total score in Year 2+ when at least one rainbow is detected and the user has enabled the rainbow training bonus.
  * @property rainbowMultiplierDisabled Multiplier applied when rainbows are detected but the user has disabled the rainbow training bonus. Kept below `rainbowMultiplierEnabled`.
  * @property rainbowPerInstanceBase Base value for the per-rainbow bonus score, geometrically decayed by `rainbowPerInstanceDecay`.
@@ -200,7 +202,7 @@ data class TrainingScoringConstants(
     val statWeightWithoutBars: Double = 0.7,
     val relationshipWeightWithBars: Double = 0.1,
     val miscWeight: Double = 0.3,
-    val juniorEarlyGameFlatBonus: Double = 200.0,
+    val juniorEarlyGameFlatBonus: Double = 100.0,
     val relationshipScale: Double = 1.5,
     val rainbowMultiplierEnabled: Double = 2.0,
     val rainbowMultiplierDisabled: Double = 1.5,
@@ -209,6 +211,8 @@ data class TrainingScoringConstants(
     val anticipatoryMinFillPercent: Double = 50.0,
     val anticipatoryCoefficient: Double = 0.2,
     val anticipatoryCap: Double = 0.6,
+    val unityFillBaseBonus: Double = 60.0,
+    val unityFillPerGaugeBonus: Double = 40.0,
 ) {
     init {
         require(ratioMultipliers.size == ratioBreakpoints.size + 1) {

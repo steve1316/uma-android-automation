@@ -471,6 +471,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     "anticipatoryMinFillPercent",
                     "anticipatoryCoefficient",
                     "anticipatoryCap",
+                    "unityFillBaseBonus",
+                    "unityFillPerGaugeBonus",
                 )
             val intKeys = listOf("mainStatThresholdSpeed", "mainStatThresholdStamina", "mainStatThresholdPower", "mainStatThresholdGuts", "mainStatThresholdWit")
             // Use NaN as the per-key default so we can distinguish "user set it" from "missing"; scoringConstantsFromMap drops NaN via isFinite check.
@@ -651,9 +653,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // 3. Third Priority: Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
             if (numSpiritGaugesCanFill > 0) {
-                // Score increases with number of gauges that can be filled.
+                // Score increases with number of gauges that can be filled. Kept on the stat-efficiency scale so a strong stat turn still outranks pure gauge-filling.
                 // Each gauge fills by 25% per training execution.
-                val fillBonus = 300.0 + (numSpiritGaugesCanFill * 100.0)
+                val fillBonus = config.scoring.unityFillBaseBonus + (numSpiritGaugesCanFill * config.scoring.unityFillPerGaugeBonus)
                 score += fillBonus
                 MessageLog.i(TAG, "[TRAINING] [${training.name}] Training can fill $numSpiritGaugesCanFill Spirit Explosion Gauge(s). Adding fill bonus: $fillBonus")
 

@@ -367,5 +367,7 @@ fun scoringConstantsFromMap(settings: Map<String, Any?>, defaults: TrainingScori
         anticipatoryMinFillPercent = d("anticipatoryMinFillPercent", defaults.anticipatoryMinFillPercent),
         anticipatoryCoefficient = d("anticipatoryCoefficient", defaults.anticipatoryCoefficient),
         anticipatoryCap = d("anticipatoryCap", defaults.anticipatoryCap),
+        unityFillBaseBonus = d("unityFillBaseBonus", defaults.unityFillBaseBonus),
+        unityFillPerGaugeBonus = d("unityFillPerGaugeBonus", defaults.unityFillPerGaugeBonus),
     )
 }

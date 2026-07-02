@@ -748,6 +748,26 @@ class TrainingScoringTest {
     }
 
     @Test
+    @DisplayName("Retuned fill bonus: a strong stat training beats a weak one-gauge fill (the original GUTS-over-POWER complaint)")
+    fun testUnityCupRetunedFillDoesNotOutrankStrongStats() {
+        // Reproduces the reported turn shape: a 52-stat POWER option with no gauge vs a 16-stat GUTS option that only fills one gauge, in Junior year.
+        val powerTraining = createDefaultTrainingOption(name = StatName.POWER, statGains = statGainsToMap(intArrayOf(0, 16, 36, 0, 0)))
+        val gutsTraining = createDefaultTrainingOption(name = StatName.GUTS, statGains = statGainsToMap(intArrayOf(4, 0, 4, 8, 0)), extras = mapOf("spiritGaugesCanFill" to 1))
+        val currentStats = mapOf(StatName.SPEED to 250, StatName.STAMINA to 250, StatName.POWER to 250, StatName.GUTS to 120, StatName.WIT to 120)
+        val config =
+            createDefaultConfig(
+                trainingOptions = listOf(powerTraining, gutsTraining),
+                currentStats = currentStats,
+                currentDate = GameDate(year = DateYear.JUNIOR, month = DateMonth.JANUARY, phase = DatePhase.EARLY),
+                scenario = "Unity Cup",
+            )
+
+        val powerScore = scoreUnityCupTraining(config, powerTraining)
+        val gutsScore = scoreUnityCupTraining(config, gutsTraining)
+        assertTrue(powerScore > gutsScore, "With the retuned fill bonus the 52-stat POWER training should beat the 16-stat one-gauge GUTS training (power=$powerScore, guts=$gutsScore)")
+    }
+
+    @Test
     @DisplayName("Early game provides spirit gauge filling bonus")
     fun testEarlyGameGaugeFillingBonus() {
         val training =
@@ -1379,8 +1399,10 @@ class TrainingScoringTest {
         assertEquals(0.7, c.statWeightWithoutBars)
         assertEquals(0.1, c.relationshipWeightWithBars)
         assertEquals(0.3, c.miscWeight)
-        assertEquals(200.0, c.juniorEarlyGameFlatBonus)
+        assertEquals(100.0, c.juniorEarlyGameFlatBonus)
         assertEquals(1.5, c.relationshipScale)
+        assertEquals(60.0, c.unityFillBaseBonus)
+        assertEquals(40.0, c.unityFillPerGaugeBonus)
         assertEquals(2.0, c.rainbowMultiplierEnabled)
         assertEquals(1.5, c.rainbowMultiplierDisabled)
         assertEquals(200.0, c.rainbowPerInstanceBase)

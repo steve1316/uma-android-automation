@@ -115,6 +115,8 @@ export function toKtScoringConstants(c: TrainingScoringConstants): InstanceType<
         c.anticipatoryMinFillPercent,
         c.anticipatoryCoefficient,
         c.anticipatoryCap,
+        c.unityFillBaseBonus,
+        c.unityFillPerGaugeBonus,
     )
 }
 
@@ -150,6 +152,8 @@ export function fromKtScoringConstants(c: InstanceType<typeof ns.TrainingScoring
         anticipatoryMinFillPercent: c.anticipatoryMinFillPercent,
         anticipatoryCoefficient: c.anticipatoryCoefficient,
         anticipatoryCap: c.anticipatoryCap,
+        unityFillBaseBonus: c.unityFillBaseBonus,
+        unityFillPerGaugeBonus: c.unityFillPerGaugeBonus,
     }
 }
 
