@@ -39,6 +39,35 @@ import java.util.concurrent.TimeUnit
 import kotlin.enums.enumEntries
 import kotlin.math.abs
 
+/** Guide-derived stamina-target multipliers by running style. Front Runners need the most stamina to hold the lead, End Closers the least. */
+val DEFAULT_RUNNING_STYLE_STAMINA_FACTORS: Map<RunningStyle, Double> =
+    mapOf(
+        RunningStyle.FRONT_RUNNER to 1.15,
+        RunningStyle.PACE_CHASER to 1.0,
+        RunningStyle.LATE_SURGER to 0.9,
+        RunningStyle.END_CLOSER to 0.85,
+    )
+
+/**
+ * Scales the stamina entry of a stat-target map by the running-style factor, since required stamina varies sharply by running style at the same distance. Every other stat is left
+ * unchanged. A null style (not yet detected) or a neutral (1.0) factor returns the targets untouched, so this is safe to call before the trainee's style is known.
+ *
+ * @param targets The base per-stat target map.
+ * @param style The trainee's running style, or null when not yet detected.
+ * @param factors Per-style stamina multipliers. Defaults to [DEFAULT_RUNNING_STYLE_STAMINA_FACTORS].
+ * @return The target map with stamina scaled by the style factor, or the original map when no adjustment applies.
+ */
+fun applyRunningStyleStaminaFactor(
+    targets: Map<StatName, Int>,
+    style: RunningStyle?,
+    factors: Map<RunningStyle, Double> = DEFAULT_RUNNING_STYLE_STAMINA_FACTORS,
+): Map<StatName, Int> {
+    val factor = factors[style] ?: return targets
+    if (factor == 1.0) return targets
+    val stamina = targets[StatName.STAMINA] ?: return targets
+    return targets + (StatName.STAMINA to (stamina * factor).toInt().coerceAtLeast(1))
+}
+
 /**
  * Defines the state and properties of a trainee (Uma Musume).
  *

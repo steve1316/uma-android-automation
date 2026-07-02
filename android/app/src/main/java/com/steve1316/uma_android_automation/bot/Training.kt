@@ -29,6 +29,7 @@ import com.steve1316.uma_android_automation.components.LabelTrainingFailureChanc
 import com.steve1316.uma_android_automation.types.DateYear
 import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.types.applyRunningStyleStaminaFactor
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_scoring.TrainingScoringConstants
@@ -162,6 +163,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
     /** Failure chance below which the expected-value gate never fires (low-risk trainings are always allowed). */
     private val expectedValueMinFailureChance: Int = SettingsHelper.getIntSetting("training", "expectedValueMinFailureChance", 10)
+
+    /** Whether to scale the stamina target by the trainee's running style (Front Runners need more stamina than Late/End Closers). Applies only once the running style is detected. */
+    private val enableRunningStyleStaminaAdjustment: Boolean = SettingsHelper.getBooleanSetting("training", "enableRunningStyleStaminaAdjustment", false)
 
     /** Whether to force Wit training during the Finale. */
     private val trainWitDuringFinale: Boolean = SettingsHelper.getBooleanSetting("training", "trainWitDuringFinale")
@@ -2066,7 +2070,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     if (disableStatTargets) {
                         StatName.entries.associateWith { getScenarioStatCap(game.scenario, it) }
                     } else {
-                        campaign.trainee.getPhaseStatTargets(campaign.date.year)
+                        val baseTargets = campaign.trainee.getPhaseStatTargets(campaign.date.year)
+                        if (enableRunningStyleStaminaAdjustment && campaign.trainee.bHasSetRunningStyle) {
+                            applyRunningStyleStaminaFactor(baseTargets, campaign.trainee.runningStyle)
+                        } else {
+                            baseTargets
+                        }
                     },
                 currentDate = campaign.date,
                 scenario = game.scenario,
