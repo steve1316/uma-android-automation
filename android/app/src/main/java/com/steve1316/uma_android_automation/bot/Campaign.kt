@@ -112,6 +112,18 @@ enum class MainScreenAction {
 private const val GROUP_PROGRESS_GAP_X = 15
 private const val GROUP_PROGRESS_WIDTH = 120
 
+/** First turn of the finale run (turns 73-75). */
+private const val FINALE_FIRST_DAY = 73
+
+/**
+ * Whether mood recovery should be skipped because the finale is underway. Recovering mood with at most three turns left wastes one of them, so from the first finale turn the bot
+ * should train or race instead. Pure so it is unit-testable without a live Campaign.
+ *
+ * @param day The current turn (1-75).
+ * @return True when the finale has started and mood recovery should be skipped.
+ */
+internal fun shouldSkipMoodRecoveryForFinale(day: Int): Boolean = day >= FINALE_FIRST_DAY
+
 /**
  * Defines the base campaign class that contains all shared logic for campaign automation.
  *
@@ -941,6 +953,12 @@ abstract class Campaign(game: Game) : Task(game) {
      * @return True if mood recovery is needed and possible, false otherwise.
      */
     open fun shouldRecoverMood(sourceBitmap: Bitmap): Boolean {
+        // Finale: recovering mood with at most three turns left wastes a turn, so skip it once the finale starts (mirrors the finale injury-check skip).
+        if (shouldSkipMoodRecoveryForFinale(date.day)) {
+            MessageLog.i(TAG, "[MOOD] Finale underway (day ${date.day}). Skipping mood recovery to preserve the remaining turns for training or racing.")
+            return false
+        }
+
         // Guard: During the first training check, skip mood recovery for Normal mood to allow training analysis first.
         if (training.firstTrainingCheck && trainee.mood == Mood.NORMAL && !ButtonRestAndRecreation.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.i(
