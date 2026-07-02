@@ -47,6 +47,7 @@ import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import java.io.File
 import java.lang.Integer.max
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -835,7 +836,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 )
                 if (annotated != null) {
                     val color = if (ring.isRainbow) Scalar(0.0, 255.0, 0.0) else Scalar(0.0, 0.0, 255.0)
-                    Imgproc.circle(annotated, Point((centerX - regionX).toDouble(), centerY.toDouble()), faceCircleRadius, color, 3)
+                    val drawCenter = Point((centerX - regionX).toDouble(), centerY.toDouble())
+                    Imgproc.circle(annotated, drawCenter, faceCircleRadius, color, 3)
+                    Imgproc.putText(annotated, "${ring.huesPresent}", Point(drawCenter.x - 10, drawCenter.y + 8), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, color, 3)
                 }
             }
         }
@@ -843,6 +846,12 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         if (annotated != null) {
             Imgcodecs.imwrite("$matchFilePath/debugRainbowDetection.png", annotated)
             annotated.release()
+        }
+        // Also persist the metrics as text so they can be retrieved without the in-app log (the annotated PNG shows geometry; the text shows the exact fractions).
+        try {
+            File("$matchFilePath/debugRainbowDetection.txt").writeText(sb.toString())
+        } catch (e: Exception) {
+            MessageLog.e(TAG, "[ERROR] debugRainbowDetection:: Failed to write metrics text: ${e.message}")
         }
         MessageLog.i(TAG, sb.toString())
         return sb.toString()
