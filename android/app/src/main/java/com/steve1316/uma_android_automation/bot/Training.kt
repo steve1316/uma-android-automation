@@ -74,6 +74,24 @@ enum class SelectionSource {
     UNFORCED_DEFAULT,
 }
 
+/**
+ * Identifies which scoring algorithm produced a training recommendation, so the log's scoring-mode line and the
+ * per-mode key-factor explanation always match the scorer that actually ran. The `label` is the human-readable log string.
+ */
+enum class TrainingScoringMode(val label: String) {
+    /** Pre-debut / Junior year: `scoreFriendshipTraining` prioritizes building relationship bars. */
+    FRIENDSHIP("Friendship (Pre-Debut/Junior)"),
+
+    /** Classic / Senior year (default campaign): `calculateRawTrainingScore` stat-efficiency composition. */
+    STAT_EFFICIENCY("Stat Efficiency (Year 2+)"),
+
+    /** Unity Cup (year < Senior): `scoreUnityCupTraining` spirit-gauge burst/fill priority. */
+    UNITY_CUP("Unity Cup (Spirit Gauge)"),
+
+    /** Trackblazer irregular-training evaluation: the standard scorer with a minimum main-stat-gain filter. */
+    TRACKBLAZER_IRREGULAR("Trackblazer (Irregular Training)"),
+}
+
 open class Training(protected val game: Game, protected val campaign: Campaign) {
     /** Map to store detected training options. */
     internal var trainingMap: MutableMap<StatName, TrainingOption> = mutableMapOf()
@@ -381,6 +399,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         /** The logging tag for this class. */
         internal val TAG: String = "[${MainActivity.loggerTag}]Training"
 
+        /** Secondary-stat gain at or above which the selection explanation calls it out. Log-only threshold, not a scoring input. */
+        const val SECONDARY_GAIN_CALLOUT_THRESHOLD: Int = 20
+
+        /** Target-completion percent below which the selection explanation flags a stat as behind. Log-only threshold, not a scoring input. */
+        const val BEHIND_TARGET_CALLOUT_PERCENT: Double = 70.0
+
         /**
          * Build a [TrainingScoringConstants] from an arbitrary settings map keyed by the same strings used by the TypeScript counterpart
          * `scoringConstantsFromSettings()` in `src/lib/training/scoring/scoringConstantsFromSettings.ts`. Any missing or non-numeric value falls back to the
@@ -669,6 +693,108 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         /** Adapter for the shared `calculateRawTrainingScore`. The shared function applies the full composition pipeline (stat efficiency + relationship + misc, rainbow + anticipatory multipliers). */
         fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption): Double = sharedCalculateRawTrainingScore(config.toScoring(), training.toScoring())
+
+        /**
+         * Resolve the default scoring mode from the campaign date. Pure so the mode selection can be unit-tested without a live [Game] / [Campaign].
+         *
+         * @param bIsPreDebut Whether the trainee is still pre-debut.
+         * @param year The current in-game year.
+         * @return The scoring mode the default campaign uses for this date.
+         */
+        fun defaultScoringModeFor(bIsPreDebut: Boolean, year: DateYear): TrainingScoringMode =
+            if (bIsPreDebut || year == DateYear.JUNIOR) TrainingScoringMode.FRIENDSHIP else TrainingScoringMode.STAT_EFFICIENCY
+
+        /**
+         * Key factors for the Friendship scoring mode. Mirrors `scoreFriendshipTraining`, which ranks purely by relationship-bar color.
+         *
+         * @param selected The selected training option.
+         * @return The list of key-factor strings.
+         */
+        fun friendshipKeyFactors(selected: TrainingOption): List<String> {
+            val factors = mutableListOf<String>()
+            val blueCount = selected.relationshipBars.count { it.dominantColor == "blue" }
+            val greenCount = selected.relationshipBars.count { it.dominantColor == "green" }
+            if (blueCount > 0 || greenCount > 0) {
+                factors.add("Has $blueCount blue and $greenCount green relationship bar(s) to build.")
+            }
+            return factors
+        }
+
+        /**
+         * Key factors for the Stat Efficiency scoring mode. Each factor mirrors a term the shared `calculateRawTrainingScore` actually applies, so the
+         * anticipatory factor uses the exact `anticipatoryMinFillPercent` threshold and year/rainbow gates rather than a divergent hardcoded threshold.
+         *
+         * @param config The current training configuration.
+         * @param selected The selected training option.
+         * @return The list of key-factor strings.
+         */
+        fun statEfficiencyKeyFactors(config: TrainingConfig, selected: TrainingOption): List<String> {
+            val factors = mutableListOf<String>()
+            if (selected.numRainbow > 0) {
+                factors.add("Rainbow training detected (multiplier applied).")
+            }
+            // Mirror the exact anticipatory predicate from calculateRawTrainingScore so the explanation never claims a multiplier the scorer did not apply.
+            if (config.enablePrioritizeNearMaxFriendship && selected.numRainbow == 0 && config.currentDate.year > DateYear.JUNIOR) {
+                val threshold = config.scoring.anticipatoryMinFillPercent
+                val nearMaxCount = selected.relationshipBars.count { (it.dominantColor == "green" || it.dominantColor == "blue") && it.fillPercent > threshold }
+                if (nearMaxCount > 0) {
+                    factors.add("$nearMaxCount friendship bar(s) above ${threshold.toInt()}% fill (anticipatory rainbow multiplier applied).")
+                }
+            }
+            val mainGain = selected.statGains[selected.name] ?: 0
+            val currentVal = config.currentStats[selected.name] ?: 0
+            val targetVal = config.statTargets[selected.name] ?: 600
+            val completion = if (targetVal > 0) (currentVal.toDouble() / targetVal * 100.0) else 100.0
+            if (completion < BEHIND_TARGET_CALLOUT_PERCENT) {
+                factors.add("${selected.name} stat is at ${String.format("%.0f", completion)}% of target (below ${BEHIND_TARGET_CALLOUT_PERCENT.toInt()}%, higher priority).")
+            }
+            val mainThreshold = config.scoring.mainStatThresholds[selected.name] ?: error("No mainStatThresholds entry for ${selected.name}")
+            if (mainGain >= mainThreshold && selected.numRainbow == 0) {
+                factors.add("Main stat gain $mainGain >= threshold $mainThreshold: ${config.scoring.mainStatBonusMagnitude}x main-stat bonus applied.")
+            }
+            for ((statName, gain) in selected.statGains) {
+                if (statName != selected.name && gain >= SECONDARY_GAIN_CALLOUT_THRESHOLD) {
+                    factors.add("High secondary $statName gain of $gain (>= $SECONDARY_GAIN_CALLOUT_THRESHOLD).")
+                }
+            }
+            return factors
+        }
+
+        /**
+         * Key factors for the Unity Cup scoring mode. Mirrors `scoreUnityCupTraining`'s spirit-gauge priority (burst outranks fill) and never references the
+         * anticipatory / rainbow multiplier, which the Unity Cup scorer does not apply.
+         *
+         * @param selected The selected training option.
+         * @return The list of key-factor strings.
+         */
+        fun unityCupKeyFactors(selected: TrainingOption): List<String> {
+            val readyToBurst = selected.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val canFill = selected.extras["spiritGaugesCanFill"] as? Int ?: 0
+            return when {
+                readyToBurst > 0 -> listOf("Has $readyToBurst Spirit Gauge(s) ready to burst (highest priority).")
+                canFill > 0 -> listOf("Can fill $canFill Spirit Gauge(s).")
+                else -> emptyList()
+            }
+        }
+
+        /**
+         * Key factors for the Trackblazer irregular-training evaluation, which reuses the standard scorer behind a minimum main-stat-gain filter.
+         *
+         * @param selected The selected training option.
+         * @param minIrregularGain The minimum main-stat gain that qualifies a training for irregular evaluation.
+         * @return The list of key-factor strings.
+         */
+        fun trackblazerIrregularKeyFactors(selected: TrainingOption, minIrregularGain: Int): List<String> {
+            val factors = mutableListOf<String>()
+            val mainGain = selected.statGains[selected.name] ?: 0
+            if (mainGain >= minIrregularGain) {
+                factors.add("Met irregular training main stat gain threshold ($mainGain >= $minIrregularGain).")
+            }
+            if (selected.numRainbow > 0) {
+                factors.add("Rainbow training detected (multiplier applied).")
+            }
+            return factors
+        }
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1760,13 +1886,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
      *
      * @return The scoring mode label.
      */
-    open fun getTrainingScoringMode(): String {
-        return if (campaign.date.bIsPreDebut || campaign.date.year == DateYear.JUNIOR) {
-            "Friendship (Pre-Debut/Junior)"
-        } else {
-            "Stat Efficiency (Year 2+)"
-        }
-    }
+    open fun getTrainingScoringMode(): TrainingScoringMode = defaultScoringModeFor(campaign.date.bIsPreDebut, campaign.date.year)
 
     /**
      * Scores a training option for recommendation. Override in Training subclasses to use custom scoring algorithms.
@@ -1805,13 +1925,22 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     open fun getExtraLogFields(training: TrainingOption): List<String> = emptyList()
 
     /**
-     * Returns scenario-specific key factors for the training recommendation log. Override to add custom factors.
+     * Returns the per-mode key factors for the selection explanation. The dispatch is exhaustive so every scoring mode has explanation logic that matches
+     * the scorer that produced the score. Override only to add scenario-specific factors on top of the base per-mode set.
      *
+     * @param mode The scoring mode that produced the recommendation.
+     * @param config The current training configuration.
      * @param selected The selected training option.
      * @param args Scenario-specific parameters.
      * @return A list of key factor strings, or empty if none.
      */
-    open fun getExtraKeyFactors(selected: TrainingOption, args: Map<String, Any?> = emptyMap()): List<String> = emptyList()
+    open fun getKeyFactors(mode: TrainingScoringMode, config: TrainingConfig, selected: TrainingOption, args: Map<String, Any?> = emptyMap()): List<String> =
+        when (mode) {
+            TrainingScoringMode.FRIENDSHIP -> friendshipKeyFactors(selected)
+            TrainingScoringMode.STAT_EFFICIENCY -> statEfficiencyKeyFactors(config, selected)
+            TrainingScoringMode.UNITY_CUP -> unityCupKeyFactors(selected)
+            TrainingScoringMode.TRACKBLAZER_IRREGULAR -> trackblazerIrregularKeyFactors(selected, args["irregularTrainingMinStatGain"] as? Int ?: 30)
+        }
 
     /**
      * Recommend the best training option based on the current scoring mode and game state.
@@ -1854,7 +1983,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             )
 
         // Compute scores and determine the best training option.
-        val scoringMode: String
+        val scoringMode: TrainingScoringMode
         val trainingScores: Map<TrainingOption, Double>
         val skippedScores: Map<TrainingOption, Double>
         val best: TrainingOption?
@@ -1865,7 +1994,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         best = trainingScores.maxByOrNull { it.value }?.key
 
         // Build and log training analysis results and selection reasoning.
-        val finalScoringMode = if (isIrregularEvaluation) "Trackblazer (Irregular Training)" else scoringMode
+        val finalScoringMode = if (isIrregularEvaluation) TrainingScoringMode.TRACKBLAZER_IRREGULAR else scoringMode
         logSelectionReasoning(trainingConfig, finalScoringMode, trainingScores, skippedScores, best, args)
 
         if (best != null) {
@@ -1920,7 +2049,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
      */
     private fun logSelectionReasoning(
         config: TrainingConfig,
-        scoringMode: String,
+        scoringMode: TrainingScoringMode,
         scores: Map<TrainingOption, Double>,
         skippedScores: Map<TrainingOption, Double>,
         selected: TrainingOption?,
@@ -1930,7 +2059,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         sb.appendLine("\n========== Training Analysis Results ==========")
 
         // Show scoring context.
-        sb.appendLine("Scoring Mode: $scoringMode")
+        sb.appendLine("Scoring Mode: ${scoringMode.label}")
         sb.appendLine("Current Date: ${campaign.date}")
 
         // Show current stats.
@@ -1994,62 +2123,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Provide specific reasoning based on mode and training properties.
             val keyFactors = mutableListOf<String>()
 
-            // Mode-specific key factors.
-            keyFactors.addAll(getExtraKeyFactors(selected, args))
-
-            when (scoringMode) {
-                "Friendship (Junior Year)" -> {
-                    val blueCount = selected.relationshipBars.count { it.dominantColor == "blue" }
-                    val greenCount = selected.relationshipBars.count { it.dominantColor == "green" }
-                    if (blueCount > 0 || greenCount > 0) {
-                        keyFactors.add("Has $blueCount blue and $greenCount green relationship bar(s) to build.")
-                    }
-                }
-
-                "Trackblazer (Irregular Training)" -> {
-                    val mainGain = selected.statGains[selected.name] ?: 0
-                    val minIrregularGain = args["irregularTrainingMinStatGain"] as? Int ?: 30
-                    if (mainGain >= minIrregularGain) {
-                        keyFactors.add("Met irregular training main stat gain threshold ($mainGain >= $minIrregularGain).")
-                    }
-                    if (selected.numRainbow > 0) {
-                        keyFactors.add("Rainbow training detected (multiplier applied).")
-                    }
-                }
-
-                else -> {
-                    // Stat Efficiency mode.
-                    if (selected.numRainbow > 0) {
-                        keyFactors.add("Rainbow training detected (multiplier applied).")
-                    }
-                    if (config.enablePrioritizeNearMaxFriendship && selected.numRainbow == 0) {
-                        val nearMaxFriendshipCount = selected.relationshipBars.count { (it.dominantColor == "green" || it.dominantColor == "blue") && it.fillPercent > 10.0 }
-                        if (nearMaxFriendshipCount > 0) {
-                            keyFactors.add("$nearMaxFriendshipCount near-max friendship bar(s) (anticipatory rainbow multiplier applied).")
-                        }
-                    }
-                    val mainGain = selected.statGains[selected.name] ?: 0
-                    val currentVal = config.currentStats[selected.name] ?: 0
-                    val targetVal = config.statTargets[selected.name] ?: 600
-                    val completion = if (targetVal > 0) (currentVal.toDouble() / targetVal * 100.0) else 100.0
-                    if (completion < 70.0) {
-                        keyFactors.add("${selected.name} stat is at ${String.format("%.0f", completion)}% of target (behind, higher priority).")
-                    }
-                    val mainThreshold =
-                        config.scoring.mainStatThresholds[selected.name]
-                            ?: error("No mainStatThresholds entry for ${selected.name}")
-                    if (mainGain >= mainThreshold && selected.numRainbow == 0) {
-                        keyFactors.add("High main stat gain of $mainGain (potential undetected rainbow bonus).")
-                    }
-
-                    // High secondary stat gains.
-                    for ((statName, gain) in selected.statGains) {
-                        if (statName != selected.name && gain >= 20) {
-                            keyFactors.add("High secondary $statName gain of $gain.")
-                        }
-                    }
-                }
-            }
+            // Per-mode key factors. The dispatch is keyed on the same mode enum the scorer used, so the explanation always matches the scorer that ran.
+            keyFactors.addAll(getKeyFactors(scoringMode, config, selected, args))
 
             // Global key factors.
             if (selected.numSkillHints > 0) {
