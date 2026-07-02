@@ -1,5 +1,7 @@
 import { Icon } from "@/src/components/ui/icon"
 import { useTheme } from "@/src/context/ThemeContext"
+import { RADII } from "@/src/lib/radii"
+import { TYPE } from "@/src/lib/type"
 // Removed the NativeOnlyAnimatedView import to fix the issue with this component not being properly scrollable on Android.
 // https://github.com/founded-labs/react-native-reusables/issues/424#issuecomment-3298693345
 import { TextClassContext } from "@/src/components/ui/text"
@@ -7,7 +9,7 @@ import { cn } from "@/src/lib/utils"
 import * as SelectPrimitive from "@rn-primitives/select"
 import { Check, ChevronDown, ChevronDownIcon, ChevronUpIcon } from "lucide-react-native"
 import * as React from "react"
-import { Platform, ScrollView, StyleSheet, View, StyleProp, TextStyle } from "react-native"
+import { Platform, ScrollView, StyleSheet, Text, View, StyleProp, TextStyle, ViewStyle } from "react-native"
 import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens"
 
 type Option = SelectPrimitive.Option
@@ -33,6 +35,7 @@ function SelectTrigger({
     className,
     children,
     size = "default",
+    style,
     ...props
 }: SelectPrimitive.TriggerProps &
     React.RefAttributes<SelectPrimitive.TriggerRef> & {
@@ -44,7 +47,7 @@ function SelectTrigger({
         <SelectPrimitive.Trigger
             ref={ref}
             className={cn(
-                "border-input dark:bg-input/30 dark:active:bg-input/50 bg-background flex h-10 flex-row items-center justify-between gap-2 rounded-md border px-3 py-2 shadow-sm shadow-black/5 sm:h-9 overflow-hidden",
+                "flex h-10 flex-row items-center justify-between gap-2 px-3 py-2 sm:h-9 overflow-hidden",
                 Platform.select({
                     web: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:hover:bg-input/50 w-fit whitespace-nowrap text-sm outline-none transition-[color,box-shadow] focus-visible:ring-[3px] disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0",
                 }),
@@ -53,10 +56,11 @@ function SelectTrigger({
                 className
             )}
             android_ripple={{ color: colors.ripple, foreground: true }}
+            style={StyleSheet.flatten([{ backgroundColor: colors.surfaceRaised, borderRadius: RADII.lg }, style as StyleProp<ViewStyle>])}
             {...props}
         >
             <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
-            <Icon as={ChevronDown} aria-hidden={true} className="text-muted-foreground size-4 shrink-0" />
+            <Icon as={ChevronDown} aria-hidden={true} color={colors.brand} className="size-4 shrink-0" />
         </SelectPrimitive.Trigger>
     )
 }
@@ -68,12 +72,14 @@ function SelectContent({
     children,
     position = "popper",
     portalHost,
+    style,
     ...props
 }: SelectPrimitive.ContentProps &
     React.RefAttributes<SelectPrimitive.ContentRef> & {
         className?: string
         portalHost?: string
     }) {
+    const { colors } = useTheme()
     return (
         <SelectPrimitive.Portal hostName={portalHost}>
             <FullWindowOverlay>
@@ -81,7 +87,7 @@ function SelectContent({
                     <TextClassContext.Provider value="text-popover-foreground">
                         <SelectPrimitive.Content
                             className={cn(
-                                "bg-popover border-border relative z-50 min-w-[8rem] rounded-md border shadow-md shadow-black/5",
+                                "relative z-50 min-w-[8rem] border",
                                 Platform.select({
                                     web: cn(
                                         "animate-in fade-in-0 zoom-in-95 origin-(--radix-select-content-transform-origin) max-h-52 overflow-y-auto overflow-x-hidden",
@@ -96,6 +102,7 @@ function SelectContent({
                                     }),
                                 className
                             )}
+                            style={StyleSheet.flatten([{ backgroundColor: colors.surface, borderColor: colors.brandBorder, borderRadius: RADII.lg }, style as StyleProp<ViewStyle>])}
                             position={position}
                             {...props}
                         >
@@ -124,10 +131,18 @@ function SelectContent({
 }
 
 function SelectLabel({ className, style, ...props }: SelectPrimitive.LabelProps & React.RefAttributes<SelectPrimitive.LabelRef>) {
-    return <SelectPrimitive.Label style={style} className={cn("text-muted-foreground px-2 py-2 text-xs sm:py-1.5", className)} {...props} />
+    const { colors } = useTheme()
+    return <SelectPrimitive.Label style={[{ ...TYPE.monoLabel, color: colors.textMuted }, style]} className={cn("px-2 py-2 sm:py-1.5", className)} {...props} />
 }
 
-function SelectItem({ className, children, textStyle, ...props }: SelectPrimitive.ItemProps & { textStyle?: StyleProp<TextStyle> } & React.RefAttributes<SelectPrimitive.ItemRef>) {
+function SelectItem({
+    className,
+    children,
+    textStyle,
+    description,
+    ...props
+}: SelectPrimitive.ItemProps & { textStyle?: StyleProp<TextStyle>; description?: string } & React.RefAttributes<SelectPrimitive.ItemRef>) {
+    const { colors } = useTheme()
     return (
         <SelectPrimitive.Item
             className={cn(
@@ -142,16 +157,20 @@ function SelectItem({ className, children, textStyle, ...props }: SelectPrimitiv
         >
             <View className="absolute right-2 flex size-3.5 items-center justify-center">
                 <SelectPrimitive.ItemIndicator>
-                    <Icon as={Check} className="text-muted-foreground size-4 shrink-0" />
+                    <Icon as={Check} color={colors.brand} className="size-4 shrink-0" />
                 </SelectPrimitive.ItemIndicator>
             </View>
-            <SelectPrimitive.ItemText style={textStyle} className="text-foreground group-active:text-accent-foreground select-none text-sm" />
+            <View className="min-w-0 flex-1">
+                <SelectPrimitive.ItemText style={textStyle} className="text-foreground group-active:text-accent-foreground select-none text-sm" />
+                {description ? <Text style={{ ...TYPE.caption, color: colors.textMuted }}>{description}</Text> : null}
+            </View>
         </SelectPrimitive.Item>
     )
 }
 
 function SelectSeparator({ className, ...props }: SelectPrimitive.SeparatorProps & React.RefAttributes<SelectPrimitive.SeparatorRef>) {
-    return <SelectPrimitive.Separator className={cn("bg-border -mx-1 my-1 h-px", Platform.select({ web: "pointer-events-none" }), className)} {...props} />
+    const { colors } = useTheme()
+    return <SelectPrimitive.Separator style={{ backgroundColor: colors.borderHair }} className={cn("-mx-1 my-1 h-px", Platform.select({ web: "pointer-events-none" }), className)} {...props} />
 }
 
 /**

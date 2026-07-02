@@ -84,6 +84,8 @@ export interface ModalRadioRowProps {
     tag?: string
     /** The visible label (sole content if no tag, otherwise the second line). */
     label: string
+    /** Optional muted description rendered below the label. Use to explain an ambiguous option value. */
+    description?: string
     /** Whether the row is currently selected. */
     selected: boolean
     /** Called when the row is tapped. */
@@ -94,11 +96,12 @@ export interface ModalRadioRowProps {
  * A card-tile row with a circular radio indicator. Used by single-select auto-dismiss modals.
  * @param tag Optional uppercase mono tag rendered above the label.
  * @param label Primary label.
+ * @param description Optional muted line rendered below the label.
  * @param selected Whether selected.
  * @param onPress Tap handler.
  * @returns A Pressable card tile.
  */
-const ModalRadioRowImpl = ({ tag, label, selected, onPress }: ModalRadioRowProps) => {
+const ModalRadioRowImpl = ({ tag, label, description, selected, onPress }: ModalRadioRowProps) => {
     const { colors } = useTheme()
     const styles = useMemo(
         () =>
@@ -132,6 +135,7 @@ const ModalRadioRowImpl = ({ tag, label, selected, onPress }: ModalRadioRowProps
                 tagActive: { color: colors.brand },
                 label: { ...TYPE.body, color: colors.text },
                 labelActive: { color: colors.brand, fontWeight: "600" as const },
+                description: { ...TYPE.caption, color: colors.textMuted },
             }),
         [colors]
     )
@@ -147,6 +151,7 @@ const ModalRadioRowImpl = ({ tag, label, selected, onPress }: ModalRadioRowProps
             <View style={styles.textBlock}>
                 {tag ? <Text style={[styles.tag, selected && styles.tagActive]}>{tag}</Text> : null}
                 <Text style={[styles.label, selected && styles.labelActive]}>{label}</Text>
+                {description ? <Text style={styles.description}>{description}</Text> : null}
             </View>
         </Pressable>
     )

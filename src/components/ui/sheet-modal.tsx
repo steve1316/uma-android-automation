@@ -1,8 +1,9 @@
 import React, { useMemo } from "react"
-import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { useTheme } from "../../context/ThemeContext"
 import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
+import { TYPE } from "../../lib/type"
 
 /** Props for `SheetModal`. */
 export interface SheetModalProps {
@@ -12,6 +13,8 @@ export interface SheetModalProps {
     onRequestClose: () => void
     /** Header slot. Usually a title row + close chip. Rendered above a hairline divider. */
     header: React.ReactNode
+    /** Optional muted intro line rendered under the header, above the body. Use to frame what the modal's choices do. */
+    description?: string
     /** Optional sticky slot rendered between the header and the scrollable body. Use for search inputs, filter chips, or any controls that should remain visible while the body scrolls. */
     subHeader?: React.ReactNode
     /** Body slot. Rendered inside a flex-1 ScrollView so nested scroll regions resolve. */
@@ -36,6 +39,7 @@ export interface SheetModalProps {
  * @param visible Whether the sheet is visible.
  * @param onRequestClose Called on backdrop tap or Android back.
  * @param header Header slot rendered above a hairline divider.
+ * @param description Optional muted intro line rendered under the header.
  * @param subHeader Optional sticky slot rendered between the header and the scrollable body.
  * @param children Body slot rendered inside a flex-1 ScrollView.
  * @param footer Footer slot rendered below a hairline divider.
@@ -47,6 +51,7 @@ const SheetModalImpl = ({
     visible,
     onRequestClose,
     header,
+    description,
     subHeader,
     children,
     footer,
@@ -74,6 +79,7 @@ const SheetModalImpl = ({
                     overflow: "hidden",
                 },
                 header: { paddingHorizontal: SPACING.md, paddingTop: SPACING.md },
+                description: { ...TYPE.caption, color: colors.textMuted, paddingHorizontal: SPACING.md, paddingTop: SPACING.xs },
                 subHeader: { paddingHorizontal: SPACING.md },
                 body: { flex: 1 },
                 bodyContent: { paddingHorizontal: SPACING.md, paddingVertical: SPACING.md },
@@ -87,6 +93,7 @@ const SheetModalImpl = ({
                 <Pressable style={styles.backdrop} onPress={dismissOnBackdropPress ? onRequestClose : undefined} />
                 <View style={styles.card}>
                     <View style={styles.header}>{header}</View>
+                    {description != null ? <Text style={styles.description}>{description}</Text> : null}
                     {subHeader != null ? <View style={styles.subHeader}>{subHeader}</View> : null}
                     {scrollableBody ? (
                         <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
