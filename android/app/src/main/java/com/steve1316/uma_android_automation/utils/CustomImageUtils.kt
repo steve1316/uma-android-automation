@@ -79,6 +79,16 @@ private const val RAINBOW_GLOW_CYAN_HUE_HIGH = 104.0
 private const val RAINBOW_GLOW_PINK_HUE_LOW = 148.0
 private const val RAINBOW_GLOW_PINK_HUE_HIGH = 173.0
 
+// Support face circles are located directly with HoughCircles rather than the stat-block badges (which only match a fraction of the supports). This finds every face circle; the ring
+// test then rejects the non-glowing ones, so a couple of spurious circles are harmless. Radii and spacing are for the 1080-wide baseline and scaled by the actual display width.
+private const val RAINBOW_SUPPORT_HOUGH_DP = 1.2
+private const val RAINBOW_SUPPORT_MIN_DIST = 70.0
+private const val RAINBOW_SUPPORT_HOUGH_PARAM1 = 90.0
+private const val RAINBOW_SUPPORT_HOUGH_PARAM2 = 42.0
+private const val RAINBOW_SUPPORT_MIN_RADIUS = 44
+private const val RAINBOW_SUPPORT_MAX_RADIUS = 72
+private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
+
 /**
  * Whether the three rainbow-glow hue fractions indicate a rainbow ring. A ring is present only when all three pastel hues (green, cyan, pink) each exceed the presence floor, which is
  * the signature that separates a real rainbow glow from a background that happens to be one of those colors. Pure so it is unit-testable without OpenCV.
@@ -794,52 +804,83 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
-     * Debug helper that runs the rainbow-ring detector on every support face circle in the top-right of the training screen, logs the per-support metrics, and saves an annotated crop so
-     * the face-circle geometry and hue thresholds can be calibrated on-device. Not used in the bot loop. The face circle sits just below-right of its stat-block icon, so the center is
-     * that icon offset by the values below (in the 1080-wide baseline, scaled by relX/relY).
+     * Locates the support face circles in the top-right of the training screen using HoughCircles. The stat-block badges only match a fraction of the supports, so the round faces are
+     * detected directly. A few spurious circles may be returned, but the rainbow-ring test rejects any that are not glowing.
+     *
+     * @param sourceBitmap The screenshot to search.
+     * @return A list of (centerX, centerY, radius) in full-screen pixels for each detected circle.
+     */
+    private fun findSupportFaceCircles(sourceBitmap: Bitmap): List<IntArray> {
+        val regionX = displayWidth - displayWidth / 3
+        val regionHeight = (displayHeight * RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION).toInt()
+        val roi = createSafeBitmap(sourceBitmap, regionX, 0, displayWidth / 3, regionHeight, "findSupportFaceCircles") ?: return emptyList()
+
+        val rgbaMat = roi.toMat()
+        val grayMat = Mat()
+        Imgproc.cvtColor(rgbaMat, grayMat, Imgproc.COLOR_RGBA2GRAY)
+        Imgproc.medianBlur(grayMat, grayMat, 5)
+
+        val scale = displayWidth.toDouble() / 1080.0
+        val circles = Mat()
+        Imgproc.HoughCircles(
+            grayMat,
+            circles,
+            Imgproc.HOUGH_GRADIENT,
+            RAINBOW_SUPPORT_HOUGH_DP,
+            RAINBOW_SUPPORT_MIN_DIST * scale,
+            RAINBOW_SUPPORT_HOUGH_PARAM1,
+            RAINBOW_SUPPORT_HOUGH_PARAM2,
+            (RAINBOW_SUPPORT_MIN_RADIUS * scale).toInt(),
+            (RAINBOW_SUPPORT_MAX_RADIUS * scale).toInt(),
+        )
+
+        val result = mutableListOf<IntArray>()
+        for (i in 0 until circles.cols()) {
+            val circle = circles.get(0, i) ?: continue
+            result.add(intArrayOf((circle[0] + regionX).toInt(), circle[1].toInt(), circle[2].toInt()))
+        }
+        listOf(rgbaMat, grayMat, circles).forEach { it.release() }
+        return result
+    }
+
+    /**
+     * Counts the rainbow trainings on the current training screen. Each support face circle in the top-right is checked for the rainbow glow ring, which is the direct signal that a
+     * maxed-friendship support is giving a friendship (rainbow) training. This replaces the old orange-relationship-bar inference, which also fired on maxed supports that are not glowing.
      *
      * @param sourceBitmap Optional source bitmap. Defaults to a fresh screenshot.
-     * @return A human-readable summary of the per-support ring metrics and the derived rainbow count.
+     * @return The number of support face circles showing a rainbow glow ring.
+     */
+    fun countRainbowTrainings(sourceBitmap: Bitmap? = null): Int {
+        val bitmap = sourceBitmap ?: getSourceBitmap()
+        return findSupportFaceCircles(bitmap).count { circle -> detectRainbowRing(bitmap, circle[0], circle[1], circle[2]).isRainbow }
+    }
+
+    /**
+     * Debug helper that runs the rainbow-ring detector on every support face circle it can find in the top-right, logs the per-circle metrics, and saves an annotated crop (green circle
+     * with the hue count for a rainbow, red otherwise). Used by the on-device rainbow detection test to verify geometry and thresholds. Not used in the bot loop.
+     *
+     * @param sourceBitmap Optional source bitmap. Defaults to a fresh screenshot.
+     * @return A human-readable summary of the per-circle ring metrics and the derived rainbow count.
      */
     fun debugRainbowDetection(sourceBitmap: Bitmap? = null): String {
         val bitmap = sourceBitmap ?: getSourceBitmap()
-
-        // Calibrated support-circle geometry relative to the detected stat-block icon (tune from this test's output/crops).
-        val faceCircleOffsetX = 46
-        val faceCircleOffsetY = 55
-        val faceCircleRadius = 52
-
-        val statBlockComponents =
-            mapOf(
-                StatName.SPEED.name to IconStatBlockSpeed,
-                StatName.STAMINA.name to IconStatBlockStamina,
-                StatName.POWER.name to IconStatBlockPower,
-                StatName.GUTS.name to IconStatBlockGuts,
-                StatName.WIT.name to IconStatBlockWit,
-                "trainer" to IconStatBlockTrainer,
-            )
-
-        // Annotate the top-right region where supports live so the circle placement can be eyeballed.
         val regionX = displayWidth - displayWidth / 3
-        val annotated = createSafeBitmap(bitmap, regionX, 0, displayWidth / 3, displayHeight - displayHeight / 3, "debugRainbowDetection annotate")?.toMat()
+        val annotated = createSafeBitmap(bitmap, regionX, 0, displayWidth / 3, (displayHeight * RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION).toInt(), "debugRainbowDetection annotate")?.toMat()
 
         val sb = StringBuilder("\n========== Rainbow Detection Debug ==========\n")
         var rainbowCount = 0
-        for ((name, component) in statBlockComponents) {
-            for (point in component.findAll(this, sourceBitmap = bitmap, region = Region.topRightThird)) {
-                val centerX = relX(point.x, faceCircleOffsetX)
-                val centerY = relY(point.y, faceCircleOffsetY)
-                val ring = detectRainbowRing(bitmap, centerX, centerY, faceCircleRadius)
-                if (ring.isRainbow) rainbowCount++
-                sb.appendLine(
-                    "[$name] icon=(${point.x.toInt()},${point.y.toInt()}) circle=($centerX,$centerY r$faceCircleRadius) green=${decimalFormat.format(ring.greenFraction)} cyan=${decimalFormat.format(ring.cyanFraction)} pink=${decimalFormat.format(ring.pinkFraction)} huesPresent=${ring.huesPresent} -> rainbow=${ring.isRainbow}",
-                )
-                if (annotated != null) {
-                    val color = if (ring.isRainbow) Scalar(0.0, 255.0, 0.0) else Scalar(0.0, 0.0, 255.0)
-                    val drawCenter = Point((centerX - regionX).toDouble(), centerY.toDouble())
-                    Imgproc.circle(annotated, drawCenter, faceCircleRadius, color, 3)
-                    Imgproc.putText(annotated, "${ring.huesPresent}", Point(drawCenter.x - 10, drawCenter.y + 8), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, color, 3)
-                }
+        for (circle in findSupportFaceCircles(bitmap)) {
+            val (centerX, centerY, radius) = Triple(circle[0], circle[1], circle[2])
+            val ring = detectRainbowRing(bitmap, centerX, centerY, radius)
+            if (ring.isRainbow) rainbowCount++
+            sb.appendLine(
+                "circle=($centerX,$centerY r$radius) green=${decimalFormat.format(ring.greenFraction)} cyan=${decimalFormat.format(ring.cyanFraction)} pink=${decimalFormat.format(ring.pinkFraction)} huesPresent=${ring.huesPresent} -> rainbow=${ring.isRainbow}",
+            )
+            if (annotated != null) {
+                val color = if (ring.isRainbow) Scalar(0.0, 255.0, 0.0) else Scalar(0.0, 0.0, 255.0)
+                val drawCenter = Point((centerX - regionX).toDouble(), centerY.toDouble())
+                Imgproc.circle(annotated, drawCenter, radius, color, 3)
+                Imgproc.putText(annotated, "${ring.huesPresent}", Point(drawCenter.x - 10, drawCenter.y + 8), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, color, 3)
             }
         }
         sb.appendLine("Derived numRainbow (support circles with a ring): $rainbowCount")
