@@ -795,6 +795,24 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
             return factors
         }
+
+        /**
+         * Format the selection ranking line for the explanation log. Training scores live on an internal, mode-specific scale that is not comparable across
+         * modes, so this reports the absolute scores plus a ratio and the mode label rather than an unlabeled "N points" difference that reads as meaningful.
+         *
+         * @param selectedName The selected training stat.
+         * @param selectedScore The selected training's score.
+         * @param runnerUpName The runner-up training stat.
+         * @param runnerUpScore The runner-up training's score.
+         * @param modeLabel The scoring mode label.
+         * @param numExcluded The number of trainings excluded from the ranking (skipped before scoring).
+         * @return The formatted ranking line.
+         */
+        fun formatSelectionRankingLine(selectedName: StatName, selectedScore: Double, runnerUpName: StatName, runnerUpScore: Double, modeLabel: String, numExcluded: Int): String {
+            val ratioNote = if (runnerUpScore > 0.0) ", ${String.format("%.2f", selectedScore / runnerUpScore)}x higher" else ""
+            val excludedNote = if (numExcluded > 0) " ($numExcluded training(s) excluded from ranking: skipped)" else ""
+            return "Selected $selectedName (score ${String.format("%.2f", selectedScore)}) over runner-up $runnerUpName (score ${String.format("%.2f", runnerUpScore)})$ratioNote [mode: $modeLabel]$excludedNote"
+        }
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2145,11 +2163,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 keyFactors.add("Selected despite ${selected.failureChance}% failure chance (Risky Training enabled or Finals).")
             }
 
-            // Output beat reasoning if second best exists.
+            // Output ranking reasoning if a runner-up exists.
             if (secondBest != null) {
-                val scoreDiff = selectedScore - secondBest.second
-                val pctDiff = if (secondBest.second > 0) (scoreDiff / secondBest.second * 100.0) else 0.0
-                sb.appendLine("${selected.name} beat ${secondBest.first.name} by ${String.format("%.2f", scoreDiff)} points (${String.format("%.1f", pctDiff)}% higher)")
+                sb.appendLine(formatSelectionRankingLine(selected.name, selectedScore, secondBest.first.name, secondBest.second, scoringMode.label, skippedScores.size))
             } else {
                 // Only one training available - clarify reasons.
                 val numSkipped = skippedScores.size

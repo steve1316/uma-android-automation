@@ -1,6 +1,7 @@
 package com.steve1316.uma_android_automation.bot
 
 import com.steve1316.uma_android_automation.bot.Training.Companion.defaultScoringModeFor
+import com.steve1316.uma_android_automation.bot.Training.Companion.formatSelectionRankingLine
 import com.steve1316.uma_android_automation.bot.Training.Companion.friendshipKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.statEfficiencyKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.unityCupKeyFactors
@@ -80,6 +81,25 @@ class TrainingExplanationTest {
         val factors = statEfficiencyKeyFactors(cfg, selected)
         assertTrue(factors.any { it.contains("main-stat bonus", ignoreCase = true) }, "Expected honest main-stat bonus wording, got: $factors")
         assertFalse(factors.any { it.contains("undetected rainbow", ignoreCase = true) }, "Must not claim an undetected rainbow bonus")
+    }
+
+    @Test
+    @DisplayName("Ranking line reports absolute scores, a ratio, and the mode - not an ambiguous point difference")
+    fun testRankingLineFormat() {
+        val line = formatSelectionRankingLine(StatName.SPEED, 812.40, StatName.POWER, 615.20, "Stat Efficiency (Year 2+)", 0)
+        assertTrue(line.contains("Selected SPEED"), line)
+        assertTrue(line.contains("over runner-up POWER"), line)
+        assertTrue(line.contains("1.32x higher"), line)
+        assertTrue(line.contains("[mode: Stat Efficiency (Year 2+)]"), line)
+        assertFalse(line.contains("points"), "Ranking line must not use the ambiguous 'points' wording: $line")
+    }
+
+    @Test
+    @DisplayName("Ranking line omits the ratio when the runner-up score is non-positive and notes excluded trainings")
+    fun testRankingLineEdgeCases() {
+        val zeroRunnerUp = formatSelectionRankingLine(StatName.SPEED, 400.0, StatName.WIT, 0.0, "Unity Cup (Spirit Gauge)", 2)
+        assertFalse(zeroRunnerUp.contains("x higher"), "No ratio when runner-up score is 0: $zeroRunnerUp")
+        assertTrue(zeroRunnerUp.contains("2 training(s) excluded"), zeroRunnerUp)
     }
 
     @Test
