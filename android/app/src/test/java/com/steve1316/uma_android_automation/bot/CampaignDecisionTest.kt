@@ -1,5 +1,7 @@
 package com.steve1316.uma_android_automation.bot
 
+import com.steve1316.uma_android_automation.types.Mood
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
@@ -16,5 +18,14 @@ class CampaignDecisionTest {
         assertFalse(shouldSkipMoodRecoveryForFinale(72), "Day 72 is pre-finale; mood recovery is still allowed")
         assertTrue(shouldSkipMoodRecoveryForFinale(73), "Day 73 is the first finale turn; mood recovery wastes a turn")
         assertTrue(shouldSkipMoodRecoveryForFinale(75), "Day 75 is the final turn")
+    }
+
+    @Test
+    @DisplayName("Mood recovery floor parses the setting and falls back to GOOD on anything unexpected")
+    fun testParseMoodRecoveryFloor() {
+        assertEquals(Mood.GOOD, parseMoodRecoveryFloor("GOOD"), "GOOD keeps the base recover-below-Good behavior")
+        assertEquals(Mood.NORMAL, parseMoodRecoveryFloor("NORMAL"), "NORMAL recovers only below Normal, skipping Normal-mood recovery")
+        assertEquals(Mood.BAD, parseMoodRecoveryFloor("BAD"), "BAD recovers only when Awful, the most training-aggressive floor")
+        assertEquals(Mood.GOOD, parseMoodRecoveryFloor("nonsense"), "An unknown value falls back to the base Good floor")
     }
 }

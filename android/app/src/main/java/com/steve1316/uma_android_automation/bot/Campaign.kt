@@ -125,6 +125,20 @@ private const val FINALE_FIRST_DAY = 73
 internal fun shouldSkipMoodRecoveryForFinale(day: Int): Boolean = day >= FINALE_FIRST_DAY
 
 /**
+ * Parses a mood-recovery-floor setting name into a [Mood]. The floor is the mood the trainee must be below before recovery is attempted, so a higher floor recovers more eagerly.
+ * Unknown values fall back to [Mood.GOOD], which matches the default recover-below-Good behavior. Pure so it is unit-testable without a live Campaign.
+ *
+ * @param name The setting string ("GOOD", "NORMAL", or "BAD").
+ * @return The parsed floor, or [Mood.GOOD] when the name is not recognized.
+ */
+internal fun parseMoodRecoveryFloor(name: String): Mood =
+    when (name.uppercase()) {
+        "NORMAL" -> Mood.NORMAL
+        "BAD" -> Mood.BAD
+        else -> Mood.GOOD
+    }
+
+/**
  * Defines the base campaign class that contains all shared logic for campaign automation.
  *
  * Campaign-specific logic should be implemented in subclasses by overriding the appropriate methods.
@@ -947,6 +961,14 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
+     * The mood the trainee must be strictly below before mood recovery is attempted. The base campaigns recover whenever mood is below Good. Subclasses can lower the floor to spend
+     * fewer turns on mood and more on training or racing.
+     *
+     * @return The recovery floor, defaulting to [Mood.GOOD].
+     */
+    open fun moodRecoveryFloor(): Mood = Mood.GOOD
+
+    /**
      * Determines if mood recovery should be attempted.
      *
      * @param sourceBitmap Current screen bitmap.
@@ -968,15 +990,16 @@ abstract class Campaign(game: Game) : Task(game) {
             return false
         }
 
-        // Allow subclasses to make item-aware mood recovery decisions.
-        if (trainee.mood <= Mood.NORMAL) {
+        // Allow subclasses to make item-aware mood recovery decisions, but only when the mood is already below the recovery floor.
+        val floor = moodRecoveryFloor()
+        if (trainee.mood < floor) {
             val itemDecision = shouldRecoverMoodFromItems(sourceBitmap)
             if (itemDecision != null) {
                 return itemDecision
             }
         }
 
-        return (trainee.mood < Mood.GOOD)
+        return (trainee.mood < floor)
     }
 
     /**

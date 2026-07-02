@@ -13,6 +13,7 @@ import com.steve1316.uma_android_automation.bot.Racing
 import com.steve1316.uma_android_automation.bot.RunAnalytics
 import com.steve1316.uma_android_automation.bot.SelectionSource
 import com.steve1316.uma_android_automation.bot.Training
+import com.steve1316.uma_android_automation.bot.parseMoodRecoveryFloor
 import com.steve1316.uma_android_automation.bot.solver.SmartRaceSolverIntegration
 import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonCancel
@@ -138,6 +139,9 @@ class Trackblazer(game: Game) : Campaign(game) {
 
     /** The limit for consecutive races before the bot should stop and recover. */
     private val consecutiveRacesLimit: Int = SettingsHelper.getIntSetting("scenarioOverrides", "trackblazerConsecutiveRacesLimit", 3)
+
+    /** The mood the trainee must be below before Trackblazer recovers mood. Defaults to Normal so Normal-mood recovery is skipped, leaving more turns for the race-heavy scenario. */
+    private val moodRecoveryFloorValue: Mood = parseMoodRecoveryFloor(SettingsHelper.getStringSetting("scenarioOverrides", "trackblazerMoodRecoveryFloor", "NORMAL"))
 
     /** List of race grades that trigger a shop check afterward. */
     private val shopCheckGrades: List<RaceGrade> =
@@ -1002,6 +1006,8 @@ class Trackblazer(game: Game) : Campaign(game) {
         MessageLog.w(TAG, "[WARN] shouldRetryRace:: No retries remaining or G1/G2/G3/Rival race conditions not met.")
         return false
     }
+
+    override fun moodRecoveryFloor(): Mood = moodRecoveryFloorValue
 
     override fun shouldRecoverMoodFromItems(sourceBitmap: Bitmap): Boolean? {
         val hasMoodItems =
