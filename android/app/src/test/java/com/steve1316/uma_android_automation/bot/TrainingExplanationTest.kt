@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import com.steve1316.uma_android_automation.bot.Training.Companion.burstExemptFailureChance
 import com.steve1316.uma_android_automation.bot.Training.Companion.defaultScoringModeFor
 import com.steve1316.uma_android_automation.bot.Training.Companion.failsExpectedValueGate
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatDecisionTrace
@@ -153,6 +154,19 @@ class TrainingExplanationTest {
         assertFalse(failsExpectedValueGate(totalStatGain = 54, failureChance = 27, gainPerFailPercent = 2.0, minFailureChance = 10))
         // Below the min-failure threshold the rule never fires, even for tiny gains at low risk.
         assertFalse(failsExpectedValueGate(totalStatGain = 5, failureChance = 8, gainPerFailPercent = 2.0, minFailureChance = 10))
+    }
+
+    @Test
+    @DisplayName("Unity Cup burst exemption raises the failure ceiling only when a gauge is ready and the setting is above the base")
+    fun testBurstExemptFailureChance() {
+        // Default setting (0) is a pure pass-through even with a gauge ready.
+        assertEquals(15, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 1, burstMax = 0))
+        // No gauge ready: the exemption never applies regardless of the setting.
+        assertEquals(15, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 0, burstMax = 40))
+        // Gauge ready and setting above base: the ceiling is raised to the burst max.
+        assertEquals(40, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 1, burstMax = 40))
+        // Setting below the base never lowers the ceiling.
+        assertEquals(30, burstExemptFailureChance(baseFailureChance = 30, readyToBurst = 2, burstMax = 20))
     }
 
     @Test

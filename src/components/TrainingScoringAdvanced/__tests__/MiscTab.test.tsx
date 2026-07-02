@@ -26,7 +26,18 @@ describe("MiscTab.groupBySubgroup", () => {
         const all = SCORING_CONSTANTS_CATALOG.filter((e) => e.group === "misc")
         const unity = groupBySubgroup(all).find((g) => g.subgroup === "unityCup")!
         const keys = unity.entries.map((e) => e.key).sort()
-        expect(keys).toEqual(["juniorEarlyGameFlatBonus", "rainbowPerInstanceBase", "rainbowPerInstanceDecay", "relationshipScale", "unityFillBaseBonus", "unityFillPerGaugeBonus"])
+        expect(keys).toEqual([
+            "juniorEarlyGameFlatBonus",
+            "rainbowPerInstanceBase",
+            "rainbowPerInstanceDecay",
+            "relationshipScale",
+            "unityBurstBaseBonus",
+            "unityBurstEnergyPenaltyPerGauge",
+            "unityBurstPerGaugeBonus",
+            "unityFillBaseBonus",
+            "unityFillEnergyPenaltyPerGauge",
+            "unityFillPerGaugeBonus",
+        ])
     })
 
     test("entries without a subgroup are dropped", () => {

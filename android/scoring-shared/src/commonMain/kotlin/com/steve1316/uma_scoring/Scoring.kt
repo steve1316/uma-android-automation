@@ -369,5 +369,9 @@ fun scoringConstantsFromMap(settings: Map<String, Any?>, defaults: TrainingScori
         anticipatoryCap = d("anticipatoryCap", defaults.anticipatoryCap),
         unityFillBaseBonus = d("unityFillBaseBonus", defaults.unityFillBaseBonus),
         unityFillPerGaugeBonus = d("unityFillPerGaugeBonus", defaults.unityFillPerGaugeBonus),
+        unityBurstBaseBonus = d("unityBurstBaseBonus", defaults.unityBurstBaseBonus),
+        unityBurstPerGaugeBonus = d("unityBurstPerGaugeBonus", defaults.unityBurstPerGaugeBonus),
+        unityFillEnergyPenaltyPerGauge = d("unityFillEnergyPenaltyPerGauge", defaults.unityFillEnergyPenaltyPerGauge),
+        unityBurstEnergyPenaltyPerGauge = d("unityBurstEnergyPenaltyPerGauge", defaults.unityBurstEnergyPenaltyPerGauge),
     )
 }

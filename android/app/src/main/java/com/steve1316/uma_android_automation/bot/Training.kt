@@ -137,6 +137,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The maximum allowed failure chance for training. */
     private val maximumFailureChance: Int = SettingsHelper.getIntSetting("training", "maximumFailureChance")
 
+    /** Unity Cup only: the failure-chance ceiling a training with a Spirit Explosion gauge ready to burst may reach before being skipped. 0 (default) disables the exemption. */
+    private val unityCupBurstMaxFailureChance: Int = SettingsHelper.getIntSetting("scenarioOverrides", "unityCupBurstMaxFailureChance", 0)
+
     /** Whether to skip training for stats at their cap. */
     private val disableTrainingOnMaxedStat: Boolean = SettingsHelper.getBooleanSetting("training", "disableTrainingOnMaxedStat")
 
@@ -477,6 +480,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     "anticipatoryCap",
                     "unityFillBaseBonus",
                     "unityFillPerGaugeBonus",
+                    "unityBurstBaseBonus",
+                    "unityBurstPerGaugeBonus",
+                    "unityFillEnergyPenaltyPerGauge",
+                    "unityBurstEnergyPenaltyPerGauge",
                 )
             val intKeys = listOf("mainStatThresholdSpeed", "mainStatThresholdStamina", "mainStatThresholdPower", "mainStatThresholdGuts", "mainStatThresholdWit")
             // Use NaN as the per-key default so we can distinguish "user set it" from "missing"; scoringConstantsFromMap drops NaN via isFinite check.
@@ -618,8 +625,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // 2. Second Priority: Trainings with Spirit Explosion Gauges ready to burst.
             if (numSpiritGaugesReadyToBurst > 0) {
-                // We give a significant bonus for bursting, but not so much that it always overrides huge stat gains elsewhere.
-                val burstBonus = 800.0 + (numSpiritGaugesReadyToBurst * 400.0)
+                // We give a significant bonus for bursting, but not so much that it always overrides huge stat gains elsewhere. The optional energy penalty reflects the extra energy a
+                // Special Training burst costs, scaled by the number of gauges involved (default 0, so behavior is unchanged unless the user tunes it).
+                val burstBonus =
+                    config.scoring.unityBurstBaseBonus + (numSpiritGaugesReadyToBurst * config.scoring.unityBurstPerGaugeBonus) -
+                        (numSpiritGaugesReadyToBurst * config.scoring.unityBurstEnergyPenaltyPerGauge)
                 score += burstBonus
                 MessageLog.i(TAG, "[TRAINING] [${training.name}] Adding burst bonus for $numSpiritGaugesReadyToBurst gauge(s): $burstBonus")
 
@@ -658,8 +668,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // 3. Third Priority: Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
             if (numSpiritGaugesCanFill > 0) {
                 // Score increases with number of gauges that can be filled. Kept on the stat-efficiency scale so a strong stat turn still outranks pure gauge-filling.
-                // Each gauge fills by 25% per training execution.
-                val fillBonus = config.scoring.unityFillBaseBonus + (numSpiritGaugesCanFill * config.scoring.unityFillPerGaugeBonus)
+                // Each gauge fills by 25% per training execution. The optional energy penalty (default 0) reflects the extra energy filling costs, scaled by the number of gauges involved.
+                val fillBonus =
+                    config.scoring.unityFillBaseBonus + (numSpiritGaugesCanFill * config.scoring.unityFillPerGaugeBonus) -
+                        (numSpiritGaugesCanFill * config.scoring.unityFillEnergyPenaltyPerGauge)
                 score += fillBonus
                 MessageLog.i(TAG, "[TRAINING] [${training.name}] Training can fill $numSpiritGaugesCanFill Spirit Explosion Gauge(s). Adding fill bonus: $fillBonus")
 
@@ -737,6 +749,17 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          */
         fun failsExpectedValueGate(totalStatGain: Int, failureChance: Int, gainPerFailPercent: Double, minFailureChance: Int): Boolean =
             failureChance >= minFailureChance && totalStatGain < gainPerFailPercent * failureChance
+
+        /**
+         * Unity Cup burst exemption. A training with a Spirit Explosion gauge ready to burst may be worth a higher failure chance than the base ceiling, so this raises the ceiling to
+         * `burstMax` when a gauge is ready. No-op when no gauge is ready or when `burstMax` is below the base, keeping the default (0) a pure pass-through. Pure and unit-testable.
+         *
+         * @param baseFailureChance The normal (or risky) failure-chance ceiling for this training.
+         * @param readyToBurst The number of Spirit Explosion gauges ready to burst on this training.
+         * @param burstMax The Unity Cup burst failure-chance ceiling from settings. 0 disables the exemption.
+         * @return The effective failure-chance ceiling to apply to this training.
+         */
+        fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int): Int = if (readyToBurst > 0) maxOf(baseFailureChance, burstMax) else baseFailureChance
 
         /**
          * Key factors for the Friendship scoring mode. Mirrors `scoreFriendshipTraining`, which ranks purely by relationship-bar color.
@@ -1631,12 +1654,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         for (result in results) {
             // Check if risky training logic should apply based on main stat gain.
             val mainStatGain: Int = result.statGains[result.name] ?: 0
-            val effectiveFailureChance =
+            val baseFailureChance =
                 if (enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain) {
                     riskyTrainingMaxFailureChance
                 } else {
                     maximumFailureChance
                 }
+            // Unity Cup burst exemption: a gauge ready to burst may be worth a higher failure chance than usual. No-op unless the setting is raised and a gauge is ready to burst.
+            val readyToBurst = result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance)
 
             // Filter out trainings that exceed the effective failure chance threshold.
             if (!test && !ignoreFailureChance && result.failureChance > effectiveFailureChance) {

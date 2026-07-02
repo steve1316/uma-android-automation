@@ -130,6 +130,14 @@ export interface TrainingScoringConstants {
     unityFillBaseBonus: number
     /** Additional Unity Cup fill bonus per fillable gauge, added on top of `unityFillBaseBonus`. */
     unityFillPerGaugeBonus: number
+    /** Flat Unity Cup bonus for a training with at least one Spirit Explosion gauge ready to burst. Significant but not enough to always override large stat gains. */
+    unityBurstBaseBonus: number
+    /** Additional Unity Cup burst bonus per gauge ready to burst, added on top of `unityBurstBaseBonus`. */
+    unityBurstPerGaugeBonus: number
+    /** Per-fillable-gauge penalty subtracted from the fill bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off). */
+    unityFillEnergyPenaltyPerGauge: number
+    /** Per-ready-gauge penalty subtracted from the burst bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off). */
+    unityBurstEnergyPenaltyPerGauge: number
 }
 
 /** Default values for `TrainingScoringConstants`, matching the constants currently hardcoded in the Kotlin scoring functions. */
@@ -171,6 +179,10 @@ export const DEFAULT_TRAINING_SCORING_CONSTANTS: TrainingScoringConstants = {
     anticipatoryCap: 0.6,
     unityFillBaseBonus: 60,
     unityFillPerGaugeBonus: 40,
+    unityBurstBaseBonus: 800,
+    unityBurstPerGaugeBonus: 400,
+    unityFillEnergyPenaltyPerGauge: 0,
+    unityBurstEnergyPenaltyPerGauge: 0,
 }
 
 /** Bundle of every input the training scoring functions need to score a turn: current state, settings, and the analyzed training options. */
