@@ -481,7 +481,7 @@ export const defaultSettings: Settings = {
         enableAskTheDocs: false,
     },
     scenarioOverrides: {
-        trackblazerConsecutiveRacesLimit: 5,
+        trackblazerConsecutiveRacesLimit: 3,
         trackblazerEnergyThreshold: 40,
         trackblazerForceTrainEnergyFloor: 20,
         trackblazerShopCheckGrades: ["G1", "G2", "G3"],

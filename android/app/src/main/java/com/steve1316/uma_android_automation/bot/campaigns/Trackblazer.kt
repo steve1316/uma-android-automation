@@ -137,7 +137,7 @@ class Trackblazer(game: Game) : Campaign(game) {
         )
 
     /** The limit for consecutive races before the bot should stop and recover. */
-    private val consecutiveRacesLimit: Int = SettingsHelper.getIntSetting("scenarioOverrides", "trackblazerConsecutiveRacesLimit", 5)
+    private val consecutiveRacesLimit: Int = SettingsHelper.getIntSetting("scenarioOverrides", "trackblazerConsecutiveRacesLimit", 3)
 
     /** List of race grades that trigger a shop check afterward. */
     private val shopCheckGrades: List<RaceGrade> =
