@@ -46,3 +46,18 @@ const { StorageBridgeModule } = NativeModules as { StorageBridgeModule: StorageB
 
 /** Singleton wrapper around the native SAF bridge. */
 export const storageBridge = StorageBridgeModule
+
+/**
+ * Builds the SAF *document* uri for the root folder of a tree uri (e.g. `.../tree/<id>` -> `.../tree/<id>/document/<id>`).
+ * `ACTION_VIEW` needs the document uri, not the tree uri, to open a folder in the system Files app. The already-encoded
+ * tree document id is reused verbatim so it is not double-encoded.
+ * @param treeUri A SAF tree uri, typically from `getCurrentFolder()`.
+ * @returns The folder's document uri, or the input unchanged when it is not a tree uri.
+ */
+export function folderDocumentUriFromTreeUri(treeUri: string): string {
+    const marker = "/tree/"
+    const idx = treeUri.indexOf(marker)
+    if (idx < 0) return treeUri
+    const encodedDocId = treeUri.substring(idx + marker.length)
+    return `${treeUri}/document/${encodedDocId}`
+}
