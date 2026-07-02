@@ -6,6 +6,7 @@ import { LogBox } from "react-native"
 import { PortalHost } from "@rn-primitives/portal"
 import { StatusBar } from "expo-status-bar"
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { useFonts, Geist_400Regular, Geist_500Medium, Geist_600SemiBold, Geist_700Bold } from "@expo-google-fonts/geist"
 import { GeistMono_400Regular, GeistMono_500Medium } from "@expo-google-fonts/geist-mono"
 import { BotStateProvider } from "./context/BotStateContext"
@@ -146,11 +147,13 @@ function App() {
     if (!fontsLoaded) return null
 
     return (
-        <SafeAreaProvider>
-            <ThemeProvider>
-                <AppContent />
-            </ThemeProvider>
-        </SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaProvider>
+                <ThemeProvider>
+                    <AppContent />
+                </ThemeProvider>
+            </SafeAreaProvider>
+        </GestureHandlerRootView>
     )
 }
 

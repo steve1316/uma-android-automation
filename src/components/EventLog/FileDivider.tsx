@@ -2,6 +2,9 @@ import React, { useMemo } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import type { FileDividerRecord } from "../../lib/eventLogParser"
 import { useTheme } from "../../context/ThemeContext"
+import { TYPE } from "../../lib/type"
+import { SPACING } from "../../lib/spacing"
+import { ValuePill } from "../ui/value-pill"
 
 type Props = {
     /** The file divider record containing the filename to display. */
@@ -9,9 +12,9 @@ type Props = {
 }
 
 /**
- * Renders a horizontal line divider with a centered filename label.
- * Used to visually separate log entries originating from different files.
- * @param divider The file divider record containing the filename.
+ * Renders a labeled break in the timeline where the source log file changes: a hairline on each side with the filename and,
+ * when detected, the trainee name and scenario as pills.
+ * @param divider The file divider record containing the filename and optional trainee name and scenario.
  */
 const FileDivider: React.FC<Props> = ({ divider }) => {
     const { colors } = useTheme()
@@ -19,23 +22,11 @@ const FileDivider: React.FC<Props> = ({ divider }) => {
     const styles = useMemo(
         () =>
             StyleSheet.create({
-                container: {
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginVertical: 12,
-                    marginHorizontal: 12,
-                },
-                line: {
-                    flex: 1,
-                    height: 1,
-                    backgroundColor: colors.borderHair,
-                },
-                text: {
-                    marginHorizontal: 12,
-                    fontSize: 12,
-                    fontWeight: "500",
-                    color: colors.textMuted,
-                },
+                container: { flexDirection: "row", alignItems: "center", gap: SPACING.md, marginVertical: SPACING.md, marginHorizontal: SPACING.md },
+                line: { flex: 1, height: 1, backgroundColor: colors.borderHair },
+                center: { alignItems: "center", gap: SPACING.xs },
+                pillRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: SPACING.xs },
+                fileName: { ...TYPE.monoValue, color: colors.textMuted },
             }),
         [colors]
     )
@@ -43,11 +34,12 @@ const FileDivider: React.FC<Props> = ({ divider }) => {
     return (
         <View style={styles.container}>
             <View style={styles.line} />
-            <View style={{ alignItems: "center" }}>
-                <Text style={[styles.text, { marginBottom: 2 }]}>{divider.fileName}</Text>
-                {divider.traineeName && (
-                    <View style={{ backgroundColor: colors.brand, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.onBrand }}>{divider.traineeName}</Text>
+            <View style={styles.center}>
+                <Text style={styles.fileName}>{divider.fileName}</Text>
+                {(divider.traineeName || divider.scenario) && (
+                    <View style={styles.pillRow}>
+                        {divider.traineeName && <ValuePill label={divider.traineeName} />}
+                        {divider.scenario && <ValuePill label={divider.scenario} />}
                     </View>
                 )}
             </View>
@@ -56,4 +48,4 @@ const FileDivider: React.FC<Props> = ({ divider }) => {
     )
 }
 
-export default FileDivider
+export default React.memo(FileDivider)

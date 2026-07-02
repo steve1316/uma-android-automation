@@ -7,6 +7,7 @@ import { databaseManager } from "../lib/database"
 import { startTiming } from "../lib/performanceLogger"
 import { logWithTimestamp, logErrorWithTimestamp } from "../lib/logger"
 import { deepMerge, convertSettingsToBatch, applyMigrations, stripDbOwnedKeys } from "../lib/settingsUtils"
+import { storageBridge, folderDocumentUriFromTreeUri } from "../lib/storageBridge"
 
 export { deepMerge, convertSettingsToBatch, applyMigrations }
 
@@ -429,30 +430,39 @@ export const useSettingsManager = () => {
         const packageName = "com.steve1316.uma_android_automation"
 
         try {
-            // Try Storage Access Framework first (recommended for Android 11+).
+            // Prefer the folder the user chose for the bot's logs/recordings so the button lands on their actual data
+            // location, not the app's internal storage. Only fall back to internal when no folder has been configured.
+            let chosenUri: string | null = null
             try {
-                await startActivityAsync("android.intent.action.OPEN_DOCUMENT_TREE", {
-                    data: `content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2F${packageName}/files`,
-                    flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-                })
-
-                endTiming({ status: "success", method: "saf" })
-                return
-            } catch (safError) {
-                console.warn("SAF approach failed, trying fallback:", safError)
+                chosenUri = (await storageBridge.getCurrentFolder())?.uri || null
+            } catch (folderReadError) {
+                console.warn("Could not read the chosen storage folder, falling back to internal:", folderReadError)
             }
 
-            // Fallback: Try to open the data folder with the android.intent.action.VIEW Intent.
-            try {
-                await startActivityAsync("android.intent.action.VIEW", {
-                    data: `/storage/emulated/0/Android/data/${packageName}/files`,
-                    type: "resource/folder",
-                })
+            // Ordered open attempts; the first that launches wins. When the user picked a folder we view it directly in
+            // the system Files app; otherwise we keep the legacy internal-storage behavior (SAF picker, then a path view).
+            const attempts: { action: string; params: Parameters<typeof startActivityAsync>[1]; method: string }[] = chosenUri
+                ? [
+                      { action: "android.intent.action.VIEW", params: { data: folderDocumentUriFromTreeUri(chosenUri), type: "vnd.android.document/directory", flags: 1 }, method: "view-chosen" },
+                      { action: "android.intent.action.OPEN_DOCUMENT_TREE", params: { flags: 1 }, method: "saf-chosen" },
+                  ]
+                : [
+                      {
+                          action: "android.intent.action.OPEN_DOCUMENT_TREE",
+                          params: { data: `content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2F${packageName}/files`, flags: 1 },
+                          method: "saf",
+                      },
+                      { action: "android.intent.action.VIEW", params: { data: `/storage/emulated/0/Android/data/${packageName}/files`, type: "resource/folder" }, method: "intent" },
+                  ]
 
-                endTiming({ status: "success", method: "intent" })
-                return
-            } catch (folderError) {
-                console.warn("Folder approach failed, trying file sharing:", folderError)
+            for (const { action, params, method } of attempts) {
+                try {
+                    await startActivityAsync(action, params)
+                    endTiming({ status: "success", method })
+                    return
+                } catch (attemptError) {
+                    console.warn(`Open data directory attempt "${method}" failed, trying next:`, attemptError)
+                }
             }
 
             // Final fallback: Share the settings file directly.

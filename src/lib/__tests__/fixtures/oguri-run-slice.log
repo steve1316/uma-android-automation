@@ -1,0 +1,1619 @@
+
+00:00:00.423 [INFO] [INFO] Device Information: 1080x1920, DPI 240
+00:00:00.423 [WARN] [WARN] ⚠️ Note that certain Android notification styles (like banners) are big enough that they cover the area that contains the Mood which will interfere with mood recovery logic in the beginning.
+00:00:00.423 [INFO] [INFO] Bot version: 5.8.0 (78)
+00:00:00.415 [INFO] 🏁 Campaign Selected: Trackblazer
+
+
+00:00:00.448 [INFO] [ANALYTICS] Run start: persistence enabled; saved run found (scenario=Trackblazer, lastTurn=75, name=Oguri CapP, 74 turns).
+00:00:03.995 [VERBOSE] [INFO] Detected date: Junior Year Pre-Debut
+00:00:04.128 [INFO] [INFO] Detected day for extra racing: 11
+00:00:04.262 [INFO] Smart Race Solver Preview Schedule (34 races, score=1021.30, projected epithets: [Breakneck Miler, Dirt G1 Achiever, Dirt G1 Powerhouse, Dirt G1 Star, Dirty Work, Fall Champion, Globe-Trotter, Incredible, Junior Jewel, Kanto Conqueror, Legendary, Phenomenal, Pro Racer, Shield Bearer, Spring Champion, Standard Distance Leader, Stunning, Tohoku Top Dog, West Japan Whiz]):
+  Turn 16 (Junior Class August, Second Half - Niigata Junior Stakes, G3)
+  Turn 17 (Junior Class September, First Half - Sapporo Junior Stakes, G3)
+  Turn 19 (Junior Class October, First Half - Saudi Arabia Royal Cup, G3)
+  Turn 20 (Junior Class October, Second Half - Artemis Stakes, G3)
+  Turn 22 (Junior Class November, Second Half - Tokyo Sports Hai Junior Stakes, G3)
+  Turn 23 (Junior Class December, First Half - Asahi Hai Futurity Stakes, G1)
+  Turn 24 (Junior Class December, Second Half - Hopeful Stakes, G1)
+  Turn 27 (Classic Class February, First Half - Kyodo News Hai, G3)
+  Turn 29 (Classic Class March, First Half - Yayoi Sho, G2)
+  Turn 30 (Classic Class March, Second Half - Spring Stakes, G2)
+  Turn 31 (Classic Class April, First Half - Satsuki Sho, G1)
+  Turn 33 (Classic Class May, First Half - NHK Mile Cup, G1)
+  Turn 34 (Classic Class May, Second Half - Tokyo Yushun (Japanese Derby), G1)
+  Turn 36 (Classic Class June, Second Half - Takarazuka Kinen, G1)
+  Turn 41 (Classic Class September, First Half - Niigata Kinen, G3)
+  Turn 43 (Classic Class October, First Half - Mainichi Okan, G2)
+  Turn 44 (Classic Class October, Second Half - Kikuka Sho, G1)
+  Turn 46 (Classic Class November, Second Half - Mile Championship, G1)
+  Turn 47 (Classic Class December, First Half - Champions Cup, G1)
+  Turn 48 (Classic Class December, Second Half - Arima Kinen, G1)
+  Turn 50 (Senior Class January, Second Half - American JCC, G2)
+  Turn 52 (Senior Class February, Second Half - February Stakes, G1)
+  Turn 53 (Senior Class March, First Half - Kinko Sho, G2)
+  Turn 54 (Senior Class March, Second Half - Osaka Hai, G1)
+  Turn 56 (Senior Class April, Second Half - Tenno Sho (Spring), G1)
+  Turn 57 (Senior Class May, First Half - Victoria Mile, G1)
+  Turn 59 (Senior Class June, First Half - Yasuda Kinen, G1)
+  Turn 60 (Senior Class June, Second Half - Teio Sho, G1)
+  Turn 65 (Senior Class September, First Half - Niigata Kinen, G3)
+  Turn 67 (Senior Class October, First Half - Mainichi Okan, G2)
+  Turn 68 (Senior Class October, Second Half - Tenno Sho (Autumn), G1)
+  Turn 70 (Senior Class November, Second Half - Japan Cup, G1)
+  Turn 71 (Senior Class December, First Half - Champions Cup, G1)
+  Turn 72 (Senior Class December, Second Half - Tokyo Daishoten, G1)
+00:00:06.508 [INFO] [TRAINEE] Name: Oguri CapP
+00:00:07.741 [VERBOSE] [INFO] Detected date: Junior Year Pre-Debut
+00:00:07.850 [INFO] [INFO] Detected day for extra racing: 11
+00:00:09.941 [VERBOSE] [INFO] Detected date: Junior Year Pre-Debut
+00:00:10.153 [INFO] [INFO] Detected day for extra racing: 11
+00:00:10.208 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:00:10.208 [VERBOSE] [TRAINEE] Stats: Spd=192, Sta=101, Pow=219, Gut=85, Wit=145
+00:00:10.208 [VERBOSE] [TRAINEE] Energy: 100%
+00:00:10.208 [VERBOSE] [TRAINEE] Mood: NORMAL
+00:00:10.208 [VERBOSE] [TRAINEE] Fans: 1
+00:00:10.208 [VERBOSE] [TRAINEE] Skill Points: 120
+00:00:10.208 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:00:10.208 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:00:10.208 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:00:10.208 [INFO] [ANALYTICS] Saved analytics did not match the current run; starting fresh. saved(scenario=Trackblazer, turn=75, name=Oguri CapP) vs current(scenario=Trackblazer, turn=1, name=Oguri CapP).
+
+00:00:10.267 [INFO] [INJURY] Checking if there is an injury that needs healing on JUNIOR YEAR EARLY JANUARY (Turn 1).
+00:00:10.295 [INFO] [INJURY] No injury detected.
+00:00:10.321 [INFO] [MOOD] Current mood is Normal. Not recovering mood due to firstTrainingCheck flag being active. Will need to complete a training first before being allowed to recover mood.
+
+00:00:10.441 [INFO] [INFO] Detected day for extra racing: 11
+00:00:10.441 [INFO] [RACE] Current remaining number of days before the next mandatory race: 11.
+00:00:10.442 [INFO] [RACE] Smart Race Solver has no race planned for turn 1. Skipping the extra-race fallback.
+00:00:10.473 [INFO] [TRACKBLAZER] Decision made to train.
+00:00:10.474 [INFO] [TRACKBLAZER] Starting specialized Training process.
+
+00:00:11.168 [VERBOSE] [TRAINING] Now starting process to analyze all 5 Trainings.
+00:00:11.587 [INFO] [TRAINING] 0% within acceptable range of 20%. Proceeding to acquire all other percentages and total stat increases...
+00:00:11.700 [INFO] [TRAINING] Skipping STAMINA training due to being blacklisted.
+00:00:12.385 [INFO] [TRAINING] Skipping GUTS training due to being blacklisted.
+00:00:13.460 [VERBOSE] [TRAINING] Process to analyze all 5 Trainings complete.
+
+00:00:13.488 [VERBOSE] [TRAINING] Starting process to score SPEED Training with a focus on building relationship bars.
+00:00:13.490 [INFO] [TRAINING] SPEED Training has a score of 2.50 with a focus on building 1 relationship bars.
+
+00:00:13.491 [VERBOSE] [TRAINING] Starting process to score POWER Training with a focus on building relationship bars.
+00:00:13.492 [INFO] [TRAINING] POWER Training has a score of 5.00 with a focus on building 2 relationship bars.
+
+00:00:13.492 [VERBOSE] [TRAINING] Starting process to score WIT Training with a focus on building relationship bars.
+00:00:13.492 [INFO] [TRAINING] WIT Training has a score of 7.50 with a focus on building 3 relationship bars.
+
+00:00:13.495 [VERBOSE] ========== Training Analysis Results ==========
+Scoring Mode: Friendship (Pre-Debut/Junior)
+Current Date: JUNIOR YEAR EARLY JANUARY (Turn 1)
+Current Stats: Speed=192, Stamina=101, Power=219, Guts=85, Wit=145
+Stat Targets: Disabled (treating cap=1200 as the target for all stats)
+Completion: SPEED=16%, STAMINA=8%, POWER=18%, GUTS=7%, WIT=12%
+
+--- Training Details ---
+SPEED Training: stats={SPEED=11, STAMINA=0, POWER=6, GUTS=0, WIT=0}, fail=0%, rainbows=0
+  -> Relationship bars: #1:blue(31%)
+[STAMINA] BLACKLISTED
+POWER Training: stats={SPEED=0, STAMINA=5, POWER=8, GUTS=0, WIT=0}, fail=0%, rainbows=0
+  -> Relationship bars: #1:blue(19%), #2:blue(20%)
+  -> Skill hints: 1
+[GUTS] BLACKLISTED
+WIT Training: stats={SPEED=5, STAMINA=0, POWER=0, GUTS=0, WIT=8}, fail=0%, rainbows=0 <---- SELECTED
+  -> Relationship bars: #1:blue(31%), #2:blue(19%), #3:blue(13%)
+
+--- Selection Explanation ---
+WIT beat POWER by 2.50 points (50.0% higher)
+Key factor: 3 near-max friendship bar(s) (anticipatory rainbow multiplier applied).
+Key factor: WIT stat is at 12% of target (behind, higher priority).
+Key factor: Multiple relationship bars present (3).
+================================================
+
+00:00:13.496 [VERBOSE] [TRAINING] Now starting process to execute WIT training...
+00:00:13.497 [VERBOSE] [TRAINING] Executing the WIT Training.
+
+00:00:14.489 [VERBOSE] [TRAINING] Process to execute training completed.
+
+00:00:14.490 [INFO] ============== Turn 1 (JUNIOR EARLY JANUARY) Decision Report ==============
+State:
+  Energy = 100%
+  Mood = NORMAL
+  Negative Statuses = []
+  Megaphone Turns = 0
+  Consecutive Races = 0
+  Used Charm Today = false
+  Used Whistle Today = false
+Inventory (decision-relevant):
+  [Charms & Whistles]
+  Good-Luck Charm = 0
+  Reset Whistle = 0
+  [Megaphones]
+  Coaching Megaphone = 0
+  Empowering Megaphone = 0
+  Motivating Megaphone = 0
+  [Cupcakes & Heals]
+  Berry Sweet Cupcake = 0
+  Plain Cupcake = 0
+  Royal Kale Juice = 0
+  [Race Items]
+  Artisan Cleat Hammer = 0
+  Glow Sticks = 0
+  Master Cleat Hammer = 0
+Settings (decision-relevant):
+  Trackblazer Energy Threshold = 40
+  Force-Train Energy Floor = 20
+  Skip Risky Charm Training Below Gain = 30
+  Consecutive Races Limit = 5
+  Skip Bad-Mood Items Below Gain = 15
+  Skip Empowering Megaphone Below Gain = 0
+  Skip Motivating Megaphone Below Gain = 0
+  Skip Coaching Megaphone Below Gain = 0
+  Whistle Forces Training = true
+  Irregular Training = on (min main 30)
+  Enable In-Game Race Agenda = false
+  Max Failure Chance = 20%
+  Riskier Training = on (max fail 30%, min main 30)
+  Energy Item Reserve = 1
+  Cupcake Reserve = 1
+  Race Item Conservation Start Turn = 65
+  Master Hammer Finale Reserve = 2
+  Artisan Hammer Min Stock G3 = 3
+  Artisan Hammer Min Stock G2 = 2
+  Glow Stick Final-Day Reserve = 1
+  Glow Stick Min Fans = 20000
+Items Used: None
+
+Race eligibility: NOT ELIGIBLE
+  Reason: Smart Race Solver has no race planned for this turn
+
+Action: TRAIN
+  Reason: Default fallback after racing/mood/injury checks did not trigger
+
+Training selected: WIT (source=ANALYSIS)
+  Reason: Final pick selected by initial analyzer pass (no Reset Whistle used)
+  Pick: fail=0%, gains=[SPD:5 STA:0 PWR:0 GUTS:0 WIT:8]
+  Runner-ups:
+    - SPEED (considered): fail=0%, gains=[SPD:11 STA:0 PWR:6 GUTS:0 WIT:0], considered by analyzer but lost to selection
+    - POWER (considered): fail=0%, gains=[SPD:0 STA:5 PWR:8 GUTS:0 WIT:0], considered by analyzer but lost to selection
+==============================================================
+
+
+
+
+
+
+
+
+
+
+00:00:16.416 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+
+
+
+
+
+
+
+
+
+
+00:00:18.565 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+
+
+
+
+
+
+
+
+
+
+
+00:00:20.968 [INFO] [TRACKBLAZER] Tutorial must have already been dismissed.
+
+00:00:20.968 [VERBOSE] ********************
+00:00:20.968 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on JUNIOR YEAR EARLY JANUARY (Turn 1).
+
+
+00:00:21.161 [VERBOSE] ========== Training Event Summary ==========
+Event: "Field Workout" (Oguri Cap) [Confidence: 1]
+Current Date: JUNIOR YEAR EARLY JANUARY (Turn 1)
+
+Options:
+  Option 1 [Weight: 10]: Guts +10
+  Option 2 [Weight: 50]: Power +10 <---- SELECTED
+
+Selected: Option 2
+============================================
+
+00:00:21.441 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:00:21.441 [VERBOSE] ********************
+
+
+00:00:21.643 [VERBOSE] ********************
+00:00:21.643 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on JUNIOR YEAR EARLY JANUARY (Turn 1).
+
+
+00:00:21.813 [VERBOSE] ========== Training Event Summary ==========
+Event: "Field Workout" (Oguri Cap) [Confidence: 1]
+Current Date: JUNIOR YEAR EARLY JANUARY (Turn 1)
+
+Options:
+  Option 1 [Weight: 10]: Guts +10
+  Option 2 [Weight: 50]: Power +10 <---- SELECTED
+
+Selected: Option 2
+============================================
+
+00:00:22.435 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:00:22.435 [VERBOSE] ********************
+
+
+
+
+
+00:00:23.787 [VERBOSE] [INFO] Detected date: Junior Year Pre-Debut
+00:00:23.888 [INFO] [INFO] Detected day for extra racing: 10
+00:00:23.888 [VERBOSE] [DATE] New date: JUNIOR YEAR LATE JANUARY (Turn 2)
+00:00:24.765 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:00:24.766 [VERBOSE] [TRAINEE] Stats: Spd=197, Sta=101, Pow=229, Gut=85, Wit=171
+00:00:24.766 [VERBOSE] [TRAINEE] Energy: 100%
+00:00:24.766 [VERBOSE] [TRAINEE] Mood: NORMAL
+00:00:24.766 [VERBOSE] [TRAINEE] Fans: 1
+00:00:24.769 [VERBOSE] [TRAINEE] Skill Points: 123
+00:00:24.769 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:00:24.769 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:00:24.769 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+
+00:00:24.838 [INFO] [INJURY] Checking if there is an injury that needs healing on JUNIOR YEAR LATE JANUARY (Turn 2).
+00:00:24.867 [INFO] [INJURY] No injury detected.
+00:00:24.867 [INFO] [TRACKBLAZER] Mood is NORMAL and energy is 100% (>= 70%). Attempting to recover mood via rest/recreation (saving items).
+00:00:24.906 [INFO] [TRACKBLAZER] Resetting 0 consecutive race counts due to mood recovery.
+
+00:00:24.907 [VERBOSE] [MOOD] Detecting current mood on JUNIOR YEAR LATE JANUARY (Turn 2).
+00:00:24.987 [VERBOSE] [MOOD] Detected mood to be NORMAL.
+00:00:25.015 [VERBOSE] [MOOD] Current mood is not good (NORMAL). Recovering mood now.
+00:00:25.893 [VERBOSE] [MOOD] Successfully recovered mood.
+
+00:00:25.894 [INFO] ============== Turn 2 (JUNIOR LATE JANUARY) Decision Report ==============
+State:
+  Energy = 100%
+  Mood = NORMAL
+  Negative Statuses = []
+  Megaphone Turns = 0
+  Consecutive Races = 0
+  Used Charm Today = false
+  Used Whistle Today = false
+Inventory (decision-relevant):
+  [Charms & Whistles]
+  Good-Luck Charm = 0
+  Reset Whistle = 0
+  [Megaphones]
+  Coaching Megaphone = 0
+  Empowering Megaphone = 0
+  Motivating Megaphone = 0
+  [Cupcakes & Heals]
+  Berry Sweet Cupcake = 0
+  Plain Cupcake = 0
+  Royal Kale Juice = 0
+  [Race Items]
+  Artisan Cleat Hammer = 0
+  Glow Sticks = 0
+  Master Cleat Hammer = 0
+Settings (decision-relevant):
+  Trackblazer Energy Threshold = 40
+  Force-Train Energy Floor = 20
+  Skip Risky Charm Training Below Gain = 30
+  Consecutive Races Limit = 5
+  Skip Bad-Mood Items Below Gain = 15
+  Skip Empowering Megaphone Below Gain = 0
+  Skip Motivating Megaphone Below Gain = 0
+  Skip Coaching Megaphone Below Gain = 0
+  Whistle Forces Training = true
+  Irregular Training = on (min main 30)
+  Enable In-Game Race Agenda = false
+  Max Failure Chance = 20%
+  Riskier Training = on (max fail 30%, min main 30)
+  Energy Item Reserve = 1
+  Cupcake Reserve = 1
+  Race Item Conservation Start Turn = 65
+  Master Hammer Finale Reserve = 2
+  Artisan Hammer Min Stock G3 = 3
+  Artisan Hammer Min Stock G2 = 2
+  Glow Stick Final-Day Reserve = 1
+  Glow Stick Min Fans = 20000
+Items Used: None
+
+Action: RECOVER_MOOD
+  Reason: shouldRecoverMood returned true (mood NORMAL)
+==============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+00:00:27.988 [VERBOSE] ********************
+00:00:27.988 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on JUNIOR YEAR LATE JANUARY (Turn 2).
+
+
+00:00:28.195 [VERBOSE] ========== Training Event Summary ==========
+Event: "Something Smells Good!" (Oguri Cap) [Confidence: 1]
+Current Date: JUNIOR YEAR LATE JANUARY (Turn 2)
+
+Options:
+  Option 1 [Weight: 40]: Speed +10 <---- SELECTED
+  Option 2 [Weight: 10]: Guts +10
+
+Selected: Option 1
+============================================
+
+00:00:28.838 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:00:28.838 [VERBOSE] ********************
+
+
+
+
+
+
+
+00:00:30.028 [VERBOSE] ********************
+00:00:30.028 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on JUNIOR YEAR LATE JANUARY (Turn 2).
+00:00:30.240 [VERBOSE] [TRAINING_EVENT] Tutorial event detected for Unity Cup. Found 2 option(s) on screen.
+00:00:30.240 [VERBOSE] [TRAINING_EVENT] Selecting last option (option 2) to dismiss Tutorial.
+00:00:30.864 [INFO] [TRAINING_EVENT] Selected option 2 for Tutorial.
+00:00:30.864 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:00:30.864 [VERBOSE] ********************
+00:00:31.262 [VERBOSE] [INFO] Detected date: Junior Year Pre-Debut
+00:00:31.413 [INFO] [INFO] Detected day for extra racing: 9
+00:18:53.566 [VERBOSE] [DATE] New date: CLASSIC YEAR EARLY APRIL (Turn 31)
+00:18:55.524 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:18:56.171 [WARN] [WARN] updateStats:: New GUTS stat value has changed too much since last update (old=192, new=1) via sequential processing. Consecutive mismatch count: 1
+00:18:57.281 [VERBOSE] [INFO] Detected date: Classic Year Early Apr
+00:18:59.362 [VERBOSE] [INFO] Detected date: Classic Year Early Apr
+00:18:59.425 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:18:59.425 [VERBOSE] [TRAINEE] Stats: Spd=466, Sta=211, Pow=465, Gut=192, Wit=529
+00:18:59.426 [VERBOSE] [TRAINEE] Energy: 52%
+00:18:59.426 [VERBOSE] [TRAINEE] Mood: GREAT
+00:18:59.426 [VERBOSE] [TRAINEE] Fans: 99253
+00:18:59.426 [VERBOSE] [TRAINEE] Skill Points: 292
+00:18:59.426 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:18:59.426 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:18:59.426 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:18:59.426 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:18:59.426 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+00:18:59.427 [INFO] [TRACKBLAZER] Smart Race Solver has "Satsuki Sho (Classic Class April, First Half)" planned for turn 31; deferring to racing flow.
+00:18:59.465 [INFO] [INFO] All checks are cleared for racing.
+00:18:59.532 [INFO] [TRACKBLAZER] Checking for suitable races.
+00:19:01.095 [INFO] [TRACKBLAZER] Current consecutive race count: 3.
+00:19:01.095 [WARN] [WARN] shouldAllowConsecutiveRace:: Current consecutive race count is 3. Note that a -30 stat penalty can apply starting from 3 consecutive races!
+00:19:01.131 [INFO] [TRACKBLAZER] Consecutive race count 3 < 6. Continuing.
+00:19:01.131 [INFO] [RACE] Consecutive race warning! Racing anyway...
+00:19:03.951 [INFO] [RACE] Scanning the whole race list for suitable races...
+00:19:08.266 [INFO] [INFO] Extracted race name: "Hanshin Turf 160Om (Mile) Right / Outer"
+00:19:08.267 [INFO] [RACE] Looking up race for turn 31 with detected name: "Hanshin Turf 160Om (Mile) Right / Outer".
+00:19:08.267 [INFO] [RACE] Found 2 fuzzy matches with similarity 0.94 but different fan counts:
+00:19:08.267 [INFO] [RACE]     - "Arlington Cup" (Fans: 3800)
+00:19:08.267 [INFO] [RACE]     - "Oka Sho" (Fans: 10500)
+00:19:08.491 [INFO] [INFO] Extracted race name: "Nakayama Turf 2000m (Med) Right / Inner"
+00:19:08.492 [INFO] [RACE] Looking up race for turn 31 with detected name: "Nakayama Turf 2000m (Med) Right / Inner".
+00:19:08.492 [INFO] [RACE] Found exact match: "Satsuki Sho" AKA "Nakayama Turf 2000m (Med) Right / Inner" (Fans: 11000).
+
+00:19:08.492 [VERBOSE] ========== Trackblazer Race Selection Analysis ==========
+Current Date: CLASSIC YEAR EARLY APRIL (Turn 31)
+Consecutive Race Count: 3
+
+- Found Suitable Race: "Arlington Cup" (G3) Rival: true
+
+- Found Suitable Race: "Oka Sho" (G1) Rival: true
+
+- Found Suitable Race: "Satsuki Sho" (G1) Rival: true [Smart Race Solver override]
+
+Selected Race: Satsuki Sho (G1) Rival: true [Smart Race Solver pick]
+================================================
+
+00:19:08.492 [INFO] [RACE] Smart Race Solver match "Satsuki Sho" found during scan. Skipping the rest of the scan.
+00:19:08.492 [INFO] [TRACKBLAZER] Found suitable race: Satsuki Sho (G1). Processing items.
+00:19:08.492 [INFO] [TRACKBLAZER] Suitable race items found in inventory (Hammer: Master Cleat Hammer, Glow Sticks: false). Opening Training Items dialog.
+00:19:09.828 [INFO] [TRACKBLAZER] Queuing specific item for use: "Master Cleat Hammer". (Reason: Race bonus for G1.)
+
+00:19:10.520 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Plain Cupcake: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 1
+- Motivating Megaphone: 1
+- Power Ankle Weights: 1
+- Reset Whistle: 1
+
+Races
+- Master Cleat Hammer: 1
+
+------------------------------------------------
+
+Items Used:
+
+- 1x Master Cleat Hammer: Race bonus for G1.
+================================================
+
+00:19:10.521 [INFO] [TRACKBLAZER] Decremented Master Cleat Hammer. Remaining: 0.
+00:19:10.521 [INFO] [TRACKBLAZER] Queued 1 race items for G1 (11000 fans). Confirming usage.
+00:19:10.521 [INFO] [TRACKBLAZER] Confirming usage of 1 items.
+00:19:11.368 [INFO] [TRACKBLAZER] Waiting for animation to finish (Delay: 4.0 seconds).
+00:19:15.438 [INFO] [TRACKBLAZER] Closing training items dialog.
+
+00:19:18.533 [VERBOSE] ********************
+00:19:18.533 [VERBOSE] [RACE] Starting Racing process on CLASSIC YEAR EARLY APRIL (Turn 31).
+00:19:18.750 [VERBOSE] [RACE] The bot is already at the Race List screen and a race has already been selected.
+00:19:18.750 [VERBOSE] [RACE] Starting process for a race that is already selected.
+00:19:22.227 [INFO] [RACE] Proceeding to handle the race...
+00:19:23.607 [INFO] [LOADING] Detected that the game is still loading from the "Now Loading" text at the bottom of the screen. Waiting...
+00:19:25.220 [INFO] [RACE] Detected ButtonChangeRunningStyle. Handling race prep screen...
+00:19:25.375 [INFO] [RACE] Clicked ViewResults button to skip race.
+00:19:25.425 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+00:19:31.215 [INFO] [RACE] Closed post-race popup.
+00:19:31.215 [INFO] [TRACKBLAZER] Rival Race win detected via post-race popup.
+00:19:31.215 [INFO] [TRACKBLAZER] Rival Race win detected. Starting shop check counter at 1. Frequency: 2.
+00:19:32.342 [INFO] [RACE] No retries remaining or eligible race conditions not met.
+00:19:32.678 [INFO] [RACE] Reached race results screen. Exiting race retry loop...
+00:19:32.679 [INFO] [RACE] Now performing cleanup and finishing the race.
+00:19:32.756 [INFO] [RACE] Race result detected - 1st place: true.
+00:19:32.756 [INFO] Race "Satsuki Sho" on turn 31 confirmed 1st; added to history.
+00:19:32.772 [INFO] Race "Satsuki Sho" updated 14 epithet(s):
+  - "All-Rounder" -> IN_PROGRESS (1/6) -> (2/6)
+      * Win 3 turf G1 races
+  - "Epoch Pioneer" -> IN_PROGRESS (1/10) -> (2/10)
+      * Win 10 G1 races
+  - "First Step to Glory" -> IN_PROGRESS (1/15) -> (2/15)
+      * Win at least 15 G1 races
+  - "G1 Hunter" -> IN_PROGRESS (1/7) -> (2/7)
+      * Win 7 G1 races
+  - "Legendary Diva" -> IN_PROGRESS (1/6) -> (2/6)
+      * Win at least 5 G1 races
+  - "Pro Racer" -> IN_PROGRESS (8/10) -> (9/10)
+      * Win 10 OP+ races
+  - "Satsuki Spirit" -> COMPLETED (0/1) -> (1/1)
+      * Win the Satsuki Sho
+  - "Standard Distance Leader" -> IN_PROGRESS (8/10) -> (9/10)
+      * Win 10 Mile/Medium races
+  - "Stunning" -> IN_PROGRESS (0/3) -> (1/3)
+      * Win the Satsuki Sho
+  - "The GOAT" -> IN_PROGRESS (1/7) -> (2/7)
+      * Win at least 7 G1 races
+  - "Triple Crown" -> IN_PROGRESS (0/3) -> (1/3)
+      * Win the Satsuki Sho
+  - "Turf Terror" -> IN_PROGRESS (8/15) -> (9/15)
+      * Win 15 turf races
+  - "Victorious" -> IN_PROGRESS (1/20) -> (2/20)
+      * Win at least 20 G1 races
+  - "Way of Kings" -> IN_PROGRESS (0/3) -> (1/3)
+      * Win the Satsuki Sho
+00:19:32.986 [INFO] [RACE] Clicked on Next (race results) button.
+00:19:34.409 [INFO] [RACE] Clicked on Next (race end) button.
+00:19:34.497 [VERBOSE] [RACE] Racing process for already selected race is completed. Grade: G1
+00:19:34.497 [VERBOSE] ********************
+00:19:34.497 [INFO] [TRACKBLAZER] Consecutive race count was already updated by OCR: 3.
+
+00:19:34.498 [INFO] ============== Turn 31 (CLASSIC EARLY APRIL) Decision Report ==============
+State:
+  Energy = 52%
+  Mood = GREAT
+  Negative Statuses = []
+  Megaphone Turns = 0
+  Consecutive Races = 3
+  Used Charm Today = false
+  Used Whistle Today = false
+Inventory (decision-relevant):
+  [Charms & Whistles]
+  Good-Luck Charm = 1
+  Reset Whistle = 1
+  [Megaphones]
+  Coaching Megaphone = 1
+  Empowering Megaphone = 0
+  Motivating Megaphone = 1
+  [Cupcakes & Heals]
+  Berry Sweet Cupcake = 0
+  Plain Cupcake = 2
+  Royal Kale Juice = 0
+  [Race Items]
+  Artisan Cleat Hammer = 0
+  Glow Sticks = 0
+  Master Cleat Hammer = 1
+Settings (decision-relevant):
+  Trackblazer Energy Threshold = 40
+  Force-Train Energy Floor = 20
+  Skip Risky Charm Training Below Gain = 30
+  Consecutive Races Limit = 5
+  Skip Bad-Mood Items Below Gain = 15
+  Skip Empowering Megaphone Below Gain = 0
+  Skip Motivating Megaphone Below Gain = 0
+  Skip Coaching Megaphone Below Gain = 0
+  Whistle Forces Training = true
+  Irregular Training = on (min main 30)
+  Enable In-Game Race Agenda = false
+  Max Failure Chance = 20%
+  Riskier Training = on (max fail 30%, min main 30)
+  Energy Item Reserve = 1
+  Cupcake Reserve = 1
+  Race Item Conservation Start Turn = 65
+  Master Hammer Finale Reserve = 2
+  Artisan Hammer Min Stock G3 = 3
+  Artisan Hammer Min Stock G2 = 2
+  Glow Stick Final-Day Reserve = 1
+  Glow Stick Min Fans = 20000
+Items Used: None
+
+Action: RACE
+  Reason: Smart Race Solver planned race "Satsuki Sho (Classic Class April, First Half)" for this turn
+
+Race eligibility: ELIGIBLE
+  Reason: Consecutive-race check: Under consecutive-race limit (3 < 6)
+==============================================================
+00:19:34.498 [INFO] [TRACKBLAZER] Shop check frequency reached (2 / 2). Shop check will be performed on main screen.
+
+
+
+
+
+
+
+00:19:35.724 [VERBOSE] ********************
+00:19:35.724 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on CLASSIC YEAR EARLY APRIL (Turn 31).
+00:19:35.884 [VERBOSE] [TRAINING_EVENT] Detected special event: Victory!
+00:19:35.884 [VERBOSE] [TRAINING_EVENT] Using setting: Option 2: Energy -5 and random stat gain (Option 2)
+00:19:35.884 [VERBOSE] [TRAINING_EVENT] Special event override applied: option 2
+00:19:36.521 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:19:36.521 [VERBOSE] ********************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:19:41.692 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+
+
+
+
+
+
+
+
+
+
+
+
+00:19:44.287 [VERBOSE] ********************
+00:19:44.287 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on CLASSIC YEAR EARLY APRIL (Turn 31).
+
+We Walk Together with confidence = 1
+
+00:19:44.479 [VERBOSE] ========== Training Event Summary ==========
+Event: "(❯❯❯) We Walk Together" (Kitasan Black) [Confidence: 1]
+Current Date: CLASSIC YEAR EARLY APRIL (Turn 31)
+
+Options:
+  Option 1 [Weight: 310]: Randomly either, Speed +5, Power +5... <---- SELECTED
+
+Selected: Option 1
+============================================
+
+00:19:45.103 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:19:45.104 [VERBOSE] ********************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:19:48.557 [INFO] [TRACKBLAZER] Pending shop check detected! Checking Shop for new items...
+00:19:49.807 [INFO] [TRACKBLAZER] Buying extra items after participating in a race...
+00:19:49.807 [INFO] [TRACKBLAZER] Initiating buying process.
+00:19:49.807 [INFO] [TRACKBLAZER] Updating current amount of Shop Coins...
+00:19:53.091 [INFO] [INFO] Current Shop Coins: 228 (Raw OCR text: "228")
+00:19:53.091 [INFO] [TRACKBLAZER] Initial Shop Coins: 228
+00:19:53.091 [INFO] [INFO] Beginning process of scanning shop items...
+00:19:56.106 [WARN] [WARN] getShopItemPrice:: Parsed empty string for Shop Item Price.
+00:19:56.106 [INFO] 	Energy Drink MAX: 30 coins at index 0
+00:19:56.418 [WARN] [WARN] getShopItemPrice:: Parsed empty string for Shop Item Price.
+00:19:56.419 [INFO] 	Power Scroll: 30 coins at index 1
+00:19:56.652 [WARN] [WARN] getShopItemPrice:: Parsed empty string for Shop Item Price.
+00:19:56.652 [INFO] 	Guts Ankle Weights: 50 coins at index 2
+00:19:58.306 [WARN] [WARN] getShopItemPrice:: Parsed empty string for Shop Item Price.
+00:19:58.306 [INFO] 	Empowering Megaphone: 70 coins at index 3
+00:19:58.652 [INFO] 	Guts Ankle Weights: 45 coins at index 4
+00:19:58.899 [INFO] 	Stamina Ankle Weights: 45 coins at index 5
+00:20:00.799 [INFO] 	Stamina Training Application: 135 coins at index 6
+
+00:20:05.503 [VERBOSE] ============== Shop Evaluation Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Plain Cupcake: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 1
+- Motivating Megaphone: 1
+- Power Ankle Weights: 1
+- Reset Whistle: 1
+
+------------------------------------------------
+Current coins: 228.
+Items found:
+
+  - Energy Drink MAX
+  - Power Scroll
+  - Guts Ankle Weights
+  - Empowering Megaphone
+  - Guts Ankle Weights
+  - Stamina Ankle Weights
+  - Stamina Training Application
+  - Guts Manual (Purchased)
+  - Stamina Manual (Purchased)
+  - Grilled Carrots (Purchased)
+  - Master Cleat Hammer (Purchased)
+  - Motivating Megaphone (Purchased)
+  - Power Scroll (Purchased)
+  - Guts Scroll (Purchased)
+
+Items to buy:
+
+  - Power Scroll: 30 coins (Reason: Power +15)
+  - Empowering Megaphone: 70 coins (Reason: Training bonus +60% for 2 turns)
+  - Energy Drink MAX: 30 coins (Reason: Maximum energy +4, Energy +5)
+
+TOTAL: 130 / 228 coins with 98 left over coins
+==========================================
+00:20:08.457 [INFO] [INFO] Selecting "Energy Drink MAX" for 30 coins at index 0. (Reason: Maximum energy +4, Energy +5)
+00:20:09.187 [INFO] [INFO] Selecting "Power Scroll" for 30 coins at index 1. (Reason: Power +15)
+00:20:11.505 [INFO] [INFO] Selecting "Empowering Megaphone" for 70 coins at index 3. (Reason: Training bonus +60% for 2 turns)
+00:20:11.959 [INFO] [INFO] Successfully selected and purchased 3 item(s).
+00:20:13.251 [INFO] [TRACKBLAZER] Quick-use items were purchased. Navigating and queuing for usage...
+00:20:13.559 [INFO] [TRACKBLAZER] Queuing item for use (copy 1): "Power Scroll". (Reason: Quick-use after purchase.)
+00:20:14.255 [INFO] [TRACKBLAZER] Queuing item for use (copy 2): "Power Scroll". (Reason: Quick-use after purchase.)
+
+00:20:14.265 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Stats
+- Power Scroll: 1
+
+Energy and Motivation
+- Energy Drink MAX: 1
+- Plain Cupcake: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Empowering Megaphone: 1
+- Good-Luck Charm: 1
+- Motivating Megaphone: 1
+- Power Ankle Weights: 1
+- Reset Whistle: 1
+
+------------------------------------------------
+
+Items Used:
+
+- 1x Power Scroll: Quick-use after purchase.
+================================================
+
+00:20:14.265 [INFO] [TRACKBLAZER] Decremented Power Scroll. Remaining: 0.
+00:20:16.260 [INFO] [TRACKBLAZER] Successfully handled "Exchange Complete" dialog.
+00:20:16.260 [INFO] [TRACKBLAZER] Updating current amount of Shop Coins...
+00:20:19.576 [INFO] [INFO] Current Shop Coins: 98 (Raw OCR text: "98")
+00:20:19.576 [INFO] [TRACKBLAZER] Remaining Shop Coins: 98
+00:20:21.783 [INFO] [TRACKBLAZER] Shop process complete. Returning up to the previous screen.
+00:20:23.103 [VERBOSE] [INFO] Detected date: Classic Year Late Apr
+00:43:42.870 [VERBOSE] [DATE] New date: SENIOR YEAR LATE MAY (Turn 58)
+00:43:46.545 [VERBOSE] [INFO] Detected date: Senior Year Late May
+00:43:46.597 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:43:46.597 [VERBOSE] [TRAINEE] Stats: Spd=812, Sta=321, Pow=812, Gut=349, Wit=719
+00:43:46.597 [VERBOSE] [TRAINEE] Energy: 0%
+00:43:46.597 [VERBOSE] [TRAINEE] Mood: GOOD
+00:43:46.597 [VERBOSE] [TRAINEE] Fans: 394709
+00:43:46.597 [VERBOSE] [TRAINEE] Skill Points: 351
+00:43:46.597 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:43:46.597 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:43:46.597 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:43:46.597 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:43:46.597 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+00:43:46.692 [INFO] [TRACKBLAZER] Skipping Irregular Training evaluation as energy is 0%.
+
+00:43:46.753 [INFO] [INJURY] Checking if there is an injury that needs healing on SENIOR YEAR LATE MAY (Turn 58).
+00:43:46.777 [VERBOSE] [INJURY] Injury detected. Attempting to heal...
+00:43:47.444 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+00:43:48.358 [VERBOSE] [INJURY] Injury detected and no follow-up Infirmary event appeared.
+
+
+
+
+
+
+
+00:43:49.450 [VERBOSE] ********************
+00:43:49.450 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on SENIOR YEAR LATE MAY (Turn 58).
+00:43:49.765 [WARN] [WARN] handleTrainingEvent:: First option will be selected since OCR failed to match the event title and no event rewards were found.
+00:43:50.389 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:43:50.389 [VERBOSE] ********************
+00:43:50.628 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:43:50.628 [VERBOSE] [TRAINEE] Stats: Spd=812, Sta=321, Pow=812, Gut=349, Wit=719
+00:43:50.628 [VERBOSE] [TRAINEE] Energy: 0%
+00:43:50.628 [VERBOSE] [TRAINEE] Mood: GOOD
+00:43:50.628 [VERBOSE] [TRAINEE] Fans: 394709
+00:43:50.628 [VERBOSE] [TRAINEE] Skill Points: 351
+00:43:50.628 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:43:50.628 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:43:50.628 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:43:50.628 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:43:50.629 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+
+00:43:50.690 [INFO] [INJURY] Checking if there is an injury that needs healing on SENIOR YEAR LATE MAY (Turn 58).
+00:43:50.715 [INFO] [INJURY] No injury detected.
+
+00:43:50.920 [INFO] [INFO] Detected day for extra racing: 14
+00:43:50.920 [INFO] [RACE] Current remaining number of days before the next mandatory race: 14.
+00:43:50.920 [INFO] [RACE] Smart Race Solver has no race planned for turn 58. Skipping the extra-race fallback.
+00:43:50.949 [INFO] [TRACKBLAZER] Decision made to train.
+00:43:50.949 [INFO] [TRACKBLAZER] Starting specialized Training process.
+
+00:43:51.651 [VERBOSE] [TRAINING] Now starting process to analyze all 5 Trainings.
+00:43:52.653 [INFO] [TRAINING] Flag set to ignore failure chance. Proceeding to acquire all other percentages and total stat increases...
+00:43:53.074 [INFO] [TRAINING] SPEED training level detected as Lvl 2.
+00:43:53.074 [INFO] [TRAINING] Skipping STAMINA training due to being blacklisted.
+00:43:53.821 [INFO] [TRAINING] POWER training level detected as Lvl 1.
+00:43:53.822 [INFO] [TRAINING] Skipping GUTS training due to being blacklisted.
+00:43:54.616 [INFO] [TRAINING] WIT training level detected as Lvl 3.
+00:43:55.215 [INFO] [TRAINING] Skipping SPEED training with Good-Luck Charm because main stat gain (21) is less than 30 and failure chance (65%) is risky.
+00:43:55.235 [INFO] [TRAINING] Skipping POWER training with Good-Luck Charm because main stat gain (12) is less than 30 and failure chance (64%) is risky.
+00:43:55.235 [INFO] [TRAINING] Skipping WIT training with Good-Luck Charm because main stat gain (13) is less than 30 and failure chance (25%) is risky.
+00:43:55.236 [VERBOSE] [TRAINING] Process to analyze all 5 Trainings complete.
+
+00:43:55.243 [VERBOSE] ========== Training Analysis Results ==========
+Scoring Mode: Stat Efficiency (Year 2+)
+Current Date: SENIOR YEAR LATE MAY (Turn 58)
+Current Stats: Speed=812, Stamina=321, Power=812, Guts=349, Wit=719
+Stat Targets: Disabled (treating cap=1200 as the target for all stats)
+Completion: SPEED=68%, STAMINA=27%, POWER=68%, GUTS=29%, WIT=60%
+
+--- Training Details ---
+SPEED Training: stats={SPEED=21, STAMINA=0, POWER=9, GUTS=0, WIT=0}, fail=65%, rainbows=1, level=Lvl 2 (SKIPPED)
+  -> Relationship bars: #1:orange(100%), #2:orange(100%)
+[STAMINA] BLACKLISTED
+POWER Training: stats={SPEED=0, STAMINA=5, POWER=12*, GUTS=0, WIT=0}, fail=64%, rainbows=0, level=Lvl 1 (SKIPPED)
+  -> Relationship bars: #1:orange(100%)
+[GUTS] BLACKLISTED
+WIT Training: stats={SPEED=2, STAMINA=0, POWER=0, GUTS=0, WIT=13*}, fail=25%, rainbows=0, level=Lvl 3 (SKIPPED)
+  -> Relationship bars: #1:orange(100%)[Yayoi Akikawa]
+
+--- Selection Explanation ---
+No training was selected (3 skipped due to: low gain with charm, 2 blacklisted).
+* means manual stat correction
+================================================
+
+00:43:55.243 [INFO] [TRAINING] Analysis returned no winning training. forceSelection=false → returning first non-blacklisted training: none available. Caller decides whether to execute.
+00:43:55.244 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+00:43:55.244 [INFO] [TRACKBLAZER] Still no suitable training found. Backing out for recovery.
+00:43:56.626 [INFO] [TRACKBLAZER] Energy is 0%. Attempting to recover energy.
+00:43:56.626 [INFO] [TRACKBLAZER] Resetting 2 consecutive race counts due to energy recovery.
+
+00:43:56.626 [VERBOSE] [ENERGY] Now starting attempt to recover energy on SENIOR YEAR LATE MAY (Turn 58).
+00:43:57.479 [VERBOSE] [ENERGY] Successfully recovered energy via rest.
+
+00:43:57.479 [INFO] ============== Turn 58 (SENIOR LATE MAY) Decision Report ==============
+State:
+  Energy = 0%
+  Mood = GOOD
+  Negative Statuses = []
+  Megaphone Turns = 0
+  Consecutive Races = 2
+  Used Charm Today = false
+  Used Whistle Today = false
+Inventory (decision-relevant):
+  [Charms & Whistles]
+  Good-Luck Charm = 1
+  Reset Whistle = 2
+  [Megaphones]
+  Coaching Megaphone = 1
+  Empowering Megaphone = 0
+  Motivating Megaphone = 3
+  [Cupcakes & Heals]
+  Berry Sweet Cupcake = 0
+  Plain Cupcake = 5
+  Royal Kale Juice = 0
+  [Race Items]
+  Artisan Cleat Hammer = 0
+  Glow Sticks = 0
+  Master Cleat Hammer = 0
+Settings (decision-relevant):
+  Trackblazer Energy Threshold = 40
+  Force-Train Energy Floor = 20
+  Skip Risky Charm Training Below Gain = 30
+  Consecutive Races Limit = 5
+  Skip Bad-Mood Items Below Gain = 15
+  Skip Empowering Megaphone Below Gain = 0
+  Skip Motivating Megaphone Below Gain = 0
+  Skip Coaching Megaphone Below Gain = 0
+  Whistle Forces Training = true
+  Irregular Training = on (min main 30)
+  Enable In-Game Race Agenda = false
+  Max Failure Chance = 20%
+  Riskier Training = on (max fail 30%, min main 30)
+  Energy Item Reserve = 1
+  Cupcake Reserve = 1
+  Race Item Conservation Start Turn = 65
+  Master Hammer Finale Reserve = 2
+  Artisan Hammer Min Stock G3 = 3
+  Artisan Hammer Min Stock G2 = 2
+  Glow Stick Final-Day Reserve = 1
+  Glow Stick Min Fans = 20000
+Items Used: None
+
+Race eligibility: NOT ELIGIBLE
+  Reason: Smart Race Solver has no race planned for this turn
+
+Action: TRAIN
+  Reason: Default fallback after racing/mood/injury checks did not trigger
+
+Whistle: NOT_ELIGIBLE
+  Reason: Outside Whistle window (day=58, allowed: 37..40 or > 60)
+
+Training selected: NONE (source=UNFORCED_DEFAULT)
+  Reason: No training selected; mood GOOD <= NORMAL or energy 0% <= 50 - backing out for recovery
+  Runner-ups:
+    - SPEED (REJECTED): fail=65%, gains=[SPD:21 STA:0 PWR:9 GUTS:0 WIT:0], low gain with charm
+    - POWER (REJECTED): fail=64%, gains=[SPD:0 STA:5 PWR:12 GUTS:0 WIT:0], low gain with charm
+    - WIT (REJECTED): fail=25%, gains=[SPD:2 STA:0 PWR:0 GUTS:0 WIT:13], low gain with charm
+
+Recovery executed: RECOVER_ENERGY
+  Reason: Mood GOOD > NORMAL or energy 0% < 20%
+==============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:44:02.149 [VERBOSE] [INFO] Detected date: Senior Year Late Jun
+00:56:28.678 [VERBOSE] [DATE] New date: Finale Qualifier (Turn 73)
+00:56:29.661 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:56:29.662 [VERBOSE] [TRAINEE] Stats: Spd=1039, Sta=422, Pow=1012, Gut=408, Wit=796
+00:56:29.662 [VERBOSE] [TRAINEE] Energy: 95%
+00:56:29.662 [VERBOSE] [TRAINEE] Mood: GREAT
+00:56:29.662 [VERBOSE] [TRAINEE] Fans: 559427
+00:56:29.662 [VERBOSE] [TRAINEE] Skill Points: 1
+00:56:29.662 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:56:29.662 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:56:29.662 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:56:29.662 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:56:29.663 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+00:56:29.665 [INFO] [TRACKBLAZER] It is the Finale. Prioritizing training.
+00:56:29.697 [INFO] [TRACKBLAZER] Decision made to train.
+00:56:29.697 [INFO] [TRACKBLAZER] Starting specialized Training process.
+
+00:56:30.407 [VERBOSE] [TRAINING] Now starting process to analyze all 5 Trainings.
+00:56:32.441 [INFO] [TRAINING] 0% within acceptable range of 20%. Proceeding to acquire all other percentages and total stat increases...
+00:56:32.762 [INFO] [TRAINING] SPEED training level detected as Lvl 2.
+00:56:32.762 [INFO] [TRAINING] Skipping STAMINA training due to being blacklisted.
+00:56:33.549 [INFO] [TRAINING] POWER training level detected as Lvl 1.
+00:56:33.551 [INFO] [TRAINING] Skipping GUTS training due to being blacklisted.
+00:56:34.607 [INFO] [TRAINING] WIT training level detected as Lvl 3.
+00:56:35.133 [VERBOSE] [TRAINING] Process to analyze all 5 Trainings complete.
+
+00:56:35.189 [VERBOSE] ========== Training Analysis Results ==========
+Scoring Mode: Stat Efficiency (Year 2+)
+Current Date: Finale Qualifier (Turn 73)
+Current Stats: Speed=1039, Stamina=422, Power=1012, Guts=408, Wit=796
+Stat Targets: Disabled (treating cap=1200 as the target for all stats)
+Completion: SPEED=87%, STAMINA=35%, POWER=84%, GUTS=34%, WIT=66%
+
+--- Training Details ---
+SPEED Training: stats={SPEED=26, STAMINA=0, POWER=8, GUTS=0, WIT=0}, fail=0%, rainbows=1, level=Lvl 2
+  -> Relationship bars: #1:orange(100%), #2:orange(100%)
+[STAMINA] BLACKLISTED
+POWER Training: stats={SPEED=0, STAMINA=5, POWER=7, GUTS=0, WIT=0}, fail=0%, rainbows=0, level=Lvl 1
+[GUTS] BLACKLISTED
+WIT Training: stats={SPEED=5, STAMINA=0, POWER=0, GUTS=0, WIT=21}, fail=0%, rainbows=1, level=Lvl 3 <---- SELECTED
+  -> Relationship bars: #1:orange(100%)[Yayoi Akikawa], #2:orange(100%), #3:orange(100%), #4:orange(100%)
+
+--- Selection Explanation ---
+WIT beat SPEED by 144.17 points (226.7% higher)
+Key factor: Rainbow training detected (multiplier applied).
+Key factor: WIT stat is at 66% of target (behind, higher priority).
+Key factor: Yayoi Akikawa is present (special trainer bonus).
+Key factor: Multiple relationship bars present (4).
+================================================
+
+00:56:35.189 [INFO] [TRACKBLAZER] Opening Training Items dialog (Megaphone available)...
+00:56:35.848 [INFO] [TRACKBLAZER] Starting inventory management pass.
+00:56:35.848 [INFO] [TRACKBLAZER] Items of interest for this pass: Coaching Megaphone, Vita 20, Plain Cupcake, Motivating Megaphone, Energy Drink MAX, Miracle Cure.
+00:56:39.341 [VERBOSE] [TRACKBLAZER] Item "Plain Cupcake" read as disabled in dialog, so skipping its usage.
+00:56:39.820 [VERBOSE] [TRACKBLAZER] Item "Miracle Cure" read as disabled in dialog, so skipping its usage.
+00:56:40.678 [INFO] [TRACKBLAZER] Holding Coaching Megaphone: a better eligible megaphone (Motivating Megaphone) is available this turn.
+00:56:41.127 [INFO] [TRACKBLAZER] Queuing best eligible megaphone: "Motivating Megaphone" (main gain 21 >= threshold 0).
+00:56:41.553 [INFO] [TRACKBLAZER] Decremented Motivating Megaphone. Remaining: 1.
+00:56:41.554 [INFO] [TRACKBLAZER] All items of interest processed. Exiting scan early.
+
+00:56:41.554 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Energy Drink MAX: 1
+- Plain Cupcake: 3
+- Vita 20: 1
+
+Heal Bad Conditions
+- Miracle Cure: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 2
+- Motivating Megaphone: 1
+- Power Ankle Weights: 2
+- Reset Whistle: 2
+
+Races
+- Artisan Cleat Hammer: 2
+- Glow Sticks: 1
+
+------------------------------------------------
+Current State: Energy=95%, Mood=GREAT, Megaphone Turn=0, Coins=27
+Selected Training: WIT
+
+Items Used:
+
+- 1x Motivating Megaphone: Increasing training gains for the next few turns.
+================================================
+
+00:56:41.554 [INFO] [TRACKBLAZER] Confirming usage of 1 items.
+00:56:42.420 [INFO] [TRACKBLAZER] Waiting for animation to finish (Delay: 4.0 seconds).
+00:56:46.502 [INFO] [TRACKBLAZER] Closing training items dialog.
+00:56:48.946 [VERBOSE] [TRAINING] Now starting process to execute WIT training...
+00:56:48.946 [VERBOSE] [TRAINING] Executing the WIT Training.
+
+00:56:49.946 [VERBOSE] [TRAINING] Process to execute training completed.
+00:56:49.946 [INFO] [TRACKBLAZER] Megaphone duration reduced. Turns remaining: 2.
+
+00:56:49.947 [INFO] ============== Turn 73 (SENIOR LATE DECEMBER) Decision Report ==============
+State:
+  Energy = 95%
+  Mood = GREAT
+  Negative Statuses = []
+  Megaphone Turns = 0
+  Consecutive Races = 3
+  Used Charm Today = false
+  Used Whistle Today = false
+Inventory (decision-relevant):
+  [Charms & Whistles]
+  Good-Luck Charm = 2
+  Reset Whistle = 2
+  [Megaphones]
+  Coaching Megaphone = 1
+  Empowering Megaphone = 0
+  Motivating Megaphone = 2
+  [Cupcakes & Heals]
+  Berry Sweet Cupcake = 0
+  Plain Cupcake = 4
+  Royal Kale Juice = 0
+  [Race Items]
+  Artisan Cleat Hammer = 2
+  Glow Sticks = 1
+  Master Cleat Hammer = 0
+Settings (decision-relevant):
+  Trackblazer Energy Threshold = 40
+  Force-Train Energy Floor = 20
+  Skip Risky Charm Training Below Gain = 30
+  Consecutive Races Limit = 5
+  Skip Bad-Mood Items Below Gain = 15
+  Skip Empowering Megaphone Below Gain = 0
+  Skip Motivating Megaphone Below Gain = 0
+  Skip Coaching Megaphone Below Gain = 0
+  Whistle Forces Training = true
+  Irregular Training = on (min main 30)
+  Enable In-Game Race Agenda = false
+  Max Failure Chance = 20%
+  Riskier Training = on (max fail 30%, min main 30)
+  Energy Item Reserve = 1
+  Cupcake Reserve = 1
+  Race Item Conservation Start Turn = 65
+  Master Hammer Finale Reserve = 2
+  Artisan Hammer Min Stock G3 = 3
+  Artisan Hammer Min Stock G2 = 2
+  Glow Stick Final-Day Reserve = 1
+  Glow Stick Min Fans = 20000
+Items Used:
+  - Motivating Megaphone: Best eligible megaphone (main gain 21 >= threshold 0); setting megaphone turn duration to 3
+
+Action: TRAIN
+  Reason: Trackblazer: Finale (day >= 73) prioritizes training
+
+Item: Coaching Megaphone -> CONSERVED
+  Reason: Better eligible megaphone available this turn: Motivating Megaphone
+
+Training selected: WIT (source=ANALYSIS)
+  Reason: Final pick selected by initial analyzer pass (no Reset Whistle used)
+  Pick: fail=0%, gains=[SPD:5 STA:0 PWR:0 GUTS:0 WIT:21]
+  Runner-ups:
+    - SPEED (considered): fail=0%, gains=[SPD:26 STA:0 PWR:8 GUTS:0 WIT:0], considered by analyzer but lost to selection
+    - POWER (considered): fail=0%, gains=[SPD:0 STA:5 PWR:7 GUTS:0 WIT:0], considered by analyzer but lost to selection
+==============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:56:56.129 [INFO] [TRACKBLAZER] Mandatory race ribbon detected. Processing as mandatory race.
+
+00:56:56.182 [VERBOSE] ********************
+00:56:56.183 [VERBOSE] [RACE] Starting Racing process on Finale Qualifier (Turn 73).
+00:56:56.979 [VERBOSE] [RACE] Starting process for handling a mandatory race.
+00:56:56.980 [INFO] [TRACKBLAZER] Executing scheduled race item logic on Race Prep screen.
+00:56:56.980 [INFO] [TRACKBLAZER] Suitable race items found in inventory (Hammer: Artisan Cleat Hammer, Glow Sticks: false). Opening Training Items dialog.
+00:57:02.856 [INFO] [TRACKBLAZER] Queuing specific item for use: "Artisan Cleat Hammer". (Reason: Race bonus for G1.)
+
+00:57:03.539 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Energy Drink MAX: 1
+- Plain Cupcake: 3
+- Vita 20: 1
+
+Heal Bad Conditions
+- Miracle Cure: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 2
+- Motivating Megaphone: 1
+- Power Ankle Weights: 2
+- Reset Whistle: 2
+
+Races
+- Artisan Cleat Hammer: 2
+- Glow Sticks: 1
+
+------------------------------------------------
+
+Items Used:
+
+- 1x Artisan Cleat Hammer: Race bonus for G1.
+================================================
+
+00:57:03.539 [INFO] [TRACKBLAZER] Decremented Artisan Cleat Hammer. Remaining: 1.
+00:57:03.539 [INFO] [TRACKBLAZER] Queued 1 race items for G1 (20000 fans). Confirming usage.
+00:57:03.539 [INFO] [TRACKBLAZER] Confirming usage of 1 items.
+00:57:04.366 [INFO] [TRACKBLAZER] Waiting for animation to finish (Delay: 4.0 seconds).
+00:57:08.439 [INFO] [TRACKBLAZER] Closing training items dialog.
+00:57:10.926 [VERBOSE] [RACE] Confirming the mandatory race selection.
+00:57:12.133 [INFO] [RACE] Confirming any popup from the mandatory race selection.
+00:57:14.345 [INFO] [LOADING] Detected that the game is still loading from the "Now Loading" text at the bottom of the screen. Waiting...
+00:57:15.670 [INFO] [RACE] Proceeding to handle the race...
+00:57:16.280 [INFO] [RACE] Detected ButtonChangeRunningStyle. Handling race prep screen...
+00:57:16.437 [INFO] [RACE] Clicked ViewResults button to skip race.
+00:57:16.470 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+00:57:20.276 [INFO] [RACE] Reached race results screen. Exiting race retry loop...
+00:57:20.276 [INFO] [RACE] Now performing cleanup and finishing the race.
+00:57:20.344 [INFO] [RACE] Race result detected - 1st place: true.
+00:57:20.548 [INFO] [RACE] Clicked on Next (race results) button.
+00:57:21.948 [INFO] [RACE] Clicked on Next (race end) button.
+00:57:22.031 [VERBOSE] [RACE] Racing process for Mandatory Race is completed. Grade: FINALE
+00:57:22.031 [VERBOSE] ********************
+00:57:22.031 [INFO] [TRACKBLAZER] Megaphone duration reduced. Turns remaining: 1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:57:32.630 [INFO] [INFO] Misc checks complete.
+00:57:33.162 [VERBOSE] [INFO] Detected date: TS Climax Races Underway
+00:57:33.295 [INFO] [DATE] Trackblazer Finale Semi-Final (Turn 74).
+00:57:33.295 [VERBOSE] [DATE] New date: Finale Semi-Final (Turn 74)
+00:57:34.369 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:57:34.369 [VERBOSE] [TRAINEE] Stats: Spd=1065, Sta=441, Pow=1031, Gut=427, Wit=844
+00:57:34.370 [VERBOSE] [TRAINEE] Energy: 100%
+00:57:34.370 [VERBOSE] [TRAINEE] Mood: GREAT
+00:57:34.370 [VERBOSE] [TRAINEE] Fans: 559427
+00:57:34.370 [VERBOSE] [TRAINEE] Skill Points: 269
+00:57:34.370 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:57:34.370 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:57:34.370 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:57:34.370 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:57:34.372 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+00:57:34.373 [INFO] [TRACKBLAZER] It is the Finale. Prioritizing training.
+00:57:34.403 [INFO] [TRACKBLAZER] Decision made to train.
+00:57:34.403 [INFO] [TRACKBLAZER] Starting specialized Training process.
+
+00:57:35.097 [VERBOSE] [TRAINING] Now starting process to analyze all 5 Trainings.
+00:57:36.895 [INFO] [TRAINING] 0% within acceptable range of 20%. Proceeding to acquire all other percentages and total stat increases...
+00:57:37.345 [INFO] [TRAINING] SPEED training level detected as Lvl 2.
+00:57:37.345 [INFO] [TRAINING] Skipping STAMINA training due to being blacklisted.
+00:57:38.232 [INFO] [TRAINING] POWER training level detected as Lvl 1.
+00:57:38.233 [INFO] [TRAINING] Skipping GUTS training due to being blacklisted.
+00:57:39.219 [INFO] [TRAINING] WIT training level detected as Lvl 4.
+00:57:39.670 [VERBOSE] [TRAINING] Process to analyze all 5 Trainings complete.
+
+00:57:39.734 [VERBOSE] ========== Training Analysis Results ==========
+Scoring Mode: Stat Efficiency (Year 2+)
+Current Date: Finale Semi-Final (Turn 74)
+Current Stats: Speed=1065, Stamina=441, Power=1031, Guts=427, Wit=844
+Stat Targets: Disabled (treating cap=1200 as the target for all stats)
+Completion: SPEED=89%, STAMINA=37%, POWER=86%, GUTS=36%, WIT=70%
+
+--- Training Details ---
+SPEED Training: stats={SPEED=19, STAMINA=0, POWER=7, GUTS=0, WIT=0}, fail=0%, rainbows=0, level=Lvl 2
+  -> Relationship bars: #1:orange(100%)
+[STAMINA] BLACKLISTED
+POWER Training: stats={SPEED=0, STAMINA=11, POWER=18, GUTS=0, WIT=0}, fail=0%, rainbows=1, level=Lvl 1 <---- SELECTED
+  -> Relationship bars: #1:orange(100%)[Etsuko Otonashi], #2:orange(100%), #3:orange(100%)
+[GUTS] BLACKLISTED
+WIT Training: stats={SPEED=5, STAMINA=0, POWER=0, GUTS=0, WIT=14}, fail=0%, rainbows=0, level=Lvl 4
+
+--- Selection Explanation ---
+POWER beat WIT by 35.29 points (63.1% higher)
+Key factor: Rainbow training detected (multiplier applied).
+Key factor: Etsuko Otonashi is present (special trainer bonus).
+Key factor: Multiple relationship bars present (3).
+================================================
+
+00:57:39.736 [INFO] [TRACKBLAZER] Opening Training Items dialog (Ankle weights available)...
+00:57:40.393 [INFO] [TRACKBLAZER] Starting inventory management pass.
+00:57:40.393 [INFO] [TRACKBLAZER] Items of interest for this pass: Vita 20, Plain Cupcake, Power Ankle Weights, Energy Drink MAX, Miracle Cure.
+00:57:43.732 [VERBOSE] [TRACKBLAZER] Item "Plain Cupcake" read as disabled in dialog, so skipping its usage.
+00:57:44.303 [VERBOSE] [TRACKBLAZER] Item "Miracle Cure" read as disabled in dialog, so skipping its usage.
+00:57:44.903 [VERBOSE] [TRACKBLAZER] Item "Coaching Megaphone" read as disabled in dialog, so skipping its usage.
+00:57:45.344 [VERBOSE] [TRACKBLAZER] Item "Motivating Megaphone" read as disabled in dialog, so skipping its usage.
+00:57:48.019 [INFO] [TRACKBLAZER] Queuing Power Ankle Weights via inline pass.
+00:57:48.433 [INFO] [TRACKBLAZER] Decremented Power Ankle Weights. Remaining: 1.
+00:57:48.433 [INFO] [TRACKBLAZER] All items of interest processed. Exiting scan early.
+
+00:57:48.433 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Energy Drink MAX: 1
+- Plain Cupcake: 3
+- Vita 20: 1
+
+Heal Bad Conditions
+- Miracle Cure: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 2
+- Motivating Megaphone: 1
+- Power Ankle Weights: 1
+- Reset Whistle: 2
+
+Races
+- Artisan Cleat Hammer: 1
+- Glow Sticks: 1
+
+------------------------------------------------
+Current State: Energy=100%, Mood=GREAT, Megaphone Turn=1, Coins=27
+Selected Training: POWER
+
+Items Used:
+
+- 1x Power Ankle Weights: Boosting POWER training gains.
+================================================
+
+00:57:48.433 [INFO] [TRACKBLAZER] Confirming usage of 1 items.
+00:57:49.285 [INFO] [TRACKBLAZER] Waiting for animation to finish (Delay: 4.0 seconds).
+00:57:53.365 [INFO] [TRACKBLAZER] Closing training items dialog.
+00:57:55.820 [VERBOSE] [TRAINING] Now starting process to execute POWER training...
+00:57:55.821 [VERBOSE] [TRAINING] Executing the POWER Training.
+
+00:57:56.818 [VERBOSE] [TRAINING] Process to execute training completed.
+00:57:56.818 [INFO] [TRACKBLAZER] Megaphone duration reduced. Turns remaining: 0.
+
+00:57:56.819 [INFO] ============== Turn 74 (SENIOR LATE DECEMBER) Decision Report ==============
+State:
+  Energy = 100%
+  Mood = GREAT
+  Negative Statuses = []
+  Megaphone Turns = 1
+  Consecutive Races = 3
+  Used Charm Today = false
+  Used Whistle Today = false
+Inventory (decision-relevant):
+  [Charms & Whistles]
+  Good-Luck Charm = 2
+  Reset Whistle = 2
+  [Megaphones]
+  Coaching Megaphone = 1
+  Empowering Megaphone = 0
+  Motivating Megaphone = 1
+  [Cupcakes & Heals]
+  Berry Sweet Cupcake = 0
+  Plain Cupcake = 3
+  Royal Kale Juice = 0
+  [Race Items]
+  Artisan Cleat Hammer = 1
+  Glow Sticks = 1
+  Master Cleat Hammer = 0
+Settings (decision-relevant):
+  Trackblazer Energy Threshold = 40
+  Force-Train Energy Floor = 20
+  Skip Risky Charm Training Below Gain = 30
+  Consecutive Races Limit = 5
+  Skip Bad-Mood Items Below Gain = 15
+  Skip Empowering Megaphone Below Gain = 0
+  Skip Motivating Megaphone Below Gain = 0
+  Skip Coaching Megaphone Below Gain = 0
+  Whistle Forces Training = true
+  Irregular Training = on (min main 30)
+  Enable In-Game Race Agenda = false
+  Max Failure Chance = 20%
+  Riskier Training = on (max fail 30%, min main 30)
+  Energy Item Reserve = 1
+  Cupcake Reserve = 1
+  Race Item Conservation Start Turn = 65
+  Master Hammer Finale Reserve = 2
+  Artisan Hammer Min Stock G3 = 3
+  Artisan Hammer Min Stock G2 = 2
+  Glow Stick Final-Day Reserve = 1
+  Glow Stick Min Fans = 20000
+Items Used: None
+
+Action: TRAIN
+  Reason: Trackblazer: Finale (day >= 73) prioritizes training
+
+Training selected: POWER (source=ANALYSIS)
+  Reason: Final pick selected by initial analyzer pass (no Reset Whistle used)
+  Pick: fail=0%, gains=[SPD:0 STA:11 PWR:18 GUTS:0 WIT:0]
+  Runner-ups:
+    - SPEED (considered): fail=0%, gains=[SPD:19 STA:0 PWR:7 GUTS:0 WIT:0], considered by analyzer but lost to selection
+    - WIT (considered): fail=0%, gains=[SPD:5 STA:0 PWR:0 GUTS:0 WIT:14], considered by analyzer but lost to selection
+==============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:57:59.683 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:58:03.215 [INFO] [TRACKBLAZER] Mandatory race ribbon detected. Processing as mandatory race.
+
+00:58:03.257 [VERBOSE] ********************
+00:58:03.257 [VERBOSE] [RACE] Starting Racing process on Finale Semi-Final (Turn 74).
+00:58:04.057 [VERBOSE] [RACE] Starting process for handling a mandatory race.
+00:58:04.058 [INFO] [TRACKBLAZER] Executing scheduled race item logic on Race Prep screen.
+00:58:04.058 [INFO] [TRACKBLAZER] Suitable race items found in inventory (Hammer: Artisan Cleat Hammer, Glow Sticks: false). Opening Training Items dialog.
+00:58:10.272 [INFO] [TRACKBLAZER] Queuing specific item for use: "Artisan Cleat Hammer". (Reason: Race bonus for G1.)
+
+00:58:10.972 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Energy Drink MAX: 1
+- Plain Cupcake: 3
+- Vita 20: 1
+
+Heal Bad Conditions
+- Miracle Cure: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 2
+- Motivating Megaphone: 1
+- Power Ankle Weights: 1
+- Reset Whistle: 2
+
+Races
+- Artisan Cleat Hammer: 1
+- Glow Sticks: 1
+
+------------------------------------------------
+
+Items Used:
+
+- 1x Artisan Cleat Hammer: Race bonus for G1.
+================================================
+
+00:58:10.972 [INFO] [TRACKBLAZER] Decremented Artisan Cleat Hammer. Remaining: 0.
+00:58:10.972 [INFO] [TRACKBLAZER] Queued 1 race items for G1 (20000 fans). Confirming usage.
+00:58:10.972 [INFO] [TRACKBLAZER] Confirming usage of 1 items.
+00:58:11.841 [INFO] [TRACKBLAZER] Waiting for animation to finish (Delay: 4.0 seconds).
+00:58:15.913 [INFO] [TRACKBLAZER] Closing training items dialog.
+00:58:18.398 [VERBOSE] [RACE] Confirming the mandatory race selection.
+00:58:19.596 [INFO] [RACE] Confirming any popup from the mandatory race selection.
+00:58:21.812 [INFO] [LOADING] Detected that the game is still loading from the "Now Loading" text at the bottom of the screen. Waiting...
+00:58:23.188 [INFO] [RACE] Proceeding to handle the race...
+00:58:23.815 [INFO] [RACE] Detected ButtonChangeRunningStyle. Handling race prep screen...
+00:58:23.966 [INFO] [RACE] Clicked ViewResults button to skip race.
+00:58:23.995 [INFO] [LOADING] Detected that the game is awaiting a response from the server from the "Connecting" text at the top of the screen. Waiting...
+00:58:27.766 [INFO] [RACE] Reached race results screen. Exiting race retry loop...
+00:58:27.766 [INFO] [RACE] Now performing cleanup and finishing the race.
+00:58:27.839 [INFO] [RACE] Race result detected - 1st place: true.
+00:58:28.052 [INFO] [RACE] Clicked on Next (race results) button.
+00:58:29.463 [INFO] [RACE] Clicked on Next (race end) button.
+00:58:29.518 [VERBOSE] [RACE] Racing process for Mandatory Race is completed. Grade: FINALE
+00:58:29.518 [VERBOSE] ********************
+
+
+
+
+
+
+
+00:58:30.713 [VERBOSE] ********************
+00:58:30.713 [VERBOSE] [TRAINING_EVENT] Starting Training Event process on Finale Semi-Final (Turn 74).
+
+
+
+
+
+
+00:58:31.254 [VERBOSE] ========== Training Event Summary ==========
+Event: "After the All Comers: Win and Run Wild" (Matikanetannhauser) [Confidence: 0.85]
+Current Date: Finale Semi-Final (Turn 74)
+
+Options:
+  Option 1 [Weight: 75]: Speed +20, All I've Got hint +1 <---- SELECTED
+
+Selected: Option 1
+============================================
+
+00:58:31.592 [VERBOSE] [TRAINING_EVENT] Process to handle detected Training Event completed.
+00:58:31.592 [VERBOSE] ********************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00:58:40.219 [INFO] [INFO] Misc checks complete.
+00:58:40.899 [VERBOSE] [INFO] Detected date: TS Climax Races Underway
+00:58:41.099 [INFO] [DATE] Trackblazer Finale Finals (Turn 75).
+00:58:41.099 [VERBOSE] [DATE] New date: Finale Finals (Turn 75)
+00:58:42.153 [VERBOSE] [TRAINEE] Name: Oguri CapP
+00:58:42.154 [VERBOSE] [TRAINEE] Stats: Spd=1084, Sta=475, Pow=1079, Gut=446, Wit=863
+00:58:42.154 [VERBOSE] [TRAINEE] Energy: 83%
+00:58:42.154 [VERBOSE] [TRAINEE] Mood: GREAT
+00:58:42.154 [VERBOSE] [TRAINEE] Fans: 559427
+00:58:42.154 [VERBOSE] [TRAINEE] Skill Points: 331
+00:58:42.154 [VERBOSE] [TRAINEE] Track: Turf=A, Dirt=B
+00:58:42.154 [VERBOSE] [TRAINEE] Distance: Sprint=B, Mile=A, Medium=A, Long=B
+00:58:42.154 [VERBOSE] [TRAINEE] Style: Front=F, Pace=A, Late=A, End=B
+00:58:42.154 [VERBOSE] [TRAINEE] Positive Statuses: Charming
+00:58:42.156 [INFO] [TRACKBLAZER] Skipping Training Items dialog as no relevant items are in the cached inventory.
+00:58:42.158 [INFO] [TRACKBLAZER] It is the Finale. Prioritizing training.
+00:58:42.188 [INFO] [TRACKBLAZER] Decision made to train.
+00:58:42.188 [INFO] [TRACKBLAZER] Starting specialized Training process.
+
+00:58:42.894 [VERBOSE] [TRAINING] Now starting process to analyze all 5 Trainings.
+00:58:44.386 [INFO] [TRAINING] 0% within acceptable range of 20%. Proceeding to acquire all other percentages and total stat increases...
+00:58:44.628 [INFO] [TRAINING] SPEED training level detected as Lvl 2.
+00:58:44.629 [INFO] [TRAINING] Skipping STAMINA training due to being blacklisted.
+00:58:45.503 [INFO] [TRAINING] POWER training level detected as Lvl 2.
+00:58:45.504 [INFO] [TRAINING] Skipping GUTS training due to being blacklisted.
+00:58:46.378 [INFO] [TRAINING] WIT training level detected as Lvl 4.
+00:58:46.783 [VERBOSE] [TRAINING] Process to analyze all 5 Trainings complete.
+
+00:58:46.834 [VERBOSE] ========== Training Analysis Results ==========
+Scoring Mode: Stat Efficiency (Year 2+)
+Current Date: Finale Finals (Turn 75)
+Current Stats: Speed=1084, Stamina=475, Power=1079, Guts=446, Wit=863
+Stat Targets: Disabled (treating cap=1200 as the target for all stats)
+Completion: SPEED=90%, STAMINA=40%, POWER=90%, GUTS=37%, WIT=72%
+
+--- Training Details ---
+SPEED Training: stats={SPEED=14, STAMINA=0, POWER=5, GUTS=0, WIT=0}, fail=0%, rainbows=0, level=Lvl 2
+  -> Relationship bars: #1:orange(100%)
+[STAMINA] BLACKLISTED
+POWER Training: stats={SPEED=0, STAMINA=10, POWER=21, GUTS=0, WIT=0}, fail=0%, rainbows=1, level=Lvl 2 <---- SELECTED
+  -> Relationship bars: #1:orange(100%)[Yayoi Akikawa], #2:orange(100%), #3:orange(100%), #4:orange(100%)
+[GUTS] BLACKLISTED
+WIT Training: stats={SPEED=6, STAMINA=0, POWER=0, GUTS=0, WIT=11}, fail=0%, rainbows=0, level=Lvl 4
+  -> Relationship bars: #1:orange(100%)
+
+--- Selection Explanation ---
+POWER beat WIT by 50.37 points (118.8% higher)
+Key factor: Rainbow training detected (multiplier applied).
+Key factor: Yayoi Akikawa is present (special trainer bonus).
+Key factor: Multiple relationship bars present (4).
+================================================
+
+00:58:46.838 [INFO] [TRACKBLAZER] Opening Training Items dialog (Megaphone available, Ankle weights available)...
+00:58:47.494 [INFO] [TRACKBLAZER] Starting inventory management pass.
+00:58:47.494 [INFO] [TRACKBLAZER] Items of interest for this pass: Coaching Megaphone, Vita 20, Plain Cupcake, Motivating Megaphone, Power Ankle Weights, Energy Drink MAX, Miracle Cure.
+00:58:50.679 [VERBOSE] [TRACKBLAZER] Item "Plain Cupcake" read as disabled in dialog, so skipping its usage.
+00:58:51.066 [VERBOSE] [TRACKBLAZER] Item "Miracle Cure" read as disabled in dialog, so skipping its usage.
+00:58:51.807 [INFO] [TRACKBLAZER] Holding Coaching Megaphone: a better eligible megaphone (Motivating Megaphone) is available this turn.
+00:58:52.304 [INFO] [TRACKBLAZER] Queuing best eligible megaphone: "Motivating Megaphone" (main gain 21 >= threshold 0).
+00:58:52.710 [INFO] [TRACKBLAZER] Decremented Motivating Megaphone. Remaining: 0.
+00:58:55.732 [INFO] [TRACKBLAZER] Queuing Power Ankle Weights via inline pass.
+00:58:56.148 [INFO] [TRACKBLAZER] Decremented Power Ankle Weights. Remaining: 0.
+00:58:56.148 [INFO] [TRACKBLAZER] All items of interest processed. Exiting scan early.
+
+00:58:56.148 [VERBOSE] ============== Item Usage Summary ==============
+
+[Current Inventory]
+
+Energy and Motivation
+- Energy Drink MAX: 1
+- Plain Cupcake: 3
+- Vita 20: 1
+
+Heal Bad Conditions
+- Miracle Cure: 2
+
+Training Effects
+- Coaching Megaphone: 1
+- Good-Luck Charm: 2
+- Reset Whistle: 2
+
+Races
+- Glow Sticks: 1

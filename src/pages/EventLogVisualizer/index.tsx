@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/too
 import { Info } from "lucide-react-native"
 import { Row } from "../../components/ui/row"
 import { Switch } from "../../components/ui/switch"
+import { ValuePill } from "../../components/ui/value-pill"
 import Ionicons from "@react-native-vector-icons/ionicons"
 import PageHeader from "../../components/PageHeader"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
@@ -186,12 +187,18 @@ const EventLogVisualizer: React.FC = () => {
                 <PageHeader title="Event Log Visualizer" style={{ marginBottom: 12 }} />
 
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
-                    <CustomButton variant="outline" style={{ flex: 1 }} icon={<Ionicons name="folder-outline" size={16} color={colors.text} />} onPress={openDataDirectory}>
-                        Open Data Directory
-                    </CustomButton>
-                    <CustomButton variant="primary" style={{ flex: 1 }} icon={<Ionicons name="folder-open" size={16} color={colors.onBrand} />} onPress={onPickFiles}>
-                        Select Log Files
-                    </CustomButton>
+                    <View style={{ flexDirection: "row", flex: 1, gap: 8 }}>
+                        <View style={{ flex: 1 }}>
+                            <CustomButton variant="outline" icon={<Ionicons name="folder-outline" size={16} color={colors.text} />} onPress={openDataDirectory}>
+                                Open Data Directory
+                            </CustomButton>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <CustomButton variant="primary" icon={<Ionicons name="folder-open" size={16} color={colors.onBrand} />} onPress={onPickFiles}>
+                                Select Log Files
+                            </CustomButton>
+                        </View>
+                    </View>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Pressable style={circularPress(40)} android_ripple={{ color: colors.ripple, foreground: true }}>
@@ -201,17 +208,17 @@ const EventLogVisualizer: React.FC = () => {
                         <TooltipContent side="bottom" style={{ backgroundColor: isDark ? colors.surfaceRaised : "black", maxWidth: 300 }}>
                             <WarningContainer>
                                 <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                                    <Text style={{ fontWeight: "bold", color: colors.warningText }}>⚠️ File Explorer Note:</Text>
+                                    <Text style={{ fontWeight: "bold", color: colors.warningText }}>⚠️ File Access Note: </Text>
                                     <Text style={{ fontSize: 14, color: colors.warningText, lineHeight: 20 }}>
-                                        To manually access files, you need a file explorer app that can access the /Android/data folder (like CX File Explorer). Standard file managers will not work.
+                                        If you picked a storage folder during setup, your logs are saved there and the "Open Data Directory" button opens it directly, so any file manager works. If you
+                                        left the app on its default internal storage, logs live under /Android/data, which recent Android versions restrict, so reaching them manually needs a file
+                                        explorer like CX File Explorer.
                                     </Text>
                                 </View>
                             </WarningContainer>
                             <Text style={styles.empty}>
                                 Select one or more .txt logs named like "TraineeName_date.txt" or "log @ date.txt" to visualize per-day actions. Files are sorted by filename. Gaps between days are
-                                shown. {"\n\n"}
-                                Note: Recent Android versions heavily restrict access to the app data folder where logs are stored. Use the "Open Data Directory" button above to locate the logs, then
-                                move the files you want to use out of /Android/data/ to a public folder like /Download/ before selecting them here.
+                                shown.
                             </Text>
                         </TooltipContent>
                     </Tooltip>
@@ -269,17 +276,23 @@ const EventLogVisualizer: React.FC = () => {
                     />
                 ) : (
                     <>
-                        {yearSummariesResult.totalElapsedTimeFormatted && (
-                            <View style={[styles.content, { paddingBottom: 8, flexDirection: "row", alignItems: "center", gap: 8 }]}>
-                                <Text style={[styles.totalTimeTitle, { color: colors.text }]}>Total Elapsed Time:</Text>
-                                <Text style={[styles.totalTimeValue, { color: colors.text }]}>{yearSummariesResult.totalElapsedTimeFormatted}</Text>
-                                <Text style={[styles.totalTimeHuman, { color: colors.textMuted }]}>({yearSummariesResult.totalElapsedTimeHuman})</Text>
+                        {(yearSummariesResult.scenario || yearSummariesResult.totalElapsedTimeFormatted) && (
+                            <View style={[styles.content, { paddingBottom: 8, flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }]}>
+                                {yearSummariesResult.scenario && <ValuePill label={yearSummariesResult.scenario} />}
+                                {yearSummariesResult.totalElapsedTimeFormatted && (
+                                    <>
+                                        <Text style={[styles.totalTimeTitle, { color: colors.text }]}>Total Elapsed Time:</Text>
+                                        <Text style={[styles.totalTimeValue, { color: colors.text }]}>{yearSummariesResult.totalElapsedTimeFormatted}</Text>
+                                        <Text style={[styles.totalTimeHuman, { color: colors.textMuted }]}>({yearSummariesResult.totalElapsedTimeHuman})</Text>
+                                    </>
+                                )}
                             </View>
                         )}
                         <FlashList
                             data={yearSummariesResult.summaries}
                             renderItem={({ item }) => <YearSummaryCard summary={item} />}
                             keyExtractor={(item) => item.year}
+                            contentContainerStyle={{ paddingHorizontal: 12 }}
                             ListEmptyComponent={<View />}
                         />
                     </>

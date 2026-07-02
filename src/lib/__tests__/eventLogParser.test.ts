@@ -1,4 +1,6 @@
-import { parseLogs, formatGapText, aggregateYearSummaries, LogFileInput, DayRecord, GapRecord } from "../eventLogParser"
+import { readFileSync } from "fs"
+import { join } from "path"
+import { parseLogs, formatGapText, aggregateYearSummaries, LogFileInput, DayRecord, GapRecord, FileDividerRecord } from "../eventLogParser"
 
 // ---------------------------------------------------------------------------
 // Helper: builds a minimal log file content string for a single day.
@@ -282,8 +284,8 @@ describe("parseLogs", () => {
         const result = parseLogs([file("a.txt", content)])
         const days = dayRecords(result)
         expect(days[0].dateText).toBe("JUNIOR YEAR LATE JANUARY")
-        // yearExtract regex captures the case as-is from the text.
-        expect(days[0].year).toBe("JUNIOR")
+        // dateText is kept verbatim, but the year is normalized to canonical title case so year grouping works.
+        expect(days[0].year).toBe("Junior")
     })
 
     it("extracts detected date from INFO line", () => {
@@ -503,12 +505,7 @@ describe("parseLogs", () => {
     it("updates existing day's dateText when same day appears again in same file", () => {
         // Day 5 first appears without dateText (bare Turn Number line without [DATE] prefix),
         // then appears again with proper dateText.
-        const content = [
-            "Current Turn Number 5",
-            "some log line",
-            "[INFO] Detected date: Junior Year Early Mar",
-            "[DATE] It is currently Junior Year Early Mar / Turn Number 5.",
-        ].join("\n")
+        const content = ["Current Turn Number 5", "some log line", "[INFO] Detected date: Junior Year Early Mar", "[DATE] It is currently Junior Year Early Mar / Turn Number 5."].join("\n")
         const result = parseLogs([file("a.txt", content)])
         const days = dayRecords(result)
         const day5 = days.find((d) => d.dayNumber === 5)!
@@ -600,11 +597,7 @@ describe("aggregateYearSummaries", () => {
     })
 
     it("produces summaries in order [Junior, Classic, Senior]", () => {
-        const records = [
-            makeDayRecord({ dayNumber: 25, year: "Classic" }),
-            makeDayRecord({ dayNumber: 1, year: "Junior" }),
-            makeDayRecord({ dayNumber: 49, year: "Senior" }),
-        ]
+        const records = [makeDayRecord({ dayNumber: 25, year: "Classic" }), makeDayRecord({ dayNumber: 1, year: "Junior" }), makeDayRecord({ dayNumber: 49, year: "Senior" })]
         const result = aggregateYearSummaries(records)
         expect(result.summaries.map((s) => s.year)).toEqual(["Junior", "Classic", "Senior"])
     })
@@ -704,10 +697,7 @@ describe("aggregateYearSummaries", () => {
     })
 
     it("marks hasFinals for Senior year when turns 73-75 are present", () => {
-        const records = [
-            makeDayRecord({ dayNumber: 72, year: "Senior" }),
-            makeDayRecord({ dayNumber: 73, year: "Senior" }),
-        ]
+        const records = [makeDayRecord({ dayNumber: 72, year: "Senior" }), makeDayRecord({ dayNumber: 73, year: "Senior" })]
         const result = aggregateYearSummaries(records)
         const senior = result.summaries.find((s) => s.year === "Senior")!
         expect(senior.hasFinals).toBe(true)
@@ -741,5 +731,86 @@ describe("aggregateYearSummaries", () => {
         const result = aggregateYearSummaries(records)
         // Junior: 100000, Classic: 150000, total: 250000
         expect(result.totalElapsedTimeMs).toBe(250000)
+    })
+})
+
+// ===========================================================================
+// Regression: trimmed slice of a real bot run
+// ===========================================================================
+
+describe("real-run slice regression", () => {
+    // A trimmed slice of an actual Oguri Cap Trackblazer run. It keeps the Smart Race Solver preview schedule
+    // (34 "Turn N (...)" lines) so we lock in that those future-turn lines never create phantom day records, plus
+    // representative Junior/Classic/Senior turns covering training, racing, energy, mood, injury, and the Finale.
+    const content = readFileSync(join(__dirname, "fixtures", "oguri-run-slice.log"), "utf8")
+    const result = parseLogs([file("Oguri_CapP_2026-06-30 00_50_29.txt", content)])
+    const days = dayRecords(result)
+    const byDay = (n: number) => days.find((d) => d.dayNumber === n)
+
+    it("does not create phantom days from the solver preview schedule", () => {
+        expect(result.meta.firstDay).toBe(1)
+        expect(result.meta.lastDay).toBe(75)
+        // The schedule lists turns 16, 50, 65, ... but the slice has no real per-turn content for them.
+        expect(byDay(16)).toBeUndefined()
+        expect(byDay(50)).toBeUndefined()
+        expect(byDay(65)).toBeUndefined()
+        expect(days.map((d) => d.dayNumber)).toEqual([1, 2, 31, 58, 73, 74, 75])
+    })
+
+    it("normalizes uppercase year text into the three canonical year buckets", () => {
+        // Day 2 logs its date as "JUNIOR YEAR ...", day 31 as "CLASSIC YEAR ...", day 58 as "SENIOR YEAR ...".
+        expect(byDay(2)!.year).toBe("Junior")
+        expect(byDay(31)!.year).toBe("Classic")
+        expect(byDay(58)!.year).toBe("Senior")
+    })
+
+    it("title-cases the uppercase training type in the summary", () => {
+        expect(byDay(1)!.trainingType).toBe("WIT")
+        expect(byDay(1)!.summary).toContain("Wit Training")
+        expect(byDay(1)!.summary).not.toContain("WIT Training")
+    })
+
+    it("detects the reworded injury line and the mood recovery", () => {
+        expect(byDay(58)!.actions.injury).toBe(true)
+        expect(byDay(58)!.summary).toContain("Recover Injury")
+        expect(byDay(2)!.actions.mood).toBe(true)
+    })
+
+    it("builds correct year summaries with the Finale folded into Senior", () => {
+        const summary = aggregateYearSummaries(days)
+        expect(summary.summaries.map((s) => s.year)).toEqual(["Junior", "Classic", "Senior"])
+        const junior = summary.summaries.find((s) => s.year === "Junior")!
+        const classic = summary.summaries.find((s) => s.year === "Classic")!
+        const senior = summary.summaries.find((s) => s.year === "Senior")!
+        expect(junior.moodCount).toBe(1)
+        expect(classic.raceCount).toBe(1)
+        expect(senior.injuryCount).toBe(1)
+        expect(senior.hasFinals).toBe(true)
+        // Year-summary action counts reconcile with the timeline: 3 training days and 3 race days total.
+        expect(summary.summaries.reduce((n, s) => n + s.trainingCount, 0)).toBe(3)
+        expect(summary.summaries.reduce((n, s) => n + s.raceCount, 0)).toBe(3)
+    })
+
+    it("captures the race name, grade, finishing place, and win result", () => {
+        const race = byDay(31)!
+        expect(race.actions.race).toBe(true)
+        expect(race.raceName).toBe("Satsuki Sho")
+        expect(race.raceGrade).toBe("G1")
+        expect(race.racePlace).toBe("1st")
+        expect(race.raceWon).toBe(true)
+        // The race name flows into the summary used as the row's accessibility label.
+        expect(race.summary).toContain("Satsuki Sho")
+        // The lines behind the detected name/place/result are also surfaced as expandable race trigger lines.
+        const raceTriggers = race.triggers!.race.join("\n")
+        expect(raceTriggers).toContain("Selected Race: Satsuki Sho")
+        expect(raceTriggers).toContain("confirmed 1st")
+        expect(raceTriggers).toContain("Race result detected")
+    })
+
+    it("captures the scenario/campaign and surfaces it on the file divider and year summaries", () => {
+        const divider = result.records.find((r) => r.kind === "fileDivider") as FileDividerRecord
+        expect(divider.scenario).toBe("Trackblazer")
+        expect(byDay(31)!.scenario).toBe("Trackblazer")
+        expect(aggregateYearSummaries(days).scenario).toBe("Trackblazer")
     })
 })
