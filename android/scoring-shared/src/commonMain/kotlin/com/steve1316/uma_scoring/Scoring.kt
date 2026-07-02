@@ -203,8 +203,20 @@ fun calculateMiscScore(config: TrainingConfig, training: TrainingOption): Double
  * @return Raw composite score, coerced to >= 0.
  */
 @JsExport
-fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption): Double {
-    if (training.name in config.blacklist) return 0.0
+fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption): Double = rawTrainingScoreComponents(config, training).total
+
+/**
+ * Same computation as [calculateRawTrainingScore] but returns the ordered per-factor decomposition so callers can log exactly how the score was built. The composition order
+ * (weighted stat + relationship + misc, then rainbow multiplier, then anticipatory multiplier) is identical to the scalar path, so `total` equals [calculateRawTrainingScore].
+ *
+ * @param config The shared scoring config.
+ * @param training The shared training option.
+ * @return The per-factor breakdown whose `total` is the raw composite score, coerced to >= 0.
+ */
+@JsExport
+fun rawTrainingScoreComponents(config: TrainingConfig, training: TrainingOption): RawScoreBreakdown {
+    val zero = RawScoreBreakdown(0.0, 0.0, 0.0, 1.0, 1.0, 0.0)
+    if (training.name in config.blacklist) return zero
 
     val currentStat: Int = config.currentStats.getOrElse(training.name) { 0 }
     val potentialStat: Int = currentStat + training.statGains.getOrElse(training.name) { 0 }
@@ -212,19 +224,18 @@ fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption):
     val finaleBonus = getFinaleStatBonus(config.currentDate.day)
     val effectiveStatCap = statCap - 100 - finaleBonus
 
-    if (currentStat >= statCap) return 0.0
+    if (currentStat >= statCap) return zero
 
     if (config.disableTrainingOnMaxedStat && currentStat >= effectiveStatCap) {
         val canUseAllowance = training.numRainbow > 0 && training.name !in config.statsTrainedOverBuffer
-        if (!canUseAllowance) return 0.0
+        if (!canUseAllowance) return zero
     }
 
     if (potentialStat >= effectiveStatCap) {
         val canUseAllowance = training.numRainbow > 0 && training.name !in config.statsTrainedOverBuffer
-        if (!canUseAllowance) return 0.0
+        if (!canUseAllowance) return zero
     }
 
-    var totalScore = 0.0
     val statScore = calculateStatEfficiencyScore(config, training)
     val relationshipScore = calculateRelationshipScore(config, training)
     val miscScore = calculateMiscScore(config, training)
@@ -233,9 +244,14 @@ fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption):
     val relationshipWeight = if (training.relationshipBars.isNotEmpty()) config.scoring.relationshipWeightWithBars else 0.0
     val miscWeight = config.scoring.miscWeight
 
-    totalScore += statScore * statWeight
-    totalScore += relationshipScore * relationshipWeight
-    totalScore += miscScore * miscWeight
+    // Composition order below mirrors the scalar path exactly (accumulate weighted scores, then apply each multiplier) so `total` stays byte-identical to the old code.
+    var totalScore = 0.0
+    val statScoreWeighted = statScore * statWeight
+    val relationshipScoreWeighted = relationshipScore * relationshipWeight
+    val miscScoreWeighted = miscScore * miscWeight
+    totalScore += statScoreWeighted
+    totalScore += relationshipScoreWeighted
+    totalScore += miscScoreWeighted
 
     val rainbowMultiplier =
         if (training.numRainbow > 0 && config.currentDate.year > DateYear.JUNIOR) {
@@ -245,6 +261,7 @@ fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption):
         }
     totalScore *= rainbowMultiplier
 
+    var anticipatoryMultiplier = 1.0
     if (
         config.enablePrioritizeNearMaxFriendship &&
         config.currentDate.year > DateYear.JUNIOR &&
@@ -260,12 +277,12 @@ fun calculateRawTrainingScore(config: TrainingConfig, training: TrainingOption):
             }
         }
         if (qualifyingBars > 0) {
-            val anticipatoryMultiplier = 1.0 + minOf(config.scoring.anticipatoryCap, config.scoring.anticipatoryCoefficient * contributions)
+            anticipatoryMultiplier = 1.0 + minOf(config.scoring.anticipatoryCap, config.scoring.anticipatoryCoefficient * contributions)
             totalScore *= anticipatoryMultiplier
         }
     }
 
-    return totalScore.coerceAtLeast(0.0)
+    return RawScoreBreakdown(statScoreWeighted, relationshipScoreWeighted, miscScoreWeighted, rainbowMultiplier, anticipatoryMultiplier, totalScore.coerceAtLeast(0.0))
 }
 
 /**

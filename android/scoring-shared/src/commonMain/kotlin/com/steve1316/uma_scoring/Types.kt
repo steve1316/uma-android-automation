@@ -216,3 +216,24 @@ data class TrainingScoringConstants(
         }
     }
 }
+
+/**
+ * Ordered decomposition of a raw training score so callers can log exactly how a stat-efficiency score was built. Each score field is the value AFTER its weight is applied.
+ * `total` equals what `calculateRawTrainingScore` returns for the same inputs, so the breakdown is a faithful explanation, not an approximation.
+ *
+ * @property statScoreWeighted Stat-efficiency score after the stat weight.
+ * @property relationshipScoreWeighted Relationship score after the relationship weight.
+ * @property miscScoreWeighted Misc score after the misc weight.
+ * @property rainbowMultiplier Multiplier applied for detected rainbow trainings (1.0 when none apply).
+ * @property anticipatoryMultiplier Multiplier applied for near-max friendship bars (1.0 when none apply).
+ * @property total The final composed score, equal to `calculateRawTrainingScore` for the same inputs.
+ */
+@JsExport
+data class RawScoreBreakdown(
+    val statScoreWeighted: Double,
+    val relationshipScoreWeighted: Double,
+    val miscScoreWeighted: Double,
+    val rainbowMultiplier: Double,
+    val anticipatoryMultiplier: Double,
+    val total: Double,
+)
