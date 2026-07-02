@@ -8,6 +8,7 @@ import com.steve1316.uma_android_automation.bot.Training.Companion.formatSelecti
 import com.steve1316.uma_android_automation.bot.Training.Companion.friendshipKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.statEfficiencyKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.unityCupKeyFactors
+import com.steve1316.uma_android_automation.bot.Training.Companion.witOnlyKeyFactor
 import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_android_automation.bot.Training.TrainingConfig
 import com.steve1316.uma_android_automation.bot.Training.TrainingOption
@@ -57,6 +58,19 @@ class TrainingExplanationTest {
         assertEquals(TrainingScoringMode.FRIENDSHIP, defaultScoringModeFor(bIsPreDebut = false, year = DateYear.JUNIOR))
         assertEquals(TrainingScoringMode.STAT_EFFICIENCY, defaultScoringModeFor(bIsPreDebut = false, year = DateYear.CLASSIC))
         assertEquals(TrainingScoringMode.STAT_EFFICIENCY, defaultScoringModeFor(bIsPreDebut = false, year = DateYear.SENIOR))
+    }
+
+    @Test
+    @DisplayName("WIT-only factor fires only when WIT was the sole gate-passing stat and others were skipped")
+    fun testWitOnlyKeyFactor() {
+        assertNotNull(
+            witOnlyKeyFactor(StatName.WIT, setOf(StatName.WIT), anySkipped = true, energy = 18),
+            "WIT alone passing the gate with others skipped should produce a WIT-only factor",
+        )
+        assertTrue(witOnlyKeyFactor(StatName.WIT, setOf(StatName.WIT), anySkipped = true, energy = 18)!!.contains("18%"), "The factor should state the energy level")
+        assertNull(witOnlyKeyFactor(StatName.SPEED, setOf(StatName.SPEED), anySkipped = true, energy = 18), "A non-WIT selection must not produce the WIT-only factor")
+        assertNull(witOnlyKeyFactor(StatName.WIT, setOf(StatName.WIT, StatName.SPEED), anySkipped = true, energy = 18), "If another stat also passed, WIT was not the only option")
+        assertNull(witOnlyKeyFactor(StatName.WIT, setOf(StatName.WIT), anySkipped = false, energy = 90), "With nothing skipped, WIT was a genuine pick, not a fallback")
     }
 
     @Test

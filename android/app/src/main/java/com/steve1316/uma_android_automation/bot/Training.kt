@@ -831,6 +831,23 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         }
 
         /**
+         * A cross-mode key factor for when WIT was the only training that survived the failure-chance gate. At low energy every stat except WIT tends to fail, so WIT gets chosen by
+         * elimination rather than merit. Surfacing this explains a low-value WIT pick and flags that the trainee is running low on energy.
+         *
+         * @param selected The selected training stat.
+         * @param passedStats The stats whose trainings passed the failure-chance gate.
+         * @param anySkipped Whether any training was skipped by the failure-chance gate.
+         * @param energy The trainee's current energy percentage.
+         * @return The WIT-only factor string, or null when WIT was not the sole survivor.
+         */
+        fun witOnlyKeyFactor(selected: StatName, passedStats: Set<StatName>, anySkipped: Boolean, energy: Int): String? =
+            if (selected == StatName.WIT && anySkipped && passedStats == setOf(StatName.WIT)) {
+                "Only WIT passed the failure-chance gate at $energy% energy (picked by elimination, not merit)."
+            } else {
+                null
+            }
+
+        /**
          * Format the selection ranking line for the explanation log. Training scores live on an internal, mode-specific scale that is not comparable across
          * modes, so this reports the absolute scores plus a ratio and the mode label rather than an unlabeled "N points" difference that reads as meaningful.
          *
@@ -2237,6 +2254,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             keyFactors.addAll(getKeyFactors(scoringMode, config, selected, args))
 
             // Global key factors.
+            witOnlyKeyFactor(selected.name, scores.keys.map { it.name }.toSet(), anySkipped = skippedScores.isNotEmpty(), energy = campaign.trainee.energy)?.let { keyFactors.add(it) }
+
             if (selected.numSkillHints > 0) {
                 keyFactors.add("Provides ${selected.numSkillHints} skill hint(s).")
             }
