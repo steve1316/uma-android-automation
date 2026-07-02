@@ -12,37 +12,37 @@ class TrackblazerMegaphoneTest {
 
     @Test
     fun `zero thresholds pick the best available tier`() {
-        assertEquals("Empowering Megaphone", MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, zeroThresholds))
+        assertEquals("Empowering Megaphone", Trackblazer.MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, zeroThresholds))
     }
 
     @Test
     fun `gain below empowering threshold falls through to motivating`() {
         val thresholds = mapOf("Empowering Megaphone" to 30, "Motivating Megaphone" to 10, "Coaching Megaphone" to 0)
-        assertEquals("Motivating Megaphone", MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, thresholds))
+        assertEquals("Motivating Megaphone", Trackblazer.MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, thresholds))
     }
 
     @Test
     fun `gain below all thresholds yields no megaphone`() {
         val thresholds = mapOf("Empowering Megaphone" to 30, "Motivating Megaphone" to 25, "Coaching Megaphone" to 20)
-        assertNull(MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, thresholds))
+        assertNull(Trackblazer.MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, thresholds))
     }
 
     @Test
     fun `only lower tier in inventory is used when eligible`() {
-        assertEquals("Coaching Megaphone", MegaphoneSelection.bestEligibleMegaphone(15, mapOf("Coaching Megaphone" to 2), zeroThresholds))
+        assertEquals("Coaching Megaphone", Trackblazer.MegaphoneSelection.bestEligibleMegaphone(15, mapOf("Coaching Megaphone" to 2), zeroThresholds))
     }
 
     @Test
     fun `gain at exactly the threshold is eligible`() {
         val thresholds = mapOf("Empowering Megaphone" to 15, "Motivating Megaphone" to 0, "Coaching Megaphone" to 0)
-        assertEquals("Empowering Megaphone", MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, thresholds))
+        assertEquals("Empowering Megaphone", Trackblazer.MegaphoneSelection.bestEligibleMegaphone(15, allInInventory, thresholds))
     }
 
     @Test
     fun `durationFor returns per-tier turn counts`() {
-        assertEquals(2, MegaphoneSelection.durationFor("Empowering Megaphone"))
-        assertEquals(3, MegaphoneSelection.durationFor("Motivating Megaphone"))
-        assertEquals(4, MegaphoneSelection.durationFor("Coaching Megaphone"))
-        assertEquals(0, MegaphoneSelection.durationFor("Not A Megaphone"))
+        assertEquals(2, Trackblazer.MegaphoneSelection.durationFor("Empowering Megaphone"))
+        assertEquals(3, Trackblazer.MegaphoneSelection.durationFor("Motivating Megaphone"))
+        assertEquals(4, Trackblazer.MegaphoneSelection.durationFor("Coaching Megaphone"))
+        assertEquals(0, Trackblazer.MegaphoneSelection.durationFor("Not A Megaphone"))
     }
 }
