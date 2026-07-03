@@ -224,13 +224,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     internal var firstTrainingCheck = true
 
     /**
-     * Retrieve the current stat cap for a given stat.
+     * Retrieve the current stat cap for a given stat: the OCR'd cap when dynamic caps are enabled and it is at least the scenario base (a below-base read is a misread), otherwise the
+     * per-scenario table value. Mirrors the resolution used by the shared scorer and [com.steve1316.uma_android_automation.types.Trainee.logInfo].
      *
      * @param statName The stat name.
      * @return The current maximum value for the specified stat.
      */
     private fun getCurrentStatCap(statName: StatName): Int {
-        return getScenarioStatCap(game.scenario, statName)
+        val base = getScenarioStatCap(game.scenario, statName)
+        return if (useDynamicStatCaps) campaign.trainee.statCaps[statName]?.takeIf { it >= base } ?: base else base
     }
 
     /** The blacklist that applies this turn - empty in the Pre-Debut / Junior Friendship window so bonds can be built on blacklisted facilities, else the configured [blacklist]. */
@@ -2115,7 +2117,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 summerTrainingStatPriority = summerTrainingStatPriority,
                 statTargets =
                     if (disableStatTargets) {
-                        StatName.entries.associateWith { getScenarioStatCap(game.scenario, it) }
+                        // Train toward each stat's real cap (OCR'd dynamic cap when available, else the per-scenario base), not a flat scenario value.
+                        StatName.entries.associateWith { getCurrentStatCap(it) }
                     } else {
                         val baseTargets = campaign.trainee.getPhaseStatTargets(campaign.date.year)
                         if (enableRunningStyleStaminaAdjustment && campaign.trainee.bHasSetRunningStyle) {
@@ -2243,8 +2246,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${targets[it]}"
             }
         if (config.disableStatTargets) {
-            val cap = getScenarioStatCap(config.scenario, StatName.SPEED)
-            sb.appendLine("Stat Targets: Disabled (treating cap=$cap as the target for all stats)")
+            sb.appendLine("Stat Targets: Disabled (training toward the per-stat caps): $targetsFormatted")
         } else {
             sb.appendLine("Stat Targets ($preferredDistance) [$phaseLabel]: $targetsFormatted")
         }
