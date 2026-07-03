@@ -405,6 +405,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
 
         val selected = chooseDuelContest(options, campaign.training.eventChoiceStatPriority)
         MessageLog.i(TAG, "[TRAINING_EVENT] Duel pick: option ${selected + 1} (stat=${options.getOrNull(selected)?.statName}, prediction=${options.getOrNull(selected)?.prediction}).")
+        printDuelSummary(options, selected)
         return selected
     }
 
@@ -448,6 +449,34 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
         sb.appendLine("")
         sb.appendLine("Selected: Option ${selectedOption + 1}")
         sb.appendLine("============================================")
+        MessageLog.v(TAG, sb.toString())
+    }
+
+    /**
+     * Print a formatted summary of the Happy Meek duel and the chosen contest. Mirrors printEventSummary but lists each contest's stat and win-prediction tier instead of event
+     * rewards, since the duel is not a database event and would otherwise print the unrelated fuzzy-matched event's rewards.
+     *
+     * @param options The per-row contest options, each with its contested stat and prediction tier.
+     * @param selectedOption The 0-based index of the chosen contest row.
+     */
+    private fun printDuelSummary(options: List<DuelContestOption>, selectedOption: Int) {
+        val sb = StringBuilder()
+        sb.appendLine("\n========== Happy Meek Duel Summary ==========")
+        sb.appendLine("Event: \"Happy Meek's Challenge!\"")
+        sb.appendLine("Current Date: ${campaign.date}")
+        sb.appendLine("")
+        // Format a row's contested stat, falling back to ENERGY for the non-stat "Contest of energy" row.
+        fun statLabel(option: DuelContestOption?): String = option?.statName?.name ?: "ENERGY"
+
+        sb.appendLine("Contests:")
+        options.forEachIndexed { index, option ->
+            val selectionMarker = if (index == selectedOption) " <---- SELECTED" else ""
+            sb.appendLine("  Option ${index + 1}: ${statLabel(option)} - ${option.prediction}$selectionMarker")
+        }
+        sb.appendLine("")
+        val chosen = options.getOrNull(selectedOption)
+        sb.appendLine("Selected: Option ${selectedOption + 1} (${statLabel(chosen)}, ${chosen?.prediction})")
+        sb.appendLine("=============================================")
         MessageLog.v(TAG, sb.toString())
     }
 
@@ -660,6 +689,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
         val regex = Regex("[a-zA-Z]+")
         var optionSelected = 0
         var specialEventHandled = false
+        var duelHandled = false
         var isTutorialEvent = false
         var tutorialOptionCount = 0
 
@@ -708,6 +738,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
             optionSelected = handleHappyMeekDuel(trainingOptionLocations)
             specialEventHandled = true
+            duelHandled = true
         } else if (specialEventResult != null) {
             val (selectedOptionIndex, _) = specialEventResult
             optionSelected = selectedOptionIndex
@@ -783,8 +814,8 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
                 }
             }
 
-            // Print summary for special event overrides (character/support overrides are handled in their branches).
-            if (specialEventHandled) {
+            // Print summary for special event overrides (character/support overrides are handled in their branches). The Happy Meek duel prints its own summary, so skip the generic one.
+            if (specialEventHandled && !duelHandled) {
                 printEventSummary(eventTitle, characterOrSupportName, eventRewards, null, optionSelected, confidence)
             }
         } else {
