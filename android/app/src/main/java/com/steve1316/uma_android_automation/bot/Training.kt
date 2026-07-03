@@ -627,9 +627,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             if (numSpiritGaugesReadyToBurst > 0) {
                 // We give a significant bonus for bursting, but not so much that it always overrides huge stat gains elsewhere. The optional energy penalty reflects the extra energy a
                 // Special Training burst costs, scaled by the number of gauges involved (default 0, so behavior is unchanged unless the user tunes it).
-                val burstBonus =
-                    config.scoring.unityBurstBaseBonus + (numSpiritGaugesReadyToBurst * config.scoring.unityBurstPerGaugeBonus) -
-                        (numSpiritGaugesReadyToBurst * config.scoring.unityBurstEnergyPenaltyPerGauge)
+                val burstBonus = config.scoring.unityBurstBaseBonus + (numSpiritGaugesReadyToBurst * (config.scoring.unityBurstPerGaugeBonus - config.scoring.unityBurstEnergyPenaltyPerGauge))
                 score += burstBonus
                 MessageLog.i(TAG, "[TRAINING] [${training.name}] Adding burst bonus for $numSpiritGaugesReadyToBurst gauge(s): $burstBonus")
 
@@ -670,9 +668,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             if (numSpiritGaugesCanFill > 0 && !preRaceStatFocus) {
                 // Score increases with number of gauges that can be filled. Kept on the stat-efficiency scale so a strong stat turn still outranks pure gauge-filling.
                 // Each gauge fills by 25% per training execution. The optional energy penalty (default 0) reflects the extra energy filling costs, scaled by the number of gauges involved.
-                val fillBonus =
-                    config.scoring.unityFillBaseBonus + (numSpiritGaugesCanFill * config.scoring.unityFillPerGaugeBonus) -
-                        (numSpiritGaugesCanFill * config.scoring.unityFillEnergyPenaltyPerGauge)
+                val fillBonus = config.scoring.unityFillBaseBonus + (numSpiritGaugesCanFill * (config.scoring.unityFillPerGaugeBonus - config.scoring.unityFillEnergyPenaltyPerGauge))
                 score += fillBonus
                 MessageLog.i(TAG, "[TRAINING] [${training.name}] Training can fill $numSpiritGaugesCanFill Spirit Explosion Gauge(s). Adding fill bonus: $fillBonus")
 

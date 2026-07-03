@@ -180,6 +180,17 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
             if (isRecovery && staminaHeavy) baseRatio * boost else baseRatio
 
         /**
+         * The ranking ratio a skill sorts by: its evaluation-point ratio, boosted for recovery skills on stamina-heavy builds. Shared by the auto-strategy sort sites. The description scan
+         * is skipped entirely when the boost is inactive, so it costs nothing on the common (feature-off or Sprint/Mile) path.
+         *
+         * @param entry The skill being ranked.
+         * @param staminaHeavy Whether the recovery boost is active this run (setting on and a Medium/Long build).
+         * @return The effective ratio to sort by, highest first.
+         */
+        fun rankingRatio(entry: SkillListEntry, staminaHeavy: Boolean): Double =
+            recoveryBoostedRatio(entry.evaluationPointRatio, staminaHeavy && isRecoverySkill(entry.skillData.description), staminaHeavy)
+
+        /**
          * Whether a skill is compatible with the resolved Style preference on every axis. A skill passes when, for each axis with a
          * preference, it either has no commitment on that axis (generic / aptitude-independent) or its value matches. Running style
          * matches on the explicit style or any inferred style, mirroring the Optimize Skills include-pass.
@@ -730,8 +741,7 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
                 }
 
                 // Sort within the tier by evaluation point ratio, nudging recovery skills up on stamina-heavy builds.
-                val sortedByPointRatio: List<SkillListEntry> =
-                    group.sortedByDescending { recoveryBoostedRatio(it.evaluationPointRatio, isRecoverySkill(it.skillData.description), staminaHeavy) }
+                val sortedByPointRatio: List<SkillListEntry> = group.sortedByDescending { rankingRatio(it, staminaHeavy) }
                 for (entry in sortedByPointRatio) {
                     // Don't add duplicate entries.
                     if (entry.name in result || entry.name in skillsToBuy) {
@@ -798,7 +808,7 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
         while (remainingSkills.any { it.value.screenPrice <= remainingSkillPoints }) {
             val sortedByPointRatio: List<SkillListEntry> =
                 remainingSkills.values
-                    .sortedByDescending { recoveryBoostedRatio(it.evaluationPointRatio, isRecoverySkill(it.skillData.description), staminaHeavy) }
+                    .sortedByDescending { rankingRatio(it, staminaHeavy) }
 
             for (entry in sortedByPointRatio) {
                 // Don't add duplicate entries.
