@@ -493,7 +493,8 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 }
             }.apply { isDaemon = true }.start()
         } else {
-            skillName = cachedTitle
+            // Correct the cached title too, mirroring the non-cached path, so a cached OCR misread still resolves.
+            skillName = game.skillDatabase.checkSkillName(cachedTitle, fuzzySearch = true)
         }
 
         // Start thread for price extraction.
