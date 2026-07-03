@@ -77,4 +77,23 @@ class TraineeStatsTest {
             assertEquals("Spd=10, Sta=20, Pow=30, Gut=40, Wit=50", stats.toString())
         }
     }
+
+    @Nested
+    @DisplayName("toStringWithCaps")
+    inner class ToStringWithCapsTests {
+        @Test
+        fun `appends each stat's cap`() {
+            val stats = Trainee.Companion.Stats(speed = 252, stamina = 104, power = 155, guts = 108, wit = 187)
+            val caps = mapOf(StatName.SPEED to 1480, StatName.STAMINA to 1400, StatName.POWER to 1400, StatName.GUTS to 1400, StatName.WIT to 1400)
+            assertEquals("Spd=252/1480, Sta=104/1400, Pow=155/1400, Gut=108/1400, Wit=187/1400", stats.toStringWithCaps(caps))
+        }
+
+        @Test
+        fun `falls back to the bare value when a cap is missing or non-positive`() {
+            val stats = Trainee.Companion.Stats(speed = 252, stamina = 104, power = 155, guts = 108, wit = 187)
+            // Speed cap missing, Stamina cap non-positive; both drop the "/cap" suffix while the rest keep theirs.
+            val caps = mapOf(StatName.STAMINA to 0, StatName.POWER to 1400, StatName.GUTS to 1400, StatName.WIT to 1400)
+            assertEquals("Spd=252, Sta=104, Pow=155/1400, Gut=108/1400, Wit=187/1400", stats.toStringWithCaps(caps))
+        }
+    }
 }

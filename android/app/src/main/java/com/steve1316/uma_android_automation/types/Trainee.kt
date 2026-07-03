@@ -30,6 +30,7 @@ import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
+import com.steve1316.uma_scoring.getScenarioStatCap
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_scoring.RankResult
 import org.opencv.core.Point
@@ -117,6 +118,27 @@ class Trainee {
 
             override fun toString(): String {
                 return "Spd=$speed, Sta=$stamina, Pow=$power, Gut=$guts, Wit=$wit"
+            }
+
+            /**
+             * Formats the stats with their per-stat caps as "Spd=<value>/<cap>, ...", matching [toString]'s abbreviations. A stat whose cap is missing or non-positive falls back to
+             * just its value so the line never renders "/0" or "/null".
+             *
+             * @param caps The effective per-stat cap to show (the OCR'd value, or the scenario default when no plausible cap was read).
+             * @return The formatted "Spd=.../..., Sta=.../..., ..." string.
+             */
+            fun toStringWithCaps(caps: Map<StatName, Int>): String {
+                fun part(abbr: String, value: Int, stat: StatName): String {
+                    val cap = caps[stat]
+                    return if (cap != null && cap > 0) "$abbr=$value/$cap" else "$abbr=$value"
+                }
+                return listOf(
+                    part("Spd", speed, StatName.SPEED),
+                    part("Sta", stamina, StatName.STAMINA),
+                    part("Pow", power, StatName.POWER),
+                    part("Gut", guts, StatName.GUTS),
+                    part("Wit", wit, StatName.WIT),
+                ).joinToString(", ")
             }
 
             /**
@@ -886,12 +908,22 @@ class Trainee {
         }
     }
 
-    /** Logs the trainee's current state in a structured format for the Remote Log Viewer dashboard. */
-    fun logInfo() {
+    /**
+     * Logs the trainee's current state in a structured format for the Remote Log Viewer dashboard.
+     *
+     * @param scenario The active scenario name, used to fall back to the per-scenario cap table for any stat whose cap was not read from the screen.
+     */
+    fun logInfo(scenario: String) {
         if (name.isNotEmpty()) {
             MessageLog.v(TAG, "[TRAINEE] Name: $name")
         }
-        MessageLog.v(TAG, "[TRAINEE] Stats: $stats")
+        // Show the cap the bot actually scores against per stat: the OCR'd cap when it is at least the scenario base (a below-base read is a misread), otherwise the base.
+        val effectiveCaps =
+            StatName.entries.associateWith { stat ->
+                val base = getScenarioStatCap(scenario, stat)
+                statCaps[stat]?.takeIf { it >= base } ?: base
+            }
+        MessageLog.v(TAG, "[TRAINEE] Stats: ${stats.toStringWithCaps(effectiveCaps)}")
         MessageLog.v(TAG, "[TRAINEE] Energy: $energy%")
         MessageLog.v(TAG, "[TRAINEE] Mood: ${mood.name}")
         MessageLog.v(TAG, "[TRAINEE] Fans: $fans")

@@ -440,7 +440,7 @@ abstract class Campaign(game: Game) : Task(game) {
         openFansDialog()
         handleDialogs()
 
-        trainee.logInfo()
+        trainee.logInfo(game.scenario)
         MessageLog.i(TAG, "\n[TEST] Main Screen update test complete.")
     }
 
@@ -2044,7 +2044,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
         // Compute the estimated overall rank, then print the trainee info after all turn-start updates and potential fan count updates.
         updateEstimatedRank()
-        trainee.logInfo()
+        trainee.logInfo(game.scenario)
 
         // Surface analytics right after the trainee scan, before the scenario item/shop pass, so a restart shows the resumed run promptly.
         RunAnalytics.onTurnStart(trainee, date)
@@ -2508,7 +2508,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 handleDialogs()
 
                 // Print the final Trainee information.
-                trainee.logInfo()
+                trainee.logInfo(game.scenario)
 
                 return TaskResult.Success(
                     TaskResultCode.TASK_RESULT_COMPLETE,
