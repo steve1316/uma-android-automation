@@ -18,7 +18,6 @@ import com.steve1316.uma_android_automation.components.IconTrainingEventHorsesho
 import com.steve1316.uma_android_automation.types.Mood
 import com.steve1316.uma_android_automation.types.NegativeStatus
 import com.steve1316.uma_android_automation.types.PositiveStatus
-import com.steve1316.uma_android_automation.types.StatName
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 import org.json.JSONObject
@@ -36,12 +35,6 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
 
     /** Whether to prioritize options that provide energy gains. */
     private val enablePrioritizeEnergyOptions: Boolean = SettingsHelper.getBooleanSetting("trainingEvent", "enablePrioritizeEnergyOptions")
-
-    /** Stat priority list used to pick a Happy Meek duel contest. Mirrors Training's event-choice fallback chain: event-choice priority, then regular priority, then all stats. */
-    private val eventChoiceStatPriority: List<StatName> =
-        SettingsHelper.getStringArraySetting("training", "eventChoiceStatPriority").mapNotNull { StatName.fromName(it) }.ifEmpty {
-            SettingsHelper.getStringArraySetting("training", "statPrioritization").mapNotNull { StatName.fromName(it) }
-        }.ifEmpty { StatName.entries }
 
     /** Special event overrides loaded from SQLite settings. */
     private val specialEventOverrides: Map<String, EventOverride> =
@@ -380,10 +373,10 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
         val sourceBitmap = game.imageUtils.getSourceBitmap()
 
         // Locate every prediction icon once, tagged with its tier, so each row can be paired with the nearest icon by Y.
-        val predictionMatches = mutableListOf<Pair<DuelPrediction, Int>>()
-        for ((prediction, component) in listOf(DuelPrediction.GREAT to IconDuelGreat, DuelPrediction.GOOD to IconDuelGood, DuelPrediction.BAD to IconDuelBad)) {
-            component.findAllWithBitmap(game.imageUtils, sourceBitmap).forEach { predictionMatches.add(prediction to it.y.toInt()) }
-        }
+        val predictionMatches =
+            listOf(DuelPrediction.GREAT to IconDuelGreat, DuelPrediction.GOOD to IconDuelGood, DuelPrediction.BAD to IconDuelBad).flatMap { (prediction, component) ->
+                component.findAllWithBitmap(game.imageUtils, sourceBitmap).map { prediction to it.y.toInt() }
+            }
         MessageLog.v(TAG, "[TRAINING_EVENT] Detected ${predictionMatches.size} duel prediction icon(s).")
 
         // Roughly half the row pitch is a safe tolerance for pairing a prediction icon to its row.
@@ -410,7 +403,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
                 DuelContestOption(statName, prediction)
             }
 
-        val selected = chooseDuelContest(options, eventChoiceStatPriority)
+        val selected = chooseDuelContest(options, campaign.training.eventChoiceStatPriority)
         MessageLog.i(TAG, "[TRAINING_EVENT] Duel pick: option ${selected + 1} (stat=${options.getOrNull(selected)?.statName}, prediction=${options.getOrNull(selected)?.prediction}).")
         return selected
     }

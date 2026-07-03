@@ -8,6 +8,11 @@ import com.steve1316.uma_android_automation.components.LabelDuel
 import com.steve1316.uma_android_automation.types.StatName
 import kotlin.math.abs
 
+// Screen-width fractions of the five facility button centers, ordered Speed, Stamina, Power, Guts, Wit. Mirrors the empirically-measured slot fractions used by
+// CustomImageUtils.detectRainbowTrainingButtons so the duel badge maps to the same facility columns as the rest of the bot.
+private val FACILITY_SLOT_FRACTIONS: List<Pair<StatName, Double>> =
+    listOf(StatName.SPEED to 0.145, StatName.STAMINA to 0.324, StatName.POWER to 0.499, StatName.GUTS to 0.678, StatName.WIT to 0.853)
+
 /** Win-prediction tier for a Happy Meek duel contest, best to worst. WORST is the untemplated X tier - a row that matches none of the great / good / bad prediction icons. */
 enum class DuelPrediction { GREAT, GOOD, BAD, WORST }
 
@@ -52,14 +57,7 @@ fun chooseDuelContest(options: List<DuelContestOption>, targetStats: List<StatNa
  */
 fun parseContestStat(text: String): StatName? {
     val lower = text.lowercase()
-    return when {
-        "speed" in lower -> StatName.SPEED
-        "stamina" in lower -> StatName.STAMINA
-        "power" in lower -> StatName.POWER
-        "guts" in lower -> StatName.GUTS
-        "wit" in lower -> StatName.WIT
-        else -> null
-    }
+    return StatName.entries.firstOrNull { it.name.lowercase() in lower }
 }
 
 /**
@@ -76,8 +74,17 @@ fun nearestDuelPrediction(rowY: Int, predictionMatches: List<Pair<DuelPrediction
     return if (abs(nearest.second - rowY) <= tolerancePx) nearest.first else DuelPrediction.WORST
 }
 
-/** How strongly to bias URA Finale training toward a facility that carries a Happy Meek duel badge. */
-enum class DuelBiasLevel { OFF, MODERATE, AGGRESSIVE }
+/**
+ * How strongly to bias URA Finale training toward a facility that carries a Happy Meek duel badge. The multiplier scales the facility's score: MODERATE wins when the duel facility
+ * is within ~20% of the best pick, AGGRESSIVE within ~40%, and OFF applies no bias.
+ *
+ * @property multiplier The factor a duel facility's base score is multiplied by.
+ */
+enum class DuelBiasLevel(val multiplier: Double) {
+    OFF(1.0),
+    MODERATE(1.25),
+    AGGRESSIVE(1.6),
+}
 
 /**
  * Parse the `scenarioOverrides.uraHappyMeekDuelBias` setting string into a level. Unknown or empty values default to MODERATE so a missing setting still biases toward duels.
@@ -90,19 +97,6 @@ fun parseDuelBiasLevel(setting: String): DuelBiasLevel =
         "off" -> DuelBiasLevel.OFF
         "aggressive" -> DuelBiasLevel.AGGRESSIVE
         else -> DuelBiasLevel.MODERATE
-    }
-
-/**
- * The score multiplier applied to a duel facility for a given bias level. MODERATE wins when the duel facility is within ~20% of the best pick, AGGRESSIVE within ~40%.
- *
- * @param level The configured bias level.
- * @return The multiplier to apply to the duel facility's base score.
- */
-fun duelBiasMultiplier(level: DuelBiasLevel): Double =
-    when (level) {
-        DuelBiasLevel.OFF -> 1.0
-        DuelBiasLevel.MODERATE -> 1.25
-        DuelBiasLevel.AGGRESSIVE -> 1.6
     }
 
 /**
@@ -119,23 +113,19 @@ fun duelBiasMultiplier(level: DuelBiasLevel): Double =
  */
 fun applyDuelTrainingBias(baseScore: Double, hasDuel: Boolean, failureChance: Int, level: DuelBiasLevel, maxFailureChance: Int): Double {
     if (!hasDuel || level == DuelBiasLevel.OFF || baseScore <= 0.0) return baseScore
-    return if (failureChance in 0..maxFailureChance) baseScore * duelBiasMultiplier(level) else baseScore
+    return if (failureChance in 0..maxFailureChance) baseScore * level.multiplier else baseScore
 }
 
 /**
- * Map the training-screen duel badge's X coordinate to its facility. The five facility buttons tile the screen width in equal columns ordered Speed, Stamina, Power, Guts, Wit, so
- * the badge lands in its facility's column. Returns the stat whose column center is nearest the badge.
+ * Map the training-screen duel badge's X coordinate to its facility. The badge sits on one facility button, so it lands nearest that facility's column center. Returns the stat
+ * whose button center is nearest the badge.
  *
  * @param badgeX The X coordinate of the detected duel badge center.
  * @param displayWidth The screen width the badge was detected on.
  * @return The [StatName] of the facility carrying the duel.
  */
-fun duelFacilityForBadgeX(badgeX: Int, displayWidth: Int): StatName {
-    val order = listOf(StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.GUTS, StatName.WIT)
-    val columnWidth = displayWidth.toDouble() / order.size
-    val index = order.indices.minByOrNull { abs((it + 0.5) * columnWidth - badgeX) } ?: 0
-    return order[index]
-}
+fun duelFacilityForBadgeX(badgeX: Int, displayWidth: Int): StatName =
+    FACILITY_SLOT_FRACTIONS.minByOrNull { abs(it.second * displayWidth - badgeX) }?.first ?: StatName.SPEED
 
 /**
  * Handles the URA Finale scenario with scenario-specific logic and handling.
