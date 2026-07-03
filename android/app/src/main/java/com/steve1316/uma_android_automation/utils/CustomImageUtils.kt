@@ -97,6 +97,25 @@ internal fun <K> argMaxAboveFloor(scores: Map<K, Double>, floor: Double): K? {
     return if (best.value >= floor) best.key else null
 }
 
+/** Lowest plausible OCR'd stat cap. Base scenario caps start at 1200, so a read below this is treated as a value misread and rejected. */
+private const val MIN_PLAUSIBLE_STAT_CAP = 1000
+
+/** Highest plausible OCR'd stat cap. The game hard-caps stats at 2000, so a read above this is an OCR misread. */
+private const val MAX_PLAUSIBLE_STAT_CAP = 2000
+
+/**
+ * Parse the stat cap from the OCR text of the "/NNNN" denominator shown under a stat on the career / training screen. The cap is the largest number present - it is always >= the
+ * current value, so taking the max is robust even when the crop catches part of the value. Returns null when no plausible cap is found so the caller can fall back to the
+ * per-scenario cap table. The caller additionally rejects any cap below the scenario's base cap, since sparks / inheritance / duels only ever raise caps.
+ *
+ * @param text Raw OCR text of the cap-denominator region.
+ * @return The parsed stat cap in [MIN_PLAUSIBLE_STAT_CAP, MAX_PLAUSIBLE_STAT_CAP], or null if none is plausible.
+ */
+internal fun parseStatCap(text: String): Int? {
+    val candidate = Regex("\\d+").findAll(text).mapNotNull { it.value.toIntOrNull() }.maxOrNull() ?: return null
+    return if (candidate in MIN_PLAUSIBLE_STAT_CAP..MAX_PLAUSIBLE_STAT_CAP) candidate else null
+}
+
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
     /** OCR threshold for text recognition. */
@@ -1281,6 +1300,54 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
 
         return result.toMap()
+    }
+
+    /**
+     * Read the cap denominator ("/NNNN") shown under a single stat on the career / training main screen. Anchored on the same skill-points label as the value read, offset one line
+     * down. Caps appear only on the main / training screen (not the aptitude dialog), so this reads the main-screen layout. Returns the parsed cap, or -1 when no plausible cap is
+     * found so the caller keeps the per-scenario table cap. NOTE: the cap-region vertical offset is a starting point tuned on-device against the saved `${statName}StatCap` crop.
+     *
+     * @param statName The stat whose cap to read.
+     * @param sourceBitmap Optional shared source bitmap (enables thread-safe parallel reads).
+     * @param skillPointsLocation Optional pre-found skill-points label location.
+     * @return The parsed stat cap, or -1 if none is plausible.
+     */
+    fun determineSingleStatCap(statName: StatName, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null): Int {
+        val (finalLocation, finalSourceBitmap) =
+            if (sourceBitmap == null && skillPointsLocation == null) {
+                LabelStatTableHeaderSkillPoints.find(this)
+            } else {
+                Pair(skillPointsLocation, sourceBitmap)
+            }
+
+        if (finalLocation == null || finalSourceBitmap == null) {
+            MessageLog.e(TAG, "[ERROR] determineSingleStatCap:: Could not start the process of detecting the stat cap for $statName.")
+            return -1
+        }
+
+        // The cap sits one line below the stat value (value region is offsetY 20, height 50). Same 170px horizontal spacing; the vertical offset is tuned on-device via the crop.
+        val index = statName.ordinal
+        val offsetX = -862 + (index * 170)
+        val offsetY = 64
+        val width = 110
+        val height = 44
+
+        val text =
+            performOCROnRegion(
+                finalSourceBitmap,
+                relX(finalLocation.x, offsetX),
+                relY(finalLocation.y, offsetY),
+                relWidth(width),
+                relHeight(height),
+                useThreshold = false,
+                useGrayscale = true,
+                scale = 2.0,
+                ocrEngine = "tesseract_digits",
+                debugName = "${statName}StatCap",
+            )
+
+        Log.d(TAG, "[DEBUG] determineSingleStatCap:: Raw OCR text for $statName cap: '$text'")
+        return parseStatCap(text) ?: -1
     }
 
     /**

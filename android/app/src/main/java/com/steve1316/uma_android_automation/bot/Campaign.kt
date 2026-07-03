@@ -2086,8 +2086,8 @@ abstract class Campaign(game: Game) : Task(game) {
         }
 
         // Use CountDownLatch to run the operations in parallel.
-        // 1 racingRequirements (skipped during summer) + 5 stats + 1 skill points + 1 mood + 1 energy = 9 (or 8) threads.
-        val latch = if (date.isSummer() && !(racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) CountDownLatch(8) else CountDownLatch(9)
+        // 1 racingRequirements (skipped during summer) + 5 stats + 1 skill points + 1 mood + 1 energy + 1 stat caps = 10 (or 9) threads.
+        val latch = if (date.isSummer() && !(racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) CountDownLatch(9) else CountDownLatch(10)
 
         MessageLog.disableOutput = true
 
@@ -2135,6 +2135,17 @@ abstract class Campaign(game: Game) : Task(game) {
                 trainee.updateEnergy(game.imageUtils)
             } catch (e: Exception) {
                 MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateEnergy thread: ${e.stackTraceToString()}")
+            } finally {
+                latch.countDown()
+            }
+        }.apply { isDaemon = true }.start()
+
+        // Thread 10: Update stat caps (only shown on the main / training screen).
+        Thread {
+            try {
+                trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
+            } catch (e: Exception) {
+                MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
             } finally {
                 latch.countDown()
             }

@@ -158,6 +158,9 @@ class Trainee {
     /** The trainee's current stat values (Speed, Stamina, Power, Guts, Wit). */
     val stats: Stats = Stats()
 
+    /** Live per-stat caps OCR'd from the "/NNNN" denominators on the main / training screen (raised by sparks, inheritance, duels, extreme bursts). Only stats with a plausible read appear; the rest fall back to the per-scenario cap table. */
+    val statCaps: MutableMap<StatName, Int> = mutableMapOf()
+
     /** Mapping of [TrackSurface] types to the trainee's [Aptitude]. */
     val trackSurfaceAptitudes: MutableMap<TrackSurface, Aptitude> =
         mutableMapOf(
@@ -819,6 +822,24 @@ class Trainee {
                 IconMoodGreat.check(imageUtils = imageUtils) -> Mood.GREAT
                 else -> null
             }
+        }
+    }
+
+    /**
+     * Read the live per-stat caps from the "/NNNN" denominators on the main / training screen and store the plausible ones in [statCaps]. A failed read keeps the previous cap for
+     * that stat, so a transient OCR miss does not drop a good value. Caps are not shown on the aptitude dialog, so this is a main-screen read. Runs sequentially (five small reads)
+     * as one parallel task within `performTurnStartUpdates`.
+     *
+     * @param imageUtils Reference to a [CustomImageUtils] instance.
+     * @param sourceBitmap The shared main-screen bitmap.
+     * @param skillPointsLocation The pre-found skill-points label location used as the OCR anchor.
+     */
+    fun updateStatCaps(imageUtils: CustomImageUtils, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null) {
+        if (sourceBitmap == null || skillPointsLocation == null) return
+        for (statName in StatName.entries) {
+            if (!BotService.isRunning) return
+            val cap = imageUtils.determineSingleStatCap(statName, sourceBitmap, skillPointsLocation)
+            if (cap > 0) statCaps[statName] = cap
         }
     }
 

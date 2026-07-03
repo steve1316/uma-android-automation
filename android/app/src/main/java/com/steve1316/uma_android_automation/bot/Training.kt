@@ -2089,6 +2089,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val trainingConfig =
             TrainingConfig(
                 currentStats = campaign.trainee.stats.asMap(),
+                // Keep only OCR'd caps at or above the scenario base; sparks / inheritance / duels only raise caps, so a below-base read is a misread and falls back to the table.
+                statCaps = campaign.trainee.statCaps.filter { (stat, cap) -> cap >= getScenarioStatCap(game.scenario, stat) },
                 statPrioritization = statPrioritization,
                 eventChoiceStatPriority = eventChoiceStatPriority,
                 summerTrainingStatPriority = summerTrainingStatPriority,
