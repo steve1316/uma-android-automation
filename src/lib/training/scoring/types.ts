@@ -138,6 +138,10 @@ export interface TrainingScoringConstants {
     unityFillEnergyPenaltyPerGauge: number
     /** Per-ready-gauge penalty subtracted from the burst bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off). */
     unityBurstEnergyPenaltyPerGauge: number
+    /** Flat Unity Cup bonus for a training with a support ready for an Extreme Spirit Burst. Larger than a normal burst so the extreme facility always outranks it. */
+    unityExtremeBurstBaseBonus: number
+    /** Additional Unity Cup Extreme Spirit Burst bonus per ready support, added on top of `unityExtremeBurstBaseBonus`. */
+    unityExtremeBurstPerGaugeBonus: number
 }
 
 /** Default values for `TrainingScoringConstants`, matching the constants currently hardcoded in the Kotlin scoring functions. */
@@ -183,6 +187,8 @@ export const DEFAULT_TRAINING_SCORING_CONSTANTS: TrainingScoringConstants = {
     unityBurstPerGaugeBonus: 400,
     unityFillEnergyPenaltyPerGauge: 0,
     unityBurstEnergyPenaltyPerGauge: 0,
+    unityExtremeBurstBaseBonus: 2000,
+    unityExtremeBurstPerGaugeBonus: 1000,
 }
 
 /** Bundle of every input the training scoring functions need to score a turn: current state, settings, and the analyzed training options. */

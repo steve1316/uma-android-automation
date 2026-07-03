@@ -7,8 +7,8 @@ import com.steve1316.uma_android_automation.bot.Training.Companion.calculateStat
 import com.steve1316.uma_android_automation.bot.Training.Companion.computeEffectiveBlacklist
 import com.steve1316.uma_android_automation.bot.Training.Companion.getCurrentStatCap
 import com.steve1316.uma_android_automation.bot.Training.Companion.getFinaleStatBonus
-import com.steve1316.uma_android_automation.bot.Training.Companion.getScenarioStatCap
 import com.steve1316.uma_android_automation.bot.Training.Companion.getRemainingFinaleRaces
+import com.steve1316.uma_android_automation.bot.Training.Companion.getScenarioStatCap
 import com.steve1316.uma_android_automation.bot.Training.Companion.levelBoostMultiplier
 import com.steve1316.uma_android_automation.bot.Training.Companion.scoreFriendshipTraining
 import com.steve1316.uma_android_automation.bot.Training.Companion.scoreUnityCupTraining
@@ -726,6 +726,21 @@ class TrainingScoringTest {
     }
 
     @Test
+    @DisplayName("An Extreme Spirit Burst outranks a normal burst on a better facility")
+    fun testExtremeSpiritBurstOutranksNormalBurst() {
+        // Extreme burst lands on Guts (the least-preferred burst facility); the normal burst lands on Speed (which also gets the facility-preference bump).
+        val extremeBurstTraining =
+            createDefaultTrainingOption(name = StatName.GUTS, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1, "spiritGaugesReadyToBurst" to 0, "spiritGaugesCanFill" to 0))
+        val normalBurstTraining = createDefaultTrainingOption(name = StatName.SPEED, extras = mapOf("spiritGaugesReadyToBurst" to 1, "spiritGaugesCanFill" to 0))
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurstTraining, normalBurstTraining), scenario = "Unity Cup")
+
+        val extremeScore = scoreUnityCupTraining(config, extremeBurstTraining)
+        val normalScore = scoreUnityCupTraining(config, normalBurstTraining)
+
+        assertTrue(extremeScore > normalScore, "An Extreme Spirit Burst (even on Guts) should outrank a normal burst on the preferred Speed facility")
+    }
+
+    @Test
     @DisplayName("Speed and Wit get facility preference bonuses when spirit gauge bursting")
     fun testFacilityPreferenceBonusesForBursting() {
         // Zero out stat gains to isolate facility bonuses.
@@ -1425,6 +1440,8 @@ class TrainingScoringTest {
         assertEquals(400.0, c.unityBurstPerGaugeBonus)
         assertEquals(0.0, c.unityFillEnergyPenaltyPerGauge)
         assertEquals(0.0, c.unityBurstEnergyPenaltyPerGauge)
+        assertEquals(2000.0, c.unityExtremeBurstBaseBonus)
+        assertEquals(1000.0, c.unityExtremeBurstPerGaugeBonus)
         assertEquals(2.0, c.rainbowMultiplierEnabled)
         assertEquals(1.5, c.rainbowMultiplierDisabled)
         assertEquals(200.0, c.rainbowPerInstanceBase)

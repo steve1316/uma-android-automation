@@ -518,6 +518,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     "unityBurstPerGaugeBonus",
                     "unityFillEnergyPenaltyPerGauge",
                     "unityBurstEnergyPenaltyPerGauge",
+                    "unityExtremeBurstBaseBonus",
+                    "unityExtremeBurstPerGaugeBonus",
                 )
             val intKeys = listOf("mainStatThresholdSpeed", "mainStatThresholdStamina", "mainStatThresholdPower", "mainStatThresholdGuts", "mainStatThresholdWit")
             // Use NaN as the per-key default so we can distinguish "user set it" from "missing"; scoringConstantsFromMap drops NaN via isFinite check.
@@ -663,9 +665,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          *
          * The priority order is as follows:
          * 1. Stat Efficiency: Raw stat gains toward targets.
-         * 2. Spirit Explosion: Trainings with gauges ready to burst.
-         * 3. Gauge Filling: Trainings that can fill Spirit Explosion gauges.
-         * 4. Relationship: Relationship building.
+         * 2. Extreme Spirit Burst: A support ready for an Extreme Spirit Burst (biggest boost, raises caps, 0% fail, one-time).
+         * 3. Spirit Explosion: Trainings with gauges ready to burst.
+         * 4. Gauge Filling: Trainings that can fill Spirit Explosion gauges.
+         * 5. Relationship: Relationship building.
          *
          * @param config The [TrainingConfig] containing global scoring inputs.
          * @param training The [TrainingOption] to score.
@@ -676,12 +679,21 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             val numSpiritGaugesCanFill = training.extras["spiritGaugesCanFill"] as? Int ?: 0
             val numSpiritGaugesReadyToBurst = training.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val numSpiritGaugesReadyToExtremeBurst = training.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
 
             // 1. Primary Priority: Stat Efficiency.
             var score = calculateStatEfficiencyScore(config, training)
             MessageLog.i(TAG, "[TRAINING] [${training.name}] Base stat efficiency score: ${String.format("%.2f", score)}")
 
-            // 2. Second Priority: Trainings with Spirit Explosion Gauges ready to burst.
+            // 2. Highest bonus: Extreme Spirit Burst. Much larger than a normal burst, raises stat caps, cannot fail, and is one-time, so it always outranks a normal burst. Applied as a
+            // strictly larger, stat-agnostic bonus (no facility preference) so the extreme facility is picked whenever it is present.
+            if (numSpiritGaugesReadyToExtremeBurst > 0) {
+                val extremeBurstBonus = config.scoring.unityExtremeBurstBaseBonus + (numSpiritGaugesReadyToExtremeBurst * config.scoring.unityExtremeBurstPerGaugeBonus)
+                score += extremeBurstBonus
+                MessageLog.i(TAG, "[TRAINING] [${training.name}] Adding EXTREME burst bonus for $numSpiritGaugesReadyToExtremeBurst gauge(s): $extremeBurstBonus")
+            }
+
+            // 3. Trainings with Spirit Explosion Gauges ready to burst.
             if (numSpiritGaugesReadyToBurst > 0) {
                 // We give a significant bonus for bursting, but not so much that it always overrides huge stat gains elsewhere. The optional energy penalty reflects the extra energy a
                 // Special Training burst costs, scaled by the number of gauges involved (default 0, so behavior is unchanged unless the user tunes it).
@@ -721,7 +733,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // 3. Third Priority: Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
+            // 4. Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
             if (numSpiritGaugesCanFill > 0) {
                 // Score increases with number of gauges that can be filled. Kept on the stat-efficiency scale so a strong stat turn still outranks pure gauge-filling.
                 // Each gauge fills by 25% per training execution. The optional energy penalty (default 0) reflects the extra energy filling costs, scaled by the number of gauges involved.
@@ -736,7 +748,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // 4. Fourth Priority: Relationship bars.
+            // 5. Relationship bars.
             if (training.relationshipBars.isNotEmpty()) {
                 val relationshipScore = calculateRelationshipScore(config, training)
                 val scaledRelationshipScore = relationshipScore * config.scoring.relationshipScale // Scaled to be a significant bonus but below bursting.
@@ -881,10 +893,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * @return The list of key-factor strings.
          */
         fun unityCupKeyFactors(selected: TrainingOption): List<String> {
+            val readyToExtremeBurst = selected.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
             val readyToBurst = selected.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
             val canFill = selected.extras["spiritGaugesCanFill"] as? Int ?: 0
             return when {
-                readyToBurst > 0 -> listOf("Has $readyToBurst Spirit Gauge(s) ready to burst (highest priority).")
+                readyToExtremeBurst > 0 -> listOf("Has $readyToExtremeBurst support(s) ready for an Extreme Spirit Burst (highest priority).")
+                readyToBurst > 0 -> listOf("Has $readyToBurst Spirit Gauge(s) ready to burst (high priority).")
                 canFill > 0 -> listOf("Can fill $canFill Spirit Gauge(s).")
                 else -> emptyList()
             }
@@ -1708,9 +1722,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 } else {
                     maximumFailureChance
                 }
-            // Unity Cup burst exemption: a gauge ready to burst may be worth a higher failure chance than usual. No-op unless the setting is raised and a gauge is ready to burst.
+            // Unity Cup burst exemption: a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than usual (tunable ceiling, no-op at the default 0). An
+            // Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless of the setting.
+            val readyToExtremeBurst = result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
             val readyToBurst = result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
-            val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance)
+            val effectiveFailureChance = if (readyToExtremeBurst > 0) 100 else burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance)
 
             // Filter out trainings that exceed the effective failure chance threshold.
             if (!test && !ignoreFailureChance && result.failureChance > effectiveFailureChance) {
@@ -1747,7 +1763,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when a Unity Cup
             // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance).
             val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
-            val burstExempt = (result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0
+            val burstExempt = (result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0 || (result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0) > 0
             if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
                 val totalStatGain = result.statGains.values.sum()
                 if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {

@@ -418,5 +418,7 @@ fun scoringConstantsFromMap(settings: Map<String, Any?>, defaults: TrainingScori
         unityBurstPerGaugeBonus = d("unityBurstPerGaugeBonus", defaults.unityBurstPerGaugeBonus),
         unityFillEnergyPenaltyPerGauge = d("unityFillEnergyPenaltyPerGauge", defaults.unityFillEnergyPenaltyPerGauge),
         unityBurstEnergyPenaltyPerGauge = d("unityBurstEnergyPenaltyPerGauge", defaults.unityBurstEnergyPenaltyPerGauge),
+        unityExtremeBurstBaseBonus = d("unityExtremeBurstBaseBonus", defaults.unityExtremeBurstBaseBonus),
+        unityExtremeBurstPerGaugeBonus = d("unityExtremeBurstPerGaugeBonus", defaults.unityExtremeBurstPerGaugeBonus),
     )
 }

@@ -34,6 +34,8 @@ describe("MiscTab.groupBySubgroup", () => {
             "unityBurstBaseBonus",
             "unityBurstEnergyPenaltyPerGauge",
             "unityBurstPerGaugeBonus",
+            "unityExtremeBurstBaseBonus",
+            "unityExtremeBurstPerGaugeBonus",
             "unityFillBaseBonus",
             "unityFillEnergyPenaltyPerGauge",
             "unityFillPerGaugeBonus",

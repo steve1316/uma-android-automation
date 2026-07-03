@@ -121,6 +121,8 @@ export function toKtScoringConstants(c: TrainingScoringConstants): InstanceType<
         c.unityBurstPerGaugeBonus,
         c.unityFillEnergyPenaltyPerGauge,
         c.unityBurstEnergyPenaltyPerGauge,
+        c.unityExtremeBurstBaseBonus,
+        c.unityExtremeBurstPerGaugeBonus,
     )
 }
 
@@ -162,6 +164,8 @@ export function fromKtScoringConstants(c: InstanceType<typeof ns.TrainingScoring
         unityBurstPerGaugeBonus: c.unityBurstPerGaugeBonus,
         unityFillEnergyPenaltyPerGauge: c.unityFillEnergyPenaltyPerGauge,
         unityBurstEnergyPenaltyPerGauge: c.unityBurstEnergyPenaltyPerGauge,
+        unityExtremeBurstBaseBonus: c.unityExtremeBurstBaseBonus,
+        unityExtremeBurstPerGaugeBonus: c.unityExtremeBurstPerGaugeBonus,
     }
 }
 

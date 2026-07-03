@@ -171,6 +171,8 @@ data class TrainingConfig(
  * @property unityBurstPerGaugeBonus Additional Unity Cup burst bonus per gauge ready to burst, added on top of `unityBurstBaseBonus`.
  * @property unityFillEnergyPenaltyPerGauge Per-fillable-gauge penalty subtracted from the fill bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off).
  * @property unityBurstEnergyPenaltyPerGauge Per-ready-gauge penalty subtracted from the burst bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off).
+ * @property unityExtremeBurstBaseBonus Flat Unity Cup bonus for a training with a support ready for an Extreme Spirit Burst. Larger than a normal burst so the extreme facility always outranks it.
+ * @property unityExtremeBurstPerGaugeBonus Additional Unity Cup Extreme Spirit Burst bonus per ready support, added on top of `unityExtremeBurstBaseBonus`.
  * @property rainbowMultiplierEnabled Multiplier applied to total score in Year 2+ when at least one rainbow is detected and the user has enabled the rainbow training bonus.
  * @property rainbowMultiplierDisabled Multiplier applied when rainbows are detected but the user has disabled the rainbow training bonus. Kept below `rainbowMultiplierEnabled`.
  * @property rainbowPerInstanceBase Base value for the per-rainbow bonus score, geometrically decayed by `rainbowPerInstanceDecay`.
@@ -223,6 +225,8 @@ data class TrainingScoringConstants(
     val unityBurstPerGaugeBonus: Double = 400.0,
     val unityFillEnergyPenaltyPerGauge: Double = 0.0,
     val unityBurstEnergyPenaltyPerGauge: Double = 0.0,
+    val unityExtremeBurstBaseBonus: Double = 2000.0,
+    val unityExtremeBurstPerGaugeBonus: Double = 1000.0,
 ) {
     init {
         require(ratioMultipliers.size == ratioBreakpoints.size + 1) {
