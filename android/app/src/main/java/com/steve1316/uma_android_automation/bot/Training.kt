@@ -139,7 +139,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     internal val summerTrainingStatPriority: List<StatName> = summerTrainingStatPriorityRaw.ifEmpty { statPrioritization }
 
     /** The maximum allowed failure chance for training. */
-    private val maximumFailureChance: Int = SettingsHelper.getIntSetting("training", "maximumFailureChance")
+    protected val maximumFailureChance: Int = SettingsHelper.getIntSetting("training", "maximumFailureChance")
 
     /** Unity Cup only: the failure-chance ceiling a training with a Spirit Explosion gauge ready to burst may reach before being skipped. 0 (default) disables the exemption. */
     private val unityCupBurstMaxFailureChance: Int = SettingsHelper.getIntSetting("scenarioOverrides", "unityCupBurstMaxFailureChance", 0)

@@ -1,8 +1,10 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
+import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonHomeFansInfo
+import com.steve1316.uma_android_automation.components.LabelDuel
 import com.steve1316.uma_android_automation.types.StatName
 import kotlin.math.abs
 
@@ -74,15 +76,85 @@ fun nearestDuelPrediction(rowY: Int, predictionMatches: List<Pair<DuelPrediction
     return if (abs(nearest.second - rowY) <= tolerancePx) nearest.first else DuelPrediction.WORST
 }
 
+/** How strongly to bias URA Finale training toward a facility that carries a Happy Meek duel badge. */
+enum class DuelBiasLevel { OFF, MODERATE, AGGRESSIVE }
+
+/**
+ * Parse the `scenarioOverrides.uraHappyMeekDuelBias` setting string into a level. Unknown or empty values default to MODERATE so a missing setting still biases toward duels.
+ *
+ * @param setting The raw setting string.
+ * @return The parsed [DuelBiasLevel].
+ */
+fun parseDuelBiasLevel(setting: String): DuelBiasLevel =
+    when (setting.trim().lowercase()) {
+        "off" -> DuelBiasLevel.OFF
+        "aggressive" -> DuelBiasLevel.AGGRESSIVE
+        else -> DuelBiasLevel.MODERATE
+    }
+
+/**
+ * The score multiplier applied to a duel facility for a given bias level. MODERATE wins when the duel facility is within ~20% of the best pick, AGGRESSIVE within ~40%.
+ *
+ * @param level The configured bias level.
+ * @return The multiplier to apply to the duel facility's base score.
+ */
+fun duelBiasMultiplier(level: DuelBiasLevel): Double =
+    when (level) {
+        DuelBiasLevel.OFF -> 1.0
+        DuelBiasLevel.MODERATE -> 1.25
+        DuelBiasLevel.AGGRESSIVE -> 1.6
+    }
+
+/**
+ * Bias a URA duel facility's score. A positive base score is multiplied by the level's multiplier when the facility carries the duel and its failure chance is acceptable, so the
+ * duel is preferred when it is not clearly worse than the best normal pick. Missing duels, the OFF level, non-positive scores, and unreadable or too-high failure chances are left
+ * unchanged so a bad or risky duel facility is never forced.
+ *
+ * @param baseScore The facility's score before the bias.
+ * @param hasDuel Whether this facility carries the duel badge.
+ * @param failureChance The facility's failure chance percent (-1 when OCR failed).
+ * @param level The configured bias level.
+ * @param maxFailureChance The highest failure chance considered acceptable for biasing.
+ * @return The biased score.
+ */
+fun applyDuelTrainingBias(baseScore: Double, hasDuel: Boolean, failureChance: Int, level: DuelBiasLevel, maxFailureChance: Int): Double {
+    if (!hasDuel || level == DuelBiasLevel.OFF || baseScore <= 0.0) return baseScore
+    return if (failureChance in 0..maxFailureChance) baseScore * duelBiasMultiplier(level) else baseScore
+}
+
+/**
+ * Map the training-screen duel badge's X coordinate to its facility. The five facility buttons tile the screen width in equal columns ordered Speed, Stamina, Power, Guts, Wit, so
+ * the badge lands in its facility's column. Returns the stat whose column center is nearest the badge.
+ *
+ * @param badgeX The X coordinate of the detected duel badge center.
+ * @param displayWidth The screen width the badge was detected on.
+ * @return The [StatName] of the facility carrying the duel.
+ */
+fun duelFacilityForBadgeX(badgeX: Int, displayWidth: Int): StatName {
+    val order = listOf(StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.GUTS, StatName.WIT)
+    val columnWidth = displayWidth.toDouble() / order.size
+    val index = order.indices.minByOrNull { abs((it + 0.5) * columnWidth - badgeX) } ?: 0
+    return order[index]
+}
+
 /**
  * Handles the URA Finale scenario with scenario-specific logic and handling.
  *
  * @property game The [Game] instance for interacting with the game state.
  */
 class UraFinale(game: Game) : Campaign(game) {
+    override val training = UraFinaleTraining(game, this)
+
     override fun openFansDialog() {
         ButtonHomeFansInfo.click(game.imageUtils, region = game.imageUtils.regionTopHalf, tries = 10)
         bHasTriedCheckingFansToday = true
         game.wait(game.dialogWaitDelay, skipWaitingForLoading = true)
+    }
+
+    override fun onMainScreenEntry() {
+        // The main-screen Duel badge means a Happy Meek duel is available this turn; the per-facility badge read during training analysis decides which facility to bias toward.
+        if (LabelDuel.check(game.imageUtils)) {
+            MessageLog.i(TAG, "[URA] Happy Meek duel available this turn. Training will be biased toward the duel facility.")
+        }
     }
 }
