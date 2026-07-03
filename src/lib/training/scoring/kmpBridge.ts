@@ -183,6 +183,7 @@ export function toKtTrainingConfig(config: TrainingConfig): InstanceType<typeof 
         config.enablePrioritizeNearMaxFriendship,
         toKtStatSet(config.statsTrainedOverBuffer),
         toKtScoringConstants(config.scoring),
+        toKtStatMap(config.statCaps ?? {}),
     )
 }
 

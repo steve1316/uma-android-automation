@@ -116,6 +116,7 @@ data class TrainingOption(
  * @property enablePrioritizeNearMaxFriendship When true (Year 2+), trainings with multiple near-max friendship bars receive the anticipatory rainbow multiplier.
  * @property statsTrainedOverBuffer Set of stats that already used their single rainbow allowance over the buffer.
  * @property scoring The numeric tuning constants. Default reproduces current hardcoded behavior.
+ * @property statCaps Live per-stat caps OCR'd from the career/training screen (raised by sparks, inheritance, duels, extreme bursts). A present entry overrides the static per-scenario table in `getCurrentStatCap`. Empty means fall back to the table.
  */
 @JsExport
 data class TrainingConfig(
@@ -134,6 +135,7 @@ data class TrainingConfig(
     val enablePrioritizeNearMaxFriendship: Boolean = true,
     val statsTrainedOverBuffer: Set<StatName> = emptySet(),
     val scoring: TrainingScoringConstants = TrainingScoringConstants(),
+    val statCaps: Map<StatName, Int> = emptyMap(),
 )
 
 /**

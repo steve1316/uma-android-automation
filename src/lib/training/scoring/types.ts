@@ -221,6 +221,8 @@ export interface TrainingConfig {
     statsTrainedOverBuffer: Set<StatName>
     /** Tunable scoring constants used by the scoring functions. */
     scoring: TrainingScoringConstants
+    /** Live per-stat caps OCR'd from the career/training screen (raised by sparks, inheritance, duels, extreme bursts). A present entry overrides the static per-scenario cap table; omit or leave empty to use the table. */
+    statCaps?: Partial<Record<StatName, number>>
 }
 
 /** Numeric rank of each `DateYear` for ordering comparisons (PRE_DEBUT=0, JUNIOR=1, CLASSIC=2, SENIOR=3). */

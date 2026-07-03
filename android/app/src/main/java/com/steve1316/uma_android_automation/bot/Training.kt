@@ -51,6 +51,7 @@ import com.steve1316.uma_scoring.getScenarioStatCap as sharedGetScenarioStatCap
 import com.steve1316.uma_scoring.levelBoostMultiplier as sharedLevelBoostMultiplier
 import com.steve1316.uma_scoring.rawTrainingScoreComponents as sharedRawTrainingScoreComponents
 import com.steve1316.uma_scoring.scoringConstantsFromMap as sharedScoringConstantsFromMap
+import com.steve1316.uma_scoring.softCapEffectivenessMultiplier as sharedSoftCapEffectivenessMultiplier
 
 /**
  * Handle the training process, including analysis of options, scoring recommendations, and execution.
@@ -388,6 +389,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val enablePrioritizeNearMaxFriendship: Boolean = true,
         val statsTrainedOverBuffer: Set<StatName> = emptySet(),
         val scoring: TrainingScoringConstants = TrainingScoringConstants(),
+        // Live per-stat caps OCR'd from the career/training screen. A present entry overrides the static per-scenario cap table in scoring.
+        val statCaps: Map<StatName, Int> = emptyMap(),
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -413,6 +416,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             if (enablePrioritizeNearMaxFriendship != other.enablePrioritizeNearMaxFriendship) return false
             if (statsTrainedOverBuffer != other.statsTrainedOverBuffer) return false
             if (scoring != other.scoring) return false
+            if (statCaps != other.statCaps) return false
 
             return true
         }
@@ -436,6 +440,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             result = 31 * result + enablePrioritizeNearMaxFriendship.hashCode()
             result = 31 * result + statsTrainedOverBuffer.hashCode()
             result = 31 * result + scoring.hashCode()
+            result = 31 * result + statCaps.hashCode()
             return result
         }
     }
@@ -526,6 +531,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         /** Adapter for the shared `getCurrentStatCap`. Converts the Android-rich `TrainingConfig` at the boundary. */
         fun getCurrentStatCap(statName: StatName, config: TrainingConfig): Int = sharedGetCurrentStatCap(statName, config.toScoring())
+
+        /** Adapter for the shared `softCapEffectivenessMultiplier`. */
+        fun softCapEffectivenessMultiplier(currentStat: Int, statGain: Int, statCap: Int): Double = sharedSoftCapEffectivenessMultiplier(currentStat, statGain, statCap)
 
         /** Adapter for the shared `getRemainingFinaleRaces`. */
         fun getRemainingFinaleRaces(currentDay: Int): Int = sharedGetRemainingFinaleRaces(currentDay)
