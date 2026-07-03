@@ -4,6 +4,7 @@ import com.steve1316.uma_android_automation.bot.Training.Companion.calculateMisc
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRawTrainingScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRelationshipScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateStatEfficiencyScore
+import com.steve1316.uma_android_automation.bot.Training.Companion.computeEffectiveBlacklist
 import com.steve1316.uma_android_automation.bot.Training.Companion.getCurrentStatCap
 import com.steve1316.uma_android_automation.bot.Training.Companion.getFinaleStatBonus
 import com.steve1316.uma_android_automation.bot.Training.Companion.getScenarioStatCap
@@ -78,6 +79,18 @@ class TrainingScoringTest {
             StatName.GUTS to gains[3],
             StatName.WIT to gains[4],
         )
+    }
+
+    @Test
+    @DisplayName("Effective blacklist is empty in the Pre-Debut / Junior friendship window and the configured blacklist otherwise")
+    fun computeEffectiveBlacklistWindow() {
+        val blacklist = listOf<StatName?>(StatName.STAMINA, StatName.GUTS)
+        // Friendship window (Pre-Debut / Junior): blacklist ignored so bonds can still be built on blacklisted facilities.
+        assertTrue(computeEffectiveBlacklist(blacklist, bIsPreDebut = true, year = DateYear.JUNIOR).isEmpty(), "pre-debut -> ignore blacklist")
+        assertTrue(computeEffectiveBlacklist(blacklist, bIsPreDebut = false, year = DateYear.JUNIOR).isEmpty(), "junior -> ignore blacklist")
+        // Outside the window: blacklist respected.
+        assertEquals(blacklist, computeEffectiveBlacklist(blacklist, bIsPreDebut = false, year = DateYear.CLASSIC), "classic -> respect blacklist")
+        assertEquals(blacklist, computeEffectiveBlacklist(blacklist, bIsPreDebut = false, year = DateYear.SENIOR), "senior -> respect blacklist")
     }
 
     /**

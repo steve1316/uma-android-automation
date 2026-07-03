@@ -215,7 +215,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
     /** Whether every training is unavailable because it is restricted (cannot-perform) or blacklisted. Resting cannot fix that, so it is not an energy problem. */
     private val allTrainingsRestrictedOrBlacklisted: Boolean
-        get() = restrictedTrainingNames.size == StatName.entries.size || (restrictedTrainingNames.size + blacklist.size) >= StatName.entries.size
+        get() = restrictedTrainingNames.size == StatName.entries.size || (restrictedTrainingNames.size + effectiveBlacklist().size) >= StatName.entries.size
 
     /** Whether the last analysis produced no viable training (failure chances too high, or energy depleted), so energy recovery is warranted. */
     var needsEnergyRecovery: Boolean = false
@@ -232,6 +232,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     private fun getCurrentStatCap(statName: StatName): Int {
         return getScenarioStatCap(game.scenario, statName)
     }
+
+    /** The blacklist that applies this turn - empty in the Pre-Debut / Junior Friendship window so bonds can be built on blacklisted facilities, else the configured [blacklist]. */
+    private fun effectiveBlacklist(): List<StatName?> = computeEffectiveBlacklist(blacklist, campaign.date.bIsPreDebut, campaign.date.year)
 
     /**
      * Store analysis results for a training during parallel processing.
@@ -607,6 +610,18 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             return (sorted + witEntry).toMap()
         }
+
+        /**
+         * The blacklist that actually applies on a given turn. During the Pre-Debut / Junior Friendship window it is empty so blacklisted facilities can still be trained to build
+         * support-card bonds; outside the window it is the configured blacklist. Mirrors the window that [scoreTraining] uses to select [scoreFriendshipTraining].
+         *
+         * @param blacklist The user-configured training blacklist.
+         * @param bIsPreDebut Whether the current turn is Pre-Debut.
+         * @param year The current campaign year.
+         * @return The effective blacklist for the turn.
+         */
+        fun computeEffectiveBlacklist(blacklist: List<StatName?>, bIsPreDebut: Boolean, year: DateYear): List<StatName?> =
+            if (bIsPreDebut || year == DateYear.JUNIOR) emptyList() else blacklist
 
         /**
          * Score the training option based on friendship bar progress.
@@ -1347,9 +1362,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
         }
 
-        // Now analyze each stat.
+        // Now analyze each stat. The effective blacklist is empty in the Pre-Debut / Junior Friendship window, so blacklisted facilities are still analyzed to build bonds.
+        val activeBlacklist = effectiveBlacklist()
         for (statName in StatName.entries) {
-            if (!test && statName in blacklist) {
+            if (!test && statName in activeBlacklist) {
                 MessageLog.i(TAG, "[TRAINING] Skipping $statName training due to being blacklisted.")
                 continue
             }
@@ -2111,7 +2127,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 currentDate = campaign.date,
                 scenario = game.scenario,
                 enableRainbowTrainingBonus = enableRainbowTrainingBonus,
-                blacklist = blacklist,
+                blacklist = effectiveBlacklist(),
                 disableTrainingOnMaxedStat = disableTrainingOnMaxedStat,
                 trainingOptions = trainingMap.values.toList(),
                 skillHintsPerLocation = skillHintsPerLocation,
@@ -2159,7 +2175,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 lastSelectionSource = SelectionSource.FORCED_FROM_SKIPPED
                 return pick.name
             }
-            val defaulted = trainingMap.keys.firstOrNull { it !in blacklist }
+            val defaulted = trainingMap.keys.firstOrNull { it !in effectiveBlacklist() }
             MessageLog.i(
                 TAG,
                 "[TRAINING] Analysis produced no scored entries. forceSelection=true → defaulting to first non-blacklisted training: ${defaulted ?: "none available"}.",
@@ -2168,7 +2184,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             return defaulted
         }
 
-        val unforced = trainingMap.keys.firstOrNull { it !in blacklist }
+        val unforced = trainingMap.keys.firstOrNull { it !in effectiveBlacklist() }
         MessageLog.i(
             TAG,
             "[TRAINING] Analysis returned no winning training. forceSelection=false → returning first non-blacklisted training: ${unforced ?: "none available"}. Caller decides whether to execute.",
@@ -2589,8 +2605,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val runnerUps = mutableListOf<DecisionTracer.TrainingRunnerUp>()
         StatName.entries.forEach { stat ->
             if (stat == picked) return@forEach
-            // Blacklisted trainings are intentional user config, not a per-turn decision - omit so the report stays focused.
-            if (stat in blacklist) return@forEach
+            // Blacklisted trainings are intentional user config, not a per-turn decision - omit so the report stays focused. In the Friendship window the effective blacklist is empty, so bonded blacklisted facilities still appear.
+            if (stat in effectiveBlacklist()) return@forEach
             val skipEntry = skippedTrainingMap[stat]
             val analyzedEntry = analyzed.firstOrNull { it.name == stat }
             when {
