@@ -655,7 +655,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             return
         }
 
-        val (eventRewards, confidence, eventTitle, characterOrSupportName) = trainingEventRecognizer.start()
+        val (eventRewards, confidence, eventTitle, rawTitle, characterOrSupportName) = trainingEventRecognizer.start()
 
         val regex = Regex("[a-zA-Z]+")
         var optionSelected = 0
@@ -701,8 +701,9 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
             optionSelected = selectUnityCupTeamNameEvent(trainingOptionLocations)
             specialEventHandled = true
-        } else if (game.scenario == "URA Finale" && eventTitle.contains("Happy Meek", ignoreCase = true) && eventTitle.contains("Challenge", ignoreCase = true)) {
-            // Handle the URA Finale "Happy Meek's Challenge!" duel by prediction-driven contest pick.
+        } else if (game.scenario == "URA Finale" && rawTitle.contains("Happy Meek", ignoreCase = true) && rawTitle.contains("Challenge", ignoreCase = true)) {
+            // Handle the URA Finale "Happy Meek's Challenge!" duel by prediction-driven contest pick. Dispatch on the RAW OCR title, not the fuzzy-matched event name, since the duel
+            // is not in the event database and would otherwise resolve to an unrelated event.
             MessageLog.i(TAG, "[TRAINING_EVENT] \"Happy Meek's Challenge!\" duel detected for URA Finale.")
             val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
             optionSelected = handleHappyMeekDuel(trainingOptionLocations)
