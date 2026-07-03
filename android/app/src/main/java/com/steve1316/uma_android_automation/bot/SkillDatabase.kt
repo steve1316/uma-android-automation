@@ -154,7 +154,8 @@ class SkillDatabase(private val game: Game) {
             val versionResults: MutableList<String> = mutableListOf()
 
             while (currentId != null) {
-                val name: String = getSkillName(currentId) ?: break
+                // Look up directly so an unreleased upgrade/downgrade target ends the chain silently instead of warning.
+                val name: String = skillIdToName[currentId] ?: break
                 val tmpData: SkillData? = getSkillData(name)
                 if (tmpData == null) {
                     MessageLog.e(TAG, "[ERROR] loadSkillStructure::getVersionNames:: \"$name\" not in skillData.")
