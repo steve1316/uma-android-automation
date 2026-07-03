@@ -37,6 +37,26 @@ fun interface OnEntryDetectedCallback {
 }
 
 /**
+ * Strips a trailing rank glyph that OCR misread as a letter ("O"/"x") or left as stray noise, returning the base name.
+ * Glyphs are stored in the database as " <glyph>" with a leading space, so the base must have the misread char removed.
+ *
+ * @param name The raw skill name that may carry a trailing misread glyph.
+ * @return The base skill name with the trailing glyph noise removed.
+ */
+fun stripTrailingGlyphNoise(name: String): String {
+    var s: String = name.trimEnd()
+    // Glued misread glyph, e.g. "SomethingO".
+    if (s.length >= 2 && (s.endsWith("O") || s.endsWith("x")) && s[s.length - 2] != ' ') {
+        s = s.dropLast(1)
+    }
+    // Standalone trailing letter/digit preceded by a space, e.g. "Something O".
+    if (s.isNotEmpty() && s.last().isLetterOrDigit() && (s.length == 1 || s[s.length - 2] == ' ')) {
+        s = s.dropLast(1).trimEnd()
+    }
+    return s
+}
+
+/**
  * Handles all interactions with the skill list screen and manages the [Trainee]'s skill data.
  *
  * This class provides functionality to detect available skills, parse their details (name, price),
@@ -340,7 +360,13 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         // Handle cases where the capital "I" is misread as a lowercase "l".
         skillName = skillName.replace(Regex("\\bl\\b"), "I")
 
-        // Detect special icons (◎, ○, ×) that indicate skill levels or status.
+        // Strip the "Remove" prefix used for negative skill titles before glyph handling so the base name is clean.
+        // The database stores the base skill name without this prefix.
+        if (skillName.startsWith("remove", ignoreCase = true)) {
+            skillName = skillName.drop("remove".length).trim()
+        }
+
+        // Detect special icons (double-circle, single-circle, cross) that indicate skill levels or status.
         val componentsToCheck: List<ComponentInterface> =
             listOf(
                 IconSkillTitleDoubleCircle,
@@ -357,7 +383,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         }
 
         // Map the detected icon to its corresponding Unicode character.
-        val iconChar: String =
+        var iconChar: String =
             when (match) {
                 IconSkillTitleDoubleCircle -> "◎"
                 IconSkillTitleCircle -> "○"
@@ -365,37 +391,28 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 else -> ""
             }
 
-        if (iconChar.isNotEmpty()) {
-            // Clean up OCR noise. These symbols are always preceded by a space in the skill database.
-            // If OCR misread the icon as a character (like 'O' or 'x'), we strip the last character.
-            skillName = skillName.trimEnd()
+        // The base skill name with any trailing misread-glyph letter removed. The database stores glyphs as " <glyph>".
+        val baseName: String = stripTrailingGlyphNoise(skillName)
 
-            // Handle edge cases where an icon (○, ◎, ×) is misread as a letter (O, x) and attached to the word.
-            if (skillName.length >= 2 && (skillName.endsWith("O") || skillName.endsWith("x"))) {
-                if (skillName[skillName.length - 2] != ' ') {
-                    skillName = skillName.dropLast(1)
+        // Template match found no glyph, but OCR left a trailing letter that is really a misread rank glyph.
+        // Single-circle reads as "O"/"0"; cross reads as "x"/"X". Double-circle never appears in a scan, so it is not a case here.
+        // Only accept the recovery when "<base> <glyph>" is a real skill so a legit name ending in a letter is not mangled.
+        if (iconChar.isEmpty()) {
+            val candidateGlyph: String =
+                when (skillName.trimEnd().lastOrNull()) {
+                    'O', '0' -> "○"
+                    'x', 'X' -> "×"
+                    else -> ""
                 }
+            if (candidateGlyph.isNotEmpty() && baseName.isNotEmpty() && game.skillDatabase.checkSkillName("$baseName $candidateGlyph") != null) {
+                iconChar = candidateGlyph
             }
-
-            if (skillName.isNotEmpty() && skillName.last().isLetterOrDigit()) {
-                // If the last character is a single letter/digit with a preceding space, it's likely noise.
-                if (skillName.length == 1 || (skillName.length >= 2 && skillName[skillName.length - 2] == ' ')) {
-                    skillName = skillName.dropLast(1).trimEnd()
-                }
-            }
-
-            // Append the icon character with a preceding space to match database formatting.
-            skillName += " $iconChar"
         }
 
-        // Strip the "Remove" prefix used for negative skill titles in some contexts.
-        // The database stores the base skill name without this prefix.
-        skillName =
-            if (skillName.startsWith("remove", ignoreCase = true)) {
-                skillName.drop("remove".length).trim()
-            } else {
-                skillName
-            }
+        // If a glyph was resolved, re-append it with a leading space to match the database formatting.
+        if (iconChar.isNotEmpty()) {
+            skillName = "$baseName $iconChar"
+        }
 
         return skillName
     }
