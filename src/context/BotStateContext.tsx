@@ -246,6 +246,8 @@ export interface Settings {
         trackblazerArtisanHammerMinStockForG2: number
         trackblazerGlowStickFinalReserve: number
         trackblazerGlowStickMinFans: number
+        unityCupBurstMaxFailureChance: number
+        unityCupPreRaceStatFocus: boolean
     }
 }
 
@@ -515,6 +517,8 @@ export const defaultSettings: Settings = {
         trackblazerArtisanHammerMinStockForG2: 2,
         trackblazerGlowStickFinalReserve: 1,
         trackblazerGlowStickMinFans: 20000,
+        unityCupBurstMaxFailureChance: 0,
+        unityCupPreRaceStatFocus: false,
     },
 }
 

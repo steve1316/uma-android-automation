@@ -708,6 +708,25 @@ class TrainingScoringTest {
     }
 
     @Test
+    @DisplayName("Pre-race stat focus drops the gauge-fill bonus but leaves bursts untouched")
+    fun testUnityPreRaceStatFocus() {
+        val fillTraining = createDefaultTrainingOption(name = StatName.STAMINA, extras = mapOf("spiritGaugesCanFill" to 3))
+        val burstTraining = createDefaultTrainingOption(name = StatName.SPEED, extras = mapOf("spiritGaugesReadyToBurst" to 1, "spiritGaugesCanFill" to 0))
+        val config = createDefaultConfig(trainingOptions = listOf(fillTraining, burstTraining), scenario = "Unity Cup")
+
+        assertTrue(
+            scoreUnityCupTraining(config, fillTraining, preRaceStatFocus = true) < scoreUnityCupTraining(config, fillTraining, preRaceStatFocus = false),
+            "Pre-race stat focus should drop the gauge-fill bonus so stat efficiency decides the turn before a scenario race",
+        )
+        assertEquals(
+            scoreUnityCupTraining(config, burstTraining, preRaceStatFocus = false),
+            scoreUnityCupTraining(config, burstTraining, preRaceStatFocus = true),
+            0.01,
+            "Pre-race stat focus leaves the burst bonus untouched since bursting right before a race is high-value stats",
+        )
+    }
+
+    @Test
     @DisplayName("Speed and Wit get facility preference bonuses when spirit gauge bursting")
     fun testFacilityPreferenceBonusesForBursting() {
         // Zero out stat gains to isolate facility bonuses.

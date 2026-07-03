@@ -24,7 +24,7 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 
 /** Scenarios that currently have a dedicated set of overrides on this page. Only these appear in the campaign picker, since picking any other scenario would render nothing. */
-const SCENARIOS_WITH_OVERRIDES = ["Trackblazer"] as const
+const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup"] as const
 
 /**
  * The Scenario Overrides Settings page.
@@ -148,15 +148,25 @@ const ScenarioOverridesSettings = () => {
         updateOverrideSetting("trackblazerGlowStickMinFans", defaultSettings.scenarioOverrides.trackblazerGlowStickMinFans)
     }, [updateOverrideSetting, defaultSettings])
 
-    /** Reset all scenario overrides to defaults. */
+    /** Reset the Unity Cup Training section to defaults. */
+    const resetUnityCupDefaults = useCallback(() => {
+        updateOverrideSetting("unityCupBurstMaxFailureChance", defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance)
+        updateOverrideSetting("unityCupPreRaceStatFocus", defaultSettings.scenarioOverrides.unityCupPreRaceStatFocus)
+    }, [updateOverrideSetting, defaultSettings])
+
+    /** Reset the currently-edited scenario's overrides to defaults. */
     const resetAllDefaults = useCallback(() => {
-        resetRacingDefaults()
-        resetEnergyDefaults()
-        resetTrainingDefaults()
-        resetShopDefaults()
-        resetConservationDefaults()
+        if (activeCampaign === "Unity Cup") {
+            resetUnityCupDefaults()
+        } else {
+            resetRacingDefaults()
+            resetEnergyDefaults()
+            resetTrainingDefaults()
+            resetShopDefaults()
+            resetConservationDefaults()
+        }
         setShowResetAll(false)
-    }, [resetRacingDefaults, resetEnergyDefaults, resetTrainingDefaults, resetShopDefaults, resetConservationDefaults])
+    }, [activeCampaign, resetRacingDefaults, resetEnergyDefaults, resetTrainingDefaults, resetShopDefaults, resetConservationDefaults, resetUnityCupDefaults])
 
     const styles = useMemo(
         () =>
@@ -212,6 +222,8 @@ const ScenarioOverridesSettings = () => {
 
                         {showBody && (
                             <>
+                                {activeCampaign === "Trackblazer" && (
+                                    <>
                                 {/* Racing */}
                                 <Section label="Racing" collapsible labelRight={makeResetLink(resetRacingDefaults)}>
                                     <View style={{ padding: SPACING.md }}>
@@ -782,6 +794,35 @@ const ScenarioOverridesSettings = () => {
                                         />
                                     </View>
                                 </Section>
+                                    </>
+                                )}
+
+                                {activeCampaign === "Unity Cup" && (
+                                    <Section label="Training" collapsible labelRight={makeResetLink(resetUnityCupDefaults)}>
+                                        <View style={{ padding: SPACING.md }}>
+                                            <CustomSlider
+                                                searchId="unity-cup-burst-max-failure-chance"
+                                                value={scenarioOverrides.unityCupBurstMaxFailureChance}
+                                                placeholder={defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance}
+                                                onValueChange={(value) => updateOverrideSetting("unityCupBurstMaxFailureChance", value)}
+                                                min={0}
+                                                max={100}
+                                                step={5}
+                                                label="Burst Failure-Chance Exemption"
+                                                showValue={true}
+                                                showLabels={true}
+                                                description="Allow a training with a Spirit Explosion gauge ready to burst up to this failure chance before it is skipped. 0 disables the exemption and uses the normal failure limit."
+                                            />
+                                        </View>
+                                        <ToggleSetting
+                                            id="unity-cup-pre-race-stat-focus"
+                                            title="Pre-Race Stat Focus"
+                                            description="In the two turns before a Unity Cup team race (Late June / Late December), stop rewarding slow gauge-filling so stat gains decide the turn. Bursts are still prioritized."
+                                            checked={scenarioOverrides.unityCupPreRaceStatFocus}
+                                            onCheckedChange={(checked) => updateOverrideSetting("unityCupPreRaceStatFocus", checked)}
+                                        />
+                                    </Section>
+                                )}
 
                                 {/* Reset All footer */}
                                 <Pressable

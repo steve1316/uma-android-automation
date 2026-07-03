@@ -236,6 +236,8 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🔨 Trackblazer Artisan Hammer Min Stock G2: ${settings.scenarioOverrides?.trackblazerArtisanHammerMinStockForG2}
 ✨ Trackblazer Glow Stick Final-Day Reserve: ${settings.scenarioOverrides?.trackblazerGlowStickFinalReserve}
 ✨ Trackblazer Glow Stick Min Fans: ${settings.scenarioOverrides?.trackblazerGlowStickMinFans}
+💥 Unity Cup Burst Failure-Chance Exemption: ${settings.scenarioOverrides?.unityCupBurstMaxFailureChance && settings.scenarioOverrides.unityCupBurstMaxFailureChance > 0 ? `${settings.scenarioOverrides.unityCupBurstMaxFailureChance}%` : "❌"}
+🎯 Unity Cup Pre-Race Stat Focus: ${settings.scenarioOverrides?.unityCupPreRaceStatFocus ? "✅" : "❌"}
 
 ---------- Misc Options ----------
 🔍 Enable Claw Machine Attempt: ${settings.general.enableClawMachineAttempt ? "✅" : "❌"}
