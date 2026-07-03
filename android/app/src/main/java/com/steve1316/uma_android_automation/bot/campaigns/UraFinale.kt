@@ -4,6 +4,7 @@ import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonHomeFansInfo
 import com.steve1316.uma_android_automation.types.StatName
+import kotlin.math.abs
 
 /** Win-prediction tier for a Happy Meek duel contest, best to worst. WORST is the untemplated X tier - a row that matches none of the great / good / bad prediction icons. */
 enum class DuelPrediction { GREAT, GOOD, BAD, WORST }
@@ -39,6 +40,38 @@ fun chooseDuelContest(options: List<DuelContestOption>, targetStats: List<StatNa
                 { it.index },
             ),
         ).index
+}
+
+/**
+ * Parse the contested stat from a duel row's "Contest of <stat>!" OCR text. Matching is case-insensitive and substring-based so partial OCR still resolves.
+ *
+ * @param text The OCR'd label for one contest row.
+ * @return The contested [StatName], or null for the "Contest of energy" option (energy is not a trainable stat) or unrecognized text.
+ */
+fun parseContestStat(text: String): StatName? {
+    val lower = text.lowercase()
+    return when {
+        "speed" in lower -> StatName.SPEED
+        "stamina" in lower -> StatName.STAMINA
+        "power" in lower -> StatName.POWER
+        "guts" in lower -> StatName.GUTS
+        "wit" in lower -> StatName.WIT
+        else -> null
+    }
+}
+
+/**
+ * Pick the win-prediction tier for a duel row by finding the prediction icon nearest to the row on the Y axis. A row whose nearest icon is farther than the tolerance (the X tier
+ * has no template) is treated as WORST.
+ *
+ * @param rowY The Y coordinate of the row's horseshoe location.
+ * @param predictionMatches Every detected prediction icon as (tier, iconCenterY), across all three templates.
+ * @param tolerancePx The maximum Y distance (roughly half the row pitch) for an icon to count as belonging to the row.
+ * @return The row's [DuelPrediction] tier, or WORST when no icon falls within tolerance.
+ */
+fun nearestDuelPrediction(rowY: Int, predictionMatches: List<Pair<DuelPrediction, Int>>, tolerancePx: Int): DuelPrediction {
+    val nearest = predictionMatches.minByOrNull { abs(it.second - rowY) } ?: return DuelPrediction.WORST
+    return if (abs(nearest.second - rowY) <= tolerancePx) nearest.first else DuelPrediction.WORST
 }
 
 /**

@@ -4,12 +4,21 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Campaign
+import com.steve1316.uma_android_automation.bot.campaigns.DuelContestOption
+import com.steve1316.uma_android_automation.bot.campaigns.DuelPrediction
+import com.steve1316.uma_android_automation.bot.campaigns.chooseDuelContest
+import com.steve1316.uma_android_automation.bot.campaigns.nearestDuelPrediction
+import com.steve1316.uma_android_automation.bot.campaigns.parseContestStat
 import com.steve1316.uma_android_automation.components.ButtonClose
 import com.steve1316.uma_android_automation.components.ButtonNext
+import com.steve1316.uma_android_automation.components.IconDuelBad
+import com.steve1316.uma_android_automation.components.IconDuelGood
+import com.steve1316.uma_android_automation.components.IconDuelGreat
 import com.steve1316.uma_android_automation.components.IconTrainingEventHorseshoe
 import com.steve1316.uma_android_automation.types.Mood
 import com.steve1316.uma_android_automation.types.NegativeStatus
 import com.steve1316.uma_android_automation.types.PositiveStatus
+import com.steve1316.uma_android_automation.types.StatName
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 import org.json.JSONObject
@@ -27,6 +36,12 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
 
     /** Whether to prioritize options that provide energy gains. */
     private val enablePrioritizeEnergyOptions: Boolean = SettingsHelper.getBooleanSetting("trainingEvent", "enablePrioritizeEnergyOptions")
+
+    /** Stat priority list used to pick a Happy Meek duel contest. Mirrors Training's event-choice fallback chain: event-choice priority, then regular priority, then all stats. */
+    private val eventChoiceStatPriority: List<StatName> =
+        SettingsHelper.getStringArraySetting("training", "eventChoiceStatPriority").mapNotNull { StatName.fromName(it) }.ifEmpty {
+            SettingsHelper.getStringArraySetting("training", "statPrioritization").mapNotNull { StatName.fromName(it) }
+        }.ifEmpty { StatName.entries }
 
     /** Special event overrides loaded from SQLite settings. */
     private val specialEventOverrides: Map<String, EventOverride> =
@@ -350,6 +365,57 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Handle the URA Finale "Happy Meek's Challenge!" duel. Each row is a "Contest of <stat>!" option with a win-prediction icon. Reads every row's stat via OCR, classifies its
+     * prediction tier by template-matching the great / good / bad icons (an unmatched row is the X tier), then picks the best contest per [chooseDuelContest] and the trainee's
+     * stat priorities. Falls back to the first option when no rows or prediction icons are detected.
+     *
+     * @param optionLocations The detected horseshoe locations for the contest rows, top to bottom.
+     * @return The 0-based index of the contest row to enter, defaulting to 0.
+     */
+    private fun handleHappyMeekDuel(optionLocations: ArrayList<Point>): Int {
+        val numOptions = optionLocations.size
+        MessageLog.v(TAG, "[TRAINING_EVENT] Handling \"Happy Meek's Challenge!\" duel with $numOptions option(s).")
+        if (numOptions <= 1) return 0
+
+        val sourceBitmap = game.imageUtils.getSourceBitmap()
+
+        // Locate every prediction icon once, tagged with its tier, so each row can be paired with the nearest icon by Y.
+        val predictionMatches = mutableListOf<Pair<DuelPrediction, Int>>()
+        for ((prediction, component) in listOf(DuelPrediction.GREAT to IconDuelGreat, DuelPrediction.GOOD to IconDuelGood, DuelPrediction.BAD to IconDuelBad)) {
+            component.findAllWithBitmap(game.imageUtils, sourceBitmap).forEach { predictionMatches.add(prediction to it.y.toInt()) }
+        }
+        MessageLog.v(TAG, "[TRAINING_EVENT] Detected ${predictionMatches.size} duel prediction icon(s).")
+
+        // Roughly half the row pitch is a safe tolerance for pairing a prediction icon to its row.
+        val rowTolerance = game.imageUtils.relHeight(90)
+
+        val options =
+            optionLocations.mapIndexed { i, location ->
+                val ocrText =
+                    game.imageUtils.performOCROnRegion(
+                        sourceBitmap,
+                        game.imageUtils.relX(location.x, 45),
+                        game.imageUtils.relY(location.y, -30),
+                        600,
+                        60,
+                        useThreshold = false,
+                        useGrayscale = true,
+                        scale = 1.0,
+                        ocrEngine = "tesseract",
+                        debugName = "handleHappyMeekDuel_option_${i + 1}",
+                    )
+                val statName = parseContestStat(ocrText)
+                val prediction = nearestDuelPrediction(location.y.toInt(), predictionMatches, rowTolerance)
+                MessageLog.i(TAG, "[TRAINING_EVENT] Duel option ${i + 1}: \"$ocrText\" -> stat=$statName, prediction=$prediction")
+                DuelContestOption(statName, prediction)
+            }
+
+        val selected = chooseDuelContest(options, eventChoiceStatPriority)
+        MessageLog.i(TAG, "[TRAINING_EVENT] Duel pick: option ${selected + 1} (stat=${options.getOrNull(selected)?.statName}, prediction=${options.getOrNull(selected)?.prediction}).")
+        return selected
+    }
+
+    /**
      * Print a formatted summary of the Training Event and the selected option.
      *
      * @param eventTitle The detected event title from OCR.
@@ -641,6 +707,12 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             MessageLog.i(TAG, "[TRAINING_EVENT] \"A Team at Last\" event detected for Unity Cup.")
             val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
             optionSelected = selectUnityCupTeamNameEvent(trainingOptionLocations)
+            specialEventHandled = true
+        } else if (game.scenario == "URA Finale" && eventTitle.contains("Happy Meek", ignoreCase = true) && eventTitle.contains("Challenge", ignoreCase = true)) {
+            // Handle the URA Finale "Happy Meek's Challenge!" duel by prediction-driven contest pick.
+            MessageLog.i(TAG, "[TRAINING_EVENT] \"Happy Meek's Challenge!\" duel detected for URA Finale.")
+            val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
+            optionSelected = handleHappyMeekDuel(trainingOptionLocations)
             specialEventHandled = true
         } else if (specialEventResult != null) {
             val (selectedOptionIndex, _) = specialEventResult
