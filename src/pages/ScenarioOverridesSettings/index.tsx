@@ -12,6 +12,8 @@ import { Input } from "../../components/ui/input"
 import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalRadioRow } from "../../components/ui/modal-list"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
+import { Row } from "../../components/ui/row"
+import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
 import { CircleCheckBig, Trash2 } from "lucide-react-native"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
@@ -24,7 +26,14 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 
 /** Scenarios that currently have a dedicated set of overrides on this page. Only these appear in the campaign picker, since picking any other scenario would render nothing. */
-const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup"] as const
+const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup", "URA Finale"] as const
+
+/** Options for the URA Finale Happy Meek duel training-bias picker. `chipLabel` is the short text shown in the row's right-side pill. */
+const DUEL_BIAS_OPTIONS = [
+    { value: "Off", label: "Off - never bias toward the duel facility", chipLabel: "Off" },
+    { value: "Moderate", label: "Moderate - prefer the duel when it is close to the best pick", chipLabel: "Moderate" },
+    { value: "Aggressive", label: "Aggressive - strongly prefer the duel facility", chipLabel: "Aggressive" },
+] as const
 
 /** Props for `ChipMultiSelect`. */
 interface ChipMultiSelectProps {
@@ -86,6 +95,7 @@ const ScenarioOverridesSettings = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [showResetAll, setShowResetAll] = useState(false)
     const [scenarioPickerOpen, setScenarioPickerOpen] = useState(false)
+    const [duelBiasPickerOpen, setDuelBiasPickerOpen] = useState(false)
 
     // Which scenario the page is currently editing overrides for. Independent of the bot's active scenario (`general.scenario`) so switching campaigns here does not change the bot's actual run target.
     const [editingCampaign, setEditingCampaign] = useState<string>(SCENARIOS_WITH_OVERRIDES[0])
@@ -197,10 +207,17 @@ const ScenarioOverridesSettings = () => {
         updateOverrideSetting("unityCupBurstMaxFailureChance", defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance)
     }, [updateOverrideSetting, defaultSettings])
 
+    /** Reset the URA Finale Training section to defaults. */
+    const resetUraFinaleDefaults = useCallback(() => {
+        updateOverrideSetting("uraHappyMeekDuelBias", defaultSettings.scenarioOverrides.uraHappyMeekDuelBias)
+    }, [updateOverrideSetting, defaultSettings])
+
     /** Reset the currently-edited scenario's overrides to defaults. */
     const resetAllDefaults = useCallback(() => {
         if (activeCampaign === "Unity Cup") {
             resetUnityCupDefaults()
+        } else if (activeCampaign === "URA Finale") {
+            resetUraFinaleDefaults()
         } else {
             resetRacingDefaults()
             resetEnergyDefaults()
@@ -209,7 +226,7 @@ const ScenarioOverridesSettings = () => {
             resetConservationDefaults()
         }
         setShowResetAll(false)
-    }, [activeCampaign, resetRacingDefaults, resetEnergyDefaults, resetTrainingDefaults, resetShopDefaults, resetConservationDefaults, resetUnityCupDefaults])
+    }, [activeCampaign, resetRacingDefaults, resetEnergyDefaults, resetTrainingDefaults, resetShopDefaults, resetConservationDefaults, resetUnityCupDefaults, resetUraFinaleDefaults])
 
     const styles = useMemo(
         () =>
@@ -242,6 +259,16 @@ const ScenarioOverridesSettings = () => {
                     opacity: 0.7,
                 },
                 resetLink: { ...TYPE.caption, color: colors.brand, fontWeight: "600" as const },
+                chip: {
+                    ...TYPE.monoLabel,
+                    color: colors.brand,
+                    paddingHorizontal: SPACING.sm,
+                    paddingVertical: 2,
+                    backgroundColor: colors.brandSubtle,
+                    borderRadius: RADII.pill,
+                    overflow: "hidden" as const,
+                    maxWidth: 140,
+                },
             }),
         [colors]
     )
@@ -251,6 +278,13 @@ const ScenarioOverridesSettings = () => {
         <Pressable onPress={onPress} android_ripple={{ color: colors.ripple, foreground: true }} hitSlop={8}>
             <Text style={styles.resetLink}>Reset</Text>
         </Pressable>
+    )
+
+    /** Short right-side chip rendered inside a Row+chip selector. */
+    const chipFor = (label: string) => (
+        <Text style={styles.chip} numberOfLines={1} ellipsizeMode="tail">
+            {label}
+        </Text>
     )
 
     return (
@@ -750,6 +784,23 @@ const ScenarioOverridesSettings = () => {
                                     </Section>
                                 )}
 
+                                {activeCampaign === "URA Finale" && (
+                                    <Section label="Training" collapsible labelRight={makeResetLink(resetUraFinaleDefaults)}>
+                                        <SearchableItem
+                                            id="ura-happy-meek-duel-bias"
+                                            title="Happy Meek Duel Training Bias"
+                                            description="How strongly to steer training toward a facility showing a Happy Meek duel badge. Winning a duel raises the cap and boosts that stat. Moderate prefers the duel when it is close to the best pick, Aggressive prefers it more strongly, Off ignores duels."
+                                        >
+                                            <Row
+                                                title="Happy Meek Duel Bias"
+                                                description="Steer training toward a facility with a duel badge so the bot enters and wins the duel."
+                                                onPress={() => setDuelBiasPickerOpen(true)}
+                                                right={chipFor(DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.chipLabel ?? "Moderate")}
+                                            />
+                                        </SearchableItem>
+                                    </Section>
+                                )}
+
                                 {/* Reset All footer */}
                                 <Pressable
                                     onPress={() => setShowResetAll(true)}
@@ -816,6 +867,39 @@ const ScenarioOverridesSettings = () => {
                             onPress={() => {
                                 setEditingCampaign(scenario)
                                 setScenarioPickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
+
+            <SheetModal
+                visible={duelBiasPickerOpen}
+                onRequestClose={() => setDuelBiasPickerOpen(false)}
+                header={
+                    <View style={modalShellStyles.modalHeaderRow}>
+                        <Text style={modalShellStyles.modalTitleMono}>HAPPY MEEK DUEL BIAS</Text>
+                        <Pressable
+                            style={modalShellStyles.modalCloseChip}
+                            onPress={() => setDuelBiasPickerOpen(false)}
+                            android_ripple={{ color: colors.ripple, foreground: true }}
+                            accessibilityLabel="Close"
+                        >
+                            <Ionicons name="close" size={18} color={colors.text} />
+                        </Pressable>
+                    </View>
+                }
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {DUEL_BIAS_OPTIONS.map((o) => (
+                        <ModalRadioRow
+                            key={o.value}
+                            label={o.label}
+                            selected={o.value === scenarioOverrides.uraHappyMeekDuelBias}
+                            onPress={() => {
+                                updateOverrideSetting("uraHappyMeekDuelBias", o.value)
+                                setDuelBiasPickerOpen(false)
                             }}
                         />
                     ))}

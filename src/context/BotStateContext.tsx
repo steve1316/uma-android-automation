@@ -248,6 +248,7 @@ export interface Settings {
         trackblazerGlowStickFinalReserve: number
         trackblazerGlowStickMinFans: number
         unityCupBurstMaxFailureChance: number
+        uraHappyMeekDuelBias: string
     }
 }
 
@@ -519,6 +520,7 @@ export const defaultSettings: Settings = {
         trackblazerGlowStickFinalReserve: 1,
         trackblazerGlowStickMinFans: 20000,
         unityCupBurstMaxFailureChance: 0,
+        uraHappyMeekDuelBias: "Moderate",
     },
 }
 

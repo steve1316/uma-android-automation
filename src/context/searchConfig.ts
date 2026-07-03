@@ -878,6 +878,13 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "ura-happy-meek-duel-bias",
+        title: "Happy Meek Duel Training Bias",
+        description:
+            "How strongly to steer URA Finale training toward a facility showing a Happy Meek duel badge. Winning a duel raises the cap and boosts that stat. Moderate prefers the duel when it is close to the best pick, Aggressive prefers it more strongly, Off ignores duels.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "trackblazer-energy-threshold",
         title: "Trackblazer Energy Threshold",
         description: "The energy level below which the bot will attempt to use energy-restoring items in the Trackblazer scenario.",
