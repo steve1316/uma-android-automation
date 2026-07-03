@@ -110,6 +110,7 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
             { key: "PRIORITIZE SKILL", value: yesNo(currentTrainingSettings.enablePrioritizeSkillHints) },
             { key: "WEIGHT BY LEVEL", value: yesNo(currentTrainingSettings.enableTrainingLevelWeighting) },
             { key: "DISABLE TARGETS", value: yesNo(currentTrainingSettings.disableStatTargets) },
+            { key: "READ STAT CAPS", value: yesNo(currentTrainingSettings.useDynamicStatCaps) },
             { key: "ANALYSIS CHECK", value: yesNo(currentTrainingSettings.enableTrainingAnalysisValidation) },
             { key: "YOLO DETECTION", value: yesNo(currentTrainingSettings.enableYoloStatDetection) },
             { key: "CLASSIC MILESTONE", value: `${currentTrainingSettings.classicMilestonePercent}%`, mono: true },

@@ -142,6 +142,7 @@ export interface Settings {
         enablePrioritizeSkillHints: boolean
         enableTrainingLevelWeighting: boolean
         disableStatTargets: boolean
+        useDynamicStatCaps: boolean
         enableTrainingAnalysisValidation: boolean
         enableYoloStatDetection: boolean
         classicMilestonePercent: number
@@ -429,6 +430,7 @@ export const defaultSettings: Settings = {
         enablePrioritizeSkillHints: false,
         enableTrainingLevelWeighting: true,
         disableStatTargets: false,
+        useDynamicStatCaps: true,
         enableTrainingAnalysisValidation: false,
         enableYoloStatDetection: false,
         classicMilestonePercent: 33,

@@ -186,6 +186,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** Whether to ignore per-distance stat targets and treat every stat's target as the scenario stat cap. When ON, the bot keeps the ratio multiplier in the "encourage training" band for every stat. */
     internal val disableStatTargets: Boolean = SettingsHelper.getBooleanSetting("training", "disableStatTargets", false)
 
+    /** When true, live per-stat caps OCR'd from the career / training screen override the static per-scenario cap table. Disable to always use the fixed per-scenario caps if the reading misbehaves. */
+    internal val useDynamicStatCaps: Boolean = SettingsHelper.getBooleanSetting("training", "useDynamicStatCaps", true)
+
     /** Cached screen location of the Energy label, used as the anchor for training level OCR. Resolved lazily on first use, reused for the rest of the bot session. */
     private var cachedEnergyLocation: Point? = null
 
@@ -2090,7 +2093,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             TrainingConfig(
                 currentStats = campaign.trainee.stats.asMap(),
                 // Keep only OCR'd caps at or above the scenario base; sparks / inheritance / duels only raise caps, so a below-base read is a misread and falls back to the table.
-                statCaps = campaign.trainee.statCaps.filter { (stat, cap) -> cap >= getScenarioStatCap(game.scenario, stat) },
+                statCaps = if (useDynamicStatCaps) campaign.trainee.statCaps.filter { (stat, cap) -> cap >= getScenarioStatCap(game.scenario, stat) } else emptyMap(),
                 statPrioritization = statPrioritization,
                 eventChoiceStatPriority = eventChoiceStatPriority,
                 summerTrainingStatPriority = summerTrainingStatPriority,

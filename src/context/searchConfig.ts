@@ -234,10 +234,17 @@ const searchConfig: SearchOption[] = [
         page: "TrainingSettings",
     },
     {
+        id: "use-dynamic-stat-caps",
+        title: "Read Stat Caps from Screen",
+        description:
+            "When enabled, the bot reads each stat's live cap (the '/NNNN' shown under the stat) every turn, so cap increases from sparks, inheritance, Happy Meek duels, and Unity extreme bursts are respected. Disable to always use the fixed per-scenario caps if the reading ever misbehaves.",
+        page: "TrainingSettings",
+    },
+    {
         id: "disable-stat-targets",
         title: "Disable Stat Targets",
         description:
-            "When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to the in-game stat cap (1200), so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list.",
+            "When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to its in-game stat cap, so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list.",
         page: "TrainingSettings",
     },
     {

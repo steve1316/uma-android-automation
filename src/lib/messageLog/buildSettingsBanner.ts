@@ -143,7 +143,8 @@ export function buildSettingsBanner(settings: Settings): string {
 🤖 Enable YOLO Stat Detection: ${settings.training.enableYoloStatDetection ? "✅" : "❌"}
 
 ---------- Training Stat Targets by Distance ----------
-🛑 Disable Stat Targets: ${settings.training.disableStatTargets ? "✅ (all stats treated as cap=1200)" : "❌"}
+📏 Read Stat Caps from Screen: ${settings.training.useDynamicStatCaps ? "✅" : "❌"}
+🛑 Disable Stat Targets: ${settings.training.disableStatTargets ? "✅ (all stats treated as their scenario cap)" : "❌"}
 🎯 Classic Year Milestone: ${settings.training.classicMilestonePercent}%
 🎯 Senior Year Milestone: ${settings.training.seniorMilestonePercent}%
 ${sprintTargetsString}
