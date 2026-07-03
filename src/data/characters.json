@@ -2379,6 +2379,17 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Welcome to Gol-Chateau": [
+            "Skill points +15",
+            "Guts +20"
+        ],
+        "The Beach House (Family)": [
+            "Speed +10"
+        ],
+        "Golshi, Master of Marine Creatures": [
+            "Summer Runner ○ hint +2\n(random) Get Practice Perfect ○ status",
+            "Power +20\n(random) Get Practice Perfect ○ status"
         ]
     },
     "Grass Wonder": {
@@ -5552,6 +5563,17 @@
         "Elegance": [
             "Stamina +10\nPower +10\n(random) Get Practice Perfect ○ status",
             "Wit +20\n(random) Get Practice Perfect ○ status"
+        ],
+        "More than a Photo, a Blueprint": [
+            "Wit +20",
+            "Energy +10"
+        ],
+        "You're My Trainer": [
+            "Randomly either\n----------\nSpeed +10\nWit +10\nPlaytime's Over! hint +3\n----------\n\n----------\nPower +20\n----------\n\n----------\nWit +10"
+        ],
+        "I Won't React to Troublemakers!": [
+            "Stamina +20\n(random) Get Charming ○ status",
+            "Summer Runner ○ hint +2\n(random) Get Charming ○ status"
         ]
     },
     "Mejiro Palmer": {
