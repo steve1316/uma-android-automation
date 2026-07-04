@@ -69,6 +69,32 @@ import kotlin.text.replace
 // The rest of the rainbow-ring tuning (glow HSV bands, Hough params) lives as locals in the detector functions since each is used in only one place.
 private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
 
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Spirit gauge detection constants
+
+// The Unity Cup spirit gauge is a small droplet at a fixed slot to the LEFT of the training icon (offsets for the 1080-wide
+// baseline, scaled by the actual display width). A support is "fillable" when it has a gauge - empty OR partial. The reliable
+// signal is the gauge's bright-blue OUTLINE ring: a saturated blue (distinct from pale sky and from grayish classroom
+// backgrounds) present on empty and partial gauges but absent on a spent (pink) flame or plain background. A gray-count is
+// unreliable because grayish backgrounds pollute it. HSV is OpenCV's 0-179 hue from the RGBA->RGB->HSV path the gauge crop uses.
+private const val SPIRIT_GAUGE_OFFSET_X = -199
+private const val SPIRIT_GAUGE_OFFSET_Y = 62
+private const val SPIRIT_GAUGE_WIDTH = 62
+private const val SPIRIT_GAUGE_HEIGHT = 78
+private const val SPIRIT_GAUGE_OUTLINE_HUE_LOW = 100.0
+private const val SPIRIT_GAUGE_OUTLINE_HUE_HIGH = 120.0
+private const val SPIRIT_GAUGE_OUTLINE_SAT_MIN = 185.0
+private const val SPIRIT_GAUGE_OUTLINE_VALUE_LOW = 120.0
+private const val SPIRIT_GAUGE_OUTLINE_VALUE_HIGH = 225.0
+private const val SPIRIT_GAUGE_FILLABLE_OUTLINE_FRACTION = 0.005
+
+// The spirit-training anchor and the burst / extreme flames share chevron shapes with the level-up badges on the bottom facility buttons, so every template also matches those badges at
+// high confidence (grayscale flattens the color difference, and confidence tuning cannot separate identical shapes). Real support elements sit in the upper-right portrait column (y up to
+// ~0.42 of the screen); the facility-button badges sit near the bottom (y ~0.63+). Keeping only matches above this fraction drops the false positives that otherwise read a phantom extreme
+// burst off the Guts button and over-count fillable gauges.
+private const val SPIRIT_GAUGE_SUPPORT_COLUMN_MAX_Y_FRACTION = 0.55
+
 /**
  * Whether the three rainbow-glow hue fractions indicate a rainbow ring. A ring is present only when all three pastel hues (green, cyan, pink) each exceed the presence floor, which is
  * the signature that separates a real rainbow glow from a background that happens to be one of those colors. Pure so it is unit-testable without OpenCV.
@@ -992,6 +1018,23 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Saves a bitmap to the temp folder for offline debugging (e.g. calibrating the spirit gauge detection against a known screen or crop). No-op unless debug mode is on.
+     *
+     * @param bitmap The bitmap to save.
+     * @param name The file name (without extension) under the temp folder.
+     */
+    fun saveDebugScreenshot(bitmap: Bitmap, name: String) {
+        if (!debugMode) return
+        // toMat() yields an RGBA Mat but imwrite writes it as BGRA, so convert first or the saved PNG has red and blue swapped.
+        val rgba = bitmap.toMat()
+        val bgr = Mat()
+        Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR)
+        Imgcodecs.imwrite("$matchFilePath/$name.png", bgr)
+        rgba.release()
+        bgr.release()
+    }
+
+    /**
      * Analyzes Spirit Explosion gauges for the Unity Cup scenario.
      *
      * @param sourceBitmap Optional source bitmap to use. Defaults to null.
@@ -1002,10 +1045,12 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         var currentBitmap = sourceBitmap ?: getSourceBitmap()
 
         // Detect all three templates unconditionally. The fill anchor (spirit-training icon), the normal teal burst flame, and the purple Extreme flame are independent - a support that
-        // is ready to burst shows only the flame with no in-progress fill anchor, so gating burst detection on the anchors would miss it. The teal / purple chevrons are matched at a
-        // lower confidence (0.80) because their grayscale match scores sit around 0.82-0.98 - at 0.9 they coin-flip and get missed.
+        // is ready to burst shows only the flame with no in-progress fill anchor, so gating burst detection on the anchors would miss it. All three are matched at a lower confidence (0.80)
+        // because their grayscale match scores sit around 0.82-0.98 - at 0.9 they coin-flip and get missed (the fill anchor undercounted fillable gauges at 0.9). Kept separate so the
+        // anchor can be tuned independently if lowering it surfaces facility-button false positives.
         val chevronConfidence = 0.80
-        var spiritTrainingIcons: ArrayList<Point> = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
+        val anchorConfidence = 0.80
+        var spiritTrainingIcons: ArrayList<Point> = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = anchorConfidence)
         var spiritExplosionIcons: ArrayList<Point> = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
         var extremeSpiritExplosionIcons: ArrayList<Point> = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
 
@@ -1021,7 +1066,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             // Take a new screenshot for the retry.
             currentBitmap = getSourceBitmap()
 
-            spiritTrainingIcons = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
+            spiritTrainingIcons = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = anchorConfidence)
             spiritExplosionIcons = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
             extremeSpiritExplosionIcons = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
             if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
@@ -1029,69 +1074,62 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         }
 
-        // Analyze all gauges for all spirit training icons to count how many can be filled.
+        // The anchor and the burst / extreme flames all live in the upper-right support column. The same chevron shapes also badge the bottom facility buttons (level-up indicators) and
+        // match every template at high confidence, so keep only points above this fraction of the screen height. Without it every training screen reads a phantom extreme burst off the
+        // Guts button's chevron badge and can over-count fillable gauges.
+        val maxAnchorY = displayHeight * SPIRIT_GAUGE_SUPPORT_COLUMN_MAX_Y_FRACTION
+        val supportAnchors = spiritTrainingIcons.filter { it.y <= maxAnchorY }
+        val burstIcons = spiritExplosionIcons.filter { it.y <= maxAnchorY }
+        val extremeBurstIcons = extremeSpiritExplosionIcons.filter { it.y <= maxAnchorY }
+
+        // Count how many supports have a fillable gauge. The gauge is a droplet at a fixed slot to the LEFT of its training icon
+        // (see the SPIRIT_GAUGE_* constants). A support is fillable when a gauge is present (empty or partial), detected by the
+        // gauge's bright-blue outline ring - reliable across sky and grayish classroom backgrounds where a raw gray-count is not.
         var numGaugesCanFill = 0
-        for ((index, iconLocation) in spiritTrainingIcons.withIndex()) {
-            // Gauge is located to the left of the icon. Analyze the gauge region.
-            // The gauge is gray inside (same gray as relationship bars), no dividers.
-            // We need to calculate the percentage fill: gray pixels vs other colors (white, blue, etc.).
-            val gaugeStartX = relX(iconLocation.x, -175)
-            val gaugeStartY = relY(iconLocation.y, 85)
-            val gaugeWidth = relWidth(30)
-            val gaugeHeight = relHeight(40)
-            Log.d(
-                TAG,
-                "[DEBUG] analyzeSpiritExplosionGauges:: Spirit Training icon location: (${iconLocation.x}, ${iconLocation.y}), gauge starting at ($gaugeStartX, $gaugeStartY), width: $gaugeWidth, height: $gaugeHeight",
-            )
+        for ((index, iconLocation) in supportAnchors.withIndex()) {
+            val gaugeStartX = relX(iconLocation.x, SPIRIT_GAUGE_OFFSET_X)
+            val gaugeStartY = relY(iconLocation.y, SPIRIT_GAUGE_OFFSET_Y)
+            val gaugeWidth = relWidth(SPIRIT_GAUGE_WIDTH)
+            val gaugeHeight = relHeight(SPIRIT_GAUGE_HEIGHT)
 
             val gaugeBitmap = createSafeBitmap(currentBitmap, gaugeStartX, gaugeStartY, gaugeWidth, gaugeHeight, "analyzeSpiritExplosionGauges") ?: continue
 
             val gaugeMat = gaugeBitmap.toMat()
-            if (debugMode) Imgcodecs.imwrite("$matchFilePath/debug_spiritExplosionGauge${index + 1}.png", gaugeMat)
 
-            // Convert to RGB and then to HSV for better color detection.
+            // toMat gives an RGBA mat, so drop alpha to true RGB (not COLOR_BGR2RGB, which would swap red/blue and push the blue outline to a red hue that the outline range misses).
             val rgbMat = Mat()
-            Imgproc.cvtColor(gaugeMat, rgbMat, Imgproc.COLOR_BGR2RGB)
+            Imgproc.cvtColor(gaugeMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
             val hsvMat = Mat()
             Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
 
-            // Define gray color range (same as relationship bars gray).
-            // Gray typically has low saturation and medium value.
-            val grayLower = Scalar(0.0, 0.0, 50.0)
-            val grayUpper = Scalar(180.0, 50.0, 200.0)
+            saveDebugScreenshot(gaugeBitmap, "debug_spiritExplosionGauge${index + 1}")
 
-            val grayMask = Mat()
-            Core.inRange(hsvMat, grayLower, grayUpper, grayMask)
-            val grayPixels = Core.countNonZero(grayMask)
-
+            val outlineMask = Mat()
+            Core.inRange(
+                hsvMat,
+                Scalar(SPIRIT_GAUGE_OUTLINE_HUE_LOW, SPIRIT_GAUGE_OUTLINE_SAT_MIN, SPIRIT_GAUGE_OUTLINE_VALUE_LOW),
+                Scalar(SPIRIT_GAUGE_OUTLINE_HUE_HIGH, 255.0, SPIRIT_GAUGE_OUTLINE_VALUE_HIGH),
+                outlineMask,
+            )
+            val outlinePixels = Core.countNonZero(outlineMask)
             val totalPixels = gaugeMat.rows() * gaugeMat.cols()
-            // Gray pixels represent the unfilled portion, so filled pixels = total - gray.
-            val filledPixels = totalPixels - grayPixels
-            val fillPercent =
-                if (totalPixels > 0) {
-                    (filledPixels.toDouble() / totalPixels.toDouble()) * 100.0
-                } else {
-                    0.0
-                }
+            val outlineFraction = if (totalPixels > 0) outlinePixels.toDouble() / totalPixels else 0.0
 
-            // Round to nearest threshold: 0%, 25%, 50%, 75%, 100%.
-            val roundedFillPercent =
-                when {
-                    fillPercent < 12.5 -> 0.0
-                    fillPercent < 37.5 -> 25.0
-                    fillPercent < 62.5 -> 50.0
-                    fillPercent < 87.5 -> 75.0
-                    else -> 100.0
-                }
+            val fillable = outlineFraction > SPIRIT_GAUGE_FILLABLE_OUTLINE_FRACTION
+            if (fillable) numGaugesCanFill++
 
-            // Count gauges that can be filled.
-            if (roundedFillPercent < 100.0) {
-                numGaugesCanFill++
+            // Per-anchor detail. A debug run (and the on-screen debug test) gets the richer MessageLog line showing WHY a gauge was or was not counted (blue-outline ratio at the gauge
+            // slot). A normal run gets the same event as a plain logcat trace, so it is never logged twice.
+            if (debugMode) {
+                MessageLog.i(
+                    TAG,
+                    "[GAUGE] anchor ${index + 1} at (${iconLocation.x.toInt()}, ${iconLocation.y.toInt()}): outline=$outlinePixels/$totalPixels (${decimalFormat.format(outlineFraction * 100)}%) -> ${if (fillable) "FILLABLE" else "none"}",
+                )
+            } else {
+                Log.d(TAG, "[DEBUG] analyzeSpiritExplosionGauges:: Gauge at (${iconLocation.x}, ${iconLocation.y}) outline ${decimalFormat.format(outlineFraction * 100)}% -> ${if (fillable) "fillable" else "none"}")
             }
 
-            Log.d(TAG, "[DEBUG] analyzeSpiritExplosionGauges:: Spirit Explosion Gauge at (${iconLocation.x}, ${iconLocation.y}): ${decimalFormat.format(roundedFillPercent)}% filled")
-
-            grayMask.release()
+            outlineMask.release()
             hsvMat.release()
             rgbMat.release()
             gaugeMat.release()
@@ -1101,9 +1139,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // it is the same chevron and is already counted as an extreme. The purple template only matches true Extreme chevrons, so location overlap alone classifies correctly with no
         // double-counting of a single support as both a normal burst and an extreme.
         val overlapTolerance = relWidth(40)
-        val normalBurstIcons = spiritExplosionIcons.filterNot { teal -> extremeSpiritExplosionIcons.any { extreme -> abs(teal.x - extreme.x) <= overlapTolerance && abs(teal.y - extreme.y) <= overlapTolerance } }
+        val normalBurstIcons = burstIcons.filterNot { teal -> extremeBurstIcons.any { extreme -> abs(teal.x - extreme.x) <= overlapTolerance && abs(teal.y - extreme.y) <= overlapTolerance } }
 
-        return SpiritGaugeResult(numGaugesCanFill, normalBurstIcons.size, extremeSpiritExplosionIcons.size)
+        return SpiritGaugeResult(numGaugesCanFill, normalBurstIcons.size, extremeBurstIcons.size)
     }
 
     /**

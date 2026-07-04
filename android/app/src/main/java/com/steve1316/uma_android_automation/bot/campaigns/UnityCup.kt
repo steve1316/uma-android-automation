@@ -341,6 +341,7 @@ class UnityCup(game: Game) : Campaign(game) {
             }
 
             val sourceBitmap = game.imageUtils.getSourceBitmap()
+            game.imageUtils.saveDebugScreenshot(sourceBitmap, "spiritScreen_$statName")
             val result = game.imageUtils.analyzeSpiritExplosionGauges(sourceBitmap)
             MessageLog.i(
                 TAG,
