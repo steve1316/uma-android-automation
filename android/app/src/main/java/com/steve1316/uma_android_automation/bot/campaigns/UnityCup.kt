@@ -3,6 +3,7 @@ package com.steve1316.uma_android_automation.bot.campaigns
 import android.graphics.Bitmap
 import android.util.Log
 import com.steve1316.automation_library.utils.MessageLog
+import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.DialogHandlerResult
 import com.steve1316.uma_android_automation.bot.Game
@@ -10,16 +11,28 @@ import com.steve1316.uma_android_automation.components.ButtonNext
 import com.steve1316.uma_android_automation.components.ButtonNextRaceEnd
 import com.steve1316.uma_android_automation.components.ButtonSelectOpponent
 import com.steve1316.uma_android_automation.components.ButtonSkip
+import com.steve1316.uma_android_automation.components.ButtonTrainingGuts
+import com.steve1316.uma_android_automation.components.ButtonTrainingPower
+import com.steve1316.uma_android_automation.components.ButtonTrainingSpeed
+import com.steve1316.uma_android_automation.components.ButtonTrainingStamina
+import com.steve1316.uma_android_automation.components.ButtonTrainingWit
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRace
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRaceFinal
 import com.steve1316.uma_android_automation.components.ButtonUnityCupSeeAllRaceResults
 import com.steve1316.uma_android_automation.components.ButtonUnityCupWatchMainRace
+import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.DialogInterface
 import com.steve1316.uma_android_automation.components.IconDoubleCircle
 import com.steve1316.uma_android_automation.components.IconTrainingEventHorseshoe
+import com.steve1316.uma_android_automation.components.IconTrainingHeaderGuts
+import com.steve1316.uma_android_automation.components.IconTrainingHeaderPower
+import com.steve1316.uma_android_automation.components.IconTrainingHeaderSpeed
+import com.steve1316.uma_android_automation.components.IconTrainingHeaderStamina
+import com.steve1316.uma_android_automation.components.IconTrainingHeaderWit
 import com.steve1316.uma_android_automation.components.IconUnityCupRaceEndLogo
 import com.steve1316.uma_android_automation.components.IconUnityCupTutorialHeader
 import com.steve1316.uma_android_automation.components.LabelUnityCupOpponentSelectionLaurel
+import com.steve1316.uma_android_automation.types.StatName
 import org.opencv.core.Point
 
 /**
@@ -251,5 +264,90 @@ class UnityCup(game: Game) : Campaign(game) {
                 }
             }
         }
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Debug tests
+
+    override fun startTests(): Boolean {
+        var bDidAnyTestsRun = super.startTests()
+
+        val fnMap: Map<String, () -> Unit> =
+            mapOf(
+                "debugMode_startSpiritGaugeDetectionTest" to ::startSpiritGaugeDetectionTest,
+            )
+
+        for ((settingName, fn) in fnMap) {
+            if (SettingsHelper.getBooleanSetting("debug", settingName)) {
+                fn()
+                bDidAnyTestsRun = true
+            }
+        }
+
+        return bDidAnyTestsRun
+    }
+
+    /**
+     * Debug test for Unity Cup Spirit Gauge detection. Start on the Training screen (any facility). It walks all five facilities
+     * beginning at Speed - selecting each, capturing the screen, and running the gauge analysis - then reports
+     * each facility's fillable / normal-burst / extreme-burst counts. With Debug Mode on the gauge crops save to
+     * filesDir/temp for pulling, so gauge detection can be verified without playing a full career.
+     */
+    fun startSpiritGaugeDetectionTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Unity Cup Spirit Gauge Detection test. Open the Training screen so the support gauges are visible.")
+
+        if (!ButtonTrainingSpeed.check(game.imageUtils)) {
+            MessageLog.w(TAG, "[TEST] Not on the Training screen (Speed training button not found). Open the Training screen and retry.")
+            return
+        }
+
+        val trainingButtons: Map<StatName, ComponentInterface> =
+            mapOf(
+                StatName.SPEED to ButtonTrainingSpeed,
+                StatName.STAMINA to ButtonTrainingStamina,
+                StatName.POWER to ButtonTrainingPower,
+                StatName.GUTS to ButtonTrainingGuts,
+                StatName.WIT to ButtonTrainingWit,
+            )
+        val iconTrainingHeaders: Map<StatName, ComponentInterface> =
+            mapOf(
+                StatName.SPEED to IconTrainingHeaderSpeed,
+                StatName.STAMINA to IconTrainingHeaderStamina,
+                StatName.POWER to IconTrainingHeaderPower,
+                StatName.GUTS to IconTrainingHeaderGuts,
+                StatName.WIT to IconTrainingHeaderWit,
+            )
+
+        for (statName in StatName.entries) {
+            val header = iconTrainingHeaders.getValue(statName)
+            val button = trainingButtons.getValue(statName)
+
+            // Select the facility if it is not already the active one.
+            if (!header.check(game.imageUtils)) {
+                var selected = false
+                for (attempt in 0..2) {
+                    button.click(game.imageUtils)
+                    game.wait(0.3, skipWaitingForLoading = true)
+                    if (header.check(game.imageUtils)) {
+                        selected = true
+                        break
+                    }
+                }
+                if (!selected) {
+                    MessageLog.w(TAG, "[TEST] Could not select $statName training after 3 attempts. Skipping it.")
+                    continue
+                }
+            }
+
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            val result = game.imageUtils.analyzeSpiritExplosionGauges(sourceBitmap)
+            MessageLog.i(
+                TAG,
+                "[TEST] $statName -> fillable=${result?.numGaugesCanFill ?: 0}, ready to burst=${result?.numGaugesReadyToBurst ?: 0}, ready to extreme burst=${result?.numGaugesReadyToExtremeBurst ?: 0}",
+            )
+        }
+
+        MessageLog.i(TAG, "[TEST] Spirit Gauge Detection test complete. Check the per-facility counts above (and the debug_spiritExplosionGauge*.png crops if Debug Mode is on).")
     }
 }

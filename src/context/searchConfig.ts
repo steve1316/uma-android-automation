@@ -1176,6 +1176,13 @@ const searchConfig: SearchOption[] = [
         page: "DebugSettings",
     },
     {
+        id: "debug-spirit-gauge-detection-test",
+        title: "Start Spirit Gauge Detection Test",
+        description:
+            "Disables normal bot operations and starts the Unity Cup Spirit Gauge detection test. Run this on the Training screen: it selects each of the five facilities in turn and logs the detected fillable / burst / extreme spirit gauge counts, saving the gauge crops to help verify detection.",
+        page: "DebugSettings",
+    },
+    {
         id: "debug-rainbow-detection-test",
         title: "Start Rainbow Detection Test",
         description:
