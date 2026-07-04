@@ -56,6 +56,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.text.replace
@@ -999,11 +1000,16 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // Take a single screenshot first to avoid buffer overflow.
         var currentBitmap = sourceBitmap ?: getSourceBitmap()
 
-        // Find all Spirit Training icons (there may be multiple for the currently selected training).
+        // Detect all three templates unconditionally. The fill anchor (spirit-training icon), the normal teal burst flame, and the purple Extreme flame are independent - a support that
+        // is ready to burst shows only the flame with no in-progress fill anchor, so gating burst detection on the anchors would miss it. The teal / purple chevrons are matched at a
+        // lower confidence (0.80) because their grayscale match scores sit around 0.82-0.98 - at 0.9 they coin-flip and get missed.
+        val chevronConfidence = 0.80
         var spiritTrainingIcons: ArrayList<Point> = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
+        var spiritExplosionIcons: ArrayList<Point> = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
+        var extremeSpiritExplosionIcons: ArrayList<Point> = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
 
-        // If no gauges detected, try one more time after a short delay just in case the icon was bouncing.
-        if (spiritTrainingIcons.isEmpty()) {
+        // If nothing at all was found, try one more time after a short delay in case the icons were still animating in. Only bail when all three are empty (no gauges/bursts on screen).
+        if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
             try {
                 Thread.sleep(150)
             } catch (e: InterruptedException) {
@@ -1015,15 +1021,12 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             currentBitmap = getSourceBitmap()
 
             spiritTrainingIcons = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
-            if (spiritTrainingIcons.isEmpty()) {
+            spiritExplosionIcons = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
+            extremeSpiritExplosionIcons = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
+            if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
                 return null
             }
         }
-
-        // Find all Spirit Explosion icons to determine burst readiness. The purple Extreme flame is a distinct template that does not cross-match the normal teal one, so the two
-        // counts stay separate with no double-counting.
-        val spiritExplosionIcons: ArrayList<Point> = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
-        val extremeSpiritExplosionIcons: ArrayList<Point> = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
 
         // Analyze all gauges for all spirit training icons to count how many can be filled.
         var numGaugesCanFill = 0
@@ -1093,7 +1096,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             gaugeMat.release()
         }
 
-        return SpiritGaugeResult(numGaugesCanFill, spiritExplosionIcons.size, extremeSpiritExplosionIcons.size)
+        // A purple Extreme chevron also matches the teal template at nearly the same location (identical shape, only the color differs), so drop any teal match that overlaps a purple one -
+        // it is the same chevron and is already counted as an extreme. The purple template only matches true Extreme chevrons, so location overlap alone classifies correctly with no
+        // double-counting of a single support as both a normal burst and an extreme.
+        val overlapTolerance = relWidth(40)
+        val normalBurstIcons = spiritExplosionIcons.filterNot { teal -> extremeSpiritExplosionIcons.any { extreme -> abs(teal.x - extreme.x) <= overlapTolerance && abs(teal.y - extreme.y) <= overlapTolerance } }
+
+        return SpiritGaugeResult(numGaugesCanFill, normalBurstIcons.size, extremeSpiritExplosionIcons.size)
     }
 
     /**

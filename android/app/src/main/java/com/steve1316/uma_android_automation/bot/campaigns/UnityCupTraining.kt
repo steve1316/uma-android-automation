@@ -2,6 +2,8 @@ package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.steve1316.automation_library.utils.MessageLog
+import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.Training
@@ -65,7 +67,17 @@ class UnityCupTraining(game: Game, campaign: Campaign) : Training(game, campaign
         return if (campaign.date.year < DateYear.SENIOR) {
             scoreUnityCupTraining(config, option)
         } else {
-            super.scoreTraining(config, option)
+            // Senior year uses the standard stat-efficiency scorer, but an Extreme Spirit Burst is still near-mandatory (bigger boost, raises caps, 0% fail, one-time), so keep prioritizing
+            // it here by adding the same bonus on top of the base score. Normal bursts / gauge-filling stay Junior/Classic-only.
+            val base = super.scoreTraining(config, option)
+            val extremeCount = option.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
+            if (extremeCount > 0) {
+                val extremeBonus = extremeBurstBonus(config.scoring, extremeCount)
+                MessageLog.i(TAG, "[TRAINING] [${option.name}] Adding EXTREME burst bonus for $extremeCount gauge(s) in Senior year: $extremeBonus")
+                base + extremeBonus
+            } else {
+                base
+            }
         }
     }
 

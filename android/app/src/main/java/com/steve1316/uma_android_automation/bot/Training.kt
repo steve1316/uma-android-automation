@@ -292,6 +292,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 trainingLevel = trainingLevel,
                 skipReason = reason,
             )
+
+        /** Whether this training has a Unity Cup Spirit Explosion gauge ready to burst (normal or extreme) - a guaranteed-success turn that must not be skipped or normalized away. */
+        val isBurstReady: Boolean
+            get() = (extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0 || (extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0) > 0
     }
 
     /**
@@ -675,7 +679,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * @return A score representing the Unity Cup training value.
          */
         fun scoreUnityCupTraining(config: TrainingConfig, training: TrainingOption): Double {
-            MessageLog.v(TAG, "\n[TRAINING] Starting process to score ${training.name} Training for Unity Cup with redirected priority: Stats > Burst > Filling.")
+            MessageLog.v(TAG, "\n[TRAINING] Starting process to score ${training.name} Training for Unity Cup with redirected priority: Stats > Extreme > Burst > Filling.")
 
             val numSpiritGaugesCanFill = training.extras["spiritGaugesCanFill"] as? Int ?: 0
             val numSpiritGaugesReadyToBurst = training.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
@@ -688,9 +692,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // 2. Highest bonus: Extreme Spirit Burst. Much larger than a normal burst, raises stat caps, cannot fail, and is one-time, so it always outranks a normal burst. Applied as a
             // strictly larger, stat-agnostic bonus (no facility preference) so the extreme facility is picked whenever it is present.
             if (numSpiritGaugesReadyToExtremeBurst > 0) {
-                val extremeBurstBonus = config.scoring.unityExtremeBurstBaseBonus + (numSpiritGaugesReadyToExtremeBurst * config.scoring.unityExtremeBurstPerGaugeBonus)
-                score += extremeBurstBonus
-                MessageLog.i(TAG, "[TRAINING] [${training.name}] Adding EXTREME burst bonus for $numSpiritGaugesReadyToExtremeBurst gauge(s): $extremeBurstBonus")
+                val bonus = extremeBurstBonus(config.scoring, numSpiritGaugesReadyToExtremeBurst)
+                score += bonus
+                MessageLog.i(TAG, "[TRAINING] [${training.name}] Adding EXTREME burst bonus for $numSpiritGaugesReadyToExtremeBurst gauge(s): $bonus")
             }
 
             // 3. Trainings with Spirit Explosion Gauges ready to burst.
@@ -826,6 +830,16 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * @return The effective failure-chance ceiling to apply to this training.
          */
         fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int): Int = if (readyToBurst > 0) maxOf(baseFailureChance, burstMax) else baseFailureChance
+
+        /**
+         * The additive Unity Cup Extreme Spirit Burst score bonus for `count` supports ready to extreme-burst. Shared by the Junior/Classic Unity scorer and the Senior-year path so the
+         * formula has a single home.
+         *
+         * @param scoring The active [TrainingScoringConstants].
+         * @param count The number of supports ready for an Extreme Spirit Burst.
+         * @return The additive extreme-burst bonus.
+         */
+        fun extremeBurstBonus(scoring: TrainingScoringConstants, count: Int): Double = scoring.unityExtremeBurstBaseBonus + (count * scoring.unityExtremeBurstPerGaugeBonus)
 
         /**
          * Key factors for the Friendship scoring mode. Mirrors `scoreFriendshipTraining`, which ranks purely by relationship-bar color.
@@ -1763,7 +1777,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when a Unity Cup
             // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance).
             val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
-            val burstExempt = (result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0 || (result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0) > 0
+            val burstExempt = result.isBurstReady
             if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
                 val totalStatGain = result.statGains.values.sum()
                 if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {
@@ -1834,6 +1848,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val corrected = crossValidateFailureChances(input, campaign.trainee.energy)
 
         for (result in validResults) {
+            // A facility with a Spirit Explosion gauge ready to burst (normal or extreme) is a guaranteed-success (0% fail) turn, so its low reading is real and must NOT be "corrected"
+            // upward by the monotonic cross-validation - doing so would wrongly inflate a burst turn's failure chance.
+            if (result.isBurstReady) continue
             val newValue = corrected[result.name] ?: continue
             if (newValue != result.failureChance) {
                 MessageLog.w(

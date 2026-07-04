@@ -174,8 +174,11 @@ class UnityCup(game: Game) : Campaign(game) {
                 ButtonSelectOpponent.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
                     val opponents: ArrayList<Point> = LabelUnityCupOpponentSelectionLaurel.findAll(game.imageUtils, sourceBitmap = sourceBitmap)
                     if (opponents.size != 3) {
-                        MessageLog.e(TAG, "[ERROR] handleRaceEventsUnityCup:: Failed to detect all three opponents on opponent selection screen.")
-                        return false
+                        // A high-rank team's entrance animation (e.g. the S-rank team on Senior Late June, ~4-5s) can still be playing and briefly hide the opponent laurels. Wait and let
+                        // the loop re-scan a fresh screenshot rather than bailing the whole handler; the loop's 30s timeout still bounds a genuinely stuck screen.
+                        MessageLog.d(TAG, "[DEBUG] handleRaceEventsUnityCup:: Detected ${opponents.size}/3 opponents (an entrance animation may still be playing). Waiting to retry...")
+                        game.wait(1.5)
+                        continue
                     }
 
                     selectedOpponentIndex = selectedOpponentIndex.coerceIn(0, opponents.lastIndex)
