@@ -490,13 +490,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     useThreshold = false,
                     useGrayscale = true,
                     scale = 2.0,
-                    ocrEngine = "mlkit",
+                    ocrEngine = "tesseract_digits",
                     debugName = "TrainingFailureChance",
                 )
 
-            // Parse the result.
+            // Parse the result. The digit-whitelisted OCR keeps the failure chance numeric (a 0% success bubble was previously misread as "D" by the general recognizer, which then
+            // stripped to an empty string and failed - falling back to a bogus high failure chance). The cleaning below stays as a defensive backstop.
             return try {
-                // Replace OCR misidentification of 'o/O' with '0'.
                 val cleanedResult = detectedText.lowercase().replace("o", "0").replace("%", "").replace("failure", "").replace("\n", "").replace(Regex("[^0-9]"), "").trim()
 
                 val value = cleanedResult.toInt()
