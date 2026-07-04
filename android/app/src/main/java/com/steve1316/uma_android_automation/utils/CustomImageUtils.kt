@@ -494,10 +494,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     debugName = "TrainingFailureChance",
                 )
 
-            // Parse the result. The digit-whitelisted OCR keeps the failure chance numeric (a 0% success bubble was previously misread as "D" by the general recognizer, which then
-            // stripped to an empty string and failed - falling back to a bogus high failure chance). The cleaning below stays as a defensive backstop.
+            // Parse the result. Take the digit run immediately before the "%" sign (falling back to the first digit run) instead of concatenating every digit - a low-contrast 0% bubble can
+            // make the general recognizer emit stray digits, and blind concatenation fused them into phantom values like 10 / 12. The "o" -> "0" swap and the > 100 guard stay as backstops.
             return try {
-                val cleanedResult = detectedText.lowercase().replace("o", "0").replace("%", "").replace("failure", "").replace("\n", "").replace(Regex("[^0-9]"), "").trim()
+                val normalized = detectedText.lowercase().replace("o", "0").replace("failure", "")
+                val cleanedResult = (Regex("(\\d+)\\s*%").find(normalized)?.groupValues?.get(1) ?: Regex("\\d+").find(normalized)?.value)?.trim().orEmpty()
 
                 val value = cleanedResult.toInt()
 
