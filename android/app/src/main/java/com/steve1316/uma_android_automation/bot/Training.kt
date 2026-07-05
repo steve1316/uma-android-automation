@@ -417,12 +417,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         /** The logging tag for this class. */
         internal val TAG: String = "[${MainActivity.loggerTag}]Training"
 
-        /** Secondary-stat gain at or above which the selection explanation calls it out. Log-only threshold, not a scoring input. */
-        const val SECONDARY_GAIN_CALLOUT_THRESHOLD: Int = 20
-
-        /** Target-completion percent below which the selection explanation flags a stat as behind. Log-only threshold, not a scoring input. */
-        const val BEHIND_TARGET_CALLOUT_PERCENT: Double = 70.0
-
         /**
          * Build a [TrainingScoringConstants] from an arbitrary settings map keyed by the same strings used by the TypeScript counterpart
          * `scoringConstantsFromSettings()` in `src/lib/training/scoring/scoringConstantsFromSettings.ts`. Any missing or non-numeric value falls back to the
@@ -801,16 +795,18 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             val currentVal = config.currentStats[selected.name] ?: 0
             val targetVal = config.statTargets[selected.name] ?: 600
             val completion = if (targetVal > 0) (currentVal.toDouble() / targetVal * 100.0) else 100.0
-            if (completion < BEHIND_TARGET_CALLOUT_PERCENT) {
-                factors.add("${selected.name} stat is at ${String.format("%.0f", completion)}% of target (below ${BEHIND_TARGET_CALLOUT_PERCENT.toInt()}%, higher priority).")
+            val behindTargetCalloutPercent = 70.0 // Target-completion % below which the explanation flags a stat as behind. Log-only, not a scoring input.
+            if (completion < behindTargetCalloutPercent) {
+                factors.add("${selected.name} stat is at ${String.format("%.0f", completion)}% of target (below ${behindTargetCalloutPercent.toInt()}%, higher priority).")
             }
             val mainThreshold = config.scoring.mainStatThresholds[selected.name] ?: error("No mainStatThresholds entry for ${selected.name}")
             if (mainGain >= mainThreshold && selected.numRainbow == 0) {
                 factors.add("Main stat gain $mainGain >= threshold $mainThreshold: ${config.scoring.mainStatBonusMagnitude}x main-stat bonus applied.")
             }
+            val secondaryGainCalloutThreshold = 20 // Secondary-stat gain at or above which the explanation calls it out. Log-only, not a scoring input.
             for ((statName, gain) in selected.statGains) {
-                if (statName != selected.name && gain >= SECONDARY_GAIN_CALLOUT_THRESHOLD) {
-                    factors.add("High secondary $statName gain of $gain (>= $SECONDARY_GAIN_CALLOUT_THRESHOLD).")
+                if (statName != selected.name && gain >= secondaryGainCalloutThreshold) {
+                    factors.add("High secondary $statName gain of $gain (>= $secondaryGainCalloutThreshold).")
                 }
             }
             return factors

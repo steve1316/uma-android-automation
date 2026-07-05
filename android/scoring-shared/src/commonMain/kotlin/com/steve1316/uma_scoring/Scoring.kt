@@ -244,14 +244,11 @@ fun rawTrainingScoreComponents(config: TrainingConfig, training: TrainingOption)
     val relationshipWeight = if (training.relationshipBars.isNotEmpty()) config.scoring.relationshipWeightWithBars else 0.0
     val miscWeight = config.scoring.miscWeight
 
-    // Composition order below mirrors the scalar path exactly (accumulate weighted scores, then apply each multiplier) so `total` stays byte-identical to the old code.
-    var totalScore = 0.0
+    // Composition order below mirrors the scalar path exactly (sum the weighted scores, then apply each multiplier) so `total` stays byte-identical to the old code.
     val statScoreWeighted = statScore * statWeight
     val relationshipScoreWeighted = relationshipScore * relationshipWeight
     val miscScoreWeighted = miscScore * miscWeight
-    totalScore += statScoreWeighted
-    totalScore += relationshipScoreWeighted
-    totalScore += miscScoreWeighted
+    var totalScore = statScoreWeighted + relationshipScoreWeighted + miscScoreWeighted
 
     val rainbowMultiplier =
         if (training.numRainbow > 0 && config.currentDate.year > DateYear.JUNIOR) {
