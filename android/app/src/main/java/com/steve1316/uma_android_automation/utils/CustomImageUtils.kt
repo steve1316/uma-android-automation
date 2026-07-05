@@ -63,33 +63,8 @@ import kotlin.text.replace
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Rainbow-ring detection constants
 
-// The rainbow glow around a rainbow-training button or support circle sweeps through bright pastel green, cyan, and pink. A ring is only accepted when all three co-occur in the glow
-// annulus, which cleanly separated every labeled screenshot (green AND cyan AND pink present -> rainbow; at most two -> not). Hue bands are true OpenCV HSV (0-179) from an RGB->HSV
-// conversion, so the RGBA bitmap must be converted RGBA->RGB->HSV (NOT the BGR->RGB->HSV path the relationship-bar code uses, which swaps red and blue).
-private const val RAINBOW_GLOW_ANNULUS_INNER_PAD = 1
-private const val RAINBOW_GLOW_ANNULUS_OUTER_PAD = 22
-private const val RAINBOW_GLOW_MIN_SATURATION = 50.0
-private const val RAINBOW_GLOW_MIN_VALUE = 165.0
-private const val RAINBOW_GLOW_HUE_PRESENCE_MIN_FRACTION = 0.03
-private const val RAINBOW_GLOW_MIN_HUES_PRESENT = 3
-// A real rainbow ring also has one vivid dominant hue. Requiring the strongest hue to clear this bar rejects uniformly-faint look-alikes (e.g. a selected button's sparkles over a
-// multi-colored background), where all three hues barely clear the presence floor. Measured: true rings have a dominant hue >= 0.096, the observed false positive was 0.058.
-private const val RAINBOW_GLOW_DOMINANT_HUE_MIN_FRACTION = 0.08
-private const val RAINBOW_GLOW_GREEN_HUE_LOW = 45.0
-private const val RAINBOW_GLOW_GREEN_HUE_HIGH = 82.0
-private const val RAINBOW_GLOW_CYAN_HUE_LOW = 84.0
-private const val RAINBOW_GLOW_CYAN_HUE_HIGH = 104.0
-private const val RAINBOW_GLOW_PINK_HUE_LOW = 148.0
-private const val RAINBOW_GLOW_PINK_HUE_HIGH = 173.0
-
-// Support face circles are located directly with HoughCircles rather than the stat-block badges (which only match a fraction of the supports). This finds every face circle; the ring
-// test then rejects the non-glowing ones, so a couple of spurious circles are harmless. Radii and spacing are for the 1080-wide baseline and scaled by the actual display width.
-private const val RAINBOW_SUPPORT_HOUGH_DP = 1.2
-private const val RAINBOW_SUPPORT_MIN_DIST = 70.0
-private const val RAINBOW_SUPPORT_HOUGH_PARAM1 = 90.0
-private const val RAINBOW_SUPPORT_HOUGH_PARAM2 = 42.0
-private const val RAINBOW_SUPPORT_MIN_RADIUS = 44
-private const val RAINBOW_SUPPORT_MAX_RADIUS = 72
+// The support face circles (findSupportFaceCircles) and the debug annotate crop (debugRainbowDetection) both scan the top-right third of the screen down to this fraction of the height.
+// The rest of the rainbow-ring tuning (glow HSV bands, Hough params) lives as locals in the detector functions since each is used in only one place.
 private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
 
 /**
@@ -99,10 +74,10 @@ private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
  * @param greenFraction Fraction of glow-annulus pixels that are bright green.
  * @param cyanFraction Fraction that are bright cyan.
  * @param pinkFraction Fraction that are bright pink.
- * @param minFraction The per-hue presence floor.
+ * @param minFraction The per-hue presence floor (default 0.03).
  * @return The number of the three hues that are present (a ring needs all three).
  */
-internal fun rainbowHuesPresent(greenFraction: Double, cyanFraction: Double, pinkFraction: Double, minFraction: Double = RAINBOW_GLOW_HUE_PRESENCE_MIN_FRACTION): Int =
+internal fun rainbowHuesPresent(greenFraction: Double, cyanFraction: Double, pinkFraction: Double, minFraction: Double = 0.03): Int =
     listOf(greenFraction, cyanFraction, pinkFraction).count { it > minFraction }
 
 /** Utility functions for image processing via CV like OpenCV. */
@@ -184,9 +159,12 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @property brightChromaticFraction Fraction of annulus pixels that are bright and saturated (the overall glow strength).
      */
     data class RainbowRingResult(val huesPresent: Int, val greenFraction: Double, val cyanFraction: Double, val pinkFraction: Double, val brightChromaticFraction: Double) {
-        /** Whether the annulus shows a rainbow glow: all three pastel hues co-present and one of them vividly dominant. Validated at 100% on the labeled training-screen dataset. */
+        /**
+         * Whether the annulus shows a rainbow glow: all three pastel hues co-present (huesPresent == 3) and one of them vividly dominant (>= 0.08; measured true rings had a dominant hue
+         * >= 0.096 versus a 0.058 false positive). Validated at 100% on the labeled training-screen dataset.
+         */
         val isRainbow: Boolean
-            get() = huesPresent >= RAINBOW_GLOW_MIN_HUES_PRESENT && maxOf(greenFraction, cyanFraction, pinkFraction) >= RAINBOW_GLOW_DOMINANT_HUE_MIN_FRACTION
+            get() = huesPresent >= 3 && maxOf(greenFraction, cyanFraction, pinkFraction) >= 0.08
     }
 
     /**
@@ -747,12 +725,24 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @return A [RainbowRingResult] with the per-hue fractions and whether a ring is present. All-zero when the crop could not be taken.
      */
     fun detectRainbowRing(sourceBitmap: Bitmap, centerX: Int, centerY: Int, radius: Int): RainbowRingResult {
-        val outerRadius = radius + RAINBOW_GLOW_ANNULUS_OUTER_PAD
+        // Rainbow glow calibration. The glow sweeps bright pastel green, cyan, and pink, so require a minimum saturation/value and match each hue band in the annulus. Hue bands are true
+        // OpenCV HSV (0-179) from the RGBA->RGB->HSV path below (NOT the BGR->RGB->HSV path the relationship-bar code uses, which swaps red and blue and is not what these bands expect).
+        val annulusInnerPad = 1
+        val annulusOuterPad = 22
+        val minSaturation = 50.0
+        val minValue = 165.0
+        val greenHueLow = 45.0
+        val greenHueHigh = 82.0
+        val cyanHueLow = 84.0
+        val cyanHueHigh = 104.0
+        val pinkHueLow = 148.0
+        val pinkHueHigh = 173.0
+
+        val outerRadius = radius + annulusOuterPad
         val side = outerRadius * 2
         val cropped =
             createSafeBitmap(sourceBitmap, centerX - outerRadius, centerY - outerRadius, side, side, "detectRainbowRing") ?: return RainbowRingResult(0, 0.0, 0.0, 0.0, 0.0)
 
-        // Convert RGBA -> RGB -> HSV so the hue is true OpenCV HSV. The relationship-bar path uses BGR->RGB->HSV, which swaps red and blue and is not what these hue bands expect.
         val rgbaMat = cropped.toMat()
         val rgbMat = Mat()
         Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
@@ -763,7 +753,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val cropCenter = Point(outerRadius.toDouble(), outerRadius.toDouble())
         val annulusMask = Mat.zeros(hsvMat.size(), CvType.CV_8UC1)
         Imgproc.circle(annulusMask, cropCenter, outerRadius, Scalar(255.0), -1)
-        Imgproc.circle(annulusMask, cropCenter, radius + RAINBOW_GLOW_ANNULUS_INNER_PAD, Scalar(0.0), -1)
+        Imgproc.circle(annulusMask, cropCenter, radius + annulusInnerPad, Scalar(0.0), -1)
         val annulusTotal = Core.countNonZero(annulusMask)
         if (annulusTotal <= 0) {
             listOf(rgbaMat, rgbMat, hsvMat, annulusMask).forEach { it.release() }
@@ -775,7 +765,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val brightChromaticFraction =
             if (debugMode) {
                 val brightMask = Mat()
-                Core.inRange(hsvMat, Scalar(0.0, RAINBOW_GLOW_MIN_SATURATION, RAINBOW_GLOW_MIN_VALUE), Scalar(179.0, 255.0, 255.0), brightMask)
+                Core.inRange(hsvMat, Scalar(0.0, minSaturation, minValue), Scalar(179.0, 255.0, 255.0), brightMask)
                 Core.bitwise_and(brightMask, annulusMask, brightMask)
                 val fraction = Core.countNonZero(brightMask).toDouble() / annulusTotal
                 brightMask.release()
@@ -787,15 +777,15 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // Fraction of annulus pixels in each rainbow hue band (bright and saturated).
         fun hueFraction(low: Double, high: Double): Double {
             val hueMask = Mat()
-            Core.inRange(hsvMat, Scalar(low, RAINBOW_GLOW_MIN_SATURATION, RAINBOW_GLOW_MIN_VALUE), Scalar(high, 255.0, 255.0), hueMask)
+            Core.inRange(hsvMat, Scalar(low, minSaturation, minValue), Scalar(high, 255.0, 255.0), hueMask)
             Core.bitwise_and(hueMask, annulusMask, hueMask)
             val fraction = Core.countNonZero(hueMask).toDouble() / annulusTotal
             hueMask.release()
             return fraction
         }
-        val greenFraction = hueFraction(RAINBOW_GLOW_GREEN_HUE_LOW, RAINBOW_GLOW_GREEN_HUE_HIGH)
-        val cyanFraction = hueFraction(RAINBOW_GLOW_CYAN_HUE_LOW, RAINBOW_GLOW_CYAN_HUE_HIGH)
-        val pinkFraction = hueFraction(RAINBOW_GLOW_PINK_HUE_LOW, RAINBOW_GLOW_PINK_HUE_HIGH)
+        val greenFraction = hueFraction(greenHueLow, greenHueHigh)
+        val cyanFraction = hueFraction(cyanHueLow, cyanHueHigh)
+        val pinkFraction = hueFraction(pinkHueLow, pinkHueHigh)
 
         listOf(rgbaMat, rgbMat, hsvMat, annulusMask).forEach { it.release() }
 
@@ -804,7 +794,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         if (debugMode) {
             MessageLog.d(
                 TAG,
-                "[DEBUG] detectRainbowRing:: center=($centerX,$centerY) r=$radius green=${decimalFormat.format(greenFraction)} cyan=${decimalFormat.format(cyanFraction)} pink=${decimalFormat.format(pinkFraction)} bright=${decimalFormat.format(brightChromaticFraction)} huesPresent=$huesPresent isRainbow=${result.isRainbow}",
+                "[DEBUG] detectRainbowRing:: center=($centerX,$centerY) r=$radius green=${decimalFormat.format(
+                    greenFraction,
+                )} cyan=${decimalFormat.format(
+                    cyanFraction,
+                )} pink=${decimalFormat.format(pinkFraction)} bright=${decimalFormat.format(brightChromaticFraction)} huesPresent=$huesPresent isRainbow=${result.isRainbow}",
             )
         }
         return result
@@ -827,18 +821,26 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         Imgproc.cvtColor(rgbaMat, grayMat, Imgproc.COLOR_RGBA2GRAY)
         Imgproc.medianBlur(grayMat, grayMat, 5)
 
+        // HoughCircles tuning for the support face circles. Radii and spacing are for the 1080-wide baseline and scaled by the actual display width.
+        val houghDp = 1.2
+        val minDist = 70.0
+        val houghParam1 = 90.0
+        val houghParam2 = 42.0
+        val minRadius = 44
+        val maxRadius = 72
+
         val scale = displayWidth.toDouble() / 1080.0
         val circles = Mat()
         Imgproc.HoughCircles(
             grayMat,
             circles,
             Imgproc.HOUGH_GRADIENT,
-            RAINBOW_SUPPORT_HOUGH_DP,
-            RAINBOW_SUPPORT_MIN_DIST * scale,
-            RAINBOW_SUPPORT_HOUGH_PARAM1,
-            RAINBOW_SUPPORT_HOUGH_PARAM2,
-            (RAINBOW_SUPPORT_MIN_RADIUS * scale).toInt(),
-            (RAINBOW_SUPPORT_MAX_RADIUS * scale).toInt(),
+            houghDp,
+            minDist * scale,
+            houghParam1,
+            houghParam2,
+            (minRadius * scale).toInt(),
+            (maxRadius * scale).toInt(),
         )
 
         val result = mutableListOf<IntArray>()
@@ -881,7 +883,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val ring = detectRainbowRing(bitmap, centerX, centerY, radius)
             if (ring.isRainbow) rainbowCount++
             sb.appendLine(
-                "circle=($centerX,$centerY r$radius) green=${decimalFormat.format(ring.greenFraction)} cyan=${decimalFormat.format(ring.cyanFraction)} pink=${decimalFormat.format(ring.pinkFraction)} huesPresent=${ring.huesPresent} -> rainbow=${ring.isRainbow}",
+                "circle=($centerX,$centerY r$radius) green=${decimalFormat.format(
+                    ring.greenFraction,
+                )} cyan=${decimalFormat.format(ring.cyanFraction)} pink=${decimalFormat.format(ring.pinkFraction)} huesPresent=${ring.huesPresent} -> rainbow=${ring.isRainbow}",
             )
             if (annotated != null) {
                 val color = if (ring.isRainbow) Scalar(0.0, 255.0, 0.0) else Scalar(0.0, 0.0, 255.0)
@@ -1082,9 +1086,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
 
         // Parse the text.
-        MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
+        Log.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
         if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
-            MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
+            Log.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
             val cleanedText = text.replace(Regex("[^0-9]"), "")
             return try {
                 val parsed = cleanedText.toInt()
@@ -1094,11 +1098,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         } else {
             try {
-                MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
+                Log.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
                 val cleanedText = text.replace(Regex("[^0-9]"), "")
                 val parsed = cleanedText.toInt()
                 if (manualStatCap > 0 && parsed > manualStatCap) {
-                    MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
+                    Log.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
                     return -1
                 }
                 return parsed.coerceAtLeast(0)
