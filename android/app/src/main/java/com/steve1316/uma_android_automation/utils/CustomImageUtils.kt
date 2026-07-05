@@ -69,32 +69,6 @@ import kotlin.text.replace
 // The rest of the rainbow-ring tuning (glow HSV bands, Hough params) lives as locals in the detector functions since each is used in only one place.
 private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////////////////////////////////////
-// Spirit gauge detection constants
-
-// The Unity Cup spirit gauge is a small droplet at a fixed slot to the LEFT of the training icon (offsets for the 1080-wide
-// baseline, scaled by the actual display width). A support is "fillable" when it has a gauge - empty OR partial. The reliable
-// signal is the gauge's bright-blue OUTLINE ring: a saturated blue (distinct from pale sky and from grayish classroom
-// backgrounds) present on empty and partial gauges but absent on a spent (pink) flame or plain background. A gray-count is
-// unreliable because grayish backgrounds pollute it. HSV is OpenCV's 0-179 hue from the RGBA->RGB->HSV path the gauge crop uses.
-private const val SPIRIT_GAUGE_OFFSET_X = -199
-private const val SPIRIT_GAUGE_OFFSET_Y = 62
-private const val SPIRIT_GAUGE_WIDTH = 62
-private const val SPIRIT_GAUGE_HEIGHT = 78
-private const val SPIRIT_GAUGE_OUTLINE_HUE_LOW = 100.0
-private const val SPIRIT_GAUGE_OUTLINE_HUE_HIGH = 120.0
-private const val SPIRIT_GAUGE_OUTLINE_SAT_MIN = 185.0
-private const val SPIRIT_GAUGE_OUTLINE_VALUE_LOW = 120.0
-private const val SPIRIT_GAUGE_OUTLINE_VALUE_HIGH = 225.0
-private const val SPIRIT_GAUGE_FILLABLE_OUTLINE_FRACTION = 0.005
-
-// The spirit-training anchor and the burst / extreme flames share chevron shapes with the level-up badges on the bottom facility buttons, so every template also matches those badges at
-// high confidence (grayscale flattens the color difference, and confidence tuning cannot separate identical shapes). Real support elements sit in the upper-right portrait column (y up to
-// ~0.42 of the screen); the facility-button badges sit near the bottom (y ~0.63+). Keeping only matches above this fraction drops the false positives that otherwise read a phantom extreme
-// burst off the Guts button and over-count fillable gauges.
-private const val SPIRIT_GAUGE_SUPPORT_COLUMN_MAX_Y_FRACTION = 0.55
-
 /**
  * Whether the three rainbow-glow hue fractions indicate a rainbow ring. A ring is present only when all three pastel hues (green, cyan, pink) each exceed the presence floor, which is
  * the signature that separates a real rainbow glow from a background that happens to be one of those colors. Pure so it is unit-testable without OpenCV.
@@ -124,24 +98,20 @@ internal fun <K> argMaxAboveFloor(scores: Map<K, Double>, floor: Double): K? {
     val best = scores.maxByOrNull { it.value } ?: return null
     return if (best.value >= floor) best.key else null
 }
-
-/** Lowest plausible OCR'd stat cap. Base scenario caps start at 1200, so a read below this is treated as a value misread and rejected. */
-private const val MIN_PLAUSIBLE_STAT_CAP = 1000
-
-/** Highest plausible OCR'd stat cap. The game hard-caps stats at 2000, so a read above this is an OCR misread. */
-private const val MAX_PLAUSIBLE_STAT_CAP = 2000
-
 /**
  * Parse the stat cap from the OCR text of the "/NNNN" denominator shown under a stat on the career / training screen. The cap is the largest number present - it is always >= the
  * current value, so taking the max is robust even when the crop catches part of the value. Returns null when no plausible cap is found so the caller can fall back to the
  * per-scenario cap table. The caller additionally rejects any cap below the scenario's base cap, since sparks / inheritance / duels only ever raise caps.
  *
  * @param text Raw OCR text of the cap-denominator region.
- * @return The parsed stat cap in [MIN_PLAUSIBLE_STAT_CAP, MAX_PLAUSIBLE_STAT_CAP], or null if none is plausible.
+ * @return The parsed stat cap in [1000, 2000], or null if none is plausible.
  */
 internal fun parseStatCap(text: String): Int? {
+    // Plausible OCR'd cap range: base scenario caps start at 1200 (a read below 1000 is a value misread), and the game hard-caps stats at 2000 (a read above it is an OCR misread).
+    val minPlausibleCap = 1000
+    val maxPlausibleCap = 2000
     val candidate = Regex("\\d+").findAll(text).mapNotNull { it.value.toIntOrNull() }.maxOrNull() ?: return null
-    return if (candidate in MIN_PLAUSIBLE_STAT_CAP..MAX_PLAUSIBLE_STAT_CAP) candidate else null
+    return if (candidate in minPlausibleCap..maxPlausibleCap) candidate else null
 }
 
 /** Utility functions for image processing via CV like OpenCV. */
@@ -1074,23 +1044,37 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         }
 
+        // Spirit gauge calibration. The gauge is a small droplet at a fixed slot to the LEFT of the training icon (offsets for the 1080-wide baseline, scaled by display width). "Fillable"
+        // = a gauge is present (empty or partial), signalled by its bright-blue OUTLINE ring in HSV (0-179 hue from the crop's RGBA->RGB->HSV path) - robust vs pale sky and grayish rooms.
+        val gaugeOffsetX = -199
+        val gaugeOffsetY = 62
+        val gaugeSlotWidth = 62
+        val gaugeSlotHeight = 78
+        val outlineHueLow = 100.0
+        val outlineHueHigh = 120.0
+        val outlineSatMin = 185.0
+        val outlineValueLow = 120.0
+        val outlineValueHigh = 225.0
+        val fillableOutlineFraction = 0.005
+
         // The anchor and the burst / extreme flames all live in the upper-right support column. The same chevron shapes also badge the bottom facility buttons (level-up indicators) and
         // match every template at high confidence, so keep only points above this fraction of the screen height. Without it every training screen reads a phantom extreme burst off the
         // Guts button's chevron badge and can over-count fillable gauges.
-        val maxAnchorY = displayHeight * SPIRIT_GAUGE_SUPPORT_COLUMN_MAX_Y_FRACTION
+        val supportColumnMaxYFraction = 0.55
+        val maxAnchorY = displayHeight * supportColumnMaxYFraction
         val supportAnchors = spiritTrainingIcons.filter { it.y <= maxAnchorY }
         val burstIcons = spiritExplosionIcons.filter { it.y <= maxAnchorY }
         val extremeBurstIcons = extremeSpiritExplosionIcons.filter { it.y <= maxAnchorY }
 
         // Count how many supports have a fillable gauge. The gauge is a droplet at a fixed slot to the LEFT of its training icon
-        // (see the SPIRIT_GAUGE_* constants). A support is fillable when a gauge is present (empty or partial), detected by the
+        // (see the gauge calibration locals above). A support is fillable when a gauge is present (empty or partial), detected by the
         // gauge's bright-blue outline ring - reliable across sky and grayish classroom backgrounds where a raw gray-count is not.
         var numGaugesCanFill = 0
         for ((index, iconLocation) in supportAnchors.withIndex()) {
-            val gaugeStartX = relX(iconLocation.x, SPIRIT_GAUGE_OFFSET_X)
-            val gaugeStartY = relY(iconLocation.y, SPIRIT_GAUGE_OFFSET_Y)
-            val gaugeWidth = relWidth(SPIRIT_GAUGE_WIDTH)
-            val gaugeHeight = relHeight(SPIRIT_GAUGE_HEIGHT)
+            val gaugeStartX = relX(iconLocation.x, gaugeOffsetX)
+            val gaugeStartY = relY(iconLocation.y, gaugeOffsetY)
+            val gaugeWidth = relWidth(gaugeSlotWidth)
+            val gaugeHeight = relHeight(gaugeSlotHeight)
 
             val gaugeBitmap = createSafeBitmap(currentBitmap, gaugeStartX, gaugeStartY, gaugeWidth, gaugeHeight, "analyzeSpiritExplosionGauges") ?: continue
 
@@ -1107,15 +1091,15 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val outlineMask = Mat()
             Core.inRange(
                 hsvMat,
-                Scalar(SPIRIT_GAUGE_OUTLINE_HUE_LOW, SPIRIT_GAUGE_OUTLINE_SAT_MIN, SPIRIT_GAUGE_OUTLINE_VALUE_LOW),
-                Scalar(SPIRIT_GAUGE_OUTLINE_HUE_HIGH, 255.0, SPIRIT_GAUGE_OUTLINE_VALUE_HIGH),
+                Scalar(outlineHueLow, outlineSatMin, outlineValueLow),
+                Scalar(outlineHueHigh, 255.0, outlineValueHigh),
                 outlineMask,
             )
             val outlinePixels = Core.countNonZero(outlineMask)
             val totalPixels = gaugeMat.rows() * gaugeMat.cols()
             val outlineFraction = if (totalPixels > 0) outlinePixels.toDouble() / totalPixels else 0.0
 
-            val fillable = outlineFraction > SPIRIT_GAUGE_FILLABLE_OUTLINE_FRACTION
+            val fillable = outlineFraction > fillableOutlineFraction
             if (fillable) numGaugesCanFill++
 
             // Per-anchor detail. A debug run (and the on-screen debug test) gets the richer MessageLog line showing WHY a gauge was or was not counted (blue-outline ratio at the gauge
