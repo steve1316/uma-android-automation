@@ -2594,6 +2594,16 @@
             let searchQuery = ""
             let isFiltering = false
             let messageCache = []
+
+            // Live-render coalescing: buffer incoming live messages and flush them once per animation frame.
+            let liveQueue = []
+            let liveFlushHandle = null
+            // Currently visible tab; live log rendering pauses while this isn't "logs" (see scheduleLiveFlush / switchTab).
+            let activeTab = "logs"
+            // Cap on rendered log entries. Trimming the oldest bounds DOM size so a debug flood cannot make each frame's
+            // reflow progressively heavier and saturate the main thread (which starved clicks like the log Download button).
+            const MAX_LOG_ENTRIES = 5000
+
             let reconnectAttempts = 0
             let reconnectInterval = null
             const maxReconnectDelay = 30000
@@ -2737,7 +2747,8 @@
                                 if (isSyncing) {
                                     syncingBuffer.push(data)
                                 } else {
-                                    appendLogMessage(data)
+                                    liveQueue.push(data)
+                                    scheduleLiveFlush()
                                 }
                             }
                         } catch (e) {
@@ -2863,31 +2874,26 @@
             }
 
             /**
-             * Processes and appends a single log message to the log container.
-             * @param {object} parsed - The pre-parsed log object from the server.
+             * Schedules a per-frame live-log flush, but only while the logs view is visible. On other tabs messages
+             * accumulate cheaply in liveQueue and flush on return (see switchTab), so a debug flood cannot saturate the
+             * main thread and block clicks elsewhere (e.g. the log-file Download button). Coalescing per frame also avoids
+             * a synchronous reflow per message.
              */
-            function appendLogMessage(parsed) {
-                if (!parsed) return
-                messageCount++
-
-                // Hide empty state on first message.
-                if (emptyState) {
-                    emptyState.style.display = "none"
+            function scheduleLiveFlush() {
+                if (activeTab !== "logs") return
+                if (liveFlushHandle === null) {
+                    liveFlushHandle = requestAnimationFrame(flushLiveQueue)
                 }
+            }
 
-                allMessages.push({ parsed: parsed })
-
-                // Handle special messages for dashboard updates immediately for individual messages.
-                processSpecialLogs(parsed)
-
-                processParsedMessage(parsed, logContainer)
-
-                updateMessageCountDisplay()
-
-                // Auto-scroll to bottom.
-                if (autoScroll) {
-                    scrollToBottom()
-                }
+            /**
+             * Renders every message queued since the last frame in one batch via appendBatchMessages.
+             */
+            function flushLiveQueue() {
+                liveFlushHandle = null
+                const pending = liveQueue
+                liveQueue = []
+                appendBatchMessages(pending)
             }
 
             /**
@@ -2898,6 +2904,12 @@
                 if (!parsedMessages || parsedMessages.length === 0) return
 
                 messageCount += parsedMessages.length
+
+                // Never render more than the visible window in one batch (e.g. a big history sync or an off-tab backlog);
+                // trimRenderedLog would drop the overflow immediately anyway, so skip building those DOM nodes at all.
+                if (parsedMessages.length > MAX_LOG_ENTRIES) {
+                    parsedMessages = parsedMessages.slice(parsedMessages.length - MAX_LOG_ENTRIES)
+                }
 
                 if (emptyState) {
                     emptyState.style.display = "none"
@@ -2944,12 +2956,36 @@
 
                 logContainer.appendChild(fragment)
                 updateMessageCountDisplay()
-                
+
                 // Apply the final accumulated state from this batch to the DOM.
                 applyBatchStateToDashboard(batchState)
 
+                // Keep the rendered log bounded so the reflow below cannot grow without limit.
+                trimRenderedLog()
+
                 if (autoScroll) {
                     scrollToBottom()
+                }
+            }
+
+            /**
+             * Trims the oldest rendered log entries (DOM nodes, messageCache, allMessages) down to MAX_LOG_ENTRIES so the
+             * log DOM stays bounded. Without this the per-frame scrollToBottom reflow grows with the node count and, under a
+             * debug flood, saturates the main thread - which starves clicks such as the log Download button until a reload.
+             */
+            function trimRenderedLog() {
+                const excess = messageCache.length - MAX_LOG_ENTRIES
+                if (excess > 0) {
+                    const removed = messageCache.splice(0, excess)
+                    for (const old of removed) {
+                        if (old.el) {
+                            if (!old.el.classList.contains("hidden")) visibleMessageCount--
+                            if (old.el.parentNode) old.el.parentNode.removeChild(old.el)
+                        }
+                    }
+                }
+                if (allMessages.length > MAX_LOG_ENTRIES) {
+                    allMessages.splice(0, allMessages.length - MAX_LOG_ENTRIES)
                 }
             }
 
@@ -3206,6 +3242,13 @@
              * Removes all log entries from the display and resets the local message store.
              */
             function clearDisplay() {
+                // Cancel any pending live flush so queued messages are not re-appended after the display is reset.
+                if (liveFlushHandle !== null) {
+                    cancelAnimationFrame(liveFlushHandle)
+                    liveFlushHandle = null
+                }
+                liveQueue = []
+
                 // Remove all log entries but keep the empty state div.
                 var entries = logContainer.querySelectorAll(".log-entry")
                 entries.forEach(function (entry) {
@@ -4181,6 +4224,7 @@
              * @param {string} tabID - The ID of the tab to switch to ('logs', 'images', or 'logFiles').
              */
             function switchTab(tabID) {
+                activeTab = tabID
                 if (tabID !== "analytics") analyticStopRuntimeTicker()
                 // Update buttons.
                 document.getElementById("logsTabBtn").classList.toggle("active", tabID === "logs")
@@ -4194,8 +4238,12 @@
                 document.getElementById("logFilesView").classList.toggle("active", tabID === "logFiles")
                 document.getElementById("analyticsView").classList.toggle("active", tabID === "analytics")
 
-                if (tabID === "logs" && autoScroll) {
-                    scrollToBottom()
+                if (tabID === "logs") {
+                    // Render anything buffered while another tab was showing, then pin to the bottom.
+                    scheduleLiveFlush()
+                    if (autoScroll) {
+                        scrollToBottom()
+                    }
                 }
 
                 // Lazy-load the log files index on first activation; user can hit Refresh for re-fetches.
