@@ -1,7 +1,8 @@
 import * as Application from "expo-application"
 import MessageLog from "../../components/MessageLog"
-import { useContext, useEffect, useMemo, useRef, useState } from "react"
-import { BotMetaContext, GeneralMiscContext } from "../../context/BotStateContext"
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { BotMetaContext, GeneralMiscContext, DebugContext, RacingContext, SkillsContext, TrainingContext } from "../../context/BotStateContext"
+import { useNavigation, CommonActions } from "@react-navigation/native"
 import { useSettings } from "../../context/SettingsContext"
 import { logWithTimestamp, logErrorWithTimestamp } from "../../lib/logger"
 import { Animated, DeviceEventEmitter, StyleSheet, View, NativeModules } from "react-native"
@@ -18,6 +19,8 @@ import SelectButton from "../../components/SelectButton"
 import PermissionSetupDialog from "../../components/PermissionSetupDialog"
 import { loadDeviceCapabilities, shouldSuggestX8664Variant } from "../../lib/chat/deviceCapabilities"
 import HeroStatusCard, { HeroStatus } from "../../components/HeroStatusCard"
+import HeroGlance, { HeroGlanceTarget } from "../../components/HeroStatusCard/HeroGlance"
+import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, heroGlanceHasContent } from "../../components/HeroStatusCard/heroGlanceData"
 import { useProfileContext, DEFAULT_PROFILE_NAME } from "../../context/ProfileContext"
 import { SPACING } from "../../lib/spacing"
 
@@ -45,6 +48,14 @@ const styles = StyleSheet.create({
         width: 100,
     },
 })
+
+// Maps a hero glance target to its screen name inside the nested Settings stack navigator.
+const HERO_NAV_ROUTES: Record<HeroGlanceTarget, string> = {
+    debug: "DebugSettings",
+    srs: "SmartRaceSolverSettings",
+    skills: "Skills",
+    training: "TrainingSettings",
+}
 
 /**
  * List of scenarios that are supported by the app.
@@ -87,9 +98,14 @@ const Home = () => {
 
     const { readyStatus, setReadyStatus, setAppName, setAppVersion } = useContext(BotMetaContext)
     const { general, updateGeneral } = useContext(GeneralMiscContext)
+    const { debug } = useContext(DebugContext)
+    const { racing } = useContext(RacingContext)
+    const { skills } = useContext(SkillsContext)
+    const { training } = useContext(TrainingContext)
     const mlc = useContext(MessageLogDispatchContext)
     const { saveSettings } = useSettings()
     const { currentProfileName } = useProfileContext()
+    const navigation = useNavigation()
 
     const pulseAnim = useRef(new Animated.Value(1)).current
 
@@ -346,6 +362,17 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
     // or ABI mismatch) surface as "error". An unselected scenario lands on "stopped". Otherwise the bot is "ready".
     const heroStatus: HeroStatus = isRunning ? "running" : unsupportedReason !== null || abiMismatch ? "error" : readyStatus && deviceMetrics !== null ? "ready" : "stopped"
     const heroProfile = currentProfileName ?? DEFAULT_PROFILE_NAME
+
+    // Derive the hero "at a glance" data from the settings slices. Each piece renders only when it has something to show.
+    const activeTest = useMemo(() => findActiveDebugTest(debug), [debug])
+    const { names: planNames, spThreshold } = useMemo(() => activeSkillPlans(skills), [skills])
+    const statPriority = useMemo(() => abbreviateStatPriority(training.statPrioritization ?? []), [training.statPrioritization])
+    const hasGlance = heroGlanceHasContent({ debugMode: debug.enableDebugMode, activeTest, srs: racing.enableSmartRaceSolver, planNames, priority: statPriority })
+    const handleHeroNavigate = useCallback(
+        (target: HeroGlanceTarget) => navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen: HERO_NAV_ROUTES[target], initial: false } })),
+        [navigation]
+    )
+
     return (
         <View style={styles.root}>
             {/* MessageLog uses FlashList, which doesn't support sticky headers the same way as ScrollView, so PageHeader stays a sibling above (non-sticky). */}
@@ -355,6 +382,19 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                 <HeroStatusCard
                     status={heroStatus}
                     profile={heroProfile}
+                    glance={
+                        hasGlance ? (
+                            <HeroGlance
+                                debugMode={debug.enableDebugMode}
+                                activeTest={activeTest}
+                                srs={racing.enableSmartRaceSolver}
+                                planNames={planNames}
+                                spThreshold={spThreshold}
+                                priority={statPriority}
+                                onNavigate={handleHeroNavigate}
+                            />
+                        ) : undefined
+                    }
                     cta={
                         <SelectButton
                             variant={getSelectButtonVariant()}

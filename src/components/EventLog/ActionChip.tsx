@@ -1,9 +1,6 @@
-import React, { useMemo } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import React from "react"
 import { useTheme } from "../../context/ThemeContext"
-import { TYPE } from "../../lib/type"
-import { SPACING } from "../../lib/spacing"
-import { RADII } from "../../lib/radii"
+import TintedChip from "../ui/tinted-chip"
 import { ACTION_VISUALS, type ActionKey } from "./actionVisuals"
 
 /** Props for `ActionChip`. */
@@ -24,36 +21,8 @@ interface ActionChipProps {
 const ActionChipImpl = ({ action, sublabel }: ActionChipProps) => {
     const { colors } = useTheme()
     const visual = ACTION_VISUALS[action]
-    const tint = colors[visual.colorKey]
-
-    const styles = useMemo(
-        () =>
-            StyleSheet.create({
-                chip: {
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: SPACING.xs,
-                    paddingHorizontal: SPACING.sm,
-                    paddingVertical: 3,
-                    borderRadius: RADII.pill,
-                    backgroundColor: colors.surfaceRaised,
-                    borderWidth: 1,
-                    borderColor: colors.borderHair,
-                },
-                label: { ...TYPE.monoLabel, color: tint },
-            }),
-        [colors, tint]
-    )
-
-    const Icon = visual.icon
     const text = sublabel ? `${visual.label} ${sublabel}` : visual.label
-
-    return (
-        <View style={styles.chip}>
-            <Icon size={12} color={tint} />
-            <Text style={styles.label}>{text}</Text>
-        </View>
-    )
+    return <TintedChip icon={visual.icon} label={text} tint={colors[visual.colorKey]} />
 }
 
 export const ActionChip = React.memo(ActionChipImpl)
