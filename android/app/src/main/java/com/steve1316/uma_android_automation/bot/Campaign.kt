@@ -161,11 +161,11 @@ internal fun resolvePreSummerAction(energy: Int, mood: Mood, firstTrainingCheck:
  * @param isFinals Whether the finale is underway.
  * @param energy The trainee's current energy percentage.
  * @param minEnergy The extra-racing energy floor the trainee must clear to bother evaluating trainings.
- * @param hasG1Race Whether a G1 race is scheduled for the current turn.
+ * @param hasG1Race Lazily whether a G1 race is scheduled for the current turn. Evaluated last so the SQLite race lookup only runs once the cheap gates (enabled/year/summer/finale/energy) pass.
  * @return True when the pre-screen should enter the training screen to compare a rainbow training against the race.
  */
-internal fun shouldRunG1DayPreScreen(enabled: Boolean, year: DateYear, isSummer: Boolean, isFinals: Boolean, energy: Int, minEnergy: Int, hasG1Race: Boolean): Boolean =
-    enabled && year > DateYear.JUNIOR && !isSummer && !isFinals && energy >= minEnergy && hasG1Race
+internal fun shouldRunG1DayPreScreen(enabled: Boolean, year: DateYear, isSummer: Boolean, isFinals: Boolean, energy: Int, minEnergy: Int, hasG1Race: () -> Boolean): Boolean =
+    enabled && year > DateYear.JUNIOR && !isSummer && !isFinals && energy >= minEnergy && hasG1Race()
 
 /**
  * Whether a rainbow training is strong enough to stay and train instead of taking the G1 race. The best training's rainbow count must meet the configured threshold. Pure and testable.
@@ -2304,7 +2304,7 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RECOVER_MOOD
         }
 
-        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, racing.hasG1RacesAtTurn(date.day))) {
+        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = { racing.hasG1RacesAtTurn(date.day) })) {
             g1DayPreScreenResult()?.let { return it }
         }
 

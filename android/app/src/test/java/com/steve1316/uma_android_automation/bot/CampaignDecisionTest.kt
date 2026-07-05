@@ -43,7 +43,7 @@ class CampaignDecisionTest {
     @DisplayName("The G1-day pre-screen runs only when enabled, past Junior, outside summer/finale, with energy and a G1 race present")
     fun testShouldRunG1DayPreScreen() {
         fun run(enabled: Boolean = true, year: DateYear = DateYear.CLASSIC, isSummer: Boolean = false, isFinals: Boolean = false, energy: Int = 50, minEnergy: Int = 30, hasG1Race: Boolean = true) =
-            shouldRunG1DayPreScreen(enabled, year, isSummer, isFinals, energy, minEnergy, hasG1Race)
+            shouldRunG1DayPreScreen(enabled, year, isSummer, isFinals, energy, minEnergy) { hasG1Race }
 
         assertTrue(run(), "All gates satisfied should run the pre-screen")
         assertFalse(run(enabled = false), "Disabled setting never runs")
