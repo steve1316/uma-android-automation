@@ -23,9 +23,6 @@ private val UNITY_SCENARIO_RACE_DAYS: List<Int> =
         Triple(DateYear.SENIOR, DateMonth.DECEMBER, DatePhase.LATE),
     ).map { (year, month, phase) -> GameDate.toDay(year, month, phase) }
 
-/** How many turns before a scenario race the pre-race stat focus kicks in. 0 means only the race-day training itself, which is the last training before the race runs as an extra turn. */
-private const val UNITY_PRE_RACE_LOOKAHEAD: Int = 2
-
 /**
  * Whether the current turn is within the pre-race window of a Unity Cup scenario race. The bias should apply on the last few trainings leading into a team race, including the race-day
  * training. Pure and unit-testable so the schedule math is verified without a live campaign.
@@ -92,7 +89,8 @@ class UnityCupTraining(game: Game, campaign: Campaign) : Training(game, campaign
 
     override fun scoreTraining(config: TrainingConfig, option: TrainingOption): Double {
         return if (campaign.date.year < DateYear.SENIOR) {
-            val preRaceStatFocus = unityCupPreRaceStatFocus && isUnityPreRaceTurn(config.currentDate.day, UNITY_PRE_RACE_LOOKAHEAD)
+            // A 2-turn lookahead: the pre-race stat focus kicks in on the race-day training itself plus the two turns before it.
+            val preRaceStatFocus = unityCupPreRaceStatFocus && isUnityPreRaceTurn(config.currentDate.day, lookahead = 2)
             scoreUnityCupTraining(config, option, preRaceStatFocus)
         } else {
             super.scoreTraining(config, option)

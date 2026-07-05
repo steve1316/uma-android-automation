@@ -112,17 +112,14 @@ enum class MainScreenAction {
 private const val GROUP_PROGRESS_GAP_X = 15
 private const val GROUP_PROGRESS_WIDTH = 120
 
-/** First turn of the finale run (turns 73-75). */
-private const val FINALE_FIRST_DAY = 73
-
 /**
- * Whether mood recovery should be skipped because the finale is underway. Recovering mood with at most three turns left wastes one of them, so from the first finale turn the bot
- * should train or race instead. Pure so it is unit-testable without a live Campaign.
+ * Whether mood recovery should be skipped because the finale is underway. Recovering mood with at most three turns left wastes one of them, so from the first finale turn (day 73, the
+ * same boundary as GameDate.bIsFinaleSeason's day > 72) the bot should train or race instead. Pure so it is unit-testable without a live Campaign.
  *
  * @param day The current turn (1-75).
  * @return True when the finale has started and mood recovery should be skipped.
  */
-internal fun shouldSkipMoodRecoveryForFinale(day: Int): Boolean = day >= FINALE_FIRST_DAY
+internal fun shouldSkipMoodRecoveryForFinale(day: Int): Boolean = day >= 73
 
 /**
  * Parses a mood-recovery-floor setting name into a [Mood]. The floor is the mood the trainee must be below before recovery is attempted, so a higher floor recovers more eagerly.

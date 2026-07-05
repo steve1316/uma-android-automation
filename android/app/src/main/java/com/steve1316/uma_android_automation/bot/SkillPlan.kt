@@ -17,9 +17,6 @@ import org.opencv.core.Point
 private const val USE_MOCK_DATA: Boolean = false
 private const val MOCK_SKILL_POINTS: Int = 1495
 
-/** Ratio multiplier applied to recovery skills on stamina-heavy (Medium/Long) builds when the recovery-priority setting is on. A nudge, not a hard override, so strong stat skills still compete. */
-private const val RECOVERY_SKILL_STAMINA_BOOST: Double = 1.5
-
 /**
  * Handle operations based on the user's Skill Plan Settings.
  *
@@ -173,10 +170,10 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
          * @param baseRatio The skill's normal evaluation-point-to-price ratio.
          * @param isRecovery Whether the skill is a recovery skill.
          * @param staminaHeavy Whether the boost is active this run (setting on and a Medium/Long build).
-         * @param boost The multiplier to apply when the boost is active.
+         * @param boost The multiplier to apply when the boost is active. Defaults to 1.5 - a nudge on stamina-heavy (Medium/Long) builds so strong stat skills still compete, not a hard override.
          * @return The effective ratio to sort by.
          */
-        fun recoveryBoostedRatio(baseRatio: Double, isRecovery: Boolean, staminaHeavy: Boolean, boost: Double = RECOVERY_SKILL_STAMINA_BOOST): Double =
+        fun recoveryBoostedRatio(baseRatio: Double, isRecovery: Boolean, staminaHeavy: Boolean, boost: Double = 1.5): Double =
             if (isRecovery && staminaHeavy) baseRatio * boost else baseRatio
 
         /**
