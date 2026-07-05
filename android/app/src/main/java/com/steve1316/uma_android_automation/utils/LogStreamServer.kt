@@ -490,7 +490,8 @@ object LogStreamServer {
 
         Log.d(TAG, "[DEBUG] sendDebugImages:: Found ${imageFiles.size} image files in temp directory.")
 
-        for (file in imageFiles) {
+        // Send newest first so the most recent capture lands at the top of the viewer grid.
+        for (file in imageFiles.sortedByDescending { it.lastModified() }) {
             try {
                 val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                 if (bitmap != null) {
@@ -504,6 +505,7 @@ object LogStreamServer {
                         JSONObject().apply {
                             put("type", "image")
                             put("name", file.name)
+                            put("timestamp", file.lastModified())
                             put("data", base64Image)
                         }
                     session.send(Frame.Text(json.toString()))
@@ -1136,9 +1138,12 @@ object LogStreamServer {
                                         Locale.getDefault(),
                                     ).format(Date())
 
+                                // Prefix the download with the scraped trainee name (falling back to "uaa" before one is read),
+                                // matching how saved log files are named. MessageLog.logFileNamePrefix holds the underscore-joined name.
+                                val namePart = MessageLog.logFileNamePrefix.ifEmpty { "uaa" }
                                 call.response.header(
                                     HttpHeaders.ContentDisposition,
-                                    "attachment; filename=\"uaa_logs_$datePart.txt\"",
+                                    "attachment; filename=\"${namePart}_logs_$datePart.txt\"",
                                 )
                                 call.respondText(fullLogs, ContentType.Text.Plain)
                             } catch (e: Exception) {
