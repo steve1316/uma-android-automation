@@ -1,15 +1,16 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
+import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonHomeFansInfo
 import com.steve1316.uma_android_automation.components.LabelDuel
+import com.steve1316.uma_android_automation.components.LabelDuelSmall
 import com.steve1316.uma_android_automation.types.StatName
 import kotlin.math.abs
 
-// Screen-width fractions of the five facility button centers, ordered Speed, Stamina, Power, Guts, Wit. Mirrors the empirically-measured slot fractions used by
-// CustomImageUtils.detectRainbowTrainingButtons so the duel badge maps to the same facility columns as the rest of the bot.
+// Screen-width fractions of the five facility button centers, ordered Speed, Stamina, Power, Guts, Wit. Empirically measured so the duel badge maps to the correct facility column.
 private val FACILITY_SLOT_FRACTIONS: List<Pair<StatName, Double>> =
     listOf(StatName.SPEED to 0.145, StatName.STAMINA to 0.324, StatName.POWER to 0.499, StatName.GUTS to 0.678, StatName.WIT to 0.853)
 
@@ -133,7 +134,7 @@ fun duelFacilityForBadgeX(badgeX: Int, displayWidth: Int): StatName =
  * @property game The [Game] instance for interacting with the game state.
  */
 class UraFinale(game: Game) : Campaign(game) {
-    override val training = UraFinaleTraining(game, this)
+    override val training: UraFinaleTraining = UraFinaleTraining(game, this)
 
     override fun openFansDialog() {
         ButtonHomeFansInfo.click(game.imageUtils, region = game.imageUtils.regionTopHalf, tries = 10)
@@ -142,9 +143,13 @@ class UraFinale(game: Game) : Campaign(game) {
     }
 
     override fun onMainScreenEntry() {
-        // The main-screen Duel badge means a Happy Meek duel is available this turn; the per-facility badge read during training analysis decides which facility to bias toward.
+        // Resolve the Happy Meek duel facility once per turn here (single-threaded) so the parallel per-facility training analysis just reads it instead of re-matching the badge on all five.
+        // The duel badge sits on one facility button, so its column identifies the duel facility regardless of which facility is currently selected.
+        training.duelFacility = null
         if (LabelDuel.check(game.imageUtils)) {
-            MessageLog.i(TAG, "[URA] Happy Meek duel available this turn. Training will be biased toward the duel facility.")
+            val badge = LabelDuelSmall.findImageWithBitmap(game.imageUtils, game.imageUtils.getSourceBitmap())
+            training.duelFacility = badge?.let { duelFacilityForBadgeX(it.x.toInt(), SharedData.displayWidth) }
+            MessageLog.i(TAG, "[URA] Happy Meek duel available this turn on the ${training.duelFacility?.name?.lowercase() ?: "(unresolved)"} facility. Training will be biased toward it.")
         }
     }
 }

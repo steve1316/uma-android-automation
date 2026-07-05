@@ -1,13 +1,11 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
-import android.util.Log
-import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.Training
-import com.steve1316.uma_android_automation.components.LabelDuelSmall
+import com.steve1316.uma_android_automation.types.StatName
 
 /**
  * URA Finale-specific Training subclass. Detects which facility carries a Happy Meek duel badge and biases training toward it, so the bot enters and wins the duel (which uncaps and
@@ -20,17 +18,12 @@ class UraFinaleTraining(game: Game, campaign: Campaign) : Training(game, campaig
     /** How strongly to bias training toward a facility carrying a duel badge. Default MODERATE. */
     private val duelBiasLevel: DuelBiasLevel = parseDuelBiasLevel(SettingsHelper.getStringSetting("scenarioOverrides", "uraHappyMeekDuelBias", "Moderate"))
 
+    /** The facility carrying the Happy Meek duel badge this turn, or null when no duel is available. Resolved once per turn by UraFinale.onMainScreenEntry so the parallel per-facility analysis just reads it instead of re-matching the badge on all five. */
+    var duelFacility: StatName? = null
+
     override fun runExtraTrainingAnalysis(result: TrainingAnalysisResult, sourceBitmap: Bitmap, singleTraining: Boolean) {
-        try {
-            // The duel badge sits on one facility button, so its column identifies the duel facility regardless of which facility is currently selected.
-            val badge = LabelDuelSmall.findImageWithBitmap(game.imageUtils, sourceBitmap)
-            result.extras["hasDuel"] = badge != null && duelFacilityForBadgeX(badge.x.toInt(), SharedData.displayWidth) == result.name
-        } catch (e: Exception) {
-            Log.e(TAG, "[ERROR] Error in Happy Meek duel badge detection: ${e.stackTraceToString()}")
-            result.extras["hasDuel"] = false
-        } finally {
-            result.latch.countDown()
-        }
+        result.extras["hasDuel"] = duelFacility == result.name
+        result.latch.countDown()
     }
 
     override fun scoreTraining(config: TrainingConfig, option: TrainingOption): Double {
