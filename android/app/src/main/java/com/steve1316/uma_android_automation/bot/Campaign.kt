@@ -2085,9 +2085,10 @@ abstract class Campaign(game: Game) : Task(game) {
             return
         }
 
-        // Use CountDownLatch to run the operations in parallel.
-        // 1 racingRequirements (skipped during summer) + 5 stats + 1 skill points + 1 mood + 1 energy + 1 stat caps = 10 (or 9) threads.
-        val latch = if (date.isSummer() && !(racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) CountDownLatch(9) else CountDownLatch(10)
+        // Run the per-turn reads in parallel. 5 stats + skill points + mood + energy = 8, plus racing requirements (outside summer) and the stat-cap OCR (only when dynamic caps are on).
+        val includeRacingThread = !date.isSummer() || (racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)
+        val readStatCaps = training.useDynamicStatCaps
+        val latch = CountDownLatch(8 + (if (includeRacingThread) 1 else 0) + (if (readStatCaps) 1 else 0))
 
         MessageLog.disableOutput = true
 
@@ -2117,7 +2118,7 @@ abstract class Campaign(game: Game) : Task(game) {
         }.apply { isDaemon = true }.start()
 
         // Thread 8: Update racing requirements.
-        if (!date.isSummer() || (racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) {
+        if (includeRacingThread) {
             Thread {
                 try {
                     racing.checkRacingRequirements(sourceBitmap)
@@ -2140,16 +2141,18 @@ abstract class Campaign(game: Game) : Task(game) {
             }
         }.apply { isDaemon = true }.start()
 
-        // Thread 10: Update stat caps (only shown on the main / training screen).
-        Thread {
-            try {
-                trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
-            } catch (e: Exception) {
-                MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
-            } finally {
-                latch.countDown()
-            }
-        }.apply { isDaemon = true }.start()
+        // Thread 10: Update stat caps (only shown on the main / training screen, and only when dynamic caps are on - otherwise the 5 OCR reads and the misread caps in the log are wasted).
+        if (readStatCaps) {
+            Thread {
+                try {
+                    trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
+                } catch (e: Exception) {
+                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
+                } finally {
+                    latch.countDown()
+                }
+            }.apply { isDaemon = true }.start()
+        }
 
         // Wait for all threads to complete.
         try {
