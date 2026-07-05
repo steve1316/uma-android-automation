@@ -13,6 +13,8 @@ import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalRadioRow } from "../../components/ui/modal-list"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
 import { Row } from "../../components/ui/row"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
 import { CircleCheckBig, Trash2 } from "lucide-react-native"
@@ -259,16 +261,6 @@ const ScenarioOverridesSettings = () => {
                     opacity: 0.7,
                 },
                 resetLink: { ...TYPE.caption, color: colors.brand, fontWeight: "600" as const },
-                chip: {
-                    ...TYPE.monoLabel,
-                    color: colors.brand,
-                    paddingHorizontal: SPACING.sm,
-                    paddingVertical: 2,
-                    backgroundColor: colors.brandSubtle,
-                    borderRadius: RADII.pill,
-                    overflow: "hidden" as const,
-                    maxWidth: 140,
-                },
             }),
         [colors]
     )
@@ -278,13 +270,6 @@ const ScenarioOverridesSettings = () => {
         <Pressable onPress={onPress} android_ripple={{ color: colors.ripple, foreground: true }} hitSlop={8}>
             <Text style={styles.resetLink}>Reset</Text>
         </Pressable>
-    )
-
-    /** Short right-side chip rendered inside a Row+chip selector. */
-    const chipFor = (label: string) => (
-        <Text style={styles.chip} numberOfLines={1} ellipsizeMode="tail">
-            {label}
-        </Text>
     )
 
     return (
@@ -795,7 +780,7 @@ const ScenarioOverridesSettings = () => {
                                                 title="Happy Meek Duel Bias"
                                                 description="Steer training toward a facility with a duel badge so the bot enters and wins the duel."
                                                 onPress={() => setDuelBiasPickerOpen(true)}
-                                                right={chipFor(DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.chipLabel ?? "Moderate")}
+                                                right={<ValuePill label={DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.chipLabel ?? "Moderate"} />}
                                             />
                                         </SearchableItem>
                                     </Section>
@@ -876,19 +861,7 @@ const ScenarioOverridesSettings = () => {
             <SheetModal
                 visible={duelBiasPickerOpen}
                 onRequestClose={() => setDuelBiasPickerOpen(false)}
-                header={
-                    <View style={modalShellStyles.modalHeaderRow}>
-                        <Text style={modalShellStyles.modalTitleMono}>HAPPY MEEK DUEL BIAS</Text>
-                        <Pressable
-                            style={modalShellStyles.modalCloseChip}
-                            onPress={() => setDuelBiasPickerOpen(false)}
-                            android_ripple={{ color: colors.ripple, foreground: true }}
-                            accessibilityLabel="Close"
-                        >
-                            <Ionicons name="close" size={18} color={colors.text} />
-                        </Pressable>
-                    </View>
-                }
+                header={<ModalHeader title="HAPPY MEEK DUEL BIAS" onClose={() => setDuelBiasPickerOpen(false)} />}
                 footer={null}
             >
                 <View style={modalShellStyles.modalBodyList}>
