@@ -1138,9 +1138,12 @@ object LogStreamServer {
                                         Locale.getDefault(),
                                     ).format(Date())
 
+                                // Prefix the download with the scraped trainee name (falling back to "uaa" before one is read),
+                                // matching how saved log files are named. MessageLog.logFileNamePrefix holds the underscore-joined name.
+                                val namePart = MessageLog.logFileNamePrefix.ifEmpty { "uaa" }
                                 call.response.header(
                                     HttpHeaders.ContentDisposition,
-                                    "attachment; filename=\"uaa_logs_$datePart.txt\"",
+                                    "attachment; filename=\"${namePart}_logs_$datePart.txt\"",
                                 )
                                 call.respondText(fullLogs, ContentType.Text.Plain)
                             } catch (e: Exception) {

@@ -4218,49 +4218,15 @@
              * Handles log downloading by fetching from the server endpoint.
              */
             function downloadLogs() {
-                const traineeName = document.getElementById("dashboardName").textContent.trim()
-                const datePart = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")
-
-                // Prefer the server-side download for full, non-truncated logs.
-                fetch("/logs/download")
-                    .then((response) => {
-                        if (!response.ok) throw new Error("Server download failed")
-                        return response.blob()
-                    })
-                    .then((blob) => {
-                        const url = URL.createObjectURL(blob)
-                        const a = document.createElement("a")
-                        a.href = url
-                        // Use a descriptive filename.
-                        if (traineeName && traineeName !== "-") {
-                            a.download = `${traineeName}_${datePart}.txt`
-                        } else {
-                            a.download = `log @ ${datePart}.txt`
-                        }
-                        document.body.appendChild(a)
-                        a.click()
-                        document.body.removeChild(a)
-                        URL.revokeObjectURL(url)
-                    })
-                    .catch((err) => {
-                        console.error("Download error:", err)
-                        // Fallback: reconstruct raw log lines from pre-parsed objects.
-                        const content = allMessages.map((m) => {
-                            var line = ""
-                            if (m.parsed.newline) line += m.parsed.newline
-                            if (m.parsed.timestamp) line += m.parsed.timestamp + " "
-                            if (m.parsed.level) line += "[" + m.parsed.level + "] "
-                            line += m.parsed.message
-                            return line
-                        }).join("\n")
-                        const blob = new Blob([content], { type: "text/plain" })
-                        const url = URL.createObjectURL(blob)
-                        const a = document.createElement("a")
-                        a.href = url
-                        a.download = `log @ ${datePart}.txt`
-                        a.click()
-                        URL.revokeObjectURL(url)
-                    })
+                // Native anchor download of the full server-side log. The server sets the filename via Content-Disposition
+                // (trainee name + date), so none is computed here (download="" uses the server's name). Triggered synchronously
+                // so it cannot stall behind a debug-flood render backlog on the logs tab the way a fetch -> blob -> click chain did.
+                const a = document.createElement("a")
+                a.href = "/logs/download"
+                a.download = ""
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
             }
 
             // //////////////////////////////////////////////////////////////////////////////////////////////////
