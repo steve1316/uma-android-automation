@@ -180,7 +180,8 @@
 
             .image-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                align-content: start;
                 gap: 16px;
                 padding: 20px;
                 overflow-y: auto;
@@ -197,6 +198,7 @@
                 cursor: pointer;
                 display: flex;
                 flex-direction: column;
+                height: 360px;
             }
 
             .image-card:hover {
@@ -205,23 +207,46 @@
                 box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             }
 
-            .image-card img {
-                width: 100%;
-                aspect-ratio: 9 / 16;
-                object-fit: cover;
-                display: block;
+            .image-thumb {
+                flex: 1 1 auto;
+                min-height: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
                 background: #000;
             }
 
+            .image-thumb img {
+                max-width: 100%;
+                max-height: 100%;
+                display: block;
+            }
+
             .image-info {
+                flex: 0 0 auto;
                 padding: 8px 12px;
                 font-size: 11px;
                 color: var(--text-secondary);
                 text-align: center;
-                word-break: break-all;
                 border-bottom: 1px solid var(--border-color);
                 background: var(--bg-tertiary);
                 font-family: var(--font-mono);
+            }
+
+            .image-name {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                word-break: break-all;
+            }
+
+            .image-time {
+                margin-top: 3px;
+                font-size: 10px;
+                color: var(--text-muted);
+                letter-spacing: 0.3px;
             }
 
             .debug-notice {
@@ -273,6 +298,28 @@
                 border-radius: var(--radius);
                 box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
                 animation: modalZoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .modal-caption {
+                position: absolute;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                max-width: 90%;
+                padding: 8px 14px;
+                background: rgba(10, 10, 15, 0.85);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius);
+                color: var(--text-secondary);
+                font-family: var(--font-mono);
+                font-size: 12px;
+                text-align: center;
+                word-break: break-all;
+                pointer-events: none;
+            }
+
+            .modal-caption:empty {
+                display: none;
             }
 
             @keyframes modalZoom {
@@ -2131,6 +2178,7 @@
         <div id="imageModal" class="modal" onclick="closeModal()">
             <span class="modal-close">&times;</span>
             <img class="modal-content" id="enlargedImage">
+            <div id="imageModalCaption" class="modal-caption"></div>
         </div>
 
         <!-- Log Files View -->
@@ -4307,6 +4355,18 @@
             }
 
             /**
+             * Formats an image's creation time (epoch millis from the server) as "Mon D HH:mm:ss".
+             * @param {number} ms - Epoch milliseconds, typically from File.lastModified() on the backend.
+             * @returns {string} The formatted date-time, or "" if the value is missing or unparseable.
+             */
+            function formatImageTimestamp(ms) {
+                if (!Number.isFinite(ms)) return ""
+                const d = new Date(ms)
+                const pad = n => String(n).padStart(2, "0")
+                return CAL_MONTH_LABELS[d.getMonth()] + " " + d.getDate() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds())
+            }
+
+            /**
              * Handles an incoming image message from the server.
              * @param {object} data - The image data object.
              */
@@ -4319,15 +4379,33 @@
                 img.src = "data:image/jpeg;base64," + data.data
                 img.alt = data.name
 
+                const thumb = document.createElement("div")
+                thumb.className = "image-thumb"
+                thumb.appendChild(img)
+
                 const info = document.createElement("div")
                 info.className = "image-info"
-                info.textContent = data.name
+
+                const nameEl = document.createElement("div")
+                nameEl.className = "image-name"
+                nameEl.textContent = data.name
+                nameEl.title = data.name
+                info.appendChild(nameEl)
+
+                const time = formatImageTimestamp(data.timestamp)
+                if (time) {
+                    const timeEl = document.createElement("div")
+                    timeEl.className = "image-time"
+                    timeEl.textContent = time
+                    info.appendChild(timeEl)
+                }
 
                 card.appendChild(info)
-                card.appendChild(img)
+                card.appendChild(thumb)
 
+                const caption = time ? data.name + " · " + time : data.name
                 card.onclick = function() {
-                    openModal(img.src)
+                    openModal(img.src, caption)
                 }
 
                 grid.appendChild(card)
@@ -4352,12 +4430,15 @@
             /**
              * Opens the image enlargement modal.
              * @param {string} src - The image source URL.
+             * @param {string} caption - Optional caption (name and creation time) shown over the image; pass "" for none.
              */
-            function openModal(src) {
+            function openModal(src, caption) {
                 const modal = document.getElementById("imageModal")
                 const modalImg = document.getElementById("enlargedImage")
+                const cap = document.getElementById("imageModalCaption")
                 modal.classList.add("visible")
                 modalImg.src = src
+                cap.textContent = caption || ""
             }
 
             /**

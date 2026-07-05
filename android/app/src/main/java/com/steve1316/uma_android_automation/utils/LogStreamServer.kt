@@ -490,7 +490,8 @@ object LogStreamServer {
 
         Log.d(TAG, "[DEBUG] sendDebugImages:: Found ${imageFiles.size} image files in temp directory.")
 
-        for (file in imageFiles) {
+        // Send newest first so the most recent capture lands at the top of the viewer grid.
+        for (file in imageFiles.sortedByDescending { it.lastModified() }) {
             try {
                 val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                 if (bitmap != null) {
@@ -504,6 +505,7 @@ object LogStreamServer {
                         JSONObject().apply {
                             put("type", "image")
                             put("name", file.name)
+                            put("timestamp", file.lastModified())
                             put("data", base64Image)
                         }
                     session.send(Frame.Text(json.toString()))
