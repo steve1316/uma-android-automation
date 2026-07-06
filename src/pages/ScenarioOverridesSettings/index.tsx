@@ -30,11 +30,11 @@ import { RADII } from "../../lib/radii"
 /** Scenarios that currently have a dedicated set of overrides on this page. Only these appear in the campaign picker, since picking any other scenario would render nothing. */
 const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup", "URA Finale"] as const
 
-/** Options for the URA Finale Happy Meek duel training-bias picker. `chipLabel` is the short text shown in the row's right-side pill. */
+/** Options for the URA Finale Happy Meek duel training-bias picker. The `value` doubles as the short text shown in the row's right-side pill. */
 const DUEL_BIAS_OPTIONS = [
-    { value: "Off", label: "Off - never bias toward the duel facility", chipLabel: "Off" },
-    { value: "Moderate", label: "Moderate - prefer the duel when it is close to the best pick", chipLabel: "Moderate" },
-    { value: "Aggressive", label: "Aggressive - strongly prefer the duel facility", chipLabel: "Aggressive" },
+    { value: "Off", label: "Off - never bias toward the duel facility" },
+    { value: "Moderate", label: "Moderate - prefer the duel when it is close to the best pick" },
+    { value: "Aggressive", label: "Aggressive - strongly prefer the duel facility" },
 ] as const
 
 /** Props for `ChipMultiSelect`. */
@@ -780,7 +780,7 @@ const ScenarioOverridesSettings = () => {
                                                 title="Happy Meek Duel Bias"
                                                 description="Steer training toward a facility with a duel badge so the bot enters and wins the duel."
                                                 onPress={() => setDuelBiasPickerOpen(true)}
-                                                right={<ValuePill label={DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.chipLabel ?? "Moderate"} />}
+                                                right={<ValuePill label={DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.value ?? "Moderate"} />}
                                             />
                                         </SearchableItem>
                                     </Section>
