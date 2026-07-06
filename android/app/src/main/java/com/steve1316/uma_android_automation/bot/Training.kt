@@ -256,6 +256,26 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         /** Scenario-specific extra data populated by [runExtraTrainingAnalysis]. */
         val extras: MutableMap<String, Any?> = mutableMapOf()
+
+        /**
+         * Convert this completed analysis into a [TrainingOption] flagged as skipped for [reason]. Used only to record why a training was passed over, for the decision log.
+         *
+         * @param reason The human-readable skip reason.
+         * @return A [TrainingOption] carrying this analysis's stats plus the skip reason.
+         */
+        fun toSkippedOption(reason: String): TrainingOption =
+            TrainingOption(
+                name = name,
+                statGains = statGains,
+                correctedStats = correctedStats,
+                failureChance = failureChance,
+                relationshipBars = relationshipBars,
+                numRainbow = numRainbow,
+                extras = extras,
+                numSkillHints = numSkillHints,
+                trainingLevel = trainingLevel,
+                skipReason = reason,
+            )
     }
 
     /**
@@ -1674,19 +1694,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     }
 
                 // Store the skipped training for logging purposes.
-                val skippedTraining =
-                    TrainingOption(
-                        name = result.name,
-                        statGains = result.statGains,
-                        correctedStats = result.correctedStats,
-                        failureChance = result.failureChance,
-                        relationshipBars = result.relationshipBars,
-                        numRainbow = result.numRainbow,
-                        extras = result.extras,
-                        numSkillHints = result.numSkillHints,
-                        trainingLevel = result.trainingLevel,
-                        skipReason = skipReason,
-                    )
+                val skippedTraining = result.toSkippedOption(skipReason)
                 skippedTrainingMap[result.name] = skippedTraining
                 continue
             }
@@ -1698,19 +1706,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 )
 
                 // Store the skipped training for logging purposes.
-                val skippedTraining =
-                    TrainingOption(
-                        name = result.name,
-                        statGains = result.statGains,
-                        correctedStats = result.correctedStats,
-                        failureChance = result.failureChance,
-                        relationshipBars = result.relationshipBars,
-                        numRainbow = result.numRainbow,
-                        extras = result.extras,
-                        numSkillHints = result.numSkillHints,
-                        trainingLevel = result.trainingLevel,
-                        skipReason = "low gain with charm",
-                    )
+                val skippedTraining = result.toSkippedOption("low gain with charm")
                 skippedTrainingMap[result.name] = skippedTraining
                 continue
             }
@@ -1722,20 +1718,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
                 val totalStatGain = result.statGains.values.sum()
                 if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {
-                    MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training: poor value for risk (total gain $totalStatGain < ${expectedValueGainPerFailPercent}x fail ${result.failureChance}%).")
-                    val skippedTraining =
-                        TrainingOption(
-                            name = result.name,
-                            statGains = result.statGains,
-                            correctedStats = result.correctedStats,
-                            failureChance = result.failureChance,
-                            relationshipBars = result.relationshipBars,
-                            numRainbow = result.numRainbow,
-                            extras = result.extras,
-                            numSkillHints = result.numSkillHints,
-                            trainingLevel = result.trainingLevel,
-                            skipReason = "poor value for risk",
-                        )
+                    MessageLog.i(
+                        TAG,
+                        "[TRAINING] Skipping ${result.name} training: poor value for risk (total gain $totalStatGain < ${expectedValueGainPerFailPercent}x fail ${result.failureChance}%).",
+                    )
+                    val skippedTraining = result.toSkippedOption("poor value for risk")
                     skippedTrainingMap[result.name] = skippedTraining
                     continue
                 }
@@ -1746,19 +1733,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to irregular training threshold ($mainStatGain < $irregularTrainingMinStatGain).")
 
                     // Store the skipped training for logging purposes.
-                    val skippedTraining =
-                        TrainingOption(
-                            name = result.name,
-                            statGains = result.statGains,
-                            correctedStats = result.correctedStats,
-                            failureChance = result.failureChance,
-                            relationshipBars = result.relationshipBars,
-                            numRainbow = result.numRainbow,
-                            extras = result.extras,
-                            numSkillHints = result.numSkillHints,
-                            trainingLevel = result.trainingLevel,
-                            skipReason = "low irregular gain",
-                        )
+                    val skippedTraining = result.toSkippedOption("low irregular gain")
                     skippedTrainingMap[result.name] = skippedTraining
                     continue
                 }
