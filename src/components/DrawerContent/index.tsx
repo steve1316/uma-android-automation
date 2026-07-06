@@ -59,12 +59,8 @@ const SECTIONS: DrawerSection[] = [
         items: [
             { label: "Training", icon: "barbell-outline", route: "TrainingSettings" },
             { label: "Training Events", icon: "calendar-outline", route: "TrainingEventSettings" },
-            {
-                label: "Racing",
-                icon: "flag-outline",
-                route: "RacingSettings",
-                children: [{ label: "Smart Race Solver", icon: "hardware-chip-outline", route: "SmartRaceSolverSettings" }],
-            },
+            { label: "Racing", icon: "flag-outline", route: "RacingSettings" },
+            { label: "Schedule", icon: "calendar-number-outline", route: "ScheduleScreen" },
             { label: "Skills", icon: "american-football-outline", route: "Skills" },
         ],
     },
@@ -110,7 +106,7 @@ const SETTINGS_STACK_ROUTES = new Set<string>([
     "TrainingSettings",
     "TrainingEventSettings",
     "RacingSettings",
-    "SmartRaceSolverSettings",
+    "ScheduleScreen",
     "Skills",
     "EventLogVisualizer",
     "ImportSettingsPreview",

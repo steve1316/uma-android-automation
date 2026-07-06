@@ -35,7 +35,7 @@ const pageNameMapping: Record<string, string> = {
     TrainingSettings: "Training",
     TrainingEventSettings: "Training Events",
     RacingSettings: "Racing",
-    SmartRaceSolverSettings: "Smart Race Solver",
+    ScheduleScreen: "Schedule",
     Skills: "Skills",
     DebugSettings: "Debug",
     EventLogVisualizer: "Event Log Visualizer",
@@ -203,6 +203,7 @@ const PageHeader = ({ title, showHomeButton = true, titleComponent, leftComponen
         const navParams = {
             targetId: item.id,
             fallbackTargetId: item.parentId || undefined,
+            tab: item.tab,
         }
 
         // List of pages that are nested inside the "Settings" stack.
@@ -211,7 +212,7 @@ const PageHeader = ({ title, showHomeButton = true, titleComponent, leftComponen
             "TrainingSettings",
             "TrainingEventSettings",
             "RacingSettings",
-            "SmartRaceSolverSettings",
+            "ScheduleScreen",
             "Skills",
             "EventLogVisualizer",
             "ImportSettingsPreview",

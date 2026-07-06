@@ -20,10 +20,10 @@ import { useFirstRunGate } from "./hooks/useFirstRunGate"
 import FirstRunWizard from "./pages/FirstRunWizard"
 import Home from "./pages/Home"
 import Settings from "./pages/Settings"
+import Schedule from "./pages/Schedule"
 import TrainingSettings from "./pages/TrainingSettings"
 import TrainingEventSettings from "./pages/TrainingEventSettings"
 import RacingSettings from "./pages/RacingSettings"
-import SmartRaceSolverSettings from "./pages/SmartRaceSolverSettings"
 import Skills from "./pages/Skills"
 import EventLogVisualizer from "./pages/EventLogVisualizer"
 import ImportSettingsPreview from "./pages/ImportSettingsPreview"
@@ -56,7 +56,7 @@ function SettingsStack() {
             <Stack.Screen name="TrainingSettings" component={TrainingSettings} />
             <Stack.Screen name="TrainingEventSettings" component={TrainingEventSettings} />
             <Stack.Screen name="RacingSettings" component={RacingSettings} />
-            <Stack.Screen name="SmartRaceSolverSettings" component={SmartRaceSolverSettings} />
+            <Stack.Screen name="ScheduleScreen" component={Schedule} initialParams={{ tab: "raceSolver" }} />
             <Stack.Screen name="Skills" component={Skills} initialParams={{ tab: "skillPointCheck" }} />
             <Stack.Screen name="EventLogVisualizer" component={EventLogVisualizer} />
             <Stack.Screen name="ImportSettingsPreview" component={ImportSettingsPreview} />
