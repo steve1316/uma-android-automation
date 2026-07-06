@@ -25,6 +25,8 @@ export interface SheetModalProps {
     heightFraction?: number
     /** Override the default 560px max width. Use when the modal hosts wider content (e.g. multi-column grids). */
     maxWidth?: number
+    /** Override the default 92% card width with an explicit fraction of the screen width (clamped 0.3-0.98). When set, `maxWidth` is ignored so the fraction governs exactly. */
+    widthFraction?: number
     /** Set false to disable tap-outside-to-dismiss. Default true. */
     dismissOnBackdropPress?: boolean
     /** When false, the body is wrapped in a `flex: 1` `View` instead of a `ScrollView`. Use for bodies that manage their own scroll (e.g. `FlashList`). Default true. */
@@ -44,6 +46,8 @@ export interface SheetModalProps {
  * @param children Body slot rendered inside a flex-1 ScrollView.
  * @param footer Footer slot rendered below a hairline divider.
  * @param heightFraction Override the default 0.80 screen-height fraction. Clamped between 0.4 and 0.95.
+ * @param maxWidth Override the default 560px max width.
+ * @param widthFraction Override the default 92% card width with an explicit screen-width fraction (clamped 0.3-0.98). When set, `maxWidth` is ignored.
  * @param dismissOnBackdropPress Set false to disable tap-outside-to-dismiss. Default true.
  * @returns A full-screen `Modal` with a centered card whose layout is header / optional sub-header / scrollable body / footer.
  */
@@ -57,20 +61,22 @@ const SheetModalImpl = ({
     footer,
     heightFraction = 0.8,
     maxWidth = 560,
+    widthFraction,
     dismissOnBackdropPress = true,
     scrollableBody = true,
 }: SheetModalProps) => {
     const { colors } = useTheme()
     const clamped = Math.max(0.4, Math.min(0.95, heightFraction))
     const cardHeight = Math.round(Dimensions.get("window").height * clamped)
+    const cardWidth = widthFraction != null ? (`${Math.round(Math.max(0.3, Math.min(0.98, widthFraction)) * 100)}%` as const) : "92%"
     const styles = useMemo(
         () =>
             StyleSheet.create({
                 root: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.glassBackdrop },
                 backdrop: StyleSheet.absoluteFill as object,
                 card: {
-                    width: "92%",
-                    maxWidth,
+                    width: cardWidth,
+                    maxWidth: widthFraction != null ? undefined : maxWidth,
                     height: cardHeight,
                     borderRadius: RADII.xl,
                     borderWidth: 1,
@@ -78,14 +84,14 @@ const SheetModalImpl = ({
                     backgroundColor: colors.surface,
                     overflow: "hidden",
                 },
-                header: { paddingHorizontal: SPACING.md, paddingTop: SPACING.md },
+                header: { paddingHorizontal: SPACING.md, paddingTop: SPACING.md, paddingBottom: SPACING.md },
                 description: { ...TYPE.caption, color: colors.textMuted, paddingHorizontal: SPACING.md, paddingTop: SPACING.xs },
                 subHeader: { paddingHorizontal: SPACING.md },
                 body: { flex: 1 },
                 bodyContent: { paddingHorizontal: SPACING.md, paddingVertical: SPACING.md },
                 footer: { paddingHorizontal: SPACING.md, paddingVertical: SPACING.md },
             }),
-        [colors, cardHeight, maxWidth]
+        [colors, cardHeight, maxWidth, cardWidth, widthFraction]
     )
     return (
         <Modal transparent visible={visible} animationType="fade" onRequestClose={onRequestClose} statusBarTranslucent>
