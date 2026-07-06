@@ -388,7 +388,8 @@ const searchConfig: SearchOption[] = [
     {
         id: "min-energy-for-extra-racing",
         title: "Minimum Energy for Extra Races",
-        description: "Skip the fan-farming extra race when energy is below this percentage. 0 disables the floor. Only gates the standard fan-farming cadence, never mandatory, scheduled, or solver races.",
+        description:
+            "Skip the fan-farming extra race when energy is below this percentage. 0 disables the floor. Only gates the standard fan-farming cadence, never mandatory, scheduled, or solver races.",
         page: "RacingSettings",
     },
     {
