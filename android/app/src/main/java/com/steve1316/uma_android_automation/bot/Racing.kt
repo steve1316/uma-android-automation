@@ -65,6 +65,33 @@ import org.opencv.core.Point
 internal fun hasEnoughEnergyForExtraRacing(energy: Int, minEnergy: Int): Boolean = minEnergy <= 0 || energy >= minEnergy
 
 /**
+ * Whether the extra-race pick should defer to the Smart Race Solver instead of standard racing. Any mandatory career goal (fan, trophy, or goal-pts
+ * requirement) forces standard racing, whose double-star and G1-only filtering actually satisfies the goal. The solver only optimizes fans and epithets
+ * and never honors these goals, so routing a requirement to it silently drops it. Pure so it is unit-testable without a live Racing.
+ *
+ * @param hasFanRequirement Whether a minimum-fan-count career goal is active.
+ * @param hasTrophyRequirement Whether a win-a-trophy (G1) career goal is active.
+ * @param hasInsufficientGoalRacePtsRequirement Whether a minimum goal-race-points requirement is active.
+ * @param year The current career year.
+ * @param enableSmartRaceSolver Whether the Smart Race Solver setting is enabled.
+ * @param enableForceRacing Whether the force-racing setting is enabled.
+ * @return True when the solver should pick the race, false to use standard racing.
+ */
+internal fun shouldUseSmartRacing(
+    hasFanRequirement: Boolean,
+    hasTrophyRequirement: Boolean,
+    hasInsufficientGoalRacePtsRequirement: Boolean,
+    year: DateYear,
+    enableSmartRaceSolver: Boolean,
+    enableForceRacing: Boolean,
+): Boolean =
+    when {
+        hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement -> false
+        enableSmartRaceSolver && year != DateYear.JUNIOR -> !enableForceRacing
+        else -> false
+    }
+
+/**
  * Manage and orchestrate the racing process, including mandatory, maiden, and extra races.
  *
  * @property game A reference to the bot's [Game] instance.
@@ -1984,24 +2011,20 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 }
             }
 
-            // Determine whether to use smart racing with user-selected races or standard racing.
+            // Determine whether to use smart racing with user-selected races or standard racing. Any mandatory requirement (fan, trophy, or goal pts) uses
+            // standard racing since only it filters to and races the qualifying race - the solver would drop the requirement.
             val useSmartRacing =
-                if (hasFanRequirement || hasInsufficientGoalRacePtsRequirement) {
-                    // If fan or goal pts requirement is needed, force standard racing to ensure the race proceeds and picks double stars.
-                    false
-                } else if (hasTrophyRequirement) {
-                    // Trophy requirement can use smart racing as it filters to G1 races internally.
-                    // Use smart racing for all years except Year 1 (Junior Year).
-                    campaign.date.year != DateYear.JUNIOR
-                } else if (enableSmartRaceSolver && campaign.date.year != DateYear.JUNIOR) {
-                    // Year 2 and 3: Use the Smart Race Solver as long as Force Racing is off. Farming Fans is no longer required.
-                    !enableForceRacing
-                } else {
-                    false
-                }
+                shouldUseSmartRacing(
+                    hasFanRequirement = hasFanRequirement,
+                    hasTrophyRequirement = hasTrophyRequirement,
+                    hasInsufficientGoalRacePtsRequirement = hasInsufficientGoalRacePtsRequirement,
+                    year = campaign.date.year,
+                    enableSmartRaceSolver = enableSmartRaceSolver,
+                    enableForceRacing = enableForceRacing,
+                )
 
             val success =
-                if (useSmartRacing && campaign.date.year != DateYear.JUNIOR) {
+                if (useSmartRacing) {
                     MessageLog.v(TAG, "[RACE] Using Smart Race Solver for Year ${campaign.date.year}.")
                     processSmartRacing()
                 } else {
