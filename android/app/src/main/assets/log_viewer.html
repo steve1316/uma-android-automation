@@ -3752,6 +3752,14 @@
             // //////////////////////////////////////////////////////////////////////////////////////////////////
             // Search Input Handler
 
+            // Sync the search state from whatever the browser restored into the input on reload,
+            // so a page refresh keeps filtering instead of showing everything until the user types.
+            function initSearch() {
+                searchQuery = searchInput.value.toLowerCase().trim()
+                searchClear.classList.toggle("visible", searchInput.value.length > 0)
+                applyFilters()
+            }
+
             // Listen for input changes in the search field to filter logs in real-time.
             searchInput.addEventListener("input", function () {
                 searchQuery = this.value.toLowerCase().trim()
@@ -5466,6 +5474,8 @@
             // Initiate the connection and settings when the page loads.
             initFontSize()
             initToolbar()
+            // Restore search filtering from the value the browser kept in the input across a refresh.
+            initSearch()
             // Paint an empty Race History grid so the panel takes its full layout immediately,
             // before any CAL: snapshot arrives.
             renderCalendar(null)
