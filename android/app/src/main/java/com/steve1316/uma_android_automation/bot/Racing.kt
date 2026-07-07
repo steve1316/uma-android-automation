@@ -92,6 +92,34 @@ internal fun shouldUseSmartRacing(
     }
 
 /**
+ * Whether an active racing requirement should force navigation to the race screen this turn. A G1-only trophy can only be satisfied by a G1, so when the races DB holds no G1
+ * for this turn, forcing the race would just cancel after a costly screen round-trip - return false so the caller trains instead. Fan, goal-point, and Pre-OP/G3-or-above
+ * trophy requirements accept other grades, so they always force racing.
+ *
+ * @param hasFanRequirement Whether a fan-count requirement is active.
+ * @param hasTrophyRequirement Whether a trophy requirement is active.
+ * @param hasPreOpOrAboveRequirement Whether the trophy accepts Pre-OP or above.
+ * @param hasG3OrAboveRequirement Whether the trophy accepts G3 or above.
+ * @param hasInsufficientGoalRacePtsRequirement Whether a goal-race-points requirement is active.
+ * @param hasG1ThisTurn Whether the races DB holds a G1 for the current turn (ground truth read from the local races table).
+ * @return True to force navigation to the race screen, false to skip it and let the normal decision run.
+ */
+internal fun requirementForcesRacing(
+    hasFanRequirement: Boolean,
+    hasTrophyRequirement: Boolean,
+    hasPreOpOrAboveRequirement: Boolean,
+    hasG3OrAboveRequirement: Boolean,
+    hasInsufficientGoalRacePtsRequirement: Boolean,
+    hasG1ThisTurn: Boolean,
+): Boolean {
+    if (!(hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement)) return false
+    // A G1-only trophy forces racing only on turns the DB holds a G1 for. Every other active requirement always forces racing.
+    val isG1OnlyTrophy = hasTrophyRequirement && !hasFanRequirement && !hasInsufficientGoalRacePtsRequirement && !hasPreOpOrAboveRequirement && !hasG3OrAboveRequirement
+    if (isG1OnlyTrophy) return hasG1ThisTurn
+    return true
+}
+
+/**
  * Manage and orchestrate the racing process, including mandatory, maiden, and extra races.
  *
  * @property game A reference to the bot's [Game] instance.
@@ -742,6 +770,21 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * True when the active requirement should force racing this turn (see `requirementForcesRacing`). Reads the local races DB for the G1-only trophy case.
+     *
+     * @return True to force navigation to the race screen, false to skip it and let the normal decision run.
+     */
+    fun requirementForcesRacingThisTurn(): Boolean =
+        requirementForcesRacing(
+            hasFanRequirement,
+            hasTrophyRequirement,
+            hasPreOpOrAboveRequirement,
+            hasG3OrAboveRequirement,
+            hasInsufficientGoalRacePtsRequirement,
+            hasG1ThisTurn = hasG1RacesAtTurn(campaign.date.day),
+        )
+
+    /**
      * Determines if the extra racing process should be started now or later.
      *
      * @return True if the current date is okay to start the extra racing process and false otherwise.
@@ -765,18 +808,19 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             return false
         }
 
-        // If the setting to force racing extra races is enabled or we have a specific requirement, always return true.
-        if (enableForceRacing || hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement) {
-            Log.d(TAG, "[DEBUG] checkEligibilityToStartExtraRacingProcess:: Force racing or requirement is active so eligibility will be true.")
-            val activeReason =
-                listOf(
-                    if (enableForceRacing) "force-racing" else null,
-                    if (hasFanRequirement) "fan-requirement" else null,
-                    if (hasTrophyRequirement) "trophy-requirement" else null,
-                    if (hasInsufficientGoalRacePtsRequirement) "insufficient-goal-pts" else null,
-                ).filterNotNull().joinToString(", ")
-            campaign.decisionTracer.recordRaceEligibility(eligible = true, reason = "Hard requirement active: $activeReason")
+        // The force-racing setting always navigates to the race screen.
+        if (enableForceRacing) {
+            Log.d(TAG, "[DEBUG] checkEligibilityToStartExtraRacingProcess:: Force racing is enabled so eligibility will be true.")
+            campaign.decisionTracer.recordRaceEligibility(eligible = true, reason = "Force-racing setting is on")
             return true
+        }
+
+        // decideNextAction force-races any requirement a race this turn can satisfy before it ever calls this (via requirementForcesRacingThisTurn), so a requirement still
+        // active here is the unsatisfiable G1-only trophy case - the races DB holds no G1 this turn. Suppress the extra-race fallback so it does not navigate only to cancel.
+        if (hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement) {
+            MessageLog.i(TAG, "[RACE] Requirement active but the races DB holds no qualifying race for turn ${campaign.date.day}. Skipping the extra-race fallback.")
+            campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "Requirement active but no qualifying race in the races DB for this turn")
+            return false
         }
 
         // When the Smart Race Solver is enabled, its schedule is authoritative for extra races. If the solver did not plan a race for
@@ -816,49 +860,6 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
             val result = !raceRepeatWarningCheck
             campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = "Scenario bypasses smart racing (raceRepeatWarning=$raceRepeatWarningCheck)")
-            return result
-        }
-
-        // If fan or trophy requirement is detected, bypass smart racing logic to force racing.
-        // Both requirements are independent of racing plan and farming fans settings.
-        if (hasFanRequirement) {
-            MessageLog.i(TAG, "[RACE] Fan requirement detected. Bypassing smart racing logic to fulfill requirement.")
-            val result = !raceRepeatWarningCheck
-            campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = "Fan requirement active (raceRepeatWarning=$raceRepeatWarningCheck)")
-            return result
-        } else if (hasTrophyRequirement) {
-            if (hasPreOpOrAboveRequirement || hasG3OrAboveRequirement) {
-                if (hasPreOpOrAboveRequirement) {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement with Pre-OP or above criteria detected. Proceeding to racing screen.")
-                } else {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement with G3 or above criteria detected. Proceeding to racing screen.")
-                }
-                val result = !raceRepeatWarningCheck
-                campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = "Trophy requirement with Pre-OP/G3+ criteria (raceRepeatWarning=$raceRepeatWarningCheck)")
-                return result
-            }
-
-            // Check if G1 races exist at current turn before proceeding.
-            // If no G1 races are available, it will still allow regular racing if it's a regular race day or smart racing day.
-            if (!hasG1RacesAtTurn(campaign.date.day)) {
-                val isRegularRacingDay = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0)
-
-                if (isRegularRacingDay) {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement detected but no G1 races at turn ${campaign.date.day}. Allowing regular racing on eligible day.")
-                } else {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement detected but no G1 races available at turn ${campaign.date.day} and not a regular racing day. Skipping racing.")
-                    campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "Trophy requirement: no G1 races at this turn and not a regular racing day")
-                    return false
-                }
-            } else {
-                MessageLog.i(TAG, "[RACE] Trophy requirement detected. G1 races available at turn ${campaign.date.day}. Proceeding to racing screen.")
-            }
-
-            val result = !raceRepeatWarningCheck
-            campaign.decisionTracer.recordRaceEligibility(
-                eligible = result,
-                reason = "Trophy requirement: G1 races available or eligible regular racing day (raceRepeatWarning=$raceRepeatWarningCheck)",
-            )
             return result
         }
 

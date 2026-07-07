@@ -66,4 +66,39 @@ class RacingDecisionTest {
         assertFalse(run(solverEnabled = false), "A disabled solver never uses smart racing")
         assertFalse(run(year = DateYear.JUNIOR), "Junior year never uses smart racing")
     }
+
+    @Test
+    @DisplayName("A G1-only trophy skips racing only when the races DB holds no G1; other requirements always force racing")
+    fun testRequirementForcesRacing() {
+        fun forces(
+            fan: Boolean = false,
+            trophy: Boolean = false,
+            preOp: Boolean = false,
+            g3: Boolean = false,
+            goalPts: Boolean = false,
+            hasG1: Boolean,
+        ) = requirementForcesRacing(
+            hasFanRequirement = fan,
+            hasTrophyRequirement = trophy,
+            hasPreOpOrAboveRequirement = preOp,
+            hasG3OrAboveRequirement = g3,
+            hasInsufficientGoalRacePtsRequirement = goalPts,
+            hasG1ThisTurn = hasG1,
+        )
+
+        // The one skip case: a G1-only trophy on a turn the races DB holds no G1 for - navigating would just cancel.
+        assertFalse(forces(trophy = true, hasG1 = false), "A G1-only trophy with no G1 in the races DB this turn must skip the race-screen round-trip")
+        assertTrue(forces(trophy = true, hasG1 = true), "A G1-only trophy with a G1 in the races DB this turn must force racing")
+
+        // Trophies that accept other grades always force racing, even when the DB holds no G1.
+        assertTrue(forces(trophy = true, preOp = true, hasG1 = false), "A Pre-OP-or-above trophy accepts other grades, so it must force racing even with no G1")
+        assertTrue(forces(trophy = true, g3 = true, hasG1 = false), "A G3-or-above trophy accepts other grades, so it must force racing even with no G1")
+
+        // Fan and goal-point requirements are met by any race, so they always force racing regardless of G1 availability.
+        assertTrue(forces(fan = true, hasG1 = false), "A fan requirement is met by any race, so it must force racing even with no G1")
+        assertTrue(forces(goalPts = true, hasG1 = false), "A goal-race-points requirement is met by any race, so it must force racing even with no G1")
+
+        // No requirement active: this gate never forces racing (the caller uses the normal eligibility path instead).
+        assertFalse(forces(hasG1 = true), "With no requirement active, this gate must not force racing")
+    }
 }

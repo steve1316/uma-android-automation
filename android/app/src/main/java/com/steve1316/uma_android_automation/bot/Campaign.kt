@@ -2255,12 +2255,14 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RACE
         }
 
-        // A mandatory career goal (fan / trophy / goal-pts) must race to be met, so it outranks the pre-summer prep optimization below.
-        val isRacingRequirementActive = racing.hasFanRequirement || racing.hasTrophyRequirement || racing.hasInsufficientGoalRacePtsRequirement
-        if (isRacingRequirementActive) {
-            MessageLog.i(TAG, "[INFO] Racing requirement is active. Bypassing health and mood checks.")
+        // A mandatory career goal (fan / trophy / goal-pts) must race to be met, so it outranks the pre-summer prep optimization below - unless it is a G1-only trophy on a turn
+        // the races DB holds no G1 for, where navigating would just cancel, so fall through to the normal decision and train instead.
+        if (racing.requirementForcesRacingThisTurn()) {
+            MessageLog.i(TAG, "[INFO] Racing requirement is active and the races DB has a qualifying race this turn. Bypassing health and mood checks.")
             decisionTracer.recordActionChoice(MainScreenAction.RACE, "Racing requirement (fans, trophy, or goal pts) active")
             return MainScreenAction.RACE
+        } else if (racing.hasTrophyRequirement) {
+            MessageLog.i(TAG, "[INFO] Trophy requirement is active but the races database holds no G1 for this turn ($date). Skipping the race-screen round-trip; continuing with the normal decision.")
         }
 
         if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {
