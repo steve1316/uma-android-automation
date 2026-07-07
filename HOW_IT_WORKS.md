@@ -260,15 +260,15 @@ flowchart TD
     C -->|Yes| RACE
     C -->|No| D{"Maiden race\nnot completed?"}
     D -->|Yes| RACE
-    D -->|No| E{"Pre-Summer prep?\n(June Late, Classic/Senior)"}
+    D -->|No| F{"Fan or Trophy\nrequirement active?"}
+    F -->|Yes| RACE
+    F -->|No| E{"Pre-Summer prep?\n(June Late, Classic/Senior)"}
     E -->|Yes| PreSummer{"Energy < 70%?"}
     PreSummer -->|Yes| REST["→ REST"]
     PreSummer -->|No| MoodCheck{"Mood < Great?"}
     MoodCheck -->|Yes| RECOVER["→ RECOVER_MOOD"]
     MoodCheck -->|No| WIT["→ TRAIN (forced Wit)"]
-    E -->|No| F{"Fan or Trophy\nrequirement active?"}
-    F -->|Yes| RACE
-    F -->|No| G{"Injury detected?\n(skipped in Finale)"}
+    E -->|No| G{"Injury detected?\n(skipped in Finale)"}
     G -->|Yes| NONE["→ NONE\n(injury handled internally)"]
     G -->|No| H{"Mood recovery\nneeded?"}
     H -->|Yes| RECOVER
@@ -285,10 +285,10 @@ flowchart TD
 4. **Scheduled Race:** If the game shows a scheduled (in-game agenda) race label, the bot races.
 5. **Force Racing:** User setting that bypasses all other logic and forces racing every turn.
 6. **Maiden Race:** The first race of the campaign must be completed before regular training resumes.
-7. **Pre-Summer Prep (June Late):** On the last turn before Summer training, the bot ensures energy is high (≥70%) and mood is Great. If energy is low, it rests. If mood is low, it recovers mood. If both are fine, it trains Wit (which recovers some energy in preparation for Summer Training).[^1]
+7. **Fan/Trophy Requirements:** If the game requires a minimum fan count, trophy count, or goal race points, the bot prioritizes racing to meet it. This **outranks** pre-summer prep so a mandatory career goal (e.g. a "win a G1" trophy) is never skipped in favor of a summer-prep training.
+8. **Pre-Summer Prep (June Late):** On the last turn before Summer training, the bot ensures energy is high (≥70%) and mood is Great. If energy is low, it rests. If mood is low, it recovers mood. If both are fine, it trains Wit (which recovers some energy in preparation for Summer Training).[^1]
 
 [^1]: Wit is chosen as the "throwaway" training because it recovers some energy, helping the trainee enter Summer Training in better condition.
-8. **Fan/Trophy Requirements:** If the game requires a minimum fan count or trophy count, the bot prioritizes racing to meet it.
 9. **Injury Check:** If an injury is detected, the bot handles it (usually by resting). This check is **skipped during Finale turns** since those races are mandatory.
 10. **Mood Recovery:** If mood has dropped to Normal or below, the bot recovers before training (bad mood penalizes training gains).
 11. **Extra Racing:** If the bot is eligible for extra races (based on farming fans, racing plan, or smart racing logic), it races.
