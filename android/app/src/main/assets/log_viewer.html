@@ -3072,7 +3072,10 @@
                 allMessages.forEach(function (msg) {
                     processSpecialLogs(msg.parsed, batchState)
                 })
-                
+
+                // Zero the cumulative counters first so the additive apply below rebuilds the exact absolute total,
+                // even when the display already held counts (e.g. the sync path applies a batch just before this).
+                resetActionTotals()
                 applyBatchStateToDashboard(batchState)
                 
                 if (autoScroll) {
@@ -3313,19 +3316,11 @@
                 document.getElementById("imageGrid").innerHTML = "";
                 document.getElementById("imageCount").textContent = "0";
 
-                // Reset dashboard counters.
-                document.getElementById("countTraining").textContent = "0"
-                document.getElementById("countRace").textContent = "0"
-                document.getElementById("countInjury").textContent = "0"
-                document.getElementById("countMood").textContent = "0"
-                document.getElementById("countEnergy").textContent = "0"
+                // Reset dashboard counters and their granular breakdowns (cumulative running totals).
+                resetActionTotals()
 
-                // Reset granular breakdowns.
-                trainingBreakdown = { Speed: 0, Stamina: 0, Power: 0, Guts: 0, Wit: 0 }
+                // trainingLevels holds the latest facility level per stat, not a running count, so reset it here.
                 trainingLevels = { Speed: null, Stamina: null, Power: null, Guts: null, Wit: null }
-                raceBreakdown = { Finale: 0, G1: 0, G2: 0, G3: 0, OP: 0, "Pre-OP": 0, Maiden: 0, Mandatory: 0, Standalone: 0 }
-                moodBreakdown = { Standard: 0, Date: 0, Summer: 0 }
-                energyBreakdown = { Rest: 0, Date: 0, Summer: 0 }
 
                 // Reset the trainee name display.
                 document.getElementById("dashboardName").textContent = "-"
@@ -3875,8 +3870,7 @@
                     }[actionKey]
                     
                     if (elId) {
-                        const el = document.getElementById(elId)
-                        el.textContent = parseInt(el.textContent || "0") + 1
+                        addToCounter(elId, 1)
                     }
 
                     if (subType) {
@@ -3957,6 +3951,45 @@
             }
 
             /**
+             * Adds a delta to a numeric counter element. Action counters are cumulative running totals, so a batch
+             * contributes its own count on top of what is already displayed rather than replacing it.
+             * @param {string} elementId - The id of the counter element to update.
+             * @param {number} delta - The amount to add (this batch's count for that action).
+             */
+            function addToCounter(elementId, delta) {
+                const el = document.getElementById(elementId)
+                el.textContent = parseInt(el.textContent || "0") + (delta || 0)
+            }
+
+            /**
+             * Adds each of a batch's breakdown counts onto the running total for that breakdown category.
+             * @param {object} target - The running-total breakdown object (e.g. trainingBreakdown).
+             * @param {object} source - This batch's breakdown counts, or null/undefined to skip.
+             */
+            function mergeBreakdown(target, source) {
+                if (!source) return
+                for (const [key, count] of Object.entries(source)) {
+                    target[key] = (target[key] || 0) + count
+                }
+            }
+
+            /**
+             * Resets the cumulative action counters and their breakdowns back to zero. Used both when clearing the
+             * display and before a full history rebuild, so the rebuild's additive apply lands on a clean baseline.
+             */
+            function resetActionTotals() {
+                document.getElementById("countTraining").textContent = "0"
+                document.getElementById("countRace").textContent = "0"
+                document.getElementById("countInjury").textContent = "0"
+                document.getElementById("countMood").textContent = "0"
+                document.getElementById("countEnergy").textContent = "0"
+                trainingBreakdown = { Speed: 0, Stamina: 0, Power: 0, Guts: 0, Wit: 0 }
+                raceBreakdown = { Finale: 0, G1: 0, G2: 0, G3: 0, OP: 0, "Pre-OP": 0, Maiden: 0, Mandatory: 0, Standalone: 0 }
+                moodBreakdown = { Standard: 0, Date: 0, Summer: 0 }
+                energyBreakdown = { Rest: 0, Date: 0, Summer: 0 }
+            }
+
+            /**
              * Helper to apply a collected batch state to the dashboard DOM.
              * @param {object} state - The collected state from the batch.
              */
@@ -4008,42 +4041,26 @@
                     }
                 }
                 
-                // Batch update action counters.
+                // Action counters and their breakdowns are cumulative running totals, so add this batch's counts on
+                // top of the current values instead of overwriting. The full-history rebuild zeroes them first (via
+                // resetActionTotals) so its additive apply still lands the correct absolute total.
                 if (state.actions) {
-                    document.getElementById("countTraining").textContent = state.actions.training
-                    document.getElementById("countRace").textContent = state.actions.race
-                    document.getElementById("countMood").textContent = state.actions.mood
-                    document.getElementById("countEnergy").textContent = state.actions.energy
-                    document.getElementById("countInjury").textContent = state.actions.injury
-                    
-                    // Batch update training breakdown.
-                    if (state.trainingBreakdown) {
-                        for (const [stat, count] of Object.entries(state.trainingBreakdown)) {
-                            trainingBreakdown[stat] = count
-                        }
-                    }
-                    // Batch update training levels.
+                    addToCounter("countTraining", state.actions.training)
+                    addToCounter("countRace", state.actions.race)
+                    addToCounter("countMood", state.actions.mood)
+                    addToCounter("countEnergy", state.actions.energy)
+                    addToCounter("countInjury", state.actions.injury)
+
+                    // Add this batch's breakdowns onto their running totals.
+                    mergeBreakdown(trainingBreakdown, state.trainingBreakdown)
+                    mergeBreakdown(raceBreakdown, state.raceBreakdown)
+                    mergeBreakdown(moodBreakdown, state.moodBreakdown)
+                    mergeBreakdown(energyBreakdown, state.energyBreakdown)
+
+                    // Training levels are latest-value, not counts, so overwrite rather than add.
                     if (state.trainingLevels) {
                         for (const [stat, level] of Object.entries(state.trainingLevels)) {
                             trainingLevels[stat] = level
-                        }
-                    }
-                    // Batch update race breakdown.
-                    if (state.raceBreakdown) {
-                        for (const [grade, count] of Object.entries(state.raceBreakdown)) {
-                            raceBreakdown[grade] = count
-                        }
-                    }
-                    // Batch update mood breakdown.
-                    if (state.moodBreakdown) {
-                        for (const [type, count] of Object.entries(state.moodBreakdown)) {
-                            moodBreakdown[type] = count
-                        }
-                    }
-                    // Batch update energy breakdown.
-                    if (state.energyBreakdown) {
-                        for (const [type, count] of Object.entries(state.energyBreakdown)) {
-                            energyBreakdown[type] = count
                         }
                     }
                 }
