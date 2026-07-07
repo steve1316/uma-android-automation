@@ -2255,6 +2255,14 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RACE
         }
 
+        // A mandatory career goal (fan / trophy / goal-pts) must race to be met, so it outranks the pre-summer prep optimization below.
+        val isRacingRequirementActive = racing.hasFanRequirement || racing.hasTrophyRequirement || racing.hasInsufficientGoalRacePtsRequirement
+        if (isRacingRequirementActive) {
+            MessageLog.i(TAG, "[INFO] Racing requirement is active. Bypassing health and mood checks.")
+            decisionTracer.recordActionChoice(MainScreenAction.RACE, "Racing requirement (fans, trophy, or goal pts) active")
+            return MainScreenAction.RACE
+        }
+
         if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {
             when (resolvePreSummerAction(trainee.energy, trainee.mood, training.firstTrainingCheck)) {
                 MainScreenAction.REST -> {
@@ -2275,13 +2283,6 @@ abstract class Campaign(game: Game) : Task(game) {
                     return MainScreenAction.TRAIN
                 }
             }
-        }
-
-        val isRacingRequirementActive = racing.hasFanRequirement || racing.hasTrophyRequirement
-        if (isRacingRequirementActive) {
-            MessageLog.i(TAG, "[INFO] Racing requirement is active. Bypassing health and mood checks.")
-            decisionTracer.recordActionChoice(MainScreenAction.RACE, "Racing requirement (fans or trophy) active")
-            return MainScreenAction.RACE
         }
 
         val isFinals = checkFinals()
