@@ -627,7 +627,7 @@ object SmartRaceSolverIntegration {
                 characterPreset = characterPreset,
                 aptitudes = aptitudes,
                 racesByTurn = applied.racesByTurn,
-                epithets = epithets,
+                epithets = epithetsForActiveContext(epithets, scenario, characterPreset ?: ""),
                 forcedEpithets = jsonStringList(config.optJSONArray("forcedEpithets")).toSet(),
                 targetEpithets = jsonStringList(config.optJSONArray("targetEpithets")).toSet(),
                 lockedDecisions = applied.lockedDecisions,
@@ -698,7 +698,7 @@ object SmartRaceSolverIntegration {
      * @param preset Active character preset. Blank disables the character gate.
      * @return Subset of [epithets] usable for the active scenario / preset.
      */
-    private fun epithetsForActiveContext(epithets: List<Epithet>, scenario: String, preset: String): List<Epithet> {
+    internal fun epithetsForActiveContext(epithets: List<Epithet>, scenario: String, preset: String): List<Epithet> {
         return epithets.filter {
             val scenarioRestrictions = EpithetFilters.scenariosFor(it)
             val scenarioOk =
