@@ -1191,13 +1191,18 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     try {
                         // Extract all numbers from the text
                         val numbers = Regex("\\d+").findAll(text).map { it.value.toInt() }.toList()
-                        val cap = if (manualStatCap > 0) manualStatCap else 1200
 
                         if (numbers.isEmpty()) {
                             MessageLog.w(TAG, "[WARN] determineStatValues:: No numbers found in '$text' for $statName")
                             result[statName] = -1
+                        } else if (isAptitudeDialog) {
+                            // The value box holds only the value (no cap or rank badge), but OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value by
+                            // concatenating every digit in reading order rather than treating the pieces as separate numbers. The 2500 ceiling drops a clearly-bogus read.
+                            val value = text.replace(Regex("[^0-9]"), "").toIntOrNull() ?: -1
+                            result[statName] = if (value in 1..2500) value else -1
                         } else {
-                            // Filter to values within the valid stat range. Values exceeding the cap are OCR misreads.
+                            // The Main screen shows only the value, so anything over the cap is an OCR misread.
+                            val cap = if (manualStatCap > 0) manualStatCap else 1200
                             val validNumbers = numbers.filter { it in 0..cap }
                             if (validNumbers.isNotEmpty()) {
                                 result[statName] = validNumbers.max()
