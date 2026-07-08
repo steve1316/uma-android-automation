@@ -60,7 +60,7 @@ fun stripTrailingGlyphNoise(name: String): String {
 private const val VISIBLE_SKILL_ROWS = 5
 
 /** Maximum number of scroll passes when reading the Skills tab (bounds trainees with many skills). */
-private const val MAX_SKILL_SCROLLS = 6
+private const val MAX_SKILL_SCROLLS = 10
 
 /**
  * The result of reading the Umamusume Details "Skills" tab.
@@ -450,18 +450,21 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
 
         val ownedNames = LinkedHashSet<String>()
         var uniqueLevel = 0
+        var emptyPasses = 0
         for (pass in 0..MAX_SKILL_SCROLLS) {
             val bitmap = game.imageUtils.getSourceBitmap()
             var newFound = 0
             for (row in 0 until VISIBLE_SKILL_ROWS) {
                 for (col in 0 until 2) {
-                    val name = readDetailsSkillCell(bitmap, row, col) ?: continue
+                    val name = readDetailsSkillCell(bitmap, row, col, pass) ?: continue
                     if (ownedNames.add(name)) newFound++
                 }
             }
             if (pass == 0) uniqueLevel = readUniqueSkillLevel(bitmap)
-            // Short lists never scroll past the first page, so a pass that reveals nothing new means we are done.
-            if (pass > 0 && newFound == 0) break
+            // Stop only after two consecutive passes reveal nothing new, so a single fling that settles mid-row (its cells straddle the grid and read as empty) does not end the scan
+            // early and drop the rows still below it.
+            emptyPasses = if (newFound == 0) emptyPasses + 1 else 0
+            if (pass > 0 && emptyPasses >= 2) break
             scrollSkillsPanel()
         }
 
@@ -477,10 +480,10 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      * @param col The grid column (0 = left, 1 = right).
      * @return The canonical skill name, or null when the cell is empty or unmatched.
      */
-    private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int): String? {
+    private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): String? {
         val w = SharedData.displayWidth.toDouble()
         val h = SharedData.displayHeight.toDouble()
-        val x0 = if (col == 0) 128 else 632
+        val x0 = if (col == 0) 118 else 622
         // The unique skill (row 0, col 0) shows "Lvl N" on the right, so its name region stops short to avoid reading the level.
         val x1 =
             when {
@@ -488,18 +491,22 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 col == 0 -> 505
                 else -> 1010
             }
-        val yTop = 1036 + row * 112
+        // Page 0 sits on the grid, but after a swipe the list settles ~40px low, so shift only the scrolled passes down to pull a wrapped name's second line into the crop without
+        // clipping the tops of the aligned first-page rows.
+        val yTop = 1036 + row * 112 + (if (pass == 0) 0 else 40)
         val bbox =
             BoundingBox(
                 x = (w * x0 / 1080.0).toInt(),
                 y = (h * yTop / 1920.0).toInt(),
                 w = (w * (x1 - x0) / 1080.0).toInt(),
-                h = (h * 78 / 1920.0).toInt(),
+                // Tall enough to capture a name that wraps to two lines (e.g. "Pace Chaser Straightaways").
+                h = (h * 100 / 1920.0).toInt(),
             )
         val crop = game.imageUtils.createSafeBitmap(bitmap, bbox, "detailsSkill_${row}_$col") ?: return null
         if (game.debugMode) game.imageUtils.saveBitmap(crop, "detailsSkill_${row}_$col")
 
-        val text = extractText(crop).trim().replace(Regex("\\bl\\b"), "I")
+        // Collapse the newline between wrapped lines into a single space so a two-line name matches its one-line database key.
+        val text = extractText(crop).trim().replace(Regex("\\s+"), " ").replace(Regex("\\bl\\b"), "I")
         if (text.length < 2) return null
         val base = stripTrailingGlyphNoise(text.replace(Regex("[○◎×]"), " ").trim())
         if (base.length < 2) return null
@@ -511,6 +518,11 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 ?: game.skillDatabase.checkSkillName("$base ◎", fuzzySearch = true)
                 ?: name
         }
+        // Reject a truncated read: if the OCR base is a strict prefix of a longer matched skill (5+ chars shorter), the cell's wrapped second line was clipped and the fuzzy match
+        // grabbed a shorter same-prefix skill (e.g. "Pace Chaser" -> "Pace Chaser Savvy"). Returning null lets a better-aligned scroll pass read the full name instead of locking in
+        // the wrong one.
+        val matchedBase = stripTrailingGlyphNoise(name.replace(Regex("[○◎×]"), " ").trim())
+        if (base.length + 5 <= matchedBase.length && matchedBase.startsWith(base, ignoreCase = true)) return null
         return name
     }
 
@@ -565,7 +577,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         val text =
             game.imageUtils.performOCROnRegion(
                 bitmap,
-                (w * 478 / 1080.0).toInt(),
+                (w * 493 / 1080.0).toInt(),
                 (h * 1052 / 1920.0).toInt(),
                 (w * 46 / 1080.0).toInt(),
                 (h * 48 / 1920.0).toInt(),
@@ -582,8 +594,10 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     /** Swipes up within the skills panel to reveal the next page of skills (for trainees with 10+ skills). */
     private fun scrollSkillsPanel() {
         val cx = (SharedData.displayWidth / 2).toFloat()
-        game.gestureUtils.swipe(cx, (SharedData.displayHeight * 0.78).toFloat(), cx, (SharedData.displayHeight * 0.55).toFloat(), 500L)
-        game.wait(0.4, skipWaitingForLoading = true)
+        // A short, slow swipe (~1.7 rows) reduces fling and heavily overlaps the previous page, so every skill passes through the visible area at several sub-row offsets across
+        // passes - on at least one of which a two-line name is aligned enough to read fully rather than clipped.
+        game.gestureUtils.swipe(cx, (SharedData.displayHeight * 0.66).toFloat(), cx, (SharedData.displayHeight * 0.56).toFloat(), 700L)
+        game.wait(0.5, skipWaitingForLoading = true)
     }
 
     /**

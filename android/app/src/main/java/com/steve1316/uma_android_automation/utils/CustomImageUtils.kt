@@ -1176,13 +1176,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                         relHeight(height),
                         useThreshold = false,
                         useGrayscale = true,
-                        scale = 1.0,
+                        scale = 2.0,
                         ocrEngine = "tesseract_digits",
                         debugName = "${statName}StatValue",
                     )
 
                 // Parse the text.
-                Log.d(TAG, "[DEBUG] determineStatValues:: Raw OCR text for $statName: '$text' (length: ${text.length})")
+                MessageLog.d(TAG, "[DEBUG] determineStatValues:: Raw OCR text for $statName: '$text' (length: ${text.length})")
 
                 if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
                     Log.d(TAG, "[DEBUG] determineStatValues:: $statName seems to be maxed out. Setting it to $manualStatCap.")
