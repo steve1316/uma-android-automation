@@ -477,14 +477,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 // Replace OCR misidentification of 'o/O' with '0'.
                 val cleanedResult = detectedText.lowercase().replace("o", "0").replace("%", "").replace("failure", "").replace("\n", "").replace(Regex("[^0-9]"), "").trim()
 
-                var value = cleanedResult.toInt()
+                val value = cleanedResult.toInt()
 
-                // Correct the OCR error if failure chance exceeds 100% and strip the last digit.
-                if (value > 100 && cleanedResult.length > 2) {
-                    val correctedResult = cleanedResult.dropLast(1)
-                    val correctedValue = correctedResult.toInt()
-                    Log.w(TAG, "[WARN] findTrainingFailureChance:: Failure chance $value% exceeds 100%, correcting to $correctedValue%.")
-                    value = correctedValue
+                // A failure chance above 100% is an impossible OCR misread (e.g. a stray extra digit). Reject it as invalid rather than
+                // fabricating a value by dropping a digit; the retry gets a fresh bitmap and the caller's fallback + energy clamp handle it.
+                if (value > 100) {
+                    Log.w(TAG, "[WARN] findTrainingFailureChance:: Failure chance $value% exceeds 100%; treating as an invalid read.")
+                    return -1
                 }
 
                 value
@@ -497,18 +496,20 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val tries: Int = maxOf(1, tries)
         var result: Int = -1
         for (i in 1..tries) {
-            // We only use the passed parameters on the first iteration since if
-            // we have to retry, then we want a new source bitmap.
-            result =
+            // Use the passed parameters on the first attempt only; a retry wants a fresh source bitmap.
+            val attempt =
                 if (i == 1) {
                     detectTrainingFailureChance(sourceBitmap, trainingSelectionLocation)
                 } else {
                     detectTrainingFailureChance()
                 }
 
-            if (result == -1) {
-                MessageLog.w(TAG, "[WARN] findTrainingFailureChance:: Failed to detect training failure chance (attempt $i of $tries)")
+            // Keep the first valid read and stop; an invalid one (-1, or a > 100 read rejected above) is retried with a fresh bitmap.
+            if (attempt in 0..100) {
+                result = attempt
+                break
             }
+            MessageLog.w(TAG, "[WARN] findTrainingFailureChance:: Failed to detect a valid training failure chance (attempt $i of $tries, read=$attempt)")
         }
 
         if (debugMode) {

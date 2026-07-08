@@ -113,6 +113,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     var cachedAnalysisResults: List<TrainingAnalysisResult>? = null
         private set
 
+    /** The turn (`campaign.date.day`) the cached analysis was computed for. The cache is reused only when this matches the current turn, so a prior turn's analysis never leaks. */
+    private var cachedAnalysisTurn: Int? = null
+
     /** The current training scenario name. */
     private val scenario = game.scenario
 
@@ -540,9 +543,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * Speed <= Stamina <= Power <= Guts. Wit is excluded because it naturally
          * has a lower failure chance than the other trainings.
          *
-         * If an earlier training's failure chance is significantly lower than
-         * the next, it is validated against the mathematically expected energy curve.
-         * If it deviates heavily, it is an OCR misread and is corrected.
+         * First, any facility (including Wit) whose read is far ABOVE the energy-based estimate is clamped down to the estimate,
+         * which catches a gross OCR misread such as 99% at 100% energy. Then, if an earlier training's failure chance is
+         * significantly lower than the next, it is validated against the mathematically expected energy curve and corrected if it deviates heavily.
          *
          * @param failureChances List of ([StatName], failureChance) pairs with valid (>= 0) values.
          * @param currentEnergy The character's current energy level.
@@ -556,11 +559,20 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             suspiciousJumpThreshold: Int = 20,
             outlierTolerance: Int = 30,
         ): Map<StatName, Int> {
-            // Wit is excluded from cross-validation as it naturally has a lower failure chance.
-            val witEntry = failureChances.filter { it.first == StatName.WIT }
-            val withoutWit = failureChances.filter { it.first != StatName.WIT }
+            // Absolute plausibility clamp (all facilities incl Wit): a read far above the energy-based estimate is an OCR misread
+            // (e.g. 99% at 100% energy, where the estimate is 0%), so clamp it down to the estimate. Genuine high reads at low energy
+            // stay within outlierTolerance of the (also-high) estimate and are left alone.
+            val clamped =
+                failureChances.map { (name, chance) ->
+                    val estimate = estimateFailureChanceFromEnergy(currentEnergy, name)
+                    name to if (chance - estimate > outlierTolerance) estimate else chance
+                }
 
-            if (withoutWit.size < 2) return failureChances.toMap()
+            // Wit is excluded from cross-validation as it naturally has a lower failure chance.
+            val witEntry = clamped.filter { it.first == StatName.WIT }
+            val withoutWit = clamped.filter { it.first != StatName.WIT }
+
+            if (withoutWit.size < 2) return clamped.toMap()
 
             val sorted = withoutWit.sortedBy { it.first.ordinal }.toMutableList()
 
@@ -1031,7 +1043,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             MessageLog.v(TAG, "\n[TRAINING] Now starting process to analyze all 5 Trainings for Testing.")
         } else if (singleTraining) {
             MessageLog.v(TAG, "\n[TRAINING] Now starting process to analyze the training on screen.")
-        } else if (cachedAnalysisResults != null) {
+        } else if (cachedAnalysisResults != null && cachedAnalysisTurn == campaign.date.day) {
             MessageLog.i(TAG, "[TRAINING] Using cached training analysis results for this turn.")
             processAnalysisResults(cachedAnalysisResults!!, ignoreFailureChance, test, args)
             return
@@ -1633,6 +1645,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Store analysis results in cache for reuse during the same turn.
             if (!test && !singleTraining) {
                 cachedAnalysisResults = analysisResults.toList()
+                cachedAnalysisTurn = campaign.date.day
             }
         }
 
@@ -1755,6 +1768,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     fun clearAnalysisCache() {
         Log.d(TAG, "[DEBUG] clearAnalysisCache:: Clearing the training analysis cache.")
         cachedAnalysisResults = null
+        cachedAnalysisTurn = null
         trainingMap.clear()
         skippedTrainingMap.clear()
         restrictedTrainingNames.clear()
