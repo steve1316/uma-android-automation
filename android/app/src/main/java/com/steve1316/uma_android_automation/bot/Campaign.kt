@@ -635,6 +635,9 @@ abstract class Campaign(game: Game) : Task(game) {
                 if (ownedSkills.starLevel > 0) trainee.starLevel = ownedSkills.starLevel
                 broadcastOwnedSkills()
 
+                // Recompute the estimated rank from the final stats, aptitudes, and owned skills so the end-of-run log reflects the completed career.
+                updateEstimatedRank()
+
                 result.dialog.close(game.imageUtils)
             }
 
