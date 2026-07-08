@@ -1810,26 +1810,40 @@
                 border-radius: 50%;
                 flex-shrink: 0;
             }
-            .skill-pill.gold {
-                border-color: rgba(230, 160, 44, 0.5);
+            /* Category-colored bullet matching the in-game skill color: green recovery, blue stamina, yellow speed, red debuff. */
+            .skill-pill.c-green .dotc {
+                background: #3cc06e;
             }
-            .skill-pill.gold .dotc {
-                background: #e8a02c;
+            .skill-pill.c-blue .dotc {
+                background: #38a7e8;
             }
-            .skill-pill.uniq {
-                border-color: rgba(155, 109, 255, 0.5);
+            .skill-pill.c-yellow .dotc {
+                background: #f2c94c;
             }
-            .skill-pill.uniq .dotc {
-                background: var(--accent-purple);
+            .skill-pill.c-red .dotc {
+                background: #ef4444;
             }
             .skill-pill.norm .dotc {
                 background: var(--text-secondary);
             }
+            /* Gold-rarity skills keep their category bullet but gain a gold border. */
+            .skill-pill.gold {
+                border-color: rgba(230, 160, 44, 0.65);
+            }
+            /* Negative skills: purple bullet and purple border. */
             .skill-pill.neg {
-                border-color: rgba(239, 68, 68, 0.5);
+                border-color: rgba(155, 109, 255, 0.5);
             }
             .skill-pill.neg .dotc {
-                background: var(--log-error);
+                background: var(--accent-purple);
+            }
+            /* Unique skills: rainbow bullet and rainbow border, mirroring the in-game rainbow frame. */
+            .skill-pill.uniq {
+                border: 1px solid transparent;
+                background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box, linear-gradient(100deg, #ff5d5d, #f2c94c, #3cc06e, #38a7e8, #9b6dff) border-box;
+            }
+            .skill-pill.uniq .dotc {
+                background: conic-gradient(from 210deg, #ff5d5d, #f2c94c, #3cc06e, #38a7e8, #9b6dff, #ff5d5d);
             }
             .skill-pill .lv {
                 margin-left: auto;
@@ -4038,7 +4052,7 @@
             }
 
             /**
-             * Renders the owned-skills panel from a SKILLS: snapshot. Each skill becomes a colored pill (unique / gold / negative / normal) and the unique carries its level.
+             * Renders the owned-skills panel from a SKILLS: snapshot. Each skill becomes a pill colored by its category (green/blue/yellow/red) with unique/negative/gold treatment via skillPillClass, and the unique carries its level.
              * Passing null clears the panel back to its placeholder hint.
              * @param {object} snapshot - The parsed skills snapshot ({ skills, stars }), or null.
              */
@@ -4050,11 +4064,10 @@
                 if (skills.length === 0) {
                     panel.innerHTML = '<div class="skills-hint">No owned skills read yet - the bot fills this in when it reads the Skills tab.</div>'
                 } else {
-                    var pillClass = { unique: "uniq", gold: "gold", negative: "neg", normal: "norm" }
                     var html = '<div class="skills-grid">'
                     for (var i = 0; i < skills.length; i++) {
                         var s = skills[i]
-                        var cls = pillClass[s.type] || "norm"
+                        var cls = skillPillClass(s)
                         var lv = s.level ? '<span class="lv">Lv' + s.level + "</span>" : ""
                         html += '<div class="skill-pill ' + cls + '"><span class="dotc"></span>' + escapeHtml(s.name) + lv + "</div>"
                     }
@@ -4062,6 +4075,19 @@
                     panel.innerHTML = html
                 }
                 renderSidePanel()
+            }
+
+            /**
+             * Picks the CSS classes for one skill pill. Unique wins (rainbow), then negative (purple); otherwise the pill takes its in-game category color (green/blue/yellow/red) and
+             * adds a gold border for gold-rarity skills. Falls back to the older single `type` field so a stale bot payload still renders.
+             * @param {object} s - The skill entry from the SKILLS snapshot ({name, color, gold, unique, negative, ...} or the legacy {type}).
+             * @returns {string} The space-separated class list for the `.skill-pill` element.
+             */
+            function skillPillClass(s) {
+                if (s.unique || s.type === "unique") return "uniq"
+                if (s.negative || s.type === "negative") return "neg"
+                var base = { green: "c-green", blue: "c-blue", yellow: "c-yellow", red: "c-red" }[s.color] || "norm"
+                return s.gold || s.type === "gold" ? base + " gold" : base
             }
 
             // Latest snapshot kept for the hover-tooltip lookup. Decisions and results are

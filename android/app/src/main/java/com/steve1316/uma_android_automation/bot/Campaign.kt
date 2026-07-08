@@ -1688,26 +1688,22 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
-     * Classifies the trainee's owned skills by pill type (unique / gold / negative / normal) and pushes the list to the Remote Log Viewer's Skills panel. The type comes from
-     * each skill's icon id via SkillData, and the unique skill carries its level. Safe to call whenever the owned-skill set changes.
+     * Sends the trainee's owned skills to the Remote Log Viewer's Skills panel, each with its in-game category color (green/blue/yellow/red) plus gold / unique / negative flags
+     * derived from the skill's icon id via SkillData, and the unique skill's level. Safe to call whenever the owned-skill set changes.
      */
     fun broadcastOwnedSkills() {
         val skills = org.json.JSONArray()
         for (name in trainee.ownedSkillNames) {
             val data = game.skillDatabase.getSkillData(name)
-            val type =
-                when {
-                    data == null -> "normal"
-                    data.bIsUnique -> "unique"
-                    data.bIsNegative -> "negative"
-                    data.bIsGold -> "gold"
-                    else -> "normal"
-                }
             val obj = org.json.JSONObject()
             obj.put("name", name)
-            obj.put("type", type)
+            // Category color (green/blue/yellow/red) drives the pill's bullet; the flags below layer the unique/negative/gold treatment on top on the frontend.
+            obj.put("color", data?.type?.name?.lowercase() ?: "")
+            obj.put("gold", data?.bIsGold ?: false)
+            obj.put("unique", data?.bIsUnique ?: false)
+            obj.put("negative", data?.bIsNegative ?: false)
             obj.put("evalPt", data?.evalPt ?: 0)
-            if (type == "unique" && trainee.uniqueSkillLevel > 0) obj.put("level", trainee.uniqueSkillLevel)
+            if (data?.bIsUnique == true && trainee.uniqueSkillLevel > 0) obj.put("level", trainee.uniqueSkillLevel)
             skills.put(obj)
         }
         val json = org.json.JSONObject()
