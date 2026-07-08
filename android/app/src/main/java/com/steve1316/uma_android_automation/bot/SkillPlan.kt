@@ -879,6 +879,22 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Buys a single skill, logs the purchase, and records it in the trainee's owned-skill set
+     * so the Remote Log Viewer's Skills panel can update without waiting for a Details read.
+     *
+     * @param name The canonical name of the skill to buy.
+     * @param point The screen location of the skill's purchase button.
+     * @param skillList The [SkillList] managing the current scan.
+     * @return True if the skill was purchased, false otherwise.
+     */
+    private fun buyAndTrackSkill(name: String, point: Point, skillList: SkillList): Boolean {
+        val purchaseResult: SkillListEntry = skillList.buySkill(name, point) ?: return false
+        MessageLog.i(TAG, "[INFO] Buying \"${purchaseResult.name}\" for ${purchaseResult.price} pts")
+        campaign.trainee.ownedSkillNames.add(purchaseResult.name)
+        return true
+    }
+
+    /**
      * Log the details of a detected skill list entry and handle its purchase if planned.
      *
      * @param entry The detected [SkillListEntry].
@@ -896,24 +912,16 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
             return false
         }
 
-        // Determine if there are other in-place versions of this skill that need to be purchased.
-        if (entry.bIsInPlace) {
-            val namesToBuy: List<String> =
-                listOf(entry.name) +
-                    entry.getUpgradeNames().filter { it in skillsToBuy }
+        // Buy the base skill plus any in-place upgrade versions that are also planned.
+        val namesToBuy: List<String> = if (entry.bIsInPlace) listOf(entry.name) + entry.getUpgradeNames().filter { it in skillsToBuy } else listOf(entry.name)
 
-            for (name in namesToBuy) {
-                val purchaseResult: SkillListEntry? = skillList.buySkill(name, point)
-                if (purchaseResult != null) {
-                    MessageLog.i(TAG, "[INFO] Buying \"${purchaseResult.name}\" for ${purchaseResult.price} pts")
-                }
-            }
-        } else {
-            val purchaseResult: SkillListEntry? = skillList.buySkill(entry.name, point)
-            if (purchaseResult != null) {
-                MessageLog.i(TAG, "[INFO] Buying \"${purchaseResult.name}\" for ${purchaseResult.price} pts")
-            }
+        var boughtAny = false
+        for (name in namesToBuy) {
+            if (buyAndTrackSkill(name, point, skillList)) boughtAny = true
         }
+
+        // Push the freshly-owned skills to the Remote Log Viewer's Skills panel now instead of waiting for the next Details tab read.
+        if (boughtAny) campaign.broadcastOwnedSkills()
 
         // Check if all planned skills have been purchased to allow for an early exit.
         val obtained: Map<String, SkillListEntry> = skillList.getObtainedSkills()
