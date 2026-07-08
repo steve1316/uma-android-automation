@@ -632,7 +632,6 @@ abstract class Campaign(game: Game) : Task(game) {
                 trainee.ownedSkillNames.clear()
                 trainee.ownedSkillNames.addAll(ownedSkills.skillNames)
                 trainee.uniqueSkillLevel = ownedSkills.uniqueLevel
-                if (ownedSkills.starLevel > 0) trainee.starLevel = ownedSkills.starLevel
                 broadcastOwnedSkills()
 
                 // Recompute the estimated rank from the final stats, aptitudes, and owned skills so the end-of-run log reflects the completed career.
@@ -1685,7 +1684,6 @@ abstract class Campaign(game: Game) : Task(game) {
                 trainee.stats.wit,
                 skillInputs,
                 aptitudes,
-                trainee.starLevel,
                 trainee.uniqueSkillLevel,
             )
     }
@@ -1711,7 +1709,6 @@ abstract class Campaign(game: Game) : Task(game) {
         }
         val json = org.json.JSONObject()
         json.put("skills", skills)
-        json.put("stars", trainee.starLevel)
         LogStreamServer.broadcastSkillsSnapshot(json.toString())
     }
 

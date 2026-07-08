@@ -50,13 +50,11 @@ class RankEstimateTest {
     }
 
     @Test
-    fun uniqueBonusUsesStarBasedMultiplier() {
-        assertEquals(850, uniqueBonus(3, 5))
-        assertEquals(600, uniqueBonus(2, 5))
-        assertEquals(360, uniqueBonus(1, 3))
-        assertEquals(0, uniqueBonus(5, 0))
-        // Unknown star (0) defaults to the x170 multiplier.
-        assertEquals(680, uniqueBonus(0, 4))
+    fun uniqueBonusScalesWithLevel() {
+        assertEquals(850, uniqueBonus(5))
+        assertEquals(680, uniqueBonus(4))
+        assertEquals(510, uniqueBonus(3))
+        assertEquals(0, uniqueBonus(0))
     }
 
     @Test
@@ -115,7 +113,7 @@ class RankEstimateTest {
                 SkillScoreInput(217, ""),
                 SkillScoreInput(508, "Late"),
             )
-        val result = estimateRank(790, 378, 838, 312, 752, skills, referenceAptitudes, starLevel = 3, uniqueLevel = 3)
+        val result = estimateRank(790, 378, 838, 312, 752, skills, referenceAptitudes, uniqueLevel = 3)
         assertEquals(6271, result.statScore)
         assertEquals(996, result.skillScore)
         assertEquals(510, result.uniqueBonus)

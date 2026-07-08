@@ -67,9 +67,8 @@ private const val MAX_SKILL_SCROLLS = 10
  *
  * @property skillNames The canonical database names of the trainee's currently-owned skills.
  * @property uniqueLevel The unique skill's level read from the first cell, or 0 when unread.
- * @property starLevel The trainee's star rarity, or 0 when unread (the estimated-rank unique bonus then defaults to the 3-star+ multiplier).
  */
-data class DetailsSkillsResult(val skillNames: List<String>, val uniqueLevel: Int, val starLevel: Int)
+data class DetailsSkillsResult(val skillNames: List<String>, val uniqueLevel: Int)
 
 /**
  * Handles all interactions with the skill list screen and manages the [Trainee]'s skill data.
@@ -441,7 +440,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      * default Conditions tab). Switches to the Skills tab, OCRs each cell of the 2-column grid, fuzzy-matches names to the skill database, scrolls for trainees with 10+ skills,
      * and reads the unique skill's level from the first cell. Cell geometry is fractions of the display, measured from a 1080x1920 capture.
      *
-     * @return The owned skill names, the unique level, and the star count (0 when unread).
+     * @return The owned skill names and the unique level.
      */
     fun parseDetailsSkillsTab(): DetailsSkillsResult {
         // Switch from the default Conditions tab to the Skills tab (a fixed position in the modal).
@@ -469,7 +468,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         }
 
         MessageLog.i(TAG, "[INFO] Read ${ownedNames.size} owned skills (unique Lvl $uniqueLevel): ${ownedNames.joinToString(", ")}")
-        return DetailsSkillsResult(ownedNames.toList(), uniqueLevel, 0)
+        return DetailsSkillsResult(ownedNames.toList(), uniqueLevel)
     }
 
     /**

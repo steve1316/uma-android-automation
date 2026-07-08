@@ -154,9 +154,6 @@ class Trainee {
     /** Names of skills the trainee currently owns, used to score the estimated rank. Seeded from the Details "Skills" tab and augmented as the bot buys skills. */
     val ownedSkillNames: MutableSet<String> = mutableSetOf()
 
-    /** The trainee's star rarity (1-5), or 0 when unknown. Drives the unique-skill bonus multiplier in the estimated rank. */
-    var starLevel: Int = 0
-
     /** The trainee's unique-skill level read from the Skills tab, or 0 when unknown. */
     var uniqueSkillLevel: Int = 0
 

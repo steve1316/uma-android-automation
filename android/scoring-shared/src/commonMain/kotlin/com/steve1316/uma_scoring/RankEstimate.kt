@@ -269,16 +269,14 @@ private fun rankIndexForScore(totalScore: Int): Int {
 fun statScore(value: Int): Int = STAT_SCORES[value.coerceIn(0, MAX_STAT_VALUE)]
 
 /**
- * The unique-skill bonus, following UmaTools `calcUniqueBonus`. One- and two-star trainees use a x120 multiplier, all others (including an unknown star count) use x170.
+ * The unique-skill bonus, following UmaTools `calcUniqueBonus`. The app does not read star rarity, so it always uses the x170 multiplier.
  *
- * @param starLevel The trainee's star rarity.
  * @param uniqueLevel The unique skill's level.
  * @return The bonus points, or 0 when the unique level is not positive.
  */
-fun uniqueBonus(starLevel: Int, uniqueLevel: Int): Int {
+fun uniqueBonus(uniqueLevel: Int): Int {
     if (uniqueLevel <= 0) return 0
-    val multiplier = if (starLevel == 1 || starLevel == 2) 120 else 170
-    return multiplier * uniqueLevel
+    return 170 * uniqueLevel
 }
 
 /**
@@ -339,7 +337,6 @@ fun evaluateSkillScore(baseEvalPt: Int, checkType: String, aptitudes: RankAptitu
  * @param wit The Wit stat.
  * @param skills The owned skills' scoring inputs.
  * @param aptitudes The trainee's aptitude grades.
- * @param starLevel The trainee's star rarity (drives the unique bonus multiplier).
  * @param uniqueLevel The unique skill's level.
  * @return The estimated rank, score, and per-component breakdown.
  */
@@ -351,13 +348,12 @@ fun estimateRank(
     wit: Int,
     skills: List<SkillScoreInput>,
     aptitudes: RankAptitudes,
-    starLevel: Int,
     uniqueLevel: Int,
 ): RankResult {
     val statTotal = statScore(speed) + statScore(stamina) + statScore(power) + statScore(guts) + statScore(wit)
     var skillTotal = 0
     for (s in skills) skillTotal += evaluateSkillScore(s.evalPt, s.checkType, aptitudes)
-    val bonus = uniqueBonus(starLevel, uniqueLevel)
+    val bonus = uniqueBonus(uniqueLevel)
     val total = statTotal + skillTotal + bonus
     val idx = rankIndexForScore(total)
     return RankResult(

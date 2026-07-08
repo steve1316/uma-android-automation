@@ -587,7 +587,6 @@ object RunAnalytics {
             .put("negativeStatuses", negativeStatuses)
             .put("ownedSkills", ownedSkills)
             .put("uniqueSkillLevel", trainee.uniqueSkillLevel)
-            .put("starLevel", trainee.starLevel)
     }
 
     /**
