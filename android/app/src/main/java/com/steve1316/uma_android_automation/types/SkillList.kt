@@ -56,6 +56,21 @@ fun stripTrailingGlyphNoise(name: String): String {
     return s
 }
 
+/** Number of skill rows visible at once on the Umamusume Details "Skills" tab before it scrolls. */
+private const val VISIBLE_SKILL_ROWS = 5
+
+/** Maximum number of scroll passes when reading the Skills tab (bounds trainees with many skills). */
+private const val MAX_SKILL_SCROLLS = 6
+
+/**
+ * The result of reading the Umamusume Details "Skills" tab.
+ *
+ * @property skillNames The canonical database names of the trainee's currently-owned skills.
+ * @property uniqueLevel The unique skill's level read from the first cell, or 0 when unread.
+ * @property starLevel The trainee's star rarity, or 0 when unread (the estimated-rank unique bonus then defaults to the 3-star+ multiplier).
+ */
+data class DetailsSkillsResult(val skillNames: List<String>, val uniqueLevel: Int, val starLevel: Int)
+
 /**
  * Handles all interactions with the skill list screen and manages the [Trainee]'s skill data.
  *
@@ -415,6 +430,160 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         }
 
         return skillName
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Umamusume Details "Skills" tab reader (owned skills for the estimated rank)
+
+    /**
+     * Reads the trainee's currently-owned skills from the Umamusume Details dialog's "Skills" tab. Assumes the dialog is already open (header stats and aptitudes were read on the
+     * default Conditions tab). Switches to the Skills tab, OCRs each cell of the 2-column grid, fuzzy-matches names to the skill database, scrolls for trainees with 10+ skills,
+     * and reads the unique skill's level from the first cell. Cell geometry is fractions of the display, measured from a 1080x1920 capture.
+     *
+     * @return The owned skill names, the unique level, and the star count (0 when unread).
+     */
+    fun parseDetailsSkillsTab(): DetailsSkillsResult {
+        // Switch from the default Conditions tab to the Skills tab (a fixed position in the modal).
+        game.tap(SharedData.displayWidth * 0.736, SharedData.displayHeight * 0.496, "details_skills_tab")
+        game.wait(0.5, skipWaitingForLoading = true)
+
+        val ownedNames = LinkedHashSet<String>()
+        var uniqueLevel = 0
+        for (pass in 0..MAX_SKILL_SCROLLS) {
+            val bitmap = game.imageUtils.getSourceBitmap()
+            var newFound = 0
+            for (row in 0 until VISIBLE_SKILL_ROWS) {
+                for (col in 0 until 2) {
+                    val name = readDetailsSkillCell(bitmap, row, col) ?: continue
+                    if (ownedNames.add(name)) newFound++
+                }
+            }
+            if (pass == 0) uniqueLevel = readUniqueSkillLevel(bitmap)
+            // Short lists never scroll past the first page, so a pass that reveals nothing new means we are done.
+            if (pass > 0 && newFound == 0) break
+            scrollSkillsPanel()
+        }
+
+        MessageLog.i(TAG, "[INFO] Read ${ownedNames.size} owned skills (unique Lvl $uniqueLevel): ${ownedNames.joinToString(", ")}")
+        return DetailsSkillsResult(ownedNames.toList(), uniqueLevel, 0)
+    }
+
+    /**
+     * OCRs and database-matches one skill cell of the Details "Skills" tab.
+     *
+     * @param bitmap The current screen bitmap.
+     * @param row The 0-indexed grid row.
+     * @param col The grid column (0 = left, 1 = right).
+     * @return The canonical skill name, or null when the cell is empty or unmatched.
+     */
+    private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int): String? {
+        val w = SharedData.displayWidth.toDouble()
+        val h = SharedData.displayHeight.toDouble()
+        val x0 = if (col == 0) 128 else 632
+        // The unique skill (row 0, col 0) shows "Lvl N" on the right, so its name region stops short to avoid reading the level.
+        val x1 =
+            when {
+                col == 0 && row == 0 -> 410
+                col == 0 -> 505
+                else -> 1010
+            }
+        val yTop = 1036 + row * 112
+        val bbox =
+            BoundingBox(
+                x = (w * x0 / 1080.0).toInt(),
+                y = (h * yTop / 1920.0).toInt(),
+                w = (w * (x1 - x0) / 1080.0).toInt(),
+                h = (h * 78 / 1920.0).toInt(),
+            )
+        val crop = game.imageUtils.createSafeBitmap(bitmap, bbox, "detailsSkill_${row}_$col") ?: return null
+        if (game.debugMode) game.imageUtils.saveBitmap(crop, "detailsSkill_${row}_$col")
+
+        val text = extractText(crop).trim().replace(Regex("\\bl\\b"), "I")
+        if (text.length < 2) return null
+        val base = stripTrailingGlyphNoise(text.replace(Regex("[○◎×]"), " ").trim())
+        if (base.length < 2) return null
+        var name = game.skillDatabase.checkSkillName(base, fuzzySearch = true) ?: return null
+        // The database stores +/-/upgraded variants as "<name> ○ / ◎ / ×". A skill on the Skills tab is positive unless it sits on a purple (negative) tile, so a non-purple
+        // tile must never resolve to the "×" (negative) variant just because the base fuzzy-matched it. Default the positive correction to the base "○" (upgraded "◎" is rarer).
+        if (name.trimEnd().endsWith("×") && !isNegativeSkillCell(bitmap, row, col)) {
+            name = game.skillDatabase.checkSkillName("$base ○", fuzzySearch = true)
+                ?: game.skillDatabase.checkSkillName("$base ◎", fuzzySearch = true)
+                ?: name
+        }
+        return name
+    }
+
+    /**
+     * Detects whether a Skills-tab cell holds a negative skill, identified by its purple tile (positive skills use gold / silver / rainbow tiles).
+     *
+     * @param bitmap The current screen bitmap.
+     * @param row The 0-indexed grid row.
+     * @param col The grid column (0 = left, 1 = right).
+     * @return True when the cell background reads as purple.
+     */
+    private fun isNegativeSkillCell(bitmap: Bitmap, row: Int, col: Int): Boolean {
+        val w = SharedData.displayWidth.toDouble()
+        val h = SharedData.displayHeight.toDouble()
+        val sx = (w * (if (col == 0) 470 else 990) / 1080.0).toInt()
+        val sy = (h * (1050 + row * 112) / 1920.0).toInt()
+        val patchW = (w * 40 / 1080.0).toInt()
+        val patchH = (h * 40 / 1920.0).toInt()
+        var r = 0L
+        var g = 0L
+        var b = 0L
+        var n = 0
+        for (y in 0 until patchH step 3) {
+            for (x in 0 until patchW step 3) {
+                if (sx + x < bitmap.width && sy + y < bitmap.height) {
+                    val px = bitmap.getPixel(sx + x, sy + y)
+                    r += (px shr 16) and 0xFF
+                    g += (px shr 8) and 0xFF
+                    b += px and 0xFF
+                    n++
+                }
+            }
+        }
+        if (n == 0) return false
+        val avgR = (r / n).toInt()
+        val avgG = (g / n).toInt()
+        val avgB = (b / n).toInt()
+        // A negative tile is violet: blue and red both sit clearly above green. Gold, silver, and rainbow positive tiles do not.
+        return avgB > avgR && avgR > avgG && (avgB - avgG) > 45
+    }
+
+    /**
+     * OCRs the unique skill's level from the "Lvl N" region of the first Skills-tab cell.
+     *
+     * @param bitmap The current screen bitmap.
+     * @return The unique skill level, or 0 when unread.
+     */
+    private fun readUniqueSkillLevel(bitmap: Bitmap): Int {
+        val w = SharedData.displayWidth.toDouble()
+        val h = SharedData.displayHeight.toDouble()
+        // The unique level is a single digit shown as "Lvl N"; crop tightly on just the number and read it at high scale so ML Kit does not drop it.
+        val text =
+            game.imageUtils.performOCROnRegion(
+                bitmap,
+                (w * 478 / 1080.0).toInt(),
+                (h * 1052 / 1920.0).toInt(),
+                (w * 46 / 1080.0).toInt(),
+                (h * 48 / 1920.0).toInt(),
+                useThreshold = false,
+                useGrayscale = true,
+                scale = 3.0,
+                ocrEngine = "mlKit",
+                debugName = "detailsUniqueLevel",
+            )
+        // Levels are 1-6, so take the last digit to shrug off any stray "Lvl" characters that bled into the crop.
+        return text.filter { it.isDigit() }.lastOrNull()?.digitToIntOrNull() ?: 0
+    }
+
+    /** Swipes up within the skills panel to reveal the next page of skills (for trainees with 10+ skills). */
+    private fun scrollSkillsPanel() {
+        val cx = (SharedData.displayWidth / 2).toFloat()
+        game.gestureUtils.swipe(cx, (SharedData.displayHeight * 0.78).toFloat(), cx, (SharedData.displayHeight * 0.55).toFloat(), 500L)
+        game.wait(0.4, skipWaitingForLoading = true)
     }
 
     /**

@@ -157,6 +157,10 @@ object LogStreamServer {
      *  immediately on connect. Null until the first snapshot arrives this run. */
     @Volatile private var latestAnalyticsSnapshot: String? = null
 
+    /** Latest owned-skills snapshot pushed after the Skills tab is read. Replayed to each new client after the log history flush so the Skills panel paints
+     *  immediately on connect. Null until the first snapshot arrives this run. */
+    @Volatile private var latestSkillsSnapshot: String? = null
+
     /**
      * Represents a parsed log entry for structured transmission.
      *
@@ -240,6 +244,13 @@ object LogStreamServer {
          * @property json Pre-serialized analytics snapshot JSON sent verbatim to clients with an `ANALYTICS:` prefix.
          */
         data class BroadcastAnalytics(val json: String) : LogAction()
+
+        /**
+         * Broadcasts an owned-skills snapshot to all connected clients. Distinct from [Broadcast] so the framing message never lands in the log replay buffer.
+         *
+         * @property json Pre-serialized skills snapshot JSON sent verbatim to clients with a `SKILLS:` prefix.
+         */
+        data class BroadcastSkills(val json: String) : LogAction()
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,6 +467,15 @@ object LogStreamServer {
                     session.send(Frame.Text("ANALYTICS:$snapshot"))
                 } catch (e: Exception) {
                     Log.w(TAG, "[WARN] handleNewClientAction:: Failed to replay analytics snapshot: ${e.message}")
+                }
+            }
+
+            // Replay the most recent owned-skills snapshot (if any) so the Skills panel paints immediately on a mid-run browser refresh.
+            latestSkillsSnapshot?.let { snapshot ->
+                try {
+                    session.send(Frame.Text("SKILLS:$snapshot"))
+                } catch (e: Exception) {
+                    Log.w(TAG, "[WARN] handleNewClientAction:: Failed to replay skills snapshot: ${e.message}")
                 }
             }
 
@@ -873,6 +893,9 @@ object LogStreamServer {
         // Drop the cached analytics snapshot so the new run starts with no replay.
         latestAnalyticsSnapshot = null
 
+        // Drop the cached skills snapshot so the new run starts with no replay.
+        latestSkillsSnapshot = null
+
         // Ensure we are unmuted for the new run.
         isMuted = false
 
@@ -980,6 +1003,19 @@ object LogStreamServer {
     }
 
     /**
+     * Caches and broadcasts an owned-skills snapshot to all connected clients and replays it to clients that connect later. Called after the Skills tab is read.
+     *
+     * @param json Pre-serialized skills snapshot JSON.
+     */
+    fun broadcastSkillsSnapshot(json: String) {
+        latestSkillsSnapshot = json
+        if (!isRunning) return
+        serverScope?.launch {
+            actionChannel?.send(LogAction.BroadcastSkills(json))
+        }
+    }
+
+    /**
      * Sends the Smart Race Solver state to all currently connected clients with the `SRS_STATE:`
      * framing prefix. Payload is the lowercase boolean (`true` or `false`).
      *
@@ -1006,6 +1042,23 @@ object LogStreamServer {
     private suspend fun handleAnalyticsBroadcast(json: String) {
         if (clients.isEmpty()) return
         val frame = "ANALYTICS:$json"
+        for (client in clients) {
+            try {
+                client.send(Frame.Text(frame))
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    /**
+     * Sends an owned-skills snapshot to all currently connected clients with the `SKILLS:` framing prefix the viewer uses to route the payload to its Skills panel.
+     * Skipped silently when no clients are connected.
+     *
+     * @param json The pre-serialized skills snapshot JSON.
+     */
+    private suspend fun handleSkillsBroadcast(json: String) {
+        if (clients.isEmpty()) return
+        val frame = "SKILLS:$json"
         for (client in clients) {
             try {
                 client.send(Frame.Text(frame))
@@ -1100,6 +1153,10 @@ object LogStreamServer {
 
                             is LogAction.BroadcastAnalytics -> {
                                 handleAnalyticsBroadcast(action.json)
+                            }
+
+                            is LogAction.BroadcastSkills -> {
+                                handleSkillsBroadcast(action.json)
                             }
                         }
                     }

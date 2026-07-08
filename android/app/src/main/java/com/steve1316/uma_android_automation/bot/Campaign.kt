@@ -66,9 +66,16 @@ import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.Mood
 import com.steve1316.uma_android_automation.types.RaceGrade
 import com.steve1316.uma_android_automation.types.RunningStyle
+import com.steve1316.uma_android_automation.types.SkillList
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.types.TrackDistance
+import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.types.Trainee
+import com.steve1316.uma_android_automation.utils.LogStreamServer
 import com.steve1316.uma_android_automation.utils.ScrollList
+import com.steve1316.uma_scoring.RankAptitudes
+import com.steve1316.uma_scoring.SkillScoreInput
+import com.steve1316.uma_scoring.estimateRank
 import org.opencv.core.Point
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -616,9 +623,18 @@ abstract class Campaign(game: Game) : Task(game) {
                     trainee.bHasSetRunningStyle = false
                 }
 
-                // Read the trainee's active conditions from the Conditions sublist, scrolling if the list overflows.
+                // Read the trainee's active conditions from the Conditions sublist (default tab) before switching to the Skills tab.
                 val conditions = ConditionList(game).parseDetailsConditionsTab()
                 trainee.setConditions(conditions.positive, conditions.negative)
+
+                // Read the currently-owned skills from the Skills tab to feed the estimated rank.
+                val ownedSkills = SkillList(game, this).parseDetailsSkillsTab()
+                trainee.ownedSkillNames.clear()
+                trainee.ownedSkillNames.addAll(ownedSkills.skillNames)
+                trainee.uniqueSkillLevel = ownedSkills.uniqueLevel
+                if (ownedSkills.starLevel > 0) trainee.starLevel = ownedSkills.starLevel
+                broadcastOwnedSkills()
+
                 result.dialog.close(game.imageUtils)
             }
 
@@ -1633,6 +1649,74 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
+     * Computes the trainee's estimated overall rank from the latest stats, aptitudes, and owned skills, and stores it on the trainee for logging and the dashboard. Skips
+     * computation until stats have been read at least once. Each owned skill is scored via its `eval_pt` and an aptitude checkType derived from its condition. This mirrors the
+     * UmaTools calculator, so the result is an estimate.
+     */
+    fun updateEstimatedRank() {
+        if (!trainee.bHasUpdatedStats) return
+        val aptitudes =
+            RankAptitudes(
+                turf = trainee.trackSurfaceAptitudes[TrackSurface.TURF]?.name ?: "G",
+                dirt = trainee.trackSurfaceAptitudes[TrackSurface.DIRT]?.name ?: "G",
+                sprint = trainee.trackDistanceAptitudes[TrackDistance.SPRINT]?.name ?: "G",
+                mile = trainee.trackDistanceAptitudes[TrackDistance.MILE]?.name ?: "G",
+                medium = trainee.trackDistanceAptitudes[TrackDistance.MEDIUM]?.name ?: "G",
+                long = trainee.trackDistanceAptitudes[TrackDistance.LONG]?.name ?: "G",
+                front = trainee.runningStyleAptitudes[RunningStyle.FRONT_RUNNER]?.name ?: "G",
+                pace = trainee.runningStyleAptitudes[RunningStyle.PACE_CHASER]?.name ?: "G",
+                late = trainee.runningStyleAptitudes[RunningStyle.LATE_SURGER]?.name ?: "G",
+                end = trainee.runningStyleAptitudes[RunningStyle.END_CLOSER]?.name ?: "G",
+            )
+        val skillInputs =
+            trainee.ownedSkillNames.toList().mapNotNull { skillName ->
+                val data = game.skillDatabase.getSkillData(skillName) ?: return@mapNotNull null
+                SkillScoreInput(data.evalPt, SkillDatabase.deriveCheckType(data.condition, data.precondition))
+            }
+        trainee.estimatedRank =
+            estimateRank(
+                trainee.stats.speed,
+                trainee.stats.stamina,
+                trainee.stats.power,
+                trainee.stats.guts,
+                trainee.stats.wit,
+                skillInputs,
+                aptitudes,
+                trainee.starLevel,
+                trainee.uniqueSkillLevel,
+            )
+    }
+
+    /**
+     * Classifies the trainee's owned skills by pill type (unique / gold / negative / normal) and pushes the list to the Remote Log Viewer's Skills panel. The type comes from
+     * each skill's icon id via SkillData, and the unique skill carries its level. Safe to call whenever the owned-skill set changes.
+     */
+    fun broadcastOwnedSkills() {
+        val skills = org.json.JSONArray()
+        for (name in trainee.ownedSkillNames) {
+            val data = game.skillDatabase.getSkillData(name)
+            val type =
+                when {
+                    data == null -> "normal"
+                    data.bIsUnique -> "unique"
+                    data.bIsNegative -> "negative"
+                    data.bIsGold -> "gold"
+                    else -> "normal"
+                }
+            val obj = org.json.JSONObject()
+            obj.put("name", name)
+            obj.put("type", type)
+            obj.put("evalPt", data?.evalPt ?: 0)
+            if (type == "unique" && trainee.uniqueSkillLevel > 0) obj.put("level", trainee.uniqueSkillLevel)
+            skills.put(obj)
+        }
+        val json = org.json.JSONObject()
+        json.put("skills", skills)
+        json.put("stars", trainee.starLevel)
+        LogStreamServer.broadcastSkillsSnapshot(json.toString())
+    }
+
+    /**
      * Opens the Umamusume Class dialog to update trainee fan count.
      *
      * This function only opens the dialog - the actual fan count update is performed
@@ -1880,7 +1964,8 @@ abstract class Campaign(game: Game) : Task(game) {
             return true
         }
 
-        // Print the trainee info after all turn-start updates and potential fan count updates.
+        // Compute the estimated overall rank, then print the trainee info after all turn-start updates and potential fan count updates.
+        updateEstimatedRank()
         trainee.logInfo()
 
         // Surface analytics right after the trainee scan, before the scenario item/shop pass, so a restart shows the resumed run promptly.
