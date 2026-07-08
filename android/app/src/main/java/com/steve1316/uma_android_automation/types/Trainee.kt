@@ -849,8 +849,8 @@ class Trainee {
 
     /**
      * Read the live per-stat caps from the "/NNNN" denominators on the main / training screen and store the plausible ones in [statCaps]. A failed read keeps the previous cap for
-     * that stat, so a transient OCR miss does not drop a good value. Caps are not shown on the aptitude dialog, so this is a main-screen read. Runs sequentially (five small reads)
-     * as one parallel task within `performTurnStartUpdates`.
+     * that stat, so a transient OCR miss does not drop a good value. This is the live per-turn read. The end-of-run dialog caps are read separately by [updateStatCapsFromDialog].
+     * Runs sequentially (five small reads) as one parallel task within `performTurnStartUpdates`.
      *
      * @param imageUtils Reference to a [CustomImageUtils] instance.
      * @param sourceBitmap The shared main-screen bitmap.
@@ -861,6 +861,18 @@ class Trainee {
         for (statName in StatName.entries) {
             if (!BotService.isRunning) return
             val cap = imageUtils.determineSingleStatCap(statName, sourceBitmap, skillPointsLocation)
+            if (cap > 0) statCaps[statName] = cap
+        }
+    }
+
+    /**
+     * Read the true final per-stat caps straight from the Umamusume Details dialog and store the plausible ones in [statCaps]. Called once at end of run while that dialog is open,
+     * so the final log and dashboard show the caps the trainee actually finished with rather than the last main-screen read. A failed read keeps the previous cap for that stat.
+     *
+     * @param imageUtils Reference to a [CustomImageUtils] instance.
+     */
+    fun updateStatCapsFromDialog(imageUtils: CustomImageUtils) {
+        for ((statName, cap) in imageUtils.determineStatCapsFromDialog()) {
             if (cap > 0) statCaps[statName] = cap
         }
     }

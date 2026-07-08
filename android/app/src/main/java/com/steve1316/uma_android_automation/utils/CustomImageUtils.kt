@@ -1310,8 +1310,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                             MessageLog.w(TAG, "[WARN] determineStatValues:: No numbers found in '$text' for $statName")
                             result[statName] = -1
                         } else if (isAptitudeDialog) {
-                            // The value box holds only the value (no cap or rank badge), but OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value by
-                            // concatenating every digit in reading order rather than treating the pieces as separate numbers. The 2500 ceiling drops a clearly-bogus read.
+                            // The value crop covers only the value line (the cap below is read separately), but OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value
+                            // by concatenating every digit in reading order rather than treating the pieces as separate numbers. The 2500 ceiling drops a clearly-bogus read.
                             val value = text.replace(Regex("[^0-9]"), "").toIntOrNull() ?: -1
                             result[statName] = if (value in 1..2500) value else -1
                         } else {
@@ -1333,6 +1333,62 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         } else {
             MessageLog.e(TAG, "[ERROR] determineStatValues:: Could not start the process of detecting stat values.")
+        }
+
+        return result.toMap()
+    }
+
+    /**
+     * Read the per-stat cap denominators ("/NNNN") from the Umamusume Details dialog, one line below each stat value. Anchored on the same LabelStatTrackSurface as the dialog value
+     * read, so it only works while that dialog is open. Each cap is parsed by stripping the leading "/" and keeping the last four digits, with implausible reads rejected. Used at end
+     * of run to stamp the trainee's true final caps for the log and dashboard, independent of the live main-screen cap reads.
+     *
+     * @return A map of stat names to their detected cap, omitting any stat whose cap could not be read plausibly.
+     */
+    fun determineStatCapsFromDialog(): Map<StatName, Int> {
+        val (finalLocation, finalSourceBitmap) = LabelStatTrackSurface.find(this)
+        val result: MutableMap<StatName, Int> = mutableMapOf()
+
+        if (finalLocation == null) {
+            MessageLog.e(TAG, "[ERROR] determineStatCapsFromDialog:: Could not anchor the cap reads on LabelStatTrackSurface.")
+            return result.toMap()
+        }
+
+        val templateBitmap = LabelStatTrackSurface.template.getBitmap(this)
+        if (templateBitmap == null) {
+            MessageLog.e(TAG, "[ERROR] determineStatCapsFromDialog:: Could not get template bitmap for LabelStatTrackSurface.")
+            return result.toMap()
+        }
+
+        val halfW = templateBitmap.width / 2
+        val halfH = templateBitmap.height / 2
+
+        StatName.entries.forEachIndexed { index, statName ->
+            // The cap ("/NNNN") sits one line below the value in the same column: same offsetX as the value read, 44px lower (measured on-device against the saved cap crop).
+            val text =
+                performOCROnRegion(
+                    finalSourceBitmap,
+                    relX(finalLocation.x, -halfW + 10 + (index * 200)),
+                    relY(finalLocation.y, -halfH - 66),
+                    relWidth(105),
+                    relHeight(26),
+                    useThreshold = false,
+                    useGrayscale = true,
+                    scale = 2.0,
+                    ocrEngine = "tesseract_digits",
+                    debugName = "${statName}StatCapDialog",
+                )
+
+            MessageLog.d(TAG, "[DEBUG] determineStatCapsFromDialog:: Raw OCR text for $statName cap: '$text'")
+
+            // Strip the leading "/" and any noise, then keep the last four digits since a slash misread can prepend a stray digit.
+            val digits = text.replace(Regex("[^0-9]"), "")
+            val cap = digits.takeLast(4).toIntOrNull() ?: -1
+            if (cap in 1000..2500) {
+                result[statName] = cap
+            } else {
+                MessageLog.w(TAG, "[WARN] determineStatCapsFromDialog:: Implausible cap '$text' -> $cap for $statName. Skipping.")
+            }
         }
 
         return result.toMap()
