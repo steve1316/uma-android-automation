@@ -855,9 +855,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
 
         // Parse the text.
-        Log.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
+        MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
         if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
-            Log.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
+            MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
             val cleanedText = text.replace(Regex("[^0-9]"), "")
             return try {
                 val parsed = cleanedText.toInt()
@@ -867,11 +867,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         } else {
             try {
-                Log.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
+                MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
                 val cleanedText = text.replace(Regex("[^0-9]"), "")
                 val parsed = cleanedText.toInt()
                 if (manualStatCap > 0 && parsed > manualStatCap) {
-                    Log.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
+                    MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
                     return -1
                 }
                 return parsed.coerceAtLeast(0)
