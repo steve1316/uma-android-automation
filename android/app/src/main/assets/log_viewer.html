@@ -3536,20 +3536,20 @@
              * Trainee rank ladder, ordered weakest to strongest. A label's array index is the utx_txt_rank image number served at /ranks/<index>. Plain "G" is index 0 and has
              * no badge image, so it renders without one. Shared by the per-stat grades and the estimated overall rank.
              */
-            const RANK_LADDER = ["G", "G+", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "S", "S+", "SS", "SS+"]
+            // The letter ladder (indices 0..17 = G..SS+) plus the "ultra" super-grades above SS+. Each super letter is a base tier plus levels 1..9 (10 tiers), matching the
+            // utx_txt_rank image set: index 18 = UG, 19..27 = UG1..UG9, 28 = UF, ... 97 = US9. The array index is the badge image number.
+            const RANK_LADDER = ["G", "G+", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "S", "S+", "SS", "SS+"].concat(
+                ["UG", "UF", "UE", "UD", "UC", "UB", "UA", "US"].flatMap(letter => [letter, ...Array.from({ length: 9 }, (_, i) => letter + (i + 1))])
+            )
             const RANK_LABEL_TO_INDEX = RANK_LADDER.reduce((map, label, index) => { map[label] = index; return map }, {})
 
             /**
-             * Resolves a rank label to its utx_txt_rank image index. Handles the fixed ladder (G+..SS+, indices 1..17) plus the dynamic "UG" tiers above SS+. Image #18 is the base
-             * "UG" badge, so numbered tiers start one later: UGn -> index 18 + n (UG1..UG79 map to images 19..97).
-             * @param {string} label - The rank label, e.g. "SS+" or "UG6".
-             * @returns {number|undefined} The badge image index, or undefined when the label has no badge (plain "G" or an unknown label).
+             * Resolves a rank label to its utx_txt_rank image index via its ladder position. Plain "G" is index 0 (it has no badge image) and any label off the ladder returns
+             * undefined, so callers treat a falsy result as "no image".
+             * @param {string} label - The rank label, e.g. "SS+" or "UF3".
+             * @returns {number|undefined} The badge image index, or undefined when the label is not on the ladder.
              */
             function rankLabelToIndex(label) {
-                if (typeof label === "string" && label.startsWith("UG")) {
-                    const n = parseInt(label.slice(2), 10)
-                    return Number.isFinite(n) ? 18 + n : undefined
-                }
                 return RANK_LABEL_TO_INDEX[label]
             }
 
@@ -3566,14 +3566,14 @@
 
             /**
              * Maps a raw stat value to its in-game letter grade. A "+" marks the upper half of each band (the band midpoint), matching the character-details badges. Above SS+ the
-             * game shows "UG" tiers: UG1 begins at 1210 and each level spans 10 stat points (UG1..UG79 cover 1210..1990, the span the badge image set covers).
+             * game shows the "ultra" super-grades: the base UG tier begins at 1200 and every 10 stat points steps up one ladder tier (UG, UG1..UG9, UF, UF1..UF9, UE, ...).
              * @param {string|number} value - The stat value.
-             * @returns {string} The letter grade (e.g. "B+" or "UG6"), or "" when there is no valid value.
+             * @returns {string} The letter grade (e.g. "B+" or "UF3"), or "" when there is no valid value.
              */
             function statValueToRankLabel(value) {
                 const v = parseInt(value, 10)
                 if (!Number.isFinite(v) || v < 1) return ""
-                if (v >= 1210) return "UG" + Math.min(79, Math.floor((v - 1210) / 10) + 1)
+                if (v >= 1200) return RANK_LADDER[Math.min(RANK_LABEL_TO_INDEX["UG"] + Math.floor((v - 1200) / 10), RANK_LADDER.length - 1)]
                 const bands = [
                     [1, "G"], [50, "G+"], [100, "F"], [150, "F+"], [200, "E"], [250, "E+"],
                     [300, "D"], [350, "D+"], [400, "C"], [500, "C+"], [600, "B"], [700, "B+"],
