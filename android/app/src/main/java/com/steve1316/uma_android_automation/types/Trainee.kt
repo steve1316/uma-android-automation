@@ -49,6 +49,12 @@ class Trainee {
     companion object {
         const val TAG: String = "[${MainActivity.loggerTag}]Trainee"
 
+        /** Reference (1080p) width of a single aptitude grade cell crop. */
+        const val APTITUDE_CELL_REF_WIDTH: Int = 176
+
+        /** Reference (1080p) height of a single aptitude grade cell crop. */
+        const val APTITUDE_CELL_REF_HEIGHT: Int = 52
+
         /** Mapping of [Aptitude] levels to their corresponding UI label components. */
         val aptitudeComponentMap: Map<Aptitude, ComponentInterface> =
             mapOf(
@@ -450,19 +456,19 @@ class Trainee {
                     bitmap,
                     imageUtils.relX(point.x, 108 + (index * 190)),
                     imageUtils.relY(point.y, -25),
-                    imageUtils.relWidth(176),
-                    imageUtils.relHeight(52),
+                    imageUtils.relWidth(APTITUDE_CELL_REF_WIDTH),
+                    imageUtils.relHeight(APTITUDE_CELL_REF_HEIGHT),
                     "findAptitudesInBitmap:: crop bitmap.",
                 )
             if (croppedBitmap == null) {
                 MessageLog.e(TAG, "[ERROR] findAptitudesInBitmap:: Failed to create cropped bitmap: $option.")
                 return@forEachIndexed
             }
-            for ((aptitude, component) in aptitudeComponentMap.entries) {
-                if (component.check(imageUtils, sourceBitmap = croppedBitmap)) {
-                    result[option] = aptitude
-                    break
-                }
+
+            // Score every letter template and take the best match rather than the first to clear the floor, so a lower-ranked letter (e.g. B) can't shadow the true grade (e.g. D or E).
+            val best: Aptitude? = imageUtils.findBestTemplateMatch(croppedBitmap, aptitudeComponentMap, APTITUDE_CELL_REF_WIDTH, APTITUDE_CELL_REF_HEIGHT)
+            if (best != null) {
+                result[option] = best
             }
         }
 
