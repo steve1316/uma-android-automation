@@ -1690,7 +1690,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /**
      * Sends the trainee's owned skills to the Remote Log Viewer's Skills panel, each with its in-game category color (green/blue/yellow/red) plus gold / unique / negative flags
-     * derived from the skill's icon id via SkillData, and the unique skill's level. Safe to call whenever the owned-skill set changes.
+     * derived from the skill's icon id via SkillData, the unique skill's level, and its description and icon id for the panel's hover tooltip. Safe to call whenever the owned-skill set changes.
      */
     fun broadcastOwnedSkills() {
         val skills = org.json.JSONArray()
@@ -1704,6 +1704,9 @@ abstract class Campaign(game: Game) : Task(game) {
             obj.put("unique", data?.bIsUnique ?: false)
             obj.put("negative", data?.bIsNegative ?: false)
             obj.put("evalPt", data?.evalPt ?: 0)
+            // Description and icon id feed the frontend hover tooltip (name + desc_en + GameTora-hosted icon).
+            obj.put("desc", data?.description ?: "")
+            obj.put("iconId", data?.iconId ?: 0)
             if (data?.bIsUnique == true && trainee.uniqueSkillLevel > 0) obj.put("level", trainee.uniqueSkillLevel)
             skills.put(obj)
         }

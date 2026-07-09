@@ -1435,6 +1435,14 @@
                 font-weight: 600;
                 color: var(--text-primary);
             }
+            /* GameTora-hosted skill icon shown atop the owned-skill hover tooltip. */
+            .skill-tip-icon {
+                display: block;
+                width: 44px;
+                height: 44px;
+                margin: 0 auto 8px;
+                image-rendering: -webkit-optimize-contrast;
+            }
             @media (max-width: 800px) {
                 .header {
                     flex-wrap: wrap;
@@ -4069,7 +4077,8 @@
                         var s = skills[i]
                         var cls = skillPillClass(s)
                         var lv = s.level ? '<span class="lv">Lv' + s.level + "</span>" : ""
-                        html += '<div class="skill-pill ' + cls + '"><span class="dotc"></span>' + escapeHtml(s.name) + lv + "</div>"
+                        var hover = ' onmouseenter="showSkillTooltip(event, ' + i + ')" onmousemove="updateTooltipPosition(event)" onmouseleave="hideTooltip()"'
+                        html += '<div class="skill-pill ' + cls + '"' + hover + '><span class="dotc"></span>' + escapeHtml(s.name) + lv + "</div>"
                     }
                     html += "</div>"
                     panel.innerHTML = html
@@ -4327,6 +4336,23 @@
                 }
 
                 showTooltip(event, title, content)
+            }
+
+            /**
+             * Shows the owned-skill hover tooltip for a pill: the skill name (title), its GameTora-hosted icon, and its description. A missing icon (unmatched skill, iconId 0, or a
+             * GameTora 404) hides itself via onerror so the name and description still show. Mirrors showRaceCellTooltip's O(1) lookup into the cached snapshot.
+             *
+             * @param {MouseEvent} event Hover event used for tooltip positioning.
+             * @param {number} i Index of the hovered skill in the cached SKILLS snapshot.
+             */
+            function showSkillTooltip(event, i) {
+                if (!skillsData || !skillsData.skills || !skillsData.skills[i]) return
+                var s = skillsData.skills[i]
+                var icon = s.iconId
+                    ? '<img class="skill-tip-icon" src="https://media.gametora.com/umamusume/skills/icon/' + s.iconId + '.png" alt="" onerror="this.style.display=\'none\'">'
+                    : ""
+                var desc = s.desc ? escapeHtml(s.desc) : '<span style="opacity:0.6;font-style:italic">No description.</span>'
+                showTooltip(event, escapeHtml(s.name), icon + "<div>" + desc + "</div>")
             }
 
             // //////////////////////////////////////////////////////////////////////////////////////////////////
