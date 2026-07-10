@@ -13,6 +13,9 @@ const val STATUS_DEDUP_THRESHOLD = 0.9
 /** Similarity floor for matching a clean canonical condition name against a possibly-noisy raw read. */
 const val STATUS_QUERY_THRESHOLD = 0.8
 
+/** Shared, stateless Jaro-Winkler similarity service reused across all match calls. */
+private val SIMILARITY_SERVICE = StringSimilarityServiceImpl(JaroWinklerStrategy())
+
 /**
  * Returns true when [candidate] Jaro-Winkler matches any entry in [names] at or above [threshold].
  * Pure and list-free: used both to dedup raw OCR reads and to answer canonical-name membership queries.
@@ -24,7 +27,6 @@ const val STATUS_QUERY_THRESHOLD = 0.8
  */
 fun fuzzyMatchesAny(candidate: String, names: List<String>, threshold: Double): Boolean {
     if (candidate.isBlank() || names.isEmpty()) return false
-    val service = StringSimilarityServiceImpl(JaroWinklerStrategy())
     val lowered = candidate.lowercase()
-    return names.any { service.score(lowered, it.lowercase()) >= threshold }
+    return names.any { SIMILARITY_SERVICE.score(lowered, it.lowercase()) >= threshold }
 }

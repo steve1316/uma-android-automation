@@ -93,7 +93,7 @@ class ConditionList(private val game: Game) {
             // Frame ended short: bottom reached. Otherwise stop only after two empty passes so a fling settling mid-row does not end the scan early.
             if (!frameFull) break
             if (pass > 0 && emptyPasses >= 2) break
-            scrollConditionsPanel()
+            if (pass < MAX_CONDITION_SCROLLS) scrollConditionsPanel()
         }
         MessageLog.i(TAG, "[INFO] Read ${positives.size} positive, ${negatives.size} negative conditions. Positive: ${positives.joinToString(", ")}. Negative: ${negatives.joinToString(", ")}.")
         return DetailsConditionsResult(positives, negatives)
