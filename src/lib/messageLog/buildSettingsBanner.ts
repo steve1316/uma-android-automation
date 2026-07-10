@@ -155,7 +155,6 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 👥 Prioritize Farming Fans: ${settings.racing.enableFarmingFans ? "✅" : "❌"}
 ⏰ Modulo Days to Farm Fans: ${settings.racing.enableFarmingFans ? `${settings.racing.daysToRunExtraRaces} days` : "❌"}
 🚫 Ignore Consecutive Race Warning: ${settings.racing.ignoreConsecutiveRaceWarning ? "✅" : "❌"}
-⚡ Ignore Low Energy Racing Block: ${settings.racing.ignoreLowEnergyRacingBlock ? "✅" : "❌"}
 🔄 Disable Race Retries: ${settings.racing.disableRaceRetries ? "✅" : "❌"}
 \t🔄 Allow Daily Free Race Retry: ${settings.racing.enableFreeRaceRetry ? "✅" : "❌"}
 🏳️ Complete Career on Failure: ${settings.racing.enableCompleteCareerOnFailure ? "✅" : "❌"}
@@ -209,6 +208,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 
 ---------- Scenario Overrides ----------
 🏁 Trackblazer Consecutive Races Limit: ${settings.scenarioOverrides?.trackblazerConsecutiveRacesLimit}
+⚡ Trackblazer Ignore Low Energy Racing Block: ${settings.scenarioOverrides?.trackblazerIgnoreLowEnergyRacingBlock ? "✅" : "❌"}
 🔋 Trackblazer Energy Threshold: ${settings.scenarioOverrides?.trackblazerEnergyThreshold}
 🔋 Trackblazer Force-Train Energy Floor: ${settings.scenarioOverrides?.trackblazerForceTrainEnergyFloor}
 🛍️ Trackblazer Shop Check Grades: ${settings.scenarioOverrides?.trackblazerShopCheckGrades?.join(", ")}

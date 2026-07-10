@@ -55,7 +55,6 @@ export interface Settings {
     racing: {
         enableFarmingFans: boolean
         ignoreConsecutiveRaceWarning: boolean
-        ignoreLowEnergyRacingBlock: boolean
         daysToRunExtraRaces: number
         disableRaceRetries: boolean
         enableFreeRaceRetry: boolean
@@ -229,6 +228,7 @@ export interface Settings {
         trackblazerWhistleForcesTraining: boolean
         trackblazerRetryRacesBeforeFinalGrades: string[]
         trackblazerEnableIrregularTraining: boolean
+        trackblazerIgnoreLowEnergyRacingBlock: boolean
         trackblazerIrregularTrainingMinStatGain: number
         trackblazerExcludedItems: string[]
         trackblazerShopCheckFrequency: number
@@ -265,7 +265,6 @@ export const defaultSettings: Settings = {
     racing: {
         enableFarmingFans: false,
         ignoreConsecutiveRaceWarning: false,
-        ignoreLowEnergyRacingBlock: false,
         daysToRunExtraRaces: 5,
         disableRaceRetries: false,
         enableFreeRaceRetry: false,
@@ -493,6 +492,7 @@ export const defaultSettings: Settings = {
         trackblazerWhistleForcesTraining: true,
         trackblazerRetryRacesBeforeFinalGrades: ["G1", "G2", "G3"],
         trackblazerEnableIrregularTraining: false,
+        trackblazerIgnoreLowEnergyRacingBlock: false,
         trackblazerIrregularTrainingMinStatGain: 30,
         trackblazerExcludedItems: [],
         trackblazerShopCheckFrequency: 3,

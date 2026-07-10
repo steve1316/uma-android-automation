@@ -246,6 +246,9 @@ class Trackblazer(game: Game) : Campaign(game) {
     /** Whether to enable Irregular Training in between races during Trackblazer. */
     private val enableIrregularTraining: Boolean = SettingsHelper.getBooleanSetting("scenarioOverrides", "trackblazerEnableIrregularTraining", false)
 
+    /** Whether to bypass the low-energy racing block that stops racing at <=1% energy with 3+ consecutive races. */
+    private val ignoreLowEnergyRacingBlock: Boolean = SettingsHelper.getBooleanSetting("scenarioOverrides", "trackblazerIgnoreLowEnergyRacingBlock", false)
+
     /** The minimum stat gain required for using a Good-Luck Charm to bypass failure chance. */
     private val minCharmGain: Int = SettingsHelper.getIntSetting("scenarioOverrides", "trackblazerSkipRiskyCharmTrainingBelowGain", 30)
 
@@ -859,7 +862,7 @@ class Trackblazer(game: Game) : Campaign(game) {
     override fun shouldAllowConsecutiveRace(args: Map<String, Any>): Boolean {
         // Block racing at 0-1 energy with 3+ consecutive races to avoid -30 stat penalty.
         if (trainee.energy <= 1 && consecutiveRaceCount >= 3) {
-            if (racing.ignoreLowEnergyRacingBlock) {
+            if (ignoreLowEnergyRacingBlock) {
                 MessageLog.w(
                     TAG,
                     "[WARN] shouldAllowConsecutiveRace:: Energy critically low (${trainee.energy}%) with $consecutiveRaceCount consecutive races, but ignoreLowEnergyRacingBlock is enabled. Allowing race.",

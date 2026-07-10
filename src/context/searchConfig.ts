@@ -392,12 +392,6 @@ const searchConfig: SearchOption[] = [
         page: "RacingSettings",
     },
     {
-        id: "ignore-low-energy-racing-block",
-        title: "Ignore Low Energy Racing Block",
-        description: "When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races.",
-        page: "RacingSettings",
-    },
-    {
         id: "disable-race-retries",
         title: "Disable Race Retries",
         description: "When enabled, the bot will not retry mandatory races if they fail and will stop.",
@@ -836,6 +830,12 @@ const searchConfig: SearchOption[] = [
         title: "Trackblazer Consecutive Races Limit",
         description:
             "Sets the maximum number of consecutive races the bot is allowed to run in the Trackblazer scenario before stopping. Note that a -30 stat penalty can apply starting from 3 consecutive races.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "trackblazer-ignore-low-energy-racing-block",
+        title: "Trackblazer Ignore Low Energy Racing Block",
+        description: "When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races.",
         page: "ScenarioOverridesSettings",
     },
     {

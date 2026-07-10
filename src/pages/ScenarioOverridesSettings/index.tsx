@@ -105,6 +105,7 @@ const ScenarioOverridesSettings = () => {
     /** Reset Racing section sliders to defaults. */
     const resetRacingDefaults = useCallback(() => {
         updateOverrideSetting("trackblazerConsecutiveRacesLimit", defaultSettings.scenarioOverrides.trackblazerConsecutiveRacesLimit)
+        updateOverrideSetting("trackblazerIgnoreLowEnergyRacingBlock", defaultSettings.scenarioOverrides.trackblazerIgnoreLowEnergyRacingBlock)
         updateOverrideSetting("trackblazerMaxRetriesPerRace", defaultSettings.scenarioOverrides.trackblazerMaxRetriesPerRace)
         updateOverrideSetting("trackblazerRetryRacesBeforeFinalGrades", defaultSettings.scenarioOverrides.trackblazerRetryRacesBeforeFinalGrades)
         updateOverrideSetting("trackblazerPreferredDistances", defaultSettings.scenarioOverrides.trackblazerPreferredDistances)
@@ -230,6 +231,8 @@ const ScenarioOverridesSettings = () => {
                                             description="Sets the maximum number of consecutive races the bot is allowed to run in the Trackblazer scenario before stopping. Note that a -30 stat penalty can apply starting from 3 consecutive races."
                                         />
                                     </View>
+
+                                    <ToggleSetting id="trackblazer-ignore-low-energy-racing-block" title="Ignore Low Energy Racing Block" description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races." checked={scenarioOverrides.trackblazerIgnoreLowEnergyRacingBlock} onCheckedChange={(checked) => updateOverrideSetting("trackblazerIgnoreLowEnergyRacingBlock", checked)} />
 
                                     <View style={{ padding: SPACING.md }}>
                                         <CustomSlider
