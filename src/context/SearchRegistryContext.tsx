@@ -13,6 +13,8 @@ export interface SearchOption {
     page: string
     /** The ID of the parent item, if any. */
     parentId?: string
+    /** Optional Schedule tab (calendar|raceSolver|recreation|stop) this item lives on, for deep-linking. */
+    tab?: string
 }
 
 interface SearchContextType {
@@ -58,11 +60,12 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         setSearchIndex((prev) => {
             if (prev[item.id]) {
                 // If it already exists, update it if the parentId has changed like when the setting is toggled on/off and conditional state changes.
+                // Spread the previous entry first so static-only fields (like `tab`) that components never pass through survive the update.
                 if (prev[item.id].parentId !== item.parentId) {
                     endTiming({ id: item.id, title: item.title, action: "update" })
                     return {
                         ...prev,
-                        [item.id]: item,
+                        [item.id]: { ...prev[item.id], ...item },
                     }
                 }
                 endTiming({ id: item.id, title: item.title, action: "skip" })

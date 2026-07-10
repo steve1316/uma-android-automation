@@ -1,7 +1,6 @@
 import { useMemo, useContext, useRef, useCallback, useState } from "react"
 import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { Cpu, ChevronRight } from "lucide-react-native"
 import { useTheme } from "../../context/ThemeContext"
 import { RacingContext, defaultSettings, Settings } from "../../context/BotStateContext"
 import { SearchPageProvider } from "../../context/SearchPageContext"
@@ -14,8 +13,6 @@ import ToggleSetting from "../../components/ToggleSetting"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import { Row } from "../../components/ui/row"
 import { Section } from "../../components/ui/section"
-import { SectionLabel } from "../../components/ui/section-label"
-import { GlassSurface } from "../../components/ui/glass-surface"
 import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalRadioRow } from "../../components/ui/modal-list"
 import { ValuePill } from "../../components/ui/value-pill"
@@ -23,7 +20,6 @@ import { ModalHeader } from "../../components/ui/modal-header"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
-import { RADII } from "../../lib/radii"
 
 /** Available race strategy values for both Junior Year and Original strategy pickers. */
 const RACE_STRATEGY_OPTIONS = ["Default", "Auto", "Front", "Pace", "Late", "End"] as const
@@ -47,7 +43,7 @@ type PerDistanceKey = "Short" | "Mile" | "Medium" | "Long"
 
 /**
  * The Racing Settings page.
- * Provides configuration for fan farming, race behavior, race strategies, force racing, in-game race agenda, and navigation to the Smart Race Solver Settings sub-page.
+ * Provides configuration for fan farming, race behavior, race strategies, force racing, and in-game race agenda.
  */
 const RacingSettings = () => {
     usePerformanceLogging("RacingSettings")
@@ -417,43 +413,6 @@ const RacingSettings = () => {
                                 </>
                             )}
                         </Section>
-
-                        {/* //////////////////////////////////////////////////////////////////////////////////////////////////
-                            //////////////////////////////////////////////////////////////////////////////////////////////////
-                            Advanced */}
-                        <SectionLabel label="Advanced" />
-                        <Pressable
-                            onPress={() => navigation.navigate("SmartRaceSolverSettings" as never)}
-                            android_ripple={{ color: colors.ripple, foreground: true }}
-                            accessibilityRole="button"
-                            disabled={enableForceRacing || enableUserInGameRaceAgenda}
-                            style={{ opacity: enableForceRacing || enableUserInGameRaceAgenda ? 0.5 : 1, marginBottom: SPACING.md }}
-                        >
-                            <GlassSurface style={{ borderRadius: RADII.lg }}>
-                                <View style={{ flexDirection: "row", alignItems: "center", gap: SPACING.md, padding: SPACING.md }}>
-                                    <View
-                                        style={{
-                                            width: 36,
-                                            height: 36,
-                                            borderRadius: 999,
-                                            backgroundColor: colors.brandSubtle,
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        <Cpu size={18} color={colors.brand} />
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ ...TYPE.body, color: colors.brand, fontWeight: "600" }}>Smart Race Solver</Text>
-                                        <Text style={{ ...TYPE.caption, color: colors.textMuted }}>Let the solver pick races automatically</Text>
-                                    </View>
-                                    <ChevronRight size={16} color={colors.brand} />
-                                </View>
-                            </GlassSurface>
-                        </Pressable>
-                        {(enableForceRacing || enableUserInGameRaceAgenda) && (
-                            <WarningContainer>Force Racing and User In-Game Race Agenda settings must be disabled in order to use the Smart Race Solver.</WarningContainer>
-                        )}
                     </View>
                 </ScrollView>
 

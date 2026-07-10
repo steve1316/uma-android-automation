@@ -183,7 +183,7 @@ export const OPTIMIZE_MODE_PRESETS: Record<"STAT_EPITAPH" | "FANS_EPITAPH", Part
 /** Key identifying which optimization-mode preset is active. */
 export type OptimizeModeKey = keyof typeof OPTIMIZE_MODE_PRESETS
 
-/** Display labels for each optimization mode (used by the radio toggle in SmartRaceSolverSettings and the MessageLog banner). */
+/** Display labels for each optimization mode (used by the radio toggle on the Schedule Race Solver tab and the MessageLog banner). */
 export const OPTIMIZE_MODE_LABELS: Record<OptimizeModeKey, string> = {
     STAT_EPITAPH: "Stat Epitaphs",
     FANS_EPITAPH: "Fans + Epitaphs",

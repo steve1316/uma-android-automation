@@ -96,7 +96,7 @@ const SCENARIOS: NavScenario[] = [
     // the Skill Plan parent below uses tapY=897 instead of the master baseline of 826.
     {
         name: "Smart Race Solver Settings",
-        route: "SmartRaceSolverSettings",
+        route: "ScheduleScreen",
         expandTapX: 346,
         expandTapY: 744,
         tapX: 220,
@@ -222,9 +222,9 @@ const SLOW_COMMIT_RE = /\[SLOW-COMMIT\] (\S+) commit took (\d+)ms/
 // `Details` payload carries the real first-commit duration under `duration_ms` — we use that
 // as the sub-route's first-commit metric.
 const COMMIT_DURATION_RE = /\[PERF\] UI - ([A-Za-z]+)_commit: [\d.]+ms \| Details: \{[^}]*"duration_ms":([\d.]+)/
-// SmartRaceSolverSettings emits its preview-solver wall-clock via `console.log` rather than the
+// ScheduleScreen emits its preview-solver wall-clock via `console.log` rather than the
 // `[PERF]` channel — the harness picks it up so we can track the bridge round-trip cost over
-// time. Captured during the SRS scenario's nav window because `previewSchedule` auto-fires on
+// time. Captured during the Schedule scenario's nav window because `previewSchedule` auto-fires on
 // first mount when no cached preview exists.
 const PREVIEW_RE = /\[SmartRaceSolver\] previewSchedule:end (\d+)ms/
 
@@ -385,7 +385,7 @@ const main = async () => {
         // SRS auto-fires `previewSchedule` on first mount, which can take up to ~1.5 s after
         // the first commit; widen the nav window for that scenario only so the `previewSchedule:end`
         // log lands inside the capture.
-        const navWindowMs = sc.route === "SmartRaceSolverSettings" ? 6000 : 4000
+        const navWindowMs = sc.route === "ScheduleScreen" ? 6000 : 4000
         const logsPromise = captureLogcat(navWindowMs)
         tapAt(sc.tapX, sc.tapY)
         const navLogs = await logsPromise

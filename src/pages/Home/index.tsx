@@ -49,12 +49,12 @@ const styles = StyleSheet.create({
     },
 })
 
-// Maps a hero glance target to its screen name inside the nested Settings stack navigator.
-const HERO_NAV_ROUTES: Record<HeroGlanceTarget, string> = {
-    debug: "DebugSettings",
-    srs: "SmartRaceSolverSettings",
-    skills: "Skills",
-    training: "TrainingSettings",
+// Maps a hero glance target to its screen name (and optional nested route params) inside the nested Settings stack navigator.
+const HERO_NAV_ROUTES: Record<HeroGlanceTarget, { screen: string; params?: Record<string, string> }> = {
+    debug: { screen: "DebugSettings" },
+    srs: { screen: "ScheduleScreen", params: { tab: "raceSolver" } },
+    skills: { screen: "Skills" },
+    training: { screen: "TrainingSettings" },
 }
 
 /**
@@ -369,7 +369,10 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
     const statPriority = useMemo(() => abbreviateStatPriority(training.statPrioritization ?? []), [training.statPrioritization])
     const hasGlance = heroGlanceHasContent({ debugMode: debug.enableDebugMode, activeTest, srs: racing.enableSmartRaceSolver, planNames, priority: statPriority })
     const handleHeroNavigate = useCallback(
-        (target: HeroGlanceTarget) => navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen: HERO_NAV_ROUTES[target], initial: false } })),
+        (target: HeroGlanceTarget) => {
+            const { screen, params } = HERO_NAV_ROUTES[target]
+            navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen, params, initial: false } }))
+        },
         [navigation]
     )
 

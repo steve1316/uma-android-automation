@@ -78,6 +78,11 @@ export const useSeasonCalendarStyles = () => {
                     borderColor: "#f59e0b",
                     backgroundColor: "rgba(245, 158, 11, 0.12)",
                 },
+                calendarCellStop: {
+                    borderWidth: 2,
+                    borderColor: "#ef4444",
+                    backgroundColor: "rgba(239, 68, 68, 0.12)",
+                },
                 calendarCellHighlighted: {
                     borderColor: "#ca8a04",
                     borderWidth: 3,
@@ -95,6 +100,17 @@ export const useSeasonCalendarStyles = () => {
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Component
+
+/**
+ * Whether a career turn is blocked - rendered as a non-tappable placeholder and never passed to `renderCell`. True for Pre-Debut turns (<= 13) and, unless `allowSummer`,
+ * the Summer camp turns (37-40 / 61-64). Exported so consumers building overflow/aggregate views use the same ranges the grid renders and can't drift.
+ * @param turn The 1-indexed career turn.
+ * @param allowSummer Whether the Summer camp turns are tappable rather than blocked.
+ * @returns True when the turn is not rendered as an interactive cell.
+ */
+export function isBlockedTurn(turn: number, allowSummer: boolean): boolean {
+    return turn <= 13 || (!allowSummer && ((turn >= 37 && turn <= 40) || (turn >= 61 && turn <= 64)))
+}
 
 /** Props for SeasonCalendar. */
 interface SeasonCalendarProps {
@@ -127,9 +143,7 @@ export default function SeasonCalendar({ allowSummer = false, renderCell, deps =
     )
 
     const renderTurn = (turn: number, turnInYear: number) => {
-        const isPreDebut = turn <= 13
-        const isSummerBlocked = !allowSummer && ((turn >= 37 && turn <= 40) || (turn >= 61 && turn <= 64))
-        if (isPreDebut || isSummerBlocked) return renderBlockedCell(turn, turnInYear, isPreDebut)
+        if (isBlockedTurn(turn, allowSummer)) return renderBlockedCell(turn, turnInYear, turn <= 13)
         return renderCell(turn, turnInYear)
     }
 
