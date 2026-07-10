@@ -527,6 +527,37 @@ class Trainee {
     }
 
     /**
+     * Replaces the trainee's active conditions with a freshly-read set and logs them.
+     *
+     * @param positive The positive condition names read from the Conditions sublist.
+     * @param negative The negative condition names read from the Conditions sublist.
+     */
+    fun setConditions(positive: List<String>, negative: List<String>) {
+        currentPositiveStatuses.clear()
+        currentPositiveStatuses.addAll(positive)
+        currentNegativeStatuses.clear()
+        currentNegativeStatuses.addAll(negative)
+        if (currentPositiveStatuses.isNotEmpty()) MessageLog.v(TAG, "[TRAINEE] Positive Statuses: ${currentPositiveStatuses.joinToString(", ")}")
+        if (currentNegativeStatuses.isNotEmpty()) MessageLog.v(TAG, "[TRAINEE] Negative Statuses: ${currentNegativeStatuses.joinToString(", ")}")
+    }
+
+    /**
+     * Returns true when [name] fuzzy-matches any active positive condition. Tolerant of OCR noise since reads are stored raw.
+     *
+     * @param name The canonical positive condition name to look for.
+     * @return True when a raw positive read matches at the query threshold.
+     */
+    fun hasPositiveStatus(name: String): Boolean = fuzzyMatchesAny(name, currentPositiveStatuses, STATUS_QUERY_THRESHOLD)
+
+    /**
+     * Returns true when [name] fuzzy-matches any active negative condition. Tolerant of OCR noise since reads are stored raw.
+     *
+     * @param name The canonical negative condition name to look for.
+     * @return True when a raw negative read matches at the query threshold.
+     */
+    fun hasNegativeStatus(name: String): Boolean = fuzzyMatchesAny(name, currentNegativeStatuses, STATUS_QUERY_THRESHOLD)
+
+    /**
      * Reads the trainee's name from the Umamusume Details dialog using color-filtered OCR.
      *
      * The name text uses a uniform color #794016 (Brown-ish). This method uses [LabelStatTrackSurface] as a dynamic reference point to calculate the name's position on the screen.
