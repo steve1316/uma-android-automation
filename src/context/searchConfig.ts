@@ -871,12 +871,6 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
-        id: "unity-cup-pre-race-stat-focus",
-        title: "Unity Cup Pre-Race Stat Focus",
-        description: "In the two turns before a Unity Cup team race (Late June / Late December), stop rewarding slow gauge-filling so stat gains decide the turn. Bursts are still prioritized.",
-        page: "ScenarioOverridesSettings",
-    },
-    {
         id: "trackblazer-energy-threshold",
         title: "Trackblazer Energy Threshold",
         description: "The energy level below which the bot will attempt to use energy-restoring items in the Trackblazer scenario.",

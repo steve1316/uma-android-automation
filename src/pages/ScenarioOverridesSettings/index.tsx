@@ -195,7 +195,6 @@ const ScenarioOverridesSettings = () => {
     /** Reset the Unity Cup Training section to defaults. */
     const resetUnityCupDefaults = useCallback(() => {
         updateOverrideSetting("unityCupBurstMaxFailureChance", defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance)
-        updateOverrideSetting("unityCupPreRaceStatFocus", defaultSettings.scenarioOverrides.unityCupPreRaceStatFocus)
     }, [updateOverrideSetting, defaultSettings])
 
     /** Reset the currently-edited scenario's overrides to defaults. */
@@ -748,13 +747,6 @@ const ScenarioOverridesSettings = () => {
                                                 description="Allow a training with a Spirit Explosion gauge ready to burst up to this failure chance before it is skipped. 0 disables the exemption and uses the normal failure limit."
                                             />
                                         </View>
-                                        <ToggleSetting
-                                            id="unity-cup-pre-race-stat-focus"
-                                            title="Pre-Race Stat Focus"
-                                            description="In the two turns before a Unity Cup team race (Late June / Late December), stop rewarding slow gauge-filling so stat gains decide the turn. Bursts are still prioritized."
-                                            checked={scenarioOverrides.unityCupPreRaceStatFocus}
-                                            onCheckedChange={(checked) => updateOverrideSetting("unityCupPreRaceStatFocus", checked)}
-                                        />
                                     </Section>
                                 )}
 

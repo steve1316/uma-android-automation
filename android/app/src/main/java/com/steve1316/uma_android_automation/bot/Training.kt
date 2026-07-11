@@ -643,7 +643,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * @param training The [TrainingOption] to score.
          * @return A score representing the Unity Cup training value.
          */
-        fun scoreUnityCupTraining(config: TrainingConfig, training: TrainingOption, preRaceStatFocus: Boolean = false): Double {
+        fun scoreUnityCupTraining(config: TrainingConfig, training: TrainingOption): Double {
             MessageLog.v(TAG, "\n[TRAINING] Starting process to score ${training.name} Training for Unity Cup with redirected priority: Stats > Burst > Filling.")
 
             val numSpiritGaugesCanFill = training.extras["spiritGaugesCanFill"] as? Int ?: 0
@@ -693,9 +693,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // 3. Third Priority: Trainings that can fill Spirit Explosion Gauges (not at 100% yet). Skipped entirely when pre-race stat focus is active so that in the turns just before a
-            // scenario race, slow gauge-filling no longer competes with stat gains (bursts are still rewarded above). Filling before a race wastes the last chances to build stats.
-            if (numSpiritGaugesCanFill > 0 && !preRaceStatFocus) {
+            // 3. Third Priority: Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
+            if (numSpiritGaugesCanFill > 0) {
                 // Score increases with number of gauges that can be filled. Kept on the stat-efficiency scale so a strong stat turn still outranks pure gauge-filling.
                 // Each gauge fills by 25% per training execution. The optional energy penalty (default 0) reflects the extra energy filling costs, scaled by the number of gauges involved.
                 val fillBonus = config.scoring.unityFillBaseBonus + (numSpiritGaugesCanFill * (config.scoring.unityFillPerGaugeBonus - config.scoring.unityFillEnergyPenaltyPerGauge))
@@ -707,8 +706,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     score += config.scoring.juniorEarlyGameFlatBonus
                     MessageLog.i(TAG, "[TRAINING] [${training.name}] Early game bonus for gauge filling.")
                 }
-            } else if (numSpiritGaugesCanFill > 0 && preRaceStatFocus) {
-                MessageLog.i(TAG, "[TRAINING] [${training.name}] Pre-race stat focus active - skipping the gauge-fill bonus so stat efficiency decides the turn before a scenario race.")
             }
 
             // 4. Fourth Priority: Relationship bars.

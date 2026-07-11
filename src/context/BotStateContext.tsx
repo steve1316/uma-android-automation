@@ -247,7 +247,6 @@ export interface Settings {
         trackblazerGlowStickFinalReserve: number
         trackblazerGlowStickMinFans: number
         unityCupBurstMaxFailureChance: number
-        unityCupPreRaceStatFocus: boolean
     }
 }
 
@@ -518,7 +517,6 @@ export const defaultSettings: Settings = {
         trackblazerGlowStickFinalReserve: 1,
         trackblazerGlowStickMinFans: 20000,
         unityCupBurstMaxFailureChance: 0,
-        unityCupPreRaceStatFocus: false,
     },
 }
 
