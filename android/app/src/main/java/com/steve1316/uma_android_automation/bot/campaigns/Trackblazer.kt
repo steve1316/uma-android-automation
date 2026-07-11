@@ -1596,14 +1596,14 @@ class Trackblazer(game: Game) : Campaign(game) {
                                 if (itemName == "Miracle Cure" || itemName == "Rich Hand Cream") {
                                     // We want to buy as many of these when possible as we will be racing above the consecutive race limit often.
                                     5
-                                } else if (condition != null && trainee.currentNegativeStatuses.contains(condition)) {
+                                } else if (condition != null && trainee.hasNegativeStatus(condition)) {
                                     1
                                 } else {
                                     0
                                 }
                             } else {
                                 val condition = goodConditionMap[itemName]
-                                if (condition != null && !trainee.currentPositiveStatuses.contains(condition)) {
+                                if (condition != null && !trainee.hasPositiveStatus(condition)) {
                                     1
                                 } else {
                                     0
@@ -2878,7 +2878,7 @@ class Trackblazer(game: Game) : Campaign(game) {
     private fun canHealActiveNegativeStatus(itemName: String, trainee: Trainee): Boolean {
         if (itemName == "Miracle Cure") return true
         val target = badConditionMap[itemName] ?: return false
-        return trainee.currentNegativeStatuses.contains(target)
+        return trainee.hasNegativeStatus(target)
     }
 
     /**

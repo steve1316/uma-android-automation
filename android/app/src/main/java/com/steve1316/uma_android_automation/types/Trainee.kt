@@ -6,7 +6,6 @@ import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
-import com.steve1316.uma_android_automation.components.ButtonConditions
 import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.IconMoodAwful
 import com.steve1316.uma_android_automation.components.IconMoodBad
@@ -27,15 +26,11 @@ import com.steve1316.uma_android_automation.components.LabelStatTrackSurface
 import com.steve1316.uma_android_automation.types.Aptitude
 import com.steve1316.uma_android_automation.types.FanCountClass
 import com.steve1316.uma_android_automation.types.Mood
-import com.steve1316.uma_android_automation.types.NegativeStatus
-import com.steve1316.uma_android_automation.types.PositiveStatus
 import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
-import net.ricecode.similarity.JaroWinklerStrategy
-import net.ricecode.similarity.StringSimilarityServiceImpl
 import org.opencv.core.Point
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -521,10 +516,40 @@ class Trainee {
         updateTrackSurfaceAptitudes(imageUtils = imageUtils)
         updateTrackDistanceAptitudes(imageUtils = imageUtils)
         updateRunningStyleAptitudes(imageUtils = imageUtils)
-        updateConditions(imageUtils = imageUtils)
 
         bHasUpdatedAptitudes = true
     }
+
+    /**
+     * Replaces the trainee's active conditions with a freshly-read set and logs them.
+     *
+     * @param positive The positive condition names read from the Conditions sublist.
+     * @param negative The negative condition names read from the Conditions sublist.
+     */
+    fun setConditions(positive: List<String>, negative: List<String>) {
+        currentPositiveStatuses.clear()
+        currentPositiveStatuses.addAll(positive)
+        currentNegativeStatuses.clear()
+        currentNegativeStatuses.addAll(negative)
+        if (currentPositiveStatuses.isNotEmpty()) MessageLog.v(TAG, "[TRAINEE] Positive Statuses: ${currentPositiveStatuses.joinToString(", ")}")
+        if (currentNegativeStatuses.isNotEmpty()) MessageLog.v(TAG, "[TRAINEE] Negative Statuses: ${currentNegativeStatuses.joinToString(", ")}")
+    }
+
+    /**
+     * Returns true when [name] fuzzy-matches any active positive condition. Tolerant of OCR noise since reads are stored raw.
+     *
+     * @param name The canonical positive condition name to look for.
+     * @return True when a raw positive read matches at the query threshold.
+     */
+    fun hasPositiveStatus(name: String): Boolean = fuzzyMatchesAny(name, currentPositiveStatuses, STATUS_QUERY_THRESHOLD)
+
+    /**
+     * Returns true when [name] fuzzy-matches any active negative condition. Tolerant of OCR noise since reads are stored raw.
+     *
+     * @param name The canonical negative condition name to look for.
+     * @return True when a raw negative read matches at the query threshold.
+     */
+    fun hasNegativeStatus(name: String): Boolean = fuzzyMatchesAny(name, currentNegativeStatuses, STATUS_QUERY_THRESHOLD)
 
     /**
      * Reads the trainee's name from the Umamusume Details dialog using color-filtered OCR.
@@ -582,118 +607,6 @@ class Trainee {
         } else {
             MessageLog.w(TAG, "[WARN] readName:: Could not detect Trainee name from the aptitude dialog.")
         }
-    }
-
-    /**
-     * Reads the trainee's current conditions (positive and negative) from the Umamusume Details dialog.
-     *
-     * Conditions are categorized by their background color:
-     * - Negative Condition: #519FFB (Blue-ish)
-     * - Positive Condition: #FF9741 (Orange-ish)
-     *
-     * @param imageUtils Reference to a [CustomImageUtils] instance.
-     */
-    private fun updateConditions(imageUtils: CustomImageUtils) {
-        val sourceBitmap = imageUtils.getSourceBitmap()
-        val refPoint = ButtonConditions.findImageWithBitmap(imageUtils = imageUtils, sourceBitmap = sourceBitmap) ?: Point(285.0, 1210.0)
-        currentPositiveStatuses.clear()
-        currentNegativeStatuses.clear()
-
-        for (i in 0 until 3) {
-            val offsetX = 10
-            val offsetY = 85 + (i * 180)
-            val cropX = imageUtils.relX(refPoint.x, offsetX)
-            val cropY = imageUtils.relY(refPoint.y, offsetY)
-            val cropWidth = imageUtils.relWidth(455)
-            val cropHeight = imageUtils.relHeight(55)
-
-            val croppedBitmap = imageUtils.createSafeBitmap(sourceBitmap, cropX, cropY, cropWidth, cropHeight, "updateConditions crop $i") ?: continue
-
-            // Identify the status type by sampling the background color of the status label.
-            // Adjusted samping positions to avoid accidental text overlap causing incorrect color matches.
-            val sampleX = croppedBitmap.width - 20
-            val sampleY = croppedBitmap.height - 20
-            val pixel = croppedBitmap.getPixel(sampleX, sampleY)
-            val r = android.graphics.Color.red(pixel)
-            val g = android.graphics.Color.green(pixel)
-            val b = android.graphics.Color.blue(pixel)
-            MessageLog.d(TAG, "[DEBUG] updateConditions:: Checking condition colors [$r, $g, $b] at ($cropX, $cropY)")
-            // Bad color: #519FFB. Good color: #FF9741.
-            val isBad = (r in 70..95 && g in 145..175 && b in 240..255)
-            val isGood = (r in 240..255 && g in 140..165 && b in 50..80)
-
-            if (isBad || isGood) {
-                val statusTitle =
-                    imageUtils.performOCROnRegion(
-                        sourceBitmap,
-                        cropX,
-                        cropY,
-                        cropWidth,
-                        cropHeight,
-                        useThreshold = false,
-                        useGrayscale = true,
-                        scale = 2.0,
-                        ocrEngine = "mlkit",
-                        debugName = "updateConditions_status_$i",
-                    ).trim()
-                if (statusTitle.isNotEmpty()) {
-                    val expectedList = if (isBad) NegativeStatus.names else PositiveStatus.names
-                    val match = findClosestMatch(statusTitle, expectedList)
-
-                    if (match != null) {
-                        if (isBad) {
-                            currentNegativeStatuses.add(match)
-                        } else {
-                            currentPositiveStatuses.add(match)
-                        }
-                    } else if (statusTitle.length >= 3) {
-                        // If no match found, but it's long enough, add the original OCR text.
-                        // This is done so we can see what was detected and potentially add it to the lists.
-                        if (isBad) {
-                            currentNegativeStatuses.add(statusTitle)
-                        } else {
-                            currentPositiveStatuses.add(statusTitle)
-                        }
-                    }
-                }
-            } else {
-                // Break once we encounter a non-status pixel.
-                break
-            }
-        }
-        // Remote log output consistency
-        if (currentPositiveStatuses.isNotEmpty()) {
-            MessageLog.v(TAG, "[TRAINEE] Positive Statuses: ${currentPositiveStatuses.joinToString(", ")}")
-        }
-        if (currentNegativeStatuses.isNotEmpty()) {
-            MessageLog.v(TAG, "[TRAINEE] Negative Statuses: ${currentNegativeStatuses.joinToString(", ")}")
-        }
-    }
-
-    /**
-     * Finds the closest match for a detected OCR string from a known list of statuses.
-     *
-     * @param ocrText The raw text returned by the OCR engine.
-     * @param expectedList List of valid status names to compare against.
-     * @param threshold Similarity threshold (0.0 to 1.0).
-     * @return The matched status string, or null if no match is confident enough.
-     */
-    private fun findClosestMatch(ocrText: String, expectedList: List<String>, threshold: Double = 0.8): String? {
-        val strategy = JaroWinklerStrategy()
-        val service = StringSimilarityServiceImpl(strategy)
-
-        var bestMatch: String? = null
-        var bestScore = 0.0
-
-        for (expected in expectedList) {
-            val score = service.score(ocrText.lowercase(), expected.lowercase())
-            if (score > bestScore) {
-                bestScore = score
-                bestMatch = expected
-            }
-        }
-
-        return if (bestScore >= threshold) bestMatch else null
     }
 
     /**

@@ -57,6 +57,7 @@ import com.steve1316.uma_android_automation.components.LabelScheduledRace
 import com.steve1316.uma_android_automation.components.LabelStatTableHeaderSkillPoints
 import com.steve1316.uma_android_automation.components.LabelUmamusumeClassFans
 import com.steve1316.uma_android_automation.types.BoundingBox
+import com.steve1316.uma_android_automation.types.ConditionList
 import com.steve1316.uma_android_automation.types.DateMonth
 import com.steve1316.uma_android_automation.types.DatePhase
 import com.steve1316.uma_android_automation.types.DateYear
@@ -597,6 +598,10 @@ abstract class Campaign(game: Game) : Task(game) {
                     // Reset this flag since our preferred running style has changed.
                     trainee.bHasSetRunningStyle = false
                 }
+
+                // Read the trainee's active conditions from the Conditions sublist, scrolling if the list overflows.
+                val conditions = ConditionList(game).parseDetailsConditionsTab()
+                trainee.setConditions(conditions.positive, conditions.negative)
                 result.dialog.close(game.imageUtils)
             }
 
