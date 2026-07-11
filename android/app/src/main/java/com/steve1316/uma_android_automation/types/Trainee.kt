@@ -31,6 +31,7 @@ import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import com.steve1316.uma_scoring.RankResult
 import org.opencv.core.Point
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -47,6 +48,12 @@ import kotlin.math.abs
 class Trainee {
     companion object {
         const val TAG: String = "[${MainActivity.loggerTag}]Trainee"
+
+        /** Reference (1080p) width of a single aptitude grade cell crop. */
+        const val APTITUDE_CELL_REF_WIDTH: Int = 176
+
+        /** Reference (1080p) height of a single aptitude grade cell crop. */
+        const val APTITUDE_CELL_REF_HEIGHT: Int = 52
 
         /** Mapping of [Aptitude] levels to their corresponding UI label components. */
         val aptitudeComponentMap: Map<Aptitude, ComponentInterface> =
@@ -149,6 +156,15 @@ class Trainee {
 
     /** The trainee's current pool of skill points. */
     var skillPoints: Int = 120
+
+    /** Names of skills the trainee currently owns, used to score the estimated rank. Seeded from the Details "Skills" tab and augmented as the bot buys skills. */
+    val ownedSkillNames: MutableSet<String> = mutableSetOf()
+
+    /** The trainee's unique-skill level read from the Skills tab, or 0 when unknown. */
+    var uniqueSkillLevel: Int = 0
+
+    /** The most recently computed estimated overall rank, or null before the first computation. */
+    var estimatedRank: RankResult? = null
 
     /** The trainee's current total fan count. Starts at 0 until the first fan-count OCR reading. */
     var fans: Int = 0
@@ -440,19 +456,19 @@ class Trainee {
                     bitmap,
                     imageUtils.relX(point.x, 108 + (index * 190)),
                     imageUtils.relY(point.y, -25),
-                    imageUtils.relWidth(176),
-                    imageUtils.relHeight(52),
+                    imageUtils.relWidth(APTITUDE_CELL_REF_WIDTH),
+                    imageUtils.relHeight(APTITUDE_CELL_REF_HEIGHT),
                     "findAptitudesInBitmap:: crop bitmap.",
                 )
             if (croppedBitmap == null) {
                 MessageLog.e(TAG, "[ERROR] findAptitudesInBitmap:: Failed to create cropped bitmap: $option.")
                 return@forEachIndexed
             }
-            for ((aptitude, component) in aptitudeComponentMap.entries) {
-                if (component.check(imageUtils, sourceBitmap = croppedBitmap)) {
-                    result[option] = aptitude
-                    break
-                }
+
+            // Score every letter template and take the best match rather than the first to clear the floor, so a lower-ranked letter (e.g. B) can't shadow the true grade (e.g. D or E).
+            val best: Aptitude? = imageUtils.findBestTemplateMatch(croppedBitmap, aptitudeComponentMap, APTITUDE_CELL_REF_WIDTH, APTITUDE_CELL_REF_HEIGHT)
+            if (best != null) {
+                result[option] = best
             }
         }
 
@@ -830,6 +846,7 @@ class Trainee {
         MessageLog.v(TAG, "[TRAINEE] Mood: ${mood.name}")
         MessageLog.v(TAG, "[TRAINEE] Fans: $fans")
         MessageLog.v(TAG, "[TRAINEE] Skill Points: $skillPoints")
+        estimatedRank?.let { MessageLog.v(TAG, "[TRAINEE] Estimated Rank: ${it.rankLabel} (${it.totalScore})") }
         val trackString = "Turf=${trackSurfaceAptitudes[TrackSurface.TURF]}, Dirt=${trackSurfaceAptitudes[TrackSurface.DIRT]}"
         val distanceString =
             "Sprint=${trackDistanceAptitudes[TrackDistance.SPRINT]}, Mile=${trackDistanceAptitudes[TrackDistance.MILE]}, Medium=${trackDistanceAptitudes[TrackDistance.MEDIUM]}, Long=${trackDistanceAptitudes[TrackDistance.LONG]}"

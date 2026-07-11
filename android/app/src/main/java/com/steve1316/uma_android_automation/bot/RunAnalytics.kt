@@ -565,6 +565,9 @@ object RunAnalytics {
         val negativeStatuses = JSONArray()
         trainee.currentNegativeStatuses.forEach { negativeStatuses.put(it) }
 
+        val ownedSkills = JSONArray()
+        trainee.ownedSkillNames.forEach { ownedSkills.put(it) }
+
         return JSONObject()
             .put("name", trainee.name.ifEmpty { rememberedName })
             .put(
@@ -582,6 +585,8 @@ object RunAnalytics {
             .put("fans", trainee.fans)
             .put("skillPoints", trainee.skillPoints)
             .put("negativeStatuses", negativeStatuses)
+            .put("ownedSkills", ownedSkills)
+            .put("uniqueSkillLevel", trainee.uniqueSkillLevel)
     }
 
     /**

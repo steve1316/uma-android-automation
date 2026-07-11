@@ -37,6 +37,14 @@
                 --font-mono: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
                 --radius: 8px;
                 --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+                /* Per-stat accent colors (Speed / Stamina / Power / Guts / Wit) for the dashboard meters. */
+                --spd: #38a7e8;
+                --sta: #e8563c;
+                --pow: #e89a2c;
+                --gut: #e8489a;
+                --wit: #3cc06e;
+                /* Height of the collapsed mobile peek-sheet glance bar (drives the sheet slide, log bottom padding, and scroll-button offset). */
+                --peek-h: 52px;
             }
 
             *,
@@ -78,36 +86,36 @@
             .header {
                 background: var(--bg-secondary);
                 border-bottom: 1px solid var(--border-color);
-                padding: 12px 20px;
+                padding: 0 20px;
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
                 flex-shrink: 0;
-                gap: 16px;
+                gap: 24px;
                 height: 54px;
             }
 
+            /* Tabs sit inline in the header row; each stretches full-height so the active underline meets the header's bottom border. */
             .tab-nav {
                 display: flex;
-                background: var(--bg-secondary);
-                padding: 0 20px;
-                border-bottom: 1px solid var(--border-color);
-                gap: 20px;
-                flex-shrink: 0;
+                gap: 22px;
+                align-self: stretch;
             }
 
             .tab-btn {
-                padding: 12px 0;
+                display: flex;
+                align-items: center;
+                padding: 0;
                 background: none;
                 border: none;
+                border-bottom: 2px solid transparent;
                 color: var(--text-secondary);
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 600;
                 cursor: pointer;
-                position: relative;
                 transition: color var(--transition);
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
+                white-space: nowrap;
             }
 
             .tab-btn:hover {
@@ -116,17 +124,7 @@
 
             .tab-btn.active {
                 color: var(--accent-blue);
-            }
-
-            .tab-btn.active::after {
-                content: "";
-                position: absolute;
-                bottom: -1px;
-                left: 0;
-                right: 0;
-                height: 2px;
-                background: var(--accent-blue);
-                border-radius: 2px 2px 0 0;
+                border-bottom-color: var(--accent-blue);
             }
 
             .tab-view {
@@ -375,6 +373,7 @@
             }
 
             .status-badge {
+                margin-left: auto;
                 display: flex;
                 align-items: center;
                 gap: 6px;
@@ -385,6 +384,27 @@
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 transition: all var(--transition);
+            }
+
+            /* Status text stacked over the host so the chip stays narrow (the single-line form overflowed on mobile). */
+            .status-lines {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                line-height: 1.15;
+            }
+
+            /* Connected host shown inside the status chip on its own line (replaces the removed footer). Empty when disconnected, collapsing the chip to one line. */
+            .status-host {
+                color: var(--text-secondary);
+                font-weight: 500;
+                font-family: var(--font-mono);
+                font-size: 10px;
+                text-transform: none;
+                letter-spacing: 0;
+            }
+            .status-host:empty {
+                display: none;
             }
 
             .status-dot {
@@ -654,6 +674,37 @@
                 color: var(--accent-blue);
             }
 
+            /* Option C: level filters collapse into one segmented control. */
+            .filter-group.segmented {
+                gap: 0;
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                overflow: hidden;
+            }
+            .filter-group.segmented .filter-btn {
+                border: none;
+                border-right: 1px solid var(--border-color);
+                border-radius: 0;
+                padding: 4px 10px;
+            }
+            .filter-group.segmented .filter-btn:last-child {
+                border-right: none;
+            }
+
+            /* Icon-only action buttons in the toolbar's right-hand action cluster. */
+            .toolbar-btn.icon {
+                padding: 5px;
+                width: 30px;
+                justify-content: center;
+            }
+            .toolbar-btn.icon svg {
+                width: 14px;
+                height: 14px;
+            }
+            .toolbar-grow {
+                flex: 1;
+            }
+
             .font-size-container {
                 display: flex;
                 align-items: center;
@@ -826,6 +877,29 @@
                 color: var(--log-error);
             }
 
+            /* Option C: a colored left-rule per level for faster scanning (errors get a faint tint). Toggled by the .ruled class on the log container. */
+            .log-container.ruled .log-entry {
+                border-left: 2px solid transparent;
+                padding-left: 8px;
+                margin-left: -2px;
+            }
+            .log-container.ruled .log-entry.level-verbose {
+                border-left-color: var(--log-verbose);
+            }
+            .log-container.ruled .log-entry.level-debug {
+                border-left-color: var(--log-debug);
+            }
+            .log-container.ruled .log-entry.level-info {
+                border-left-color: var(--log-info);
+            }
+            .log-container.ruled .log-entry.level-warn {
+                border-left-color: var(--log-warn);
+            }
+            .log-container.ruled .log-entry.level-error {
+                border-left-color: var(--log-error);
+                background: rgba(239, 68, 68, 0.05);
+            }
+
             .log-timestamp {
                 color: var(--text-muted);
                 margin-right: 8px;
@@ -885,162 +959,338 @@
                 display: flex;
             }
 
-            .footer {
-                background: var(--bg-secondary);
-                border-top: 1px solid var(--border-color);
-                padding: 6px 20px;
-                font-size: 11px;
-                color: var(--text-muted);
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-shrink: 0;
+            /* //////// Mobile bottom peek-sheet //////// */
+            /* On desktop the wrapper is transparent (display:contents) so the dashboard renders inline; the glance bar + backdrop are mobile-only (see the max-width:800px block). */
+            .mobile-sheet {
+                display: contents;
+            }
+            .sheet-peek,
+            .sheet-backdrop {
+                display: none;
             }
 
-            .footer-left {
-                flex: 1;
-                text-align: left;
-            }
-
-            .footer-right {
-                flex: 1;
-                text-align: right;
-            }
-
+            /* //////// Dashboard: three hairline-divided zones (Identity | Stats | right rail) //////// */
             .dashboard {
+                display: flex;
                 background: var(--bg-secondary);
                 border-bottom: 1px solid var(--border-color);
-                padding: 10px 16px;
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: stretch;
-                gap: 16px;
+                height: 320px;
                 flex-shrink: 0;
+                overflow: hidden;
             }
-
-            .dashboard-info {
+            .zone {
+                padding: 12px 16px;
                 display: flex;
                 flex-direction: column;
-                gap: 6px;
+                min-height: 0;
             }
-            .info-left-col, .info-right-col {
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
+            .zone + .zone {
+                border-left: 1px solid var(--border-color);
             }
-
-            .dashboard-row {
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                flex-wrap: wrap;
-            }
-
-            .dashboard-item {
-                display: flex;
-                flex-direction: column;
-                gap: 2px;
-            }
-
-            .dashboard-label {
-                font-size: 11px;
+            /* Small uppercase zone/section caption. */
+            .zt {
+                font-size: 9px;
                 font-weight: 700;
+                letter-spacing: 1px;
                 color: var(--text-muted);
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
+                margin-bottom: 9px;
             }
 
-            .dashboard-value {
-                font-size: 15px;
-                font-weight: 600;
+            /* Identity zone: name, mood, vitals, date/turn, aptitudes, conditions. Scrolls internally if a trainee has many conditions rather than spilling into the log. */
+            .z-id {
+                flex: 0 0 200px;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            .z-id::-webkit-scrollbar {
+                width: 6px;
+            }
+            .z-id::-webkit-scrollbar-thumb {
+                background: var(--scrollbar-thumb);
+                border-radius: 3px;
+            }
+            .z-id .name {
+                font-size: 18px;
+                font-weight: 800;
+                letter-spacing: -0.3px;
+                color: var(--text-primary);
+            }
+            .mood-slot {
+                margin-top: 5px;
+                min-height: 20px;
+            }
+            .vitals {
+                margin-top: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                font-size: 11px;
+            }
+            .vital {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+            }
+            .vital .k {
+                color: var(--text-muted);
+                width: 42px;
+            }
+            .vital .b {
+                flex: 1;
+                height: 6px;
+                border-radius: 3px;
+                background: rgba(255, 255, 255, 0.06);
+                overflow: hidden;
+            }
+            .vital .b i {
+                display: block;
+                height: 100%;
+                width: 0;
+                background: linear-gradient(90deg, #f59e0b, #22c55e);
+                transition: width var(--transition);
+            }
+            .vital .v {
+                font-family: var(--font-mono);
+                color: var(--text-primary);
+            }
+            .idmeta {
+                margin-top: 8px;
+                font-size: 11px;
+                color: var(--text-secondary);
+                line-height: 1.5;
+            }
+            .idmeta b {
                 color: var(--text-primary);
                 font-family: var(--font-mono);
             }
-
-            .stats-container {
-                display: flex;
-                gap: 8px;
-                background: var(--bg-tertiary);
-                padding: 6px 12px;
-                border-radius: var(--radius);
-                border: 1px solid var(--border-color);
+            .apts {
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid var(--border-color);
             }
-
-            .stats-container.session-stats {
-                border-color: rgba(155, 109, 255, 0.3);
-            }
-
-            .stat-box {
+            .aptrow {
                 display: flex;
-                flex-direction: column;
                 align-items: center;
-                min-width: 42px;
+                gap: 9px;
+                margin-bottom: 5px;
+            }
+            .aptrow .al {
+                flex-shrink: 0;
+                color: var(--text-muted);
+                width: 40px;
+                font-size: 9.5px;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            /* Fixed 4-column grid so badges line up in straight columns across rows; short rows (Track's 2) leave the trailing columns empty rather than centering. */
+            .aptrow .cells {
+                display: grid;
+                grid-template-columns: repeat(4, 19px);
+                gap: 5px;
+            }
+            /* Aptitude badge wrapper carries a hover tooltip (the full name) via data-tip. */
+            .apt {
+                position: relative;
+            }
+            .apt::after {
+                content: attr(data-tip);
+                position: absolute;
+                bottom: 128%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #05050a;
+                color: var(--text-primary);
+                font-size: 10px;
+                padding: 3px 7px;
+                border-radius: 5px;
+                white-space: nowrap;
+                border: 1px solid var(--border-accent);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.12s;
+                z-index: 5;
+            }
+            .apt:hover::after {
+                opacity: 1;
             }
 
-            .stat-label {
+            /* Condition chips sit after the aptitudes: aptitudes are fixed and stay visible, conditions are the variable content that wraps. Empty "None" placeholders are hidden. */
+            .cond-strip {
+                margin-top: 8px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                min-height: 0;
+            }
+            .cond-inline {
+                display: inline-flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                min-height: 0;
+            }
+            .cond-inline .condition-badge {
                 font-size: 10px;
-                font-weight: 700;
-                color: var(--text-muted);
+                padding: 1px 6px;
+            }
+            .cond-inline .condition-empty {
+                display: none;
+            }
+
+            /* Stats zone: horizontal meters filling toward each stat's OCR'd cap. */
+            .z-stat {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+            /* Tighter gap under the Stats header so the freed space redistributes below the last meter (statfoot is bottom-aligned via margin-top: auto). */
+            .z-stat > .zt {
                 margin-bottom: 2px;
             }
-
-            .stat-value {
-                font-size: 14px;
+            .meters {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                max-width: 1080px;
+            }
+            .meter {
+                display: grid;
+                grid-template-columns: 40px 1fr 76px 52px;
+                align-items: center;
+                gap: 8px;
+            }
+            .meter .nm {
+                font-family: var(--font-mono);
+                font-size: 12px;
                 font-weight: 700;
+                color: var(--c);
+                letter-spacing: 0.5px;
+            }
+            .meter .track {
+                position: relative;
+                height: 14px;
+                border-radius: 7px;
+                background: rgba(255, 255, 255, 0.05);
+                overflow: hidden;
+            }
+            .meter .fill {
+                position: absolute;
+                inset: 0 auto 0 0;
+                width: 0;
+                border-radius: 7px;
+                background: var(--c);
+                box-shadow: 0 0 10px -2px var(--c);
+                transition: width var(--transition);
+            }
+            .meter .vc {
+                font-family: var(--font-mono);
+                font-size: 15px;
+                font-weight: 700;
+                text-align: left;
+                color: var(--text-primary);
+            }
+            .meter .vc .cap {
+                font-size: 11px;
+                font-weight: 400;
+                color: var(--text-muted);
+            }
+            .meter .stat-grade-img {
+                height: 36px;
+                width: auto;
+                justify-self: center;
+            }
+            .stat-grade-img:not([src]),
+            .stat-grade-img[src=""] {
+                display: none;
+            }
+
+            /* Stats footer: estimated rank badge + session action counters. */
+            .statfoot {
+                margin-top: auto;
+                padding-top: 8px;
+                border-top: 1px solid var(--border-color);
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                max-width: 1080px;
+            }
+            .erank {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .est-rank-img {
+                height: 46px;
+                width: auto;
+                filter: drop-shadow(0 0 7px rgba(255, 180, 40, 0.28));
+            }
+            .est-rank-img:not([src]),
+            .est-rank-img[src=""] {
+                display: none;
+            }
+            .est-rank-text {
+                font-size: 26px;
+                font-weight: 800;
+                line-height: 1;
                 color: var(--accent-blue);
             }
-
-            .aptitude-table {
-                width: auto;
-                min-width: 300px;
-                border-collapse: collapse;
-                background: var(--bg-tertiary);
-                border-radius: var(--radius);
-                overflow: hidden;
-                border: 1px solid var(--border-color);
-                font-size: 11px;
+            .erank .score {
+                font-family: var(--font-mono);
+                font-size: 26px;
+                font-weight: 800;
+                line-height: 1;
+                letter-spacing: -0.5px;
+                color: var(--text-primary);
             }
-
-            .aptitude-table th,
-            .aptitude-table td {
-                padding: 4px 8px;
-                text-align: center;
-                border: 1px solid var(--border-color);
-            }
-
-            .aptitude-table th {
-                background: rgba(255, 255, 255, 0.03);
-                color: var(--text-secondary);
-                font-weight: 600;
-                font-size: 10px;
+            .erank .lab {
+                font-size: 9px;
+                color: var(--text-muted);
                 text-transform: uppercase;
-                width: 100px;
+                letter-spacing: 1.5px;
+                margin-top: 4px;
             }
-
-            .aptitude-cell {
-                display: inline-flex;
+            .ctrs {
+                margin-left: auto;
+                display: flex;
+                gap: 6px;
+                padding: 6px;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+            }
+            .ctr {
+                display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 2px;
-                margin: 0 8px;
+                min-width: 44px;
+                padding: 2px 4px;
+                cursor: default;
             }
-
-            .aptitude-name {
-                font-size: 11px;
+            .ctr .n {
+                font-family: var(--font-mono);
+                font-size: 15px;
+                font-weight: 700;
+                color: var(--text-primary);
+            }
+            .ctr .k {
+                font-size: 8px;
                 color: var(--text-muted);
-                font-weight: 500;
+                letter-spacing: 0.5px;
+                margin-top: 1px;
+            }
+            .ctr + .ctr {
+                border-left: 1px solid var(--border-color);
             }
 
+            /* Aptitude grade badge (used inside the Identity zone's aptitude rows). */
             .grade-badge {
-                display: inline-block;
-                width: 20px;
-                height: 20px;
-                line-height: 20px;
-                text-align: center;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 19px;
+                height: 19px;
                 border-radius: 4px;
                 font-weight: 800;
-                font-size: 13px;
+                font-size: 11px;
                 background: #333;
                 color: #fff;
             }
@@ -1072,29 +1322,7 @@
                 background: #444;
             }
 
-            /* Conditions Section */
-            .conditions-section {
-                padding: 10px;
-                width: auto;
-                background: var(--bg-secondary);
-                border: 1px solid var(--border-color);
-                border-radius: var(--radius);
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .condition-group {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            }
-            .condition-group-label {
-                font-size: 10px;
-                font-weight: 700;
-                color: var(--text-muted);
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
+            /* Conditions (folded into the Identity zone via .cond-strip). */
             .condition-list {
                 display: flex;
                 flex-wrap: wrap;
@@ -1207,179 +1435,436 @@
                 font-weight: 600;
                 color: var(--text-primary);
             }
-            @media screen and (max-width: 800px) {
+            /* GameTora-hosted skill icon shown atop the owned-skill hover tooltip. */
+            .skill-tip-icon {
+                display: block;
+                width: 44px;
+                height: 44px;
+                margin: 0 auto 8px;
+                image-rendering: -webkit-optimize-contrast;
+            }
+            @media (max-width: 800px) {
+                .header {
+                    flex-wrap: wrap;
+                    height: auto;
+                    padding: 10px 14px;
+                    gap: 8px 16px;
+                }
+                .tab-nav {
+                    order: 3;
+                    width: 100%;
+                    overflow-x: auto;
+                    gap: 18px;
+                    padding-bottom: 2px;
+                }
+                .status-badge {
+                    margin-left: auto;
+                }
+
+                /* //////// Dashboard as a bottom peek-sheet //////// */
+                /* A slim glance bar pins to the bottom; the sheet slides up from behind it to reveal the full dashboard, freeing the whole screen for the log when collapsed. */
+                .mobile-sheet {
+                    display: flex;
+                    flex-direction: column;
+                    position: fixed;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    height: 90vh;
+                    z-index: 60;
+                    background: var(--bg-secondary);
+                    border-top: 1px solid var(--border-color);
+                    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.45);
+                    transform: translateY(calc(90vh - var(--peek-h)));
+                    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .mobile-sheet.open {
+                    transform: translateY(0);
+                }
+                .sheet-peek {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    height: var(--peek-h);
+                    padding: 0 16px;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-tap-highlight-color: transparent;
+                    border-bottom: 1px solid var(--border-color);
+                }
+                /* Glance (collapsed only): trainee name, turn, estimated rank. Hidden when expanded so it never repeats the dashboard below. */
+                .peek-glance {
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    flex: 1;
+                }
+                .mobile-sheet.open .peek-glance {
+                    display: none;
+                }
+                /* Grip handle (expanded only): the sheet's grabber. */
+                .peek-grip {
+                    display: none;
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 2px;
+                    background: var(--text-muted);
+                    opacity: 0.5;
+                }
+                .mobile-sheet.open .peek-grip {
+                    display: block;
+                }
+                .peek-name {
+                    font-size: 14px;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 42vw;
+                }
+                .peek-turn {
+                    font-size: 11px;
+                    font-family: var(--font-mono);
+                    color: var(--text-muted);
+                    white-space: nowrap;
+                }
+                .peek-fill {
+                    flex: 1;
+                }
+                .peek-rank {
+                    height: 26px;
+                    width: auto;
+                }
+                .peek-rank:not([src]),
+                .peek-rank[src=""] {
+                    display: none;
+                }
+                .peek-score {
+                    font-size: 14px;
+                    font-weight: 800;
+                    font-family: var(--font-mono);
+                    color: var(--text-primary);
+                    white-space: nowrap;
+                }
+                .peek-chevron {
+                    font-size: 11px;
+                    color: var(--text-secondary);
+                }
+                .sheet-backdrop {
+                    display: block;
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.55);
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.32s;
+                    z-index: 59;
+                }
+                .sheet-backdrop.show {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+
+                /* The dashboard fills the sheet below the glance bar and scrolls as one column. */
                 .dashboard {
-                    flex-wrap: wrap !important;
-                    flex-direction: row !important;
-                    padding: 6px 10px !important;
-                    gap: 8px !important;
+                    flex: 1;
+                    flex-direction: column;
+                    height: auto;
+                    min-height: 0;
+                    overflow-y: auto;
+                    border-bottom: none;
                 }
-                .aptitude-table {
-                    flex: 1 1 50% !important;
-                    max-width: 58% !important;
-                    min-width: 0 !important;
-                    font-size: 8px !important;
-                    background: rgba(255, 255, 255, 0.02) !important;
+                .zone + .zone {
+                    border-left: none;
+                    border-top: 1px solid var(--border-color);
                 }
-                .aptitude-table th {
-                    width: 50px !important;
-                    padding: 2px 4px !important;
+
+                /* Identity text and aptitudes side by side to use the width. */
+                .z-id {
+                    flex: none;
+                    width: 100%;
+                    overflow: visible;
+                    display: flex;
+                    flex-flow: row wrap;
+                    column-gap: 14px;
                 }
-                .aptitude-table td {
-                    padding: 2px 4px !important;
+                .id-main {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1 1 150px;
+                    min-width: 0;
                 }
-                .aptitude-cell {
-                    margin: 0 2px !important;
-                    gap: 1px !important;
+                .apts {
+                    flex: 1 1 130px;
+                    align-self: flex-start;
+                    margin-top: 0;
+                    padding-top: 0;
+                    padding-left: 14px;
+                    border-top: none;
+                    border-left: 1px solid var(--border-color);
                 }
-                .aptitude-name {
-                    font-size: 8px !important;
+                .cond-strip {
+                    flex-basis: 100%;
                 }
-                .grade-badge {
-                    width: 16px !important;
-                    height: 16px !important;
-                    line-height: 16px !important;
-                    font-size: 10px !important;
+
+                /* Stats meters get breathing room under the last (WIT) row before the divider. */
+                .z-stat {
+                    flex: none;
+                    width: 100%;
                 }
-                .conditions-section {
-                    flex: 1 1 35% !important;
-                    max-width: 40% !important;
-                    min-width: 0 !important;
-                    padding: 4px 6px !important;
-                    gap: 4px !important;
+                .meters {
+                    max-width: none;
+                    margin-bottom: 14px;
                 }
-                .condition-group-label {
-                    font-size: 8px !important;
+                /* Estimated rank + counters share one row. */
+                .statfoot {
+                    max-width: none;
+                    flex-wrap: nowrap;
+                    gap: 10px;
                 }
-                .condition-badge {
-                    font-size: 9px !important;
-                    padding: 1px 4px !important;
+                .erank {
+                    gap: 9px;
                 }
-                .dashboard-info {
-                    flex: 1 0 100% !important;
-                    flex-direction: row !important;
-                    align-items: flex-start !important;
-                    text-align: left !important;
-                    gap: 8px !important;
-                    margin-top: 4px !important;
+                .est-rank-img {
+                    height: 40px;
                 }
-                .info-left-col {
-                    flex: 1 !important;
-                    align-items: flex-start !important;
-                    gap: 4px !important;
+                .erank .score {
+                    font-size: 22px;
                 }
-                .info-right-col {
-                    flex: 1 !important;
-                    align-items: center !important;
-                    gap: 8px !important;
+                .ctrs {
+                    margin-left: auto;
+                    gap: 2px;
+                    padding: 5px 4px;
                 }
-                .dashboard-row {
-                    justify-content: flex-start !important;
-                    width: 100% !important;
-                    gap: 8px !important;
+                .ctr {
+                    min-width: 0;
+                    padding: 2px 5px;
                 }
-                .info-right-col .dashboard-row {
-                    justify-content: center !important;
+                .ctr .n {
+                    font-size: 13px;
                 }
-                .stat-box {
-                    min-width: 32px !important;
+
+                /* Right rail becomes horizontal tabs above its panel, which flows in the sheet scroll. The .dashboard prefix outranks the base right-zone rules defined later in the file. */
+                .dashboard .z-side {
+                    flex: none;
+                    width: 100%;
+                    min-width: 0;
+                    flex-direction: column;
+                    padding: 0;
                 }
-                .stat-label {
-                    font-size: 8px !important;
+                .dashboard .rail {
+                    flex-direction: row;
+                    width: 100%;
+                    border-left: none;
+                    border-bottom: 1px solid var(--border-color);
+                    order: -1;
                 }
-                .stat-value {
-                    font-size: 11px !important;
+                .dashboard .rail-tab {
+                    flex: 1;
+                    padding: 9px;
                 }
-                .dashboard-label {
-                    font-size: 8px !important;
+                .dashboard .rail-tab span {
+                    writing-mode: horizontal-tb;
+                    transform: none;
                 }
-                .dashboard-value {
-                    font-size: 11px !important;
+                .dashboard .rail-tab.active {
+                    box-shadow: inset 0 -3px 0 var(--accent-blue);
                 }
-                .stats-container {
-                    padding: 4px 8px !important;
-                    gap: 6px !important;
+                .dashboard .side-body {
+                    max-height: none;
+                    overflow: visible;
+                }
+                .dashboard .year-cards {
+                    grid-template-columns: 1fr;
+                }
+                .dashboard .calendar-row {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
                 }
                 .search-container {
-                    min-width: 100% !important;
-                    max-width: none !important;
+                    min-width: 100%;
+                    max-width: none;
+                }
+
+                /* Toolbar tidied into rows: search (full) / filters + auto-scroll + count / font stepper + action icons. The desktop spacers are dropped so nothing scatters. */
+                .toolbar-content {
+                    gap: 8px;
+                }
+                .toolbar-grow,
+                .toolbar-separator {
+                    display: none;
+                }
+                .filter-group.segmented {
+                    flex-shrink: 0;
+                }
+                .filter-group.segmented .filter-btn {
+                    padding: 4px 8px;
+                }
+                .message-count {
+                    margin-left: auto;
+                }
+                .mc-label {
+                    display: none;
+                }
+                #compactBtn {
+                    margin-left: auto;
+                }
+
+                /* Keep the log clear of the fixed glance bar. */
+                .log-container {
+                    padding-bottom: calc(var(--peek-h) + 8px);
+                }
+                .scroll-bottom-btn {
+                    bottom: calc(var(--peek-h) + 14px);
                 }
             }
 
-            /* Race History Calendar (Smart Race Solver). Rightmost dashboard flex child. max-height matches the row so it
-               never stretches it and overflow scrolls internally. Mirrors the React Native SRS Settings page - keep palette and sizes in sync. */
-            /* Position-absolute body trick: the section is only the header in normal flow so it never grows the dashboard row,
-               then align-self: stretch expands it to full height and the absolute body fills the rest with internal scrolling. */
-            .race-history-section {
-                position: relative;
-                padding: 8px 10px;
+            /* //////// Right zone: shared rail (Race History / Skills panels) //////// */
+            /* The panel body scrolls internally within the fixed-height dashboard. Calendar palette/sizes mirror the React Native SRS Settings page - keep them in sync. */
+            .z-side {
+                flex: 1.15 1 0;
+                min-width: 360px;
+                padding: 0;
+                flex-direction: row;
+            }
+            .side-main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: 12px 14px;
+                min-width: 0;
+            }
+            .side-head {
+                display: flex;
+                align-items: center;
+                margin-bottom: 9px;
+            }
+            .side-turn {
+                font-size: 10px;
+                font-family: var(--font-mono);
+                color: var(--text-secondary);
                 background: var(--bg-primary);
                 border: 1px solid var(--border-color);
-                border-radius: var(--radius);
-                flex: 1 1 auto;
-                min-width: 0;
-                align-self: stretch;
-                overflow: hidden;
+                border-radius: 10px;
+                padding: 2px 10px;
             }
-
-            /* Hide the panel when the Smart Race Solver is disabled. Uses visibility: hidden, not display: none, so the section
-               keeps its flex slot and the other dashboard tiles do not shift. Kotlin pushes SRS_STATE via LogStreamServer at run
-               start. This class stays the initial state so the empty grid never flashes before the first message arrives. */
-            .race-history-section.srs-disabled {
-                visibility: hidden;
-            }
-
-            .race-history-body {
-                position: absolute;
-                top: 36px;
-                left: 10px;
-                right: 10px;
-                bottom: 8px;
+            .side-body {
+                flex: 1;
                 overflow-y: auto;
+                min-height: 0;
+                padding-right: 4px;
             }
-
-            .race-history-header {
+            /* Vertical rail of panel tabs; the active tab reveals its panel and clicking it again collapses the body. */
+            .rail {
+                display: flex;
+                flex-direction: column;
+                width: 34px;
+                flex-shrink: 0;
+                border-left: 1px solid var(--border-color);
+            }
+            .rail-tab {
+                flex: 1;
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: 8px;
-            }
-
-            .race-history-header-left {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            /* Chevron is mobile-only; on desktop the panel is always expanded and the
-               collapsed class becomes a no-op. */
-            .race-history-chevron {
-                display: none;
-                width: 10px;
-                color: var(--text-secondary);
-                transform: rotate(0deg);
-                transition: transform 0.15s ease;
-            }
-
-            .race-history-section.collapsed .race-history-chevron {
-                transform: rotate(-90deg);
-            }
-
-            .race-history-title {
-                font-size: 13px;
+                justify-content: center;
+                cursor: pointer;
+                color: var(--text-muted);
+                background: var(--bg-tertiary);
+                font-size: 10px;
                 font-weight: 700;
-                color: var(--text-primary);
-                letter-spacing: 0.5px;
+                letter-spacing: 1.5px;
                 text-transform: uppercase;
             }
-
-            .race-history-turn-badge {
-                font-size: 11px;
+            .rail-tab span {
+                writing-mode: vertical-rl;
+                transform: rotate(180deg);
+            }
+            .rail-tab + .rail-tab {
+                border-top: 1px solid var(--border-color);
+            }
+            .rail-tab:hover {
                 color: var(--text-secondary);
-                background: var(--bg-primary);
+            }
+            .rail-tab.active {
+                color: var(--accent-blue);
+                background: var(--bg-secondary);
+                box-shadow: inset 3px 0 0 var(--accent-blue);
+            }
+            /* Collapsed: the panel body hides and the Stats zone grows into the freed space. */
+            .dashboard.side-collapsed .side-main {
+                display: none;
+            }
+
+            /* Skills panel (populated once the Skills-tab reader feeds it; see the owned-skill tracking work). */
+            .skills-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .skill-pill {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                padding: 6px 8px;
                 border: 1px solid var(--border-color);
-                border-radius: 4px;
-                padding: 2px 8px;
+                border-radius: 6px;
+                background: var(--bg-primary);
+                font-size: 11px;
+            }
+            .skill-pill .dotc {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            /* Category-colored bullet matching the in-game skill color: green recovery, blue stamina, yellow speed, red debuff. */
+            .skill-pill.c-green .dotc {
+                background: #3cc06e;
+            }
+            .skill-pill.c-blue .dotc {
+                background: #38a7e8;
+            }
+            .skill-pill.c-yellow .dotc {
+                background: #f2c94c;
+            }
+            .skill-pill.c-red .dotc {
+                background: #ef4444;
+            }
+            .skill-pill.norm .dotc {
+                background: var(--text-secondary);
+            }
+            /* Gold-rarity skills keep their category bullet but gain a gold border. */
+            .skill-pill.gold {
+                border-color: rgba(230, 160, 44, 0.65);
+            }
+            /* Negative skills: purple bullet and purple border. */
+            .skill-pill.neg {
+                border-color: rgba(155, 109, 255, 0.5);
+            }
+            .skill-pill.neg .dotc {
+                background: var(--accent-purple);
+            }
+            /* Unique skills: rainbow bullet and rainbow border, mirroring the in-game rainbow frame. */
+            .skill-pill.uniq {
+                border: 1px solid transparent;
+                background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box, linear-gradient(100deg, #ff5d5d, #f2c94c, #3cc06e, #38a7e8, #9b6dff) border-box;
+            }
+            .skill-pill.uniq .dotc {
+                background: conic-gradient(from 210deg, #ff5d5d, #f2c94c, #3cc06e, #38a7e8, #9b6dff, #ff5d5d);
+            }
+            .skill-pill .lv {
+                margin-left: auto;
+                font-family: var(--font-mono);
+                font-size: 9px;
+                color: var(--text-muted);
+            }
+            .skills-hint {
+                grid-column: 1 / -1;
+                font-size: 11px;
+                color: var(--text-muted);
+                font-style: italic;
+                margin-top: 4px;
             }
 
             .year-cards {
@@ -1502,46 +1987,6 @@
                 margin-top: 3px;
             }
 
-            @media (max-width: 1024px) {
-                /* On mobile the panel sits on its own row below the dashboard, so the desktop
-                   absolute-body trick is unnecessary - put the body back in normal flow so it
-                   contributes to the section's height when expanded and disappears when collapsed. */
-                .race-history-section {
-                    flex: 1 0 100%;
-                    max-height: none;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-                .race-history-body {
-                    position: static;
-                    top: auto;
-                    left: auto;
-                    right: auto;
-                    bottom: auto;
-                    max-height: 360px;
-                    overflow-y: auto;
-                }
-                .race-history-chevron {
-                    display: inline-block;
-                }
-                .race-history-header {
-                    cursor: pointer;
-                    user-select: none;
-                }
-                .race-history-section.collapsed .race-history-body {
-                    display: none;
-                }
-                /* On mobile the panel takes its own row, so hiding it via `display: none` is fine -
-                   no adjacent tile shifts. Override the desktop `visibility: hidden` rule so the
-                   empty band does not stay reserved on narrow viewports. */
-                .race-history-section.srs-disabled {
-                    display: none;
-                }
-                .year-cards {
-                    grid-template-columns: 1fr;
-                }
-            }
 
             @media (max-width: 768px) {
                 .calendar-cell {
@@ -1908,184 +2353,143 @@
         </style>
     </head>
     <body>
-        <!-- Header -->
+        <!-- Header with inline tabs and a connection status chip (which also shows the connected host, replacing the old footer). -->
         <header class="header">
-            <div class="header-left">
-                <div>
-                    <div class="logo">Uma Android Automation</div>
-                    <div class="logo-sub">Remote Log Viewer</div>
-                </div>
+            <div class="logo-block">
+                <div class="logo">Uma Android Automation</div>
+                <div class="logo-sub">Remote Log Viewer</div>
             </div>
-            <!-- Connection status indicator badge. -->
+            <nav class="tab-nav">
+                <button id="logsTabBtn" class="tab-btn active" onclick="switchTab('logs')">Logs & Dashboard</button>
+                <button id="imagesTabBtn" class="tab-btn" onclick="switchTab('images')">Debug Images</button>
+                <button id="logFilesTabBtn" class="tab-btn" onclick="switchTab('logFiles')">Log Files</button>
+                <button id="analyticsTabBtn" class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+            </nav>
             <div id="statusBadge" class="status-badge status-connecting">
                 <div class="status-dot"></div>
-                <span id="statusText">Connecting</span>
+                <div class="status-lines">
+                    <span id="statusText">Connecting</span>
+                    <span id="statusHost" class="status-host"></span>
+                </div>
             </div>
         </header>
 
-        <!-- Tabs -->
-        <nav class="tab-nav">
-            <button id="logsTabBtn" class="tab-btn active" onclick="switchTab('logs')">Logs & Dashboard</button>
-            <button id="imagesTabBtn" class="tab-btn" onclick="switchTab('images')">Debug Images</button>
-            <button id="logFilesTabBtn" class="tab-btn" onclick="switchTab('logFiles')">Log Files</button>
-            <button id="analyticsTabBtn" class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
-        </nav>
-
         <!-- Logs & Dashboard View -->
         <div id="logsView" class="tab-view active">
-            <!-- Dashboard -->
-            <div class="dashboard">
-            <table class="aptitude-table">
-                <tr>
-                    <th>Terrain</th>
-                    <td id="rowTerrain">
-                        <div class="aptitude-cell"><span class="aptitude-name">Turf</span><span id="aptTurf" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">Dirt</span><span id="aptDirt" class="grade-badge grade-G">-</span></div>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Distance</th>
-                    <td id="rowDistance">
-                        <div class="aptitude-cell"><span class="aptitude-name">Sprint</span><span id="aptSprint" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">Mile</span><span id="aptMile" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">Medium</span><span id="aptMedium" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">Long</span><span id="aptLong" class="grade-badge grade-G">-</span></div>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Style</th>
-                    <td id="rowStyle">
-                        <div class="aptitude-cell"><span class="aptitude-name">Front</span><span id="aptFront" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">Pace</span><span id="aptPace" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">Late</span><span id="aptLate" class="grade-badge grade-G">-</span></div>
-                        <div class="aptitude-cell"><span class="aptitude-name">End</span><span id="aptEnd" class="grade-badge grade-G">-</span></div>
-                    </td>
-                </tr>
-            </table>
-                <!-- Trainee Conditions -->
-                <div class="conditions-section">
-            <div class="condition-group">
-                <div class="condition-group-label">Mood Conditions</div>
-                <div id="moodConditions" class="condition-list">
-                    <span class="condition-empty">Unknown</span>
+            <!-- Dashboard. On mobile it collapses into a bottom peek-sheet; the glance bar (#sheetPeek) doubles as the expand/collapse handle. -->
+            <div class="mobile-sheet" id="mobileSheet">
+                <!-- Collapsed glance bar (mobile only): trainee name, turn, estimated rank. Tap or swipe to expand the full dashboard. -->
+                <div class="sheet-peek" id="sheetPeek">
+                    <!-- Expanded: a centered grip handle (tap/swipe/backdrop to collapse). The glance shows only when collapsed so it never repeats the dashboard below it. -->
+                    <span class="peek-grip" aria-hidden="true"></span>
+                    <div class="peek-glance">
+                        <span class="peek-name" id="peekName">No trainee</span>
+                        <span class="peek-turn" id="peekTurn">Turn -</span>
+                        <span class="peek-fill"></span>
+                        <img class="peek-rank" id="peekRankImg" alt="" />
+                        <span class="peek-score" id="peekScore"></span>
+                        <span class="peek-chevron" id="peekChevron" aria-hidden="true">&#9650;</span>
+                    </div>
                 </div>
-            </div>
-                    <div class="condition-group">
-                        <div class="condition-group-label">Positive Conditions</div>
-                        <div id="positiveConditions" class="condition-list">
-                            <span class="condition-empty">None</span>
+                <div class="dashboard" id="dashboard">
+                <!-- Identity zone: name, mood, vitals, date/turn, aptitudes, conditions. -->
+                <div class="zone z-id">
+                    <!-- id-main groups the identity text so it can sit beside the aptitudes on mobile (display:contents on desktop keeps the original vertical stacking). -->
+                    <div class="id-main">
+                    <div id="dashboardName" class="name">-</div>
+                    <div id="moodConditions" class="mood-slot"><span class="condition-empty">Unknown</span></div>
+                    <div class="vitals">
+                        <div class="vital"><span class="k">Energy</span><span class="b"><i id="energyBar"></i></span><span id="dashboardEnergy" class="v">-</span></div>
+                        <div class="vital"><span class="k">Fans</span><span id="dashboardFans" class="v">-</span><span class="k" style="width: auto; margin-left: auto">SP</span><span id="dashboardSkillPoints" class="v">-</span></div>
+                    </div>
+                    <div class="idmeta"><span id="dashboardDate">-</span> &middot; Turn <b id="dashboardTurn">-</b></div>
+                    </div>
+                    <div class="apts">
+                        <div class="zt">Aptitudes</div>
+                        <div class="aptrow">
+                            <span class="al">Track</span>
+                            <span class="cells">
+                                <span class="apt" data-tip="Turf"><span id="aptTurf" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="Dirt"><span id="aptDirt" class="grade-badge grade-G">-</span></span>
+                            </span>
+                        </div>
+                        <div class="aptrow">
+                            <span class="al">Dist</span>
+                            <span class="cells">
+                                <span class="apt" data-tip="Sprint"><span id="aptSprint" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="Mile"><span id="aptMile" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="Medium"><span id="aptMedium" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="Long"><span id="aptLong" class="grade-badge grade-G">-</span></span>
+                            </span>
+                        </div>
+                        <div class="aptrow">
+                            <span class="al">Style</span>
+                            <span class="cells">
+                                <span class="apt" data-tip="Front"><span id="aptFront" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="Pace"><span id="aptPace" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="Late"><span id="aptLate" class="grade-badge grade-G">-</span></span>
+                                <span class="apt" data-tip="End"><span id="aptEnd" class="grade-badge grade-G">-</span></span>
+                            </span>
                         </div>
                     </div>
-                    <div class="condition-group">
-                        <div class="condition-group-label">Negative Conditions</div>
-                        <div id="negativeConditions" class="condition-list">
-                            <span class="condition-empty">None</span>
+                    <div class="cond-strip">
+                        <span id="positiveConditions" class="condition-list cond-inline"><span class="condition-empty">None</span></span>
+                        <span id="negativeConditions" class="condition-list cond-inline"><span class="condition-empty">None</span></span>
+                    </div>
+                </div>
+
+                <!-- Stats zone: five meters filling toward each OCR'd cap, then estimated rank + session counters. -->
+                <div class="zone z-stat">
+                    <div class="zt">Stats &middot; progress to cap</div>
+                    <div class="meters">
+                        <div class="meter" style="--c: var(--spd)"><span class="nm">SPD</span><span class="track"><span id="statSpeedFill" class="fill"></span></span><span class="vc"><span id="statSpeed">-</span><span id="statSpeedCap" class="cap"></span></span><img id="statSpeedGrade" class="stat-grade-img" alt="" /></div>
+                        <div class="meter" style="--c: var(--sta)"><span class="nm">STA</span><span class="track"><span id="statStaminaFill" class="fill"></span></span><span class="vc"><span id="statStamina">-</span><span id="statStaminaCap" class="cap"></span></span><img id="statStaminaGrade" class="stat-grade-img" alt="" /></div>
+                        <div class="meter" style="--c: var(--pow)"><span class="nm">POW</span><span class="track"><span id="statPowerFill" class="fill"></span></span><span class="vc"><span id="statPower">-</span><span id="statPowerCap" class="cap"></span></span><img id="statPowerGrade" class="stat-grade-img" alt="" /></div>
+                        <div class="meter" style="--c: var(--gut)"><span class="nm">GUT</span><span class="track"><span id="statGutsFill" class="fill"></span></span><span class="vc"><span id="statGuts">-</span><span id="statGutsCap" class="cap"></span></span><img id="statGutsGrade" class="stat-grade-img" alt="" /></div>
+                        <div class="meter" style="--c: var(--wit)"><span class="nm">WIT</span><span class="track"><span id="statWitFill" class="fill"></span></span><span class="vc"><span id="statWit">-</span><span id="statWitCap" class="cap"></span></span><img id="statWitGrade" class="stat-grade-img" alt="" /></div>
+                    </div>
+                    <div class="statfoot">
+                        <div class="erank" title="Estimated overall rank (approximate: stats + aptitudes + owned skills)">
+                            <img id="estRankImg" class="est-rank-img" alt="" />
+                            <div id="estRankText" class="est-rank-text"></div>
+                            <div>
+                                <div id="estRankScore" class="score">-</div>
+                                <div class="lab">Estimated Rank</div>
+                            </div>
+                        </div>
+                        <div class="ctrs">
+                            <div class="ctr" onmouseenter="showTrainingTooltip(event)" onmouseleave="hideTooltip()"><div id="countTraining" class="n">0</div><div class="k">TRAIN</div></div>
+                            <div class="ctr" onmouseenter="showRaceTooltip(event)" onmouseleave="hideTooltip()"><div id="countRace" class="n">0</div><div class="k">RACE</div></div>
+                            <div class="ctr" onmouseenter="showSimpleTooltip(event, 'Injury Recovery')" onmouseleave="hideTooltip()"><div id="countInjury" class="n">0</div><div class="k">INJURY</div></div>
+                            <div class="ctr" onmouseenter="showMoodTooltip(event)" onmouseleave="hideTooltip()"><div id="countMood" class="n">0</div><div class="k">MOOD</div></div>
+                            <div class="ctr" onmouseenter="showEnergyTooltip(event)" onmouseleave="hideTooltip()"><div id="countEnergy" class="n">0</div><div class="k">ENERGY</div></div>
                         </div>
                     </div>
                 </div>
 
-            <div class="dashboard-info">
-                <div class="info-left-col">
-                    <div class="dashboard-row">
-                        <div class="dashboard-item">
-                            <div class="dashboard-label">Trainee</div>
-                            <div id="dashboardName" class="dashboard-value" style="font-weight: 600; letter-spacing: 0.3px">-</div>
+                <!-- Right zone: shared rail (Race History / Skills). Keeps id raceHistorySection for the SRS wiring. -->
+                <div class="zone z-side srs-disabled" id="raceHistorySection">
+                    <div class="side-main">
+                        <div class="side-head"><span class="side-turn" id="raceHistoryTurnBadge">Turn -</span></div>
+                        <div class="side-body">
+                            <div id="raceHistoryPanel">
+                                <div id="raceHistoryYears" class="year-cards"></div>
+                                <div id="raceHistoryDisabled" class="skills-hint" style="display: none">Smart Race Solver is off - no race plan for this run.</div>
+                            </div>
+                            <div id="skillsPanel" style="display: none">
+                                <div class="skills-hint">Owned skills - populated once the Skills-tab reader lands.</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="dashboard-row">
-                        <div class="dashboard-item">
-                            <div class="dashboard-label">Energy</div>
-                            <div id="dashboardEnergy" class="dashboard-value">-</div>
-                        </div>
-                        <div class="dashboard-item">
-                            <div class="dashboard-label">Fans</div>
-                            <div id="dashboardFans" class="dashboard-value">-</div>
-                        </div>
-                        <div class="dashboard-item">
-                            <div class="dashboard-label">Skill Points</div>
-                            <div id="dashboardSkillPoints" class="dashboard-value">-</div>
-                        </div>
-                    </div>
-                    <div class="dashboard-row">
-                        <div class="dashboard-item">
-                            <div class="dashboard-label">Current Date</div>
-                            <div id="dashboardDate" class="dashboard-value">-</div>
-                        </div>
-                        <div class="dashboard-item">
-                            <div class="dashboard-label">Turn</div>
-                            <div id="dashboardTurn" class="dashboard-value">-</div>
-                        </div>
+                    <div class="rail">
+                        <div class="rail-tab active" id="tabRace" onclick="railClick('race')"><span>Race History</span></div>
+                        <div class="rail-tab" id="tabSkills" onclick="railClick('skills')"><span>Skills</span></div>
                     </div>
                 </div>
-                <div class="info-right-col">
-                    <div class="dashboard-row">
-                        <div class="stats-container">
-                            <div class="stat-box" title="Speed">
-                                <div class="stat-label">SPD</div>
-                                <div id="statSpeed" class="stat-value">-</div>
-                            </div>
-                            <div class="stat-box" title="Stamina">
-                                <div class="stat-label">STA</div>
-                                <div id="statStamina" class="stat-value">-</div>
-                            </div>
-                            <div class="stat-box" title="Power">
-                                <div class="stat-label">POW</div>
-                                <div id="statPower" class="stat-value">-</div>
-                            </div>
-                            <div class="stat-box" title="Guts">
-                                <div class="stat-label">GUT</div>
-                                <div id="statGuts" class="stat-value">-</div>
-                            </div>
-                            <div class="stat-box" title="Wit">
-                                <div class="stat-label">WIT</div>
-                                <div id="statWit" class="stat-value">-</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dashboard-row">
-                        <!-- Session Action Counters -->
-                        <div class="stats-container session-stats">
-                            <div class="stat-box" onmouseenter="showTrainingTooltip(event)" onmouseleave="hideTooltip()">
-                                <div class="stat-label">TRN</div>
-                                <div id="countTraining" class="stat-value">0</div>
-                            </div>
-                            <div class="stat-box" onmouseenter="showRaceTooltip(event)" onmouseleave="hideTooltip()">
-                                <div class="stat-label">RCE</div>
-                                <div id="countRace" class="stat-value">0</div>
-                            </div>
-                            <div class="stat-box" onmouseenter="showSimpleTooltip(event, 'Injury Recovery')" onmouseleave="hideTooltip()">
-                                <div class="stat-label">INJ</div>
-                                <div id="countInjury" class="stat-value">0</div>
-                            </div>
-                            <div class="stat-box" onmouseenter="showMoodTooltip(event)" onmouseleave="hideTooltip()">
-                                <div class="stat-label">MOD</div>
-                                <div id="countMood" class="stat-value">0</div>
-                            </div>
-                            <div class="stat-box" onmouseenter="showEnergyTooltip(event)" onmouseleave="hideTooltip()">
-                                <div class="stat-label">ENG</div>
-                                <div id="countEnergy" class="stat-value">0</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
-
-            <!-- Race History calendar (Smart Race Solver). Sits inside the dashboard row so it
-                 occupies the empty space that .dashboard-info used to consume via flex:1, without
-                 changing the widths or positions of the existing 3 blocks. -->
-            <div id="raceHistorySection" class="race-history-section collapsed srs-disabled">
-                <div class="race-history-header" onclick="toggleRaceHistory()">
-                    <div class="race-history-header-left">
-                        <span class="race-history-chevron">v</span>
-                        <span class="race-history-title">Race History</span>
-                    </div>
-                    <span class="race-history-turn-badge" id="raceHistoryTurnBadge">Turn -</span>
-                </div>
-                <div class="race-history-body">
-                    <div id="raceHistoryYears" class="year-cards"></div>
-                </div>
-            </div>
-        </div>
+            <!-- Backdrop behind the expanded mobile sheet; tap it to collapse. -->
+            <div class="sheet-backdrop" id="sheetBackdrop"></div>
 
         <!-- Toolbar -->
         <div id="toolbar" class="toolbar">
@@ -2097,10 +2501,8 @@
                         <span id="searchClear" class="search-clear">✕</span>
                     </div>
 
-                    <div class="toolbar-separator"></div>
-
-                    <!-- Log level filtering buttons. -->
-                    <div class="filter-group">
+                    <!-- Log level segmented control. -->
+                    <div class="filter-group segmented">
                         <button class="filter-btn active" data-level="VERBOSE" onclick="toggleFilter('VERBOSE', this)">V</button>
                         <button class="filter-btn active" data-level="DEBUG" onclick="toggleFilter('DEBUG', this)">D</button>
                         <button class="filter-btn active" data-level="INFO" onclick="toggleFilter('INFO', this)">I</button>
@@ -2108,14 +2510,16 @@
                         <button class="filter-btn active" data-level="ERROR" onclick="toggleFilter('ERROR', this)">E</button>
                     </div>
 
-                    <div class="toolbar-separator"></div>
-
-                    <!-- Log action buttons. -->
                     <button id="autoScrollBtn" class="toolbar-btn active" onclick="toggleAutoScroll()">⬇ Auto-scroll</button>
-                    <button id="compactBtn" class="toolbar-btn active" onclick="toggleCondensing()" title="Toggle Log Condensation (timestamps may appear out of order when enabled)">➞ Compact</button>
+
+                    <div class="toolbar-grow"></div>
+
+                    <!-- Message counter. -->
+                    <div class="message-count"><span class="mc-label">Messages:</span> <span id="messageCount">0</span></div>
 
                     <div class="toolbar-separator"></div>
 
+                    <!-- Action cluster: font-size stepper + compact / copy / download / clear icon buttons. -->
                     <div class="font-size-container">
                         <button class="size-btn" onclick="adjustFontSize(-0.5)" title="Decrease font size">-</button>
                         <input type="number" id="fontSizeInput" class="font-size-input" min="8" max="24" step="0.5" value="12.5" />
@@ -2123,14 +2527,18 @@
                         <button class="size-btn" onclick="adjustFontSize(0.5)" title="Increase font size">+</button>
                     </div>
 
-                    <button class="toolbar-btn" onclick="copyAllLogs()">📋 Copy</button>
-
-                    <button class="toolbar-btn" onclick="downloadLogs()">📥 Download</button>
-
-                    <button class="toolbar-btn" onclick="clearDisplay()">🗑 Clear</button>
-
-                    <!-- Message counter. -->
-                    <div class="message-count">Messages: <span id="messageCount">0</span></div>
+                    <button id="compactBtn" class="toolbar-btn icon active" onclick="toggleCondensing()" title="Toggle log condensation (timestamps may appear out of order when enabled)">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h10M3 8h10M3 11h10" /></svg>
+                    </button>
+                    <button class="toolbar-btn icon" onclick="copyAllLogs()" title="Copy all logs">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" /></svg>
+                    </button>
+                    <button class="toolbar-btn icon" onclick="downloadLogs()" title="Download logs">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2v8m0 0l3-3m-3 3L5 7M3 13h10" /></svg>
+                    </button>
+                    <button class="toolbar-btn icon" onclick="clearDisplay()" title="Clear logs">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4h10M6 4V2.8h4V4m-5 0l.6 9h4.8L11 4" /></svg>
+                    </button>
                 </div>
             </div>
 
@@ -2143,7 +2551,7 @@
         </div>
 
         <!-- Log container -->
-        <div class="log-container" id="logContainer">
+        <div class="log-container ruled" id="logContainer">
             <!-- Empty state displayed when no logs are present. -->
             <div class="empty-state" id="emptyState">
                 <div class="empty-state-icon">📡</div>
@@ -2479,12 +2887,6 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <span class="footer-left">Uma Android Automation - Remote Log Viewer</span>
-            <span id="footerInfo" class="footer-right"></span>
-        </footer>
-
         <script>
             // //////////////////////////////////////////////////////////////////////////////////////////////////
             // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2685,7 +3087,7 @@
             const scrollBottomBtn = document.getElementById("scrollBottomBtn")
             const autoScrollBtn = document.getElementById("autoScrollBtn")
             const fontSizeInput = document.getElementById("fontSizeInput")
-            const footerInfo = document.getElementById("footerInfo")
+            const statusHost = document.getElementById("statusHost")
 
             let currentFontSize = 12.5 // Default font size in pixels.
 
@@ -2738,7 +3140,7 @@
                     if (reconnectInterval) clearInterval(reconnectInterval)
                     setStatus("connected")
                     reconnectAttempts = 0
-                    footerInfo.textContent = "Connected to " + location.host
+                    if (statusHost) statusHost.textContent = location.host
 
                     // Clear the display on a fresh connection so logs from a previous run do not duplicate when history resyncs.
                     clearDisplay()
@@ -2782,6 +3184,13 @@
                             onAnalyticsSnapshot(JSON.parse(event.data.substring(10)))
                         } catch (e) {
                             console.error("Error parsing analytics snapshot:", e)
+                        }
+                    } else if (event.data.startsWith("SKILLS:")) {
+                        // Owned-skills snapshot pushed after the Skills tab is read; feeds the right-rail Skills panel.
+                        try {
+                            renderSkills(JSON.parse(event.data.substring(7)))
+                        } catch (e) {
+                            console.error("Error parsing skills snapshot:", e)
                         }
                     } else {
                         // Process individual log messages, images or unknown formats.
@@ -2827,8 +3236,8 @@
                 reconnectAttempts++
                 var countdown = 5
 
-                // Update the footer to show connection is lost
-                footerInfo.textContent = "Connection lost. Retrying..."
+                // Clear the connected host from the status chip while the connection is down.
+                if (statusHost) statusHost.textContent = ""
 
                 // Start countdown immediately and tick every second
                 setStatus("connecting", `Reconnecting in ${countdown}...`)
@@ -2971,6 +3380,7 @@
                     energy: null,
                     fans: null,
                     skillPoints: null,
+                    estRank: null,
                     date: null,
                     turn: null,
                     stats: {},
@@ -3047,6 +3457,7 @@
                     energy: null,
                     fans: null,
                     skillPoints: null,
+                    estRank: null,
                     date: null,
                     turn: null,
                     mood: null,
@@ -3072,7 +3483,10 @@
                 allMessages.forEach(function (msg) {
                     processSpecialLogs(msg.parsed, batchState)
                 })
-                
+
+                // Zero the cumulative counters first so the additive apply below rebuilds the exact absolute total,
+                // even when the display already held counts (e.g. the sync path applies a batch just before this).
+                resetActionTotals()
                 applyBatchStateToDashboard(batchState)
                 
                 if (autoScroll) {
@@ -3124,6 +3538,144 @@
                 const parts = num.toString().split(".")
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                 return parts.join(".")
+            }
+
+            /**
+             * Trainee rank ladder, ordered weakest to strongest. A label's array index is the utx_txt_rank image number served at /ranks/<index>. Plain "G" is index 0 and has
+             * no badge image, so it renders without one. Shared by the per-stat grades and the estimated overall rank.
+             */
+            // The letter ladder (indices 0..17 = G..SS+) plus the "ultra" super-grades above SS+. Each super letter is a base tier plus levels 1..9 (10 tiers), matching the
+            // utx_txt_rank image set: index 18 = UG, 19..27 = UG1..UG9, 28 = UF, ... 97 = US9. The array index is the badge image number.
+            const RANK_LADDER = ["G", "G+", "F", "F+", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "S", "S+", "SS", "SS+"].concat(
+                ["UG", "UF", "UE", "UD", "UC", "UB", "UA", "US"].flatMap(letter => [letter, ...Array.from({ length: 9 }, (_, i) => letter + (i + 1))])
+            )
+            const RANK_LABEL_TO_INDEX = RANK_LADDER.reduce((map, label, index) => { map[label] = index; return map }, {})
+
+            /**
+             * Resolves a rank label to its utx_txt_rank image index via its ladder position. Plain "G" is index 0 (it has no badge image) and any label off the ladder returns
+             * undefined, so callers treat a falsy result as "no image".
+             * @param {string} label - The rank label, e.g. "SS+" or "UF3".
+             * @returns {number|undefined} The badge image index, or undefined when the label is not on the ladder.
+             */
+            function rankLabelToIndex(label) {
+                return RANK_LABEL_TO_INDEX[label]
+            }
+
+            /**
+             * Builds the URL for a rank badge image. The images are hosted on uma.moe and loaded directly by the viewer's browser (which has internet access), so they are not
+             * bundled in the app. The index is the ladder position, zero-padded to two digits to match the utx_txt_rank_NN.webp filenames.
+             * @param {number} index - The rank ladder index (1..97).
+             * @returns {string} The image URL.
+             */
+            const RANK_IMAGE_BASE = "https://uma.moe/assets/images/icon/ranks/utx_txt_rank_"
+            function rankImageUrl(index) {
+                return RANK_IMAGE_BASE + String(index).padStart(2, "0") + ".webp"
+            }
+
+            /**
+             * Maps a raw stat value to its in-game letter grade. A "+" marks the upper half of each band (the band midpoint), matching the character-details badges. Above SS+ the
+             * game shows the "ultra" super-grades: the base UG tier begins at 1200 and every 10 stat points steps up one ladder tier (UG, UG1..UG9, UF, UF1..UF9, UE, ...).
+             * @param {string|number} value - The stat value.
+             * @returns {string} The letter grade (e.g. "B+" or "UF3"), or "" when there is no valid value.
+             */
+            function statValueToRankLabel(value) {
+                const v = parseInt(value, 10)
+                if (!Number.isFinite(v) || v < 1) return ""
+                if (v >= 1200) return RANK_LADDER[Math.min(RANK_LABEL_TO_INDEX["UG"] + Math.floor((v - 1200) / 10), RANK_LADDER.length - 1)]
+                const bands = [
+                    [1, "G"], [50, "G+"], [100, "F"], [150, "F+"], [200, "E"], [250, "E+"],
+                    [300, "D"], [350, "D+"], [400, "C"], [500, "C+"], [600, "B"], [700, "B+"],
+                    [800, "A"], [900, "A+"], [1000, "S"], [1050, "S+"], [1100, "SS"], [1150, "SS+"]
+                ]
+                let label = "G"
+                for (const [min, l] of bands) {
+                    if (v >= min) label = l
+                    else break
+                }
+                return label
+            }
+
+            /**
+             * Sets a stat tile's rank badge image from its numeric value. Hides the badge when there is no value or the grade has no image (plain "G").
+             * @param {HTMLImageElement} imgEl - The badge <img> element.
+             * @param {string|number} value - The stat value.
+             */
+            function setStatGrade(imgEl, value) {
+                if (!imgEl) return
+                const label = statValueToRankLabel(value)
+                const index = rankLabelToIndex(label)
+                if (!index) {
+                    imgEl.removeAttribute("src")
+                    imgEl.title = ""
+                    imgEl.alt = ""
+                } else {
+                    imgEl.src = rankImageUrl(index)
+                    imgEl.title = label + " rank"
+                    imgEl.alt = label
+                }
+            }
+
+            /**
+             * Renders one stat meter: the value, the "/cap" suffix, the fill width (progress toward the cap), and the rank badge. The raw string is "1267" or "1267/1387"
+             * (the july build adds the OCR'd cap); with no cap the bar stays empty. Passing "-" clears the meter.
+             * @param {string} elId - The stat value element id (e.g. "statSpeed").
+             * @param {string|number} val - The raw stat string.
+             */
+            function setStatMeter(elId, val) {
+                const valueEl = document.getElementById(elId)
+                if (!valueEl) return
+                const parts = String(val).split("/")
+                const value = parts[0].trim()
+                const cap = parts.length > 1 ? parts[1].trim() : ""
+                valueEl.textContent = value
+                const capEl = document.getElementById(elId + "Cap")
+                if (capEl) capEl.textContent = cap ? "/" + cap : ""
+                const fillEl = document.getElementById(elId + "Fill")
+                if (fillEl) {
+                    const v = parseInt(value, 10)
+                    const c = parseInt(cap, 10)
+                    const pct = Number.isFinite(v) && Number.isFinite(c) && c > 0 ? Math.max(0, Math.min(100, (v / c) * 100)) : 0
+                    fillEl.style.width = pct + "%"
+                }
+                setStatGrade(document.getElementById(elId + "Grade"), value)
+            }
+
+            /**
+             * Sets the energy readout and its bar fill. The text is like "86%"; the bar width tracks the numeric part (0 when there is none).
+             * @param {string} text - The energy string (e.g. "86%").
+             */
+            function setEnergy(text) {
+                const el = document.getElementById("dashboardEnergy")
+                if (el) el.textContent = text
+                const bar = document.getElementById("energyBar")
+                if (bar) {
+                    const n = parseInt(text, 10)
+                    bar.style.width = (Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0) + "%"
+                }
+            }
+
+            /**
+             * Renders the estimated overall rank badge + score. Shows the rank image when the label has one (G..SS+); otherwise falls back to the label text (e.g. plain "G" or
+             * the rare ultra tiers). Always shows the numeric score.
+             * @param {string} label - The rank label, e.g. "S" or "SS+".
+             * @param {string|number} score - The total evaluation score.
+             */
+            function setEstRank(label, score) {
+                const img = document.getElementById("estRankImg")
+                const text = document.getElementById("estRankText")
+                const scoreEl = document.getElementById("estRankScore")
+                const index = rankLabelToIndex(label)
+                if (index) {
+                    img.src = rankImageUrl(index)
+                    img.alt = label
+                    text.textContent = ""
+                    text.style.display = "none"
+                } else {
+                    img.removeAttribute("src")
+                    text.textContent = label || "-"
+                    text.style.display = ""
+                }
+                scoreEl.textContent = score ? formatNumberWithCommas(score) : ""
             }
 
             /**
@@ -3274,13 +3826,13 @@
                     })
                     .join("\n")
                 navigator.clipboard.writeText(text).then(function () {
-                    // Briefly flash the button to confirm.
+                    // Briefly flash the icon button to confirm, then restore its original SVG.
                     var btn = event.target.closest(".toolbar-btn")
                     if (btn) {
-                        var original = btn.textContent
-                        btn.textContent = "✓ Copied!"
+                        var original = btn.innerHTML
+                        btn.textContent = "✓"
                         setTimeout(function () {
-                            btn.innerHTML = "📋 Copy"
+                            btn.innerHTML = original
                         }, 1500)
                     }
                 })
@@ -3313,23 +3865,15 @@
                 document.getElementById("imageGrid").innerHTML = "";
                 document.getElementById("imageCount").textContent = "0";
 
-                // Reset dashboard counters.
-                document.getElementById("countTraining").textContent = "0"
-                document.getElementById("countRace").textContent = "0"
-                document.getElementById("countInjury").textContent = "0"
-                document.getElementById("countMood").textContent = "0"
-                document.getElementById("countEnergy").textContent = "0"
+                // Reset dashboard counters and their granular breakdowns (cumulative running totals).
+                resetActionTotals()
 
-                // Reset granular breakdowns.
-                trainingBreakdown = { Speed: 0, Stamina: 0, Power: 0, Guts: 0, Wit: 0 }
+                // trainingLevels holds the latest facility level per stat, not a running count, so reset it here.
                 trainingLevels = { Speed: null, Stamina: null, Power: null, Guts: null, Wit: null }
-                raceBreakdown = { Finale: 0, G1: 0, G2: 0, G3: 0, OP: 0, "Pre-OP": 0, Maiden: 0, Mandatory: 0, Standalone: 0 }
-                moodBreakdown = { Standard: 0, Date: 0, Summer: 0 }
-                energyBreakdown = { Rest: 0, Date: 0, Summer: 0 }
 
                 // Reset the trainee name display.
                 document.getElementById("dashboardName").textContent = "-"
-                document.getElementById("dashboardEnergy").textContent = "-"
+                setEnergy("-")
                 document.getElementById("dashboardFans").textContent = "-"
                 document.getElementById("dashboardSkillPoints").textContent = "-"
                 
@@ -3342,12 +3886,20 @@
                 document.getElementById("dashboardDate").textContent = "-"
                 document.getElementById("dashboardTurn").textContent = "-"
 
-                // Reset stats.
+                // Reset stats (value, cap, bar fill, and rank badge each cleared by setStatMeter).
                 const stats = ["statSpeed", "statStamina", "statPower", "statGuts", "statWit"]
-                stats.forEach(id => {
-                    const el = document.getElementById(id)
-                    if (el) el.textContent = "-"
-                })
+                stats.forEach((id) => setStatMeter(id, "-"))
+
+                // Reset estimated rank.
+                const estImg = document.getElementById("estRankImg")
+                if (estImg) estImg.removeAttribute("src")
+                const estText = document.getElementById("estRankText")
+                if (estText) {
+                    estText.textContent = "-"
+                    estText.style.display = ""
+                }
+                const estScore = document.getElementById("estRankScore")
+                if (estScore) estScore.textContent = ""
 
                 // Reset aptitudes.
                 const apts = [
@@ -3363,8 +3915,9 @@
                     }
                 })
 
-                // Reset the Race History calendar so a fresh run starts blank.
+                // Reset the Race History calendar and the Skills panel so a fresh run starts blank.
                 resetCalendar()
+                renderSkills(null)
 
                 // Show empty state again.
                 if (emptyState) {
@@ -3458,14 +4011,92 @@
                 return (turn >= 37 && turn <= 40) || (turn >= 61 && turn <= 64)
             }
 
+            // Right-zone rail state: which panel is shown (race | skills), whether the body is collapsed, and whether the Smart Race Solver is on this run.
+            var sideActive = "race"
+            var sideCollapsed = false
+            var srsEnabled = false
+            var raceTurnLabel = "Turn -"
+            var skillsData = null
+
             /**
-             * Toggles the Race History panel collapsed state. Only effective on mobile-width
-             * viewports; the chevron is hidden on desktop so the click is a no-op there.
+             * Renders the shared right-zone rail: highlights the active tab, shows its panel, and (when collapsed) hides the body so the Stats zone grows into the space. The
+             * Race panel shows the calendar when the Smart Race Solver is on, otherwise a short "off" note.
              */
-            function toggleRaceHistory() {
-                if (window.innerWidth > 1024) return
-                var section = document.getElementById("raceHistorySection")
-                if (section) section.classList.toggle("collapsed")
+            function renderSidePanel() {
+                var dash = document.getElementById("dashboard")
+                if (dash) dash.classList.toggle("side-collapsed", sideCollapsed)
+                var tabRace = document.getElementById("tabRace")
+                var tabSkills = document.getElementById("tabSkills")
+                if (tabRace) tabRace.classList.toggle("active", sideActive === "race")
+                if (tabSkills) tabSkills.classList.toggle("active", sideActive === "skills")
+                var racePanel = document.getElementById("raceHistoryPanel")
+                var skillsPanel = document.getElementById("skillsPanel")
+                if (racePanel) racePanel.style.display = sideActive === "race" ? "" : "none"
+                if (skillsPanel) skillsPanel.style.display = sideActive === "skills" ? "" : "none"
+                var years = document.getElementById("raceHistoryYears")
+                var disabled = document.getElementById("raceHistoryDisabled")
+                if (years) years.style.display = srsEnabled ? "" : "none"
+                if (disabled) disabled.style.display = srsEnabled ? "none" : ""
+                // The head badge shows the turn on the Race panel and the skill count on the Skills panel.
+                var badge = document.getElementById("raceHistoryTurnBadge")
+                if (badge) {
+                    var n = skillsData && skillsData.skills ? skillsData.skills.length : 0
+                    badge.textContent = sideActive === "skills" ? n + (n === 1 ? " skill" : " skills") : raceTurnLabel
+                }
+            }
+
+            /**
+             * Handles a rail tab click: switch to that panel, or collapse the body when the already-active tab is clicked again.
+             * @param {string} name - The panel to activate ("race" or "skills").
+             */
+            function railClick(name) {
+                if (name === sideActive) {
+                    sideCollapsed = !sideCollapsed
+                } else {
+                    sideActive = name
+                    sideCollapsed = false
+                }
+                renderSidePanel()
+            }
+
+            /**
+             * Renders the owned-skills panel from a SKILLS: snapshot. Each skill becomes a pill colored by its category (green/blue/yellow/red) with unique/negative/gold treatment via skillPillClass, and the unique carries its level.
+             * Passing null clears the panel back to its placeholder hint.
+             * @param {object} snapshot - The parsed skills snapshot ({ skills }), or null.
+             */
+            function renderSkills(snapshot) {
+                skillsData = snapshot
+                var panel = document.getElementById("skillsPanel")
+                if (!panel) return
+                var skills = snapshot && Array.isArray(snapshot.skills) ? snapshot.skills : []
+                if (skills.length === 0) {
+                    panel.innerHTML = '<div class="skills-hint">No owned skills read yet - the bot fills this in when it reads the Skills tab.</div>'
+                } else {
+                    var html = '<div class="skills-grid">'
+                    for (var i = 0; i < skills.length; i++) {
+                        var s = skills[i]
+                        var cls = skillPillClass(s)
+                        var lv = s.level ? '<span class="lv">Lv' + s.level + "</span>" : ""
+                        var hover = ' onmouseenter="showSkillTooltip(event, ' + i + ')" onmousemove="updateTooltipPosition(event)" onmouseleave="hideTooltip()"'
+                        html += '<div class="skill-pill ' + cls + '"' + hover + '><span class="dotc"></span>' + escapeHtml(s.name) + lv + "</div>"
+                    }
+                    html += "</div>"
+                    panel.innerHTML = html
+                }
+                renderSidePanel()
+            }
+
+            /**
+             * Picks the CSS classes for one skill pill. Unique wins (rainbow), then negative (purple); otherwise the pill takes its in-game category color (green/blue/yellow/red) and
+             * adds a gold border for gold-rarity skills. Falls back to the older single `type` field so a stale bot payload still renders.
+             * @param {object} s - The skill entry from the SKILLS snapshot ({name, color, gold, unique, negative, ...} or the legacy {type}).
+             * @returns {string} The space-separated class list for the `.skill-pill` element.
+             */
+            function skillPillClass(s) {
+                if (s.unique || s.type === "unique") return "uniq"
+                if (s.negative || s.type === "negative") return "neg"
+                var base = { green: "c-green", blue: "c-blue", yellow: "c-yellow", red: "c-red" }[s.color] || "norm"
+                return s.gold || s.type === "gold" ? base + " gold" : base
             }
 
             // Latest snapshot kept for the hover-tooltip lookup. Decisions and results are
@@ -3497,7 +4128,8 @@
                     (snapshot.results || []).length > 0
                 )
                 var currentTurn = typeof snapshot.currentTurn === "number" ? snapshot.currentTurn : 1
-                badgeEl.textContent = hasRealSnapshot ? ("Turn " + currentTurn + " / 72") : "Turn -"
+                // Store the label; renderSidePanel() writes the head badge (it belongs to the Race panel unless the Skills tab is active).
+                raceTurnLabel = hasRealSnapshot ? "Turn " + currentTurn + " / 72" : "Turn -"
 
                 // Index results by turn for O(1) lookup during cell rendering.
                 var resultsByTurn = {}
@@ -3527,6 +4159,7 @@
                 }
 
                 container.innerHTML = html
+                renderSidePanel()
             }
 
             /**
@@ -3609,14 +4242,11 @@
              * @param {boolean} enabled True when SRS is enabled for the current run.
              */
             function setSmartRaceSolverEnabled(enabled) {
+                srsEnabled = enabled
                 var section = document.getElementById("raceHistorySection")
-                if (!section) return
-                if (enabled) {
-                    section.classList.remove("srs-disabled")
-                } else {
-                    section.classList.add("srs-disabled")
-                    resetCalendar()
-                }
+                if (section) section.classList.toggle("srs-disabled", !enabled)
+                if (!enabled) resetCalendar()
+                renderSidePanel()
             }
 
             /**
@@ -3708,6 +4338,23 @@
                 showTooltip(event, title, content)
             }
 
+            /**
+             * Shows the owned-skill hover tooltip for a pill: the skill name (title), its GameTora-hosted icon, and its description. A missing icon (unmatched skill, iconId 0, or a
+             * GameTora 404) hides itself via onerror so the name and description still show. Mirrors showRaceCellTooltip's O(1) lookup into the cached snapshot.
+             *
+             * @param {MouseEvent} event Hover event used for tooltip positioning.
+             * @param {number} i Index of the hovered skill in the cached SKILLS snapshot.
+             */
+            function showSkillTooltip(event, i) {
+                if (!skillsData || !skillsData.skills || !skillsData.skills[i]) return
+                var s = skillsData.skills[i]
+                var icon = s.iconId
+                    ? '<img class="skill-tip-icon" src="https://media.gametora.com/umamusume/skills/icon/' + s.iconId + '.png" alt="" onerror="this.style.display=\'none\'">'
+                    : ""
+                var desc = s.desc ? escapeHtml(s.desc) : '<span style="opacity:0.6;font-style:italic">No description.</span>'
+                showTooltip(event, escapeHtml(s.name), icon + "<div>" + desc + "</div>")
+            }
+
             // //////////////////////////////////////////////////////////////////////////////////////////////////
             // //////////////////////////////////////////////////////////////////////////////////////////////////
             // Font Size Adjustment
@@ -3756,6 +4403,14 @@
             // //////////////////////////////////////////////////////////////////////////////////////////////////
             // //////////////////////////////////////////////////////////////////////////////////////////////////
             // Search Input Handler
+
+            // Sync the search state from whatever the browser restored into the input on reload,
+            // so a page refresh keeps filtering instead of showing everything until the user types.
+            function initSearch() {
+                searchQuery = searchInput.value.toLowerCase().trim()
+                searchClear.classList.toggle("visible", searchInput.value.length > 0)
+                applyFilters()
+            }
 
             // Listen for input changes in the search field to filter logs in real-time.
             searchInput.addEventListener("input", function () {
@@ -3875,8 +4530,7 @@
                     }[actionKey]
                     
                     if (elId) {
-                        const el = document.getElementById(elId)
-                        el.textContent = parseInt(el.textContent || "0") + 1
+                        addToCounter(elId, 1)
                     }
 
                     if (subType) {
@@ -3935,7 +4589,7 @@
                     stateTarget.energy = info.to + "%"
                     if (info.moodTo) stateTarget.mood = info.moodTo
                 } else {
-                    document.getElementById("dashboardEnergy").textContent = info.to + "%"
+                    setEnergy(info.to + "%")
                     if (info.moodTo) updateMoodBadge(info.moodTo)
                 }
             }
@@ -3957,6 +4611,45 @@
             }
 
             /**
+             * Adds a delta to a numeric counter element. Action counters are cumulative running totals, so a batch
+             * contributes its own count on top of what is already displayed rather than replacing it.
+             * @param {string} elementId - The id of the counter element to update.
+             * @param {number} delta - The amount to add (this batch's count for that action).
+             */
+            function addToCounter(elementId, delta) {
+                const el = document.getElementById(elementId)
+                el.textContent = parseInt(el.textContent || "0") + (delta || 0)
+            }
+
+            /**
+             * Adds each of a batch's breakdown counts onto the running total for that breakdown category.
+             * @param {object} target - The running-total breakdown object (e.g. trainingBreakdown).
+             * @param {object} source - This batch's breakdown counts, or null/undefined to skip.
+             */
+            function mergeBreakdown(target, source) {
+                if (!source) return
+                for (const [key, count] of Object.entries(source)) {
+                    target[key] = (target[key] || 0) + count
+                }
+            }
+
+            /**
+             * Resets the cumulative action counters and their breakdowns back to zero. Used both when clearing the
+             * display and before a full history rebuild, so the rebuild's additive apply lands on a clean baseline.
+             */
+            function resetActionTotals() {
+                document.getElementById("countTraining").textContent = "0"
+                document.getElementById("countRace").textContent = "0"
+                document.getElementById("countInjury").textContent = "0"
+                document.getElementById("countMood").textContent = "0"
+                document.getElementById("countEnergy").textContent = "0"
+                trainingBreakdown = { Speed: 0, Stamina: 0, Power: 0, Guts: 0, Wit: 0 }
+                raceBreakdown = { Finale: 0, G1: 0, G2: 0, G3: 0, OP: 0, "Pre-OP": 0, Maiden: 0, Mandatory: 0, Standalone: 0 }
+                moodBreakdown = { Standard: 0, Date: 0, Summer: 0 }
+                energyBreakdown = { Rest: 0, Date: 0, Summer: 0 }
+            }
+
+            /**
              * Helper to apply a collected batch state to the dashboard DOM.
              * @param {object} state - The collected state from the batch.
              */
@@ -3965,13 +4658,17 @@
                     document.getElementById("dashboardName").textContent = state.name
                 }
                 if (state.energy) {
-                    document.getElementById("dashboardEnergy").textContent = state.energy
+                    setEnergy(state.energy)
                 }
                 if (state.fans) {
                     document.getElementById("dashboardFans").textContent = formatNumberWithCommas(state.fans)
                 }
                 if (state.skillPoints) {
                     document.getElementById("dashboardSkillPoints").textContent = formatNumberWithCommas(state.skillPoints)
+                }
+                if (state.estRank) {
+                    const estMatch = state.estRank.match(/^(\S+)\s*\((\d+)\)/)
+                    if (estMatch) setEstRank(estMatch[1], estMatch[2])
                 }
                 if (state.mood !== null && state.mood !== undefined) {
                     updateMoodBadge(state.mood)
@@ -3992,10 +4689,7 @@
                 // Batch update stats.
                 for (const [key, val] of Object.entries(state.stats)) {
                     const elId = { Spd: "statSpeed", Sta: "statStamina", Pow: "statPower", Gut: "statGuts", Wit: "statWit" }[key]
-                    if (elId) {
-                        const el = document.getElementById(elId)
-                        if (el && el.textContent !== val) el.textContent = val
-                    }
+                    if (elId) setStatMeter(elId, val)
                 }
                 
                 // Batch update aptitudes.
@@ -4008,42 +4702,26 @@
                     }
                 }
                 
-                // Batch update action counters.
+                // Action counters and their breakdowns are cumulative running totals, so add this batch's counts on
+                // top of the current values instead of overwriting. The full-history rebuild zeroes them first (via
+                // resetActionTotals) so its additive apply still lands the correct absolute total.
                 if (state.actions) {
-                    document.getElementById("countTraining").textContent = state.actions.training
-                    document.getElementById("countRace").textContent = state.actions.race
-                    document.getElementById("countMood").textContent = state.actions.mood
-                    document.getElementById("countEnergy").textContent = state.actions.energy
-                    document.getElementById("countInjury").textContent = state.actions.injury
-                    
-                    // Batch update training breakdown.
-                    if (state.trainingBreakdown) {
-                        for (const [stat, count] of Object.entries(state.trainingBreakdown)) {
-                            trainingBreakdown[stat] = count
-                        }
-                    }
-                    // Batch update training levels.
+                    addToCounter("countTraining", state.actions.training)
+                    addToCounter("countRace", state.actions.race)
+                    addToCounter("countMood", state.actions.mood)
+                    addToCounter("countEnergy", state.actions.energy)
+                    addToCounter("countInjury", state.actions.injury)
+
+                    // Add this batch's breakdowns onto their running totals.
+                    mergeBreakdown(trainingBreakdown, state.trainingBreakdown)
+                    mergeBreakdown(raceBreakdown, state.raceBreakdown)
+                    mergeBreakdown(moodBreakdown, state.moodBreakdown)
+                    mergeBreakdown(energyBreakdown, state.energyBreakdown)
+
+                    // Training levels are latest-value, not counts, so overwrite rather than add.
                     if (state.trainingLevels) {
                         for (const [stat, level] of Object.entries(state.trainingLevels)) {
                             trainingLevels[stat] = level
-                        }
-                    }
-                    // Batch update race breakdown.
-                    if (state.raceBreakdown) {
-                        for (const [grade, count] of Object.entries(state.raceBreakdown)) {
-                            raceBreakdown[grade] = count
-                        }
-                    }
-                    // Batch update mood breakdown.
-                    if (state.moodBreakdown) {
-                        for (const [type, count] of Object.entries(state.moodBreakdown)) {
-                            moodBreakdown[type] = count
-                        }
-                    }
-                    // Batch update energy breakdown.
-                    if (state.energyBreakdown) {
-                        for (const [type, count] of Object.entries(state.energyBreakdown)) {
-                            energyBreakdown[type] = count
                         }
                     }
                 }
@@ -4152,7 +4830,7 @@
                     if (stateTarget) {
                         stateTarget.energy = data.trim()
                     } else {
-                        document.getElementById("dashboardEnergy").textContent = data.trim()
+                        setEnergy(data.trim())
                     }
                 } else if (category === "Fans") {
                     if (stateTarget) {
@@ -4166,6 +4844,13 @@
                     } else {
                         document.getElementById("dashboardSkillPoints").textContent = formatNumberWithCommas(data.trim())
                     }
+                } else if (category === "Estimated Rank") {
+                    if (stateTarget) {
+                        stateTarget.estRank = data.trim()
+                    } else {
+                        const m = data.trim().match(/^(\S+)\s*\((\d+)\)/)
+                        if (m) setEstRank(m[1], m[2])
+                    }
                 } else if (category === "Stats") {
                     const stats = data.split(", ")
                     stats.forEach((s) => {
@@ -4174,7 +4859,7 @@
                             stateTarget.stats[key] = val
                         } else {
                             const elId = { Spd: "statSpeed", Sta: "statStamina", Pow: "statPower", Gut: "statGuts", Wit: "statWit" }[key]
-                            if (elId) document.getElementById(elId).textContent = val
+                            if (elId) setStatMeter(elId, val)
                         }
                     })
                 } else {
@@ -5446,12 +6131,106 @@
                 analyticDownloadCsv(who + "_" + chartSlug + "_" + analyticLogTimestamp() + ".csv", analyticChartCsvRows(chart, id))
             }
 
+            // //////////////////////////////////////////////////////////////////////////////////////////////////
+            // //////////////////////////////////////////////////////////////////////////////////////////////////
+            // Mobile bottom peek-sheet
+
+            let peekSyncScheduled = false
+
+            /**
+             * Copies the trainee glance (name, turn, estimated rank badge + score) from the dashboard into the collapsed peek bar. Driven by a MutationObserver so the glance stays
+             * in sync without hooking every dashboard setter.
+             */
+            function syncPeek() {
+                const nameEl = document.getElementById("dashboardName")
+                const peekName = document.getElementById("peekName")
+                if (peekName) {
+                    const n = nameEl ? nameEl.textContent.trim() : ""
+                    peekName.textContent = n && n !== "-" ? n : "No trainee"
+                }
+                const turnEl = document.getElementById("dashboardTurn")
+                const peekTurn = document.getElementById("peekTurn")
+                if (peekTurn) {
+                    const t = turnEl ? turnEl.textContent.trim() : ""
+                    peekTurn.textContent = t && t !== "-" ? "Turn " + t : "Turn -"
+                }
+                const scoreEl = document.getElementById("estRankScore")
+                const peekScore = document.getElementById("peekScore")
+                if (peekScore) peekScore.textContent = scoreEl ? scoreEl.textContent.trim() : ""
+                const estImg = document.getElementById("estRankImg")
+                const peekImg = document.getElementById("peekRankImg")
+                if (peekImg) {
+                    const src = estImg && estImg.getAttribute("src")
+                    if (src) peekImg.src = src
+                    else peekImg.removeAttribute("src")
+                }
+            }
+
+            /**
+             * Opens or closes the mobile peek-sheet and its backdrop.
+             * @param {boolean} open - True to expand the full dashboard, false to collapse back to the glance bar.
+             */
+            function setSheet(open) {
+                const sheet = document.getElementById("mobileSheet")
+                const backdrop = document.getElementById("sheetBackdrop")
+                if (sheet) sheet.classList.toggle("open", open)
+                if (backdrop) backdrop.classList.toggle("show", open)
+            }
+
+            /** Toggles the mobile peek-sheet between collapsed and expanded. */
+            function toggleSheet() {
+                const sheet = document.getElementById("mobileSheet")
+                setSheet(!(sheet && sheet.classList.contains("open")))
+            }
+
+            /**
+             * Wires the mobile peek-sheet: a tap on the glance bar toggles it, a vertical swipe opens (up) or closes (down), the backdrop collapses it, and a MutationObserver keeps
+             * the glance in sync with the live dashboard.
+             */
+            function initMobileSheet() {
+                const peek = document.getElementById("sheetPeek")
+                const backdrop = document.getElementById("sheetBackdrop")
+                const dash = document.getElementById("dashboard")
+                if (backdrop) backdrop.addEventListener("click", () => setSheet(false))
+                if (peek) {
+                    // A tap toggles (touch taps synthesize a click, so this covers all devices).
+                    peek.addEventListener("click", () => toggleSheet())
+                    // A clear vertical drag is a swipe: open on up, close on down, and suppress the synthesized click so it does not also toggle.
+                    let startY = null
+                    peek.addEventListener("touchstart", (e) => { startY = e.touches[0].clientY }, { passive: true })
+                    peek.addEventListener("touchend", (e) => {
+                        if (startY === null) return
+                        const dy = e.changedTouches[0].clientY - startY
+                        startY = null
+                        if (Math.abs(dy) >= 24) {
+                            e.preventDefault()
+                            setSheet(dy < 0)
+                        }
+                    })
+                }
+                if (dash) {
+                    const observer = new MutationObserver(() => {
+                        if (peekSyncScheduled) return
+                        peekSyncScheduled = true
+                        requestAnimationFrame(() => { peekSyncScheduled = false; syncPeek() })
+                    })
+                    observer.observe(dash, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["src"] })
+                }
+                syncPeek()
+            }
+
             // Initiate the connection and settings when the page loads.
             initFontSize()
             initToolbar()
+            // Restore search filtering from the value the browser kept in the input across a refresh.
+            initSearch()
             // Paint an empty Race History grid so the panel takes its full layout immediately,
             // before any CAL: snapshot arrives.
             renderCalendar(null)
+            // Paint the Skills panel placeholder and the right-zone rail's initial state (Race panel active, SRS off until SRS_STATE arrives).
+            renderSkills(null)
+            renderSidePanel()
+            initMobileSheet()
             connect()
         </script>
     </body>

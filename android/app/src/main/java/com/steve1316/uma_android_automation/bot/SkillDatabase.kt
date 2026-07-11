@@ -73,6 +73,42 @@ class SkillDatabase(private val game: Game) {
 
         /** The threshold for fuzzy string matching (0.0 to 1.0). */
         private const val SIMILARITY_THRESHOLD = 0.7
+
+        /** Maps a `running_style` condition value to its running-style affinity role. */
+        private val STYLE_ROLES = mapOf("1" to "Front", "2" to "Pace", "3" to "Late", "4" to "End")
+
+        /** Maps a `distance_type` condition value to its distance affinity role. */
+        private val DISTANCE_ROLES = mapOf("1" to "Sprint", "2" to "Mile", "3" to "Medium", "4" to "Long")
+
+        /** Maps a `ground_type` condition value to its surface affinity role. */
+        private val GROUND_ROLES = mapOf("1" to "Turf", "2" to "Dirt")
+
+        /** Matches the `variable==value` affinity tokens in a skill's condition text. */
+        private val CHECK_TYPE_PATTERN = Regex("(running_style|distance_type|ground_type)==(\\d+)")
+
+        /**
+         * Derives a skill's aptitude affinity ("checkType") from its activation condition, used by the estimated-rank skill scoring. Collects the `running_style`,
+         * `distance_type`, and `ground_type` equality tokens across the condition and precondition and maps them to affinity roles, ordered surface/distance/style and joined
+         * with "/". This reproduces UmaTools' `affinity_role` for ~97% of skills. Returns "" when the skill has no aptitude affinity, in which case it scores its flat base.
+         *
+         * @param condition The skill's activation condition text.
+         * @param precondition The skill's precondition text.
+         * @return The affinity role string, e.g. "Late" or "Medium/Long", or "" when there is none.
+         */
+        fun deriveCheckType(condition: String, precondition: String): String {
+            val surface = LinkedHashSet<String>()
+            val distance = LinkedHashSet<String>()
+            val style = LinkedHashSet<String>()
+            for (match in CHECK_TYPE_PATTERN.findAll("$condition&$precondition")) {
+                val (variable, value) = match.destructured
+                when (variable) {
+                    "ground_type" -> GROUND_ROLES[value]?.let { surface.add(it) }
+                    "distance_type" -> DISTANCE_ROLES[value]?.let { distance.add(it) }
+                    "running_style" -> STYLE_ROLES[value]?.let { style.add(it) }
+                }
+            }
+            return (surface + distance + style).joinToString("/")
+        }
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
