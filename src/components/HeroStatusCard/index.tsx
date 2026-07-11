@@ -21,7 +21,9 @@ interface HeroStatusCardProps {
     startDisabled?: boolean
     /** Optional custom action rendered on the right side in place of the default Start button. */
     cta?: React.ReactNode
-    /** Optional "at a glance" zone rendered below a divider (active status chips, skill plans, stat priority). */
+    /** Optional nav-chips rendered on the status line beside the pill (SRS / Debug / Test / Style shortcuts). */
+    chips?: React.ReactNode
+    /** Optional "at a glance" zone rendered below a divider (skill plans, stat priority). */
     glance?: React.ReactNode
 }
 
@@ -43,10 +45,11 @@ const BULLET = "●" // BLACK CIRCLE
  * @param onStart Press handler for the default Start CTA. Ignored when `cta` is provided.
  * @param startDisabled Whether the default Start button is disabled. Ignored when `cta` is provided.
  * @param cta Optional custom right-side action that replaces the default Start button.
- * @param glance Optional "at a glance" zone rendered below a divider (active status chips, skill plans, stat priority).
- * @returns A brand-tinted card containing the status pill, profile name, primary action, and optional glance zone.
+ * @param chips Optional nav-chips rendered on the status line beside the pill.
+ * @param glance Optional "at a glance" zone rendered below a divider (skill plans, stat priority).
+ * @returns A brand-tinted card containing the status pill, nav-chips, profile name, primary action, and optional glance zone.
  */
-const HeroStatusCard: React.FC<HeroStatusCardProps> = ({ status, profile, onStart, startDisabled = false, cta, glance }) => {
+const HeroStatusCard: React.FC<HeroStatusCardProps> = ({ status, profile, onStart, startDisabled = false, cta, chips, glance }) => {
     const { colors } = useTheme()
     // Status pill color: ready/running -> success token, stopped/error -> warning.
     const isHealthy = status === "ready" || status === "running"
@@ -61,10 +64,10 @@ const HeroStatusCard: React.FC<HeroStatusCardProps> = ({ status, profile, onStar
                 },
                 row: { flexDirection: "row", alignItems: "center", gap: SPACING.md, padding: SPACING.md },
                 body: { flex: 1, gap: 4 },
+                statusLine: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 },
                 statusPill: {
                     ...TYPE.monoLabel,
                     color: isHealthy ? colors.success : colors.warning,
-                    alignSelf: "flex-start",
                     paddingHorizontal: SPACING.sm,
                     paddingVertical: 2,
                     backgroundColor: isHealthy ? colors.successSubtle : colors.warningSubtle,
@@ -79,7 +82,10 @@ const HeroStatusCard: React.FC<HeroStatusCardProps> = ({ status, profile, onStar
         <View style={styles.card}>
             <View style={styles.row}>
                 <View style={styles.body}>
-                    <Text style={styles.statusPill}>{`${BULLET} ${STATUS_LABEL[status]}`}</Text>
+                    <View style={styles.statusLine}>
+                        <Text style={styles.statusPill}>{`${BULLET} ${STATUS_LABEL[status]}`}</Text>
+                        {chips}
+                    </View>
                     <Text style={styles.profile}>{profile}</Text>
                 </View>
                 {cta ?? (

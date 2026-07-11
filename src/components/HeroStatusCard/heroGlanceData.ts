@@ -1,5 +1,6 @@
 import type { Settings } from "../../context/BotStateContext"
 import { skillPlanSettingsPages } from "../../pages/SkillPlanSettings/config"
+import { DEBUG_TESTS } from "../../pages/DebugSettings/debugTests"
 
 // Stat priority abbreviations shown on the hero's Priority row.
 const STAT_ABBREVIATIONS: Record<string, string> = {
@@ -21,6 +22,17 @@ type SkillsLike = Partial<Pick<Settings["skills"], "enableSkillPointCheck" | "sk
     plans?: Record<string, { enabled?: boolean } | undefined>
 }
 
+// Minimal shape of the racing slice the hero's Style row reads. Bound to the canonical Settings interface so a rename there surfaces here.
+type RacingLike = Partial<Pick<Settings["racing"], "enablePerDistanceStrategy" | "originalRaceStrategy">>
+
+/** The armed debug test's readable name plus the search id of its row, used to deep-link and highlight it from the hero's Test chip. */
+export interface ActiveDebugTest {
+    /** Readable name derived from the setting key (e.g. "Rainbow Detection"). */
+    name: string
+    /** Search id of the test's row for a deep-link highlight, or null if the key is not in `DEBUG_TESTS`. */
+    searchId: string | null
+}
+
 /** Enabled skill plans plus the skill-point threshold, ready for the hero's Plans row. */
 export interface ActiveSkillPlans {
     /** Display titles of the enabled plans, in registry order. */
@@ -29,29 +41,16 @@ export interface ActiveSkillPlans {
     spThreshold: number | null
 }
 
-/** The derived values that decide whether the hero glance zone has anything to show. */
-export interface HeroGlanceContent {
-    /** Whether Debug Mode is on. */
-    debugMode: boolean
-    /** The armed debug test's display name, or null. */
-    activeTest: string | null
-    /** Whether the Smart Race Solver is on. */
-    srs: boolean
-    /** Enabled skill-plan titles. */
-    planNames: string[]
-    /** Ordered stat priority abbreviations. */
-    priority: string[]
-}
-
 /**
- * Find the debug test currently armed and return its readable name (e.g. "Rainbow Detection"). The 11 test toggles are mutually exclusive, so at most one is on.
- * The name is derived from the setting key so newly added tests are picked up without a hardcoded list.
+ * Find the debug test currently armed and return its readable name plus the search id of its row. The 11 test toggles are mutually exclusive, so at most one is on.
+ * The name is derived from the key so newly added tests still get a label; the search id is looked up in `DEBUG_TESTS` so the Test chip can deep-link and highlight the row.
  * @param debug The debug settings slice.
- * @returns The active test's display name, or null when no test is armed.
+ * @returns The active test's name and row search id, or null when no test is armed.
  */
-export function findActiveDebugTest(debug: DebugLike): string | null {
+export function findActiveDebugTest(debug: DebugLike): ActiveDebugTest | null {
     const activeKey = Object.keys(debug).find((key) => /^debugMode_start.+Test$/.test(key) && debug[key] === true)
-    return activeKey ? prettifyDebugTestKey(activeKey) : null
+    if (!activeKey) return null
+    return { name: prettifyDebugTestKey(activeKey), searchId: DEBUG_TESTS.find((test) => test.key === activeKey)?.searchId ?? null }
 }
 
 /**
@@ -92,11 +91,22 @@ export function abbreviateStatPriority(priority: string[]): string[] {
 }
 
 /**
- * Whether the hero glance zone has anything to render. Single source of truth for the "mount the glance at all" decision so the hairline divider is never left dangling
- * over an empty zone. Mirrors the per-row guards inside `HeroGlance`.
- * @param content The derived glance values.
- * @returns True when at least one chip or row would render.
+ * Resolve the race strategy label for the hero's Style row. In per-distance mode the strategies vary by distance, so a single "Per-distance" summary is shown; otherwise
+ * the Original strategy (used for Year 2 and beyond) is shown, falling back to "Default" when unset.
+ * @param racing The racing settings slice.
+ * @returns The label for the Style row's pill.
  */
-export function heroGlanceHasContent(content: HeroGlanceContent): boolean {
-    return content.debugMode || content.activeTest !== null || content.srs || content.planNames.length > 0 || content.priority.length > 0
+export function raceStrategyLabel(racing: RacingLike): string {
+    if (racing.enablePerDistanceStrategy) return "Per-distance"
+    return racing.originalRaceStrategy ?? "Default"
+}
+
+/**
+ * Resolve the search id of the RacingSettings row the hero's Style chip should deep-link to and highlight. It mirrors `raceStrategyLabel`: in per-distance mode the
+ * chip points at the per-distance toggle, otherwise at the Original strategy row. The ids match the `SearchableItem` ids in RacingSettings and their `searchConfig` entries.
+ * @param racing The racing settings slice.
+ * @returns The target row's search id.
+ */
+export function raceStrategyTargetId(racing: RacingLike): string {
+    return racing.enablePerDistanceStrategy ? "enable-per-distance-strategy" : "original-race-strategy"
 }

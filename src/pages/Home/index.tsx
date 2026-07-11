@@ -20,7 +20,8 @@ import PermissionSetupDialog from "../../components/PermissionSetupDialog"
 import { loadDeviceCapabilities, shouldSuggestX8664Variant } from "../../lib/chat/deviceCapabilities"
 import HeroStatusCard, { HeroStatus } from "../../components/HeroStatusCard"
 import HeroGlance, { HeroGlanceTarget } from "../../components/HeroStatusCard/HeroGlance"
-import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, heroGlanceHasContent } from "../../components/HeroStatusCard/heroGlanceData"
+import HeroChips from "../../components/HeroStatusCard/HeroChips"
+import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, raceStrategyLabel, raceStrategyTargetId } from "../../components/HeroStatusCard/heroGlanceData"
 import { useProfileContext, DEFAULT_PROFILE_NAME } from "../../context/ProfileContext"
 import { SPACING } from "../../lib/spacing"
 
@@ -51,10 +52,12 @@ const styles = StyleSheet.create({
 
 // Maps a hero glance target to its screen name (and optional nested route params) inside the nested Settings stack navigator.
 const HERO_NAV_ROUTES: Record<HeroGlanceTarget, { screen: string; params?: Record<string, string> }> = {
-    debug: { screen: "DebugSettings" },
-    srs: { screen: "ScheduleScreen", params: { tab: "raceSolver" } },
+    debug: { screen: "DebugSettings", params: { targetId: "enable-debug-mode" } },
+    debugTest: { screen: "DebugSettings" },
+    srs: { screen: "ScheduleScreen", params: { tab: "raceSolver", targetId: "enable-smart-race-solver" } },
     skills: { screen: "Skills" },
     training: { screen: "TrainingSettings" },
+    racing: { screen: "RacingSettings" },
 }
 
 /**
@@ -363,17 +366,24 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
     const heroStatus: HeroStatus = isRunning ? "running" : unsupportedReason !== null || abiMismatch ? "error" : readyStatus && deviceMetrics !== null ? "ready" : "stopped"
     const heroProfile = currentProfileName ?? DEFAULT_PROFILE_NAME
 
-    // Derive the hero "at a glance" data from the settings slices. Each piece renders only when it has something to show.
+    // Derive the hero data from the settings slices. The SRS/Debug/Test chips and the Plans/Priority rows render only when active; the Style chip is always shown on the status line.
     const activeTest = useMemo(() => findActiveDebugTest(debug), [debug])
     const { names: planNames, spThreshold } = useMemo(() => activeSkillPlans(skills), [skills])
     const statPriority = useMemo(() => abbreviateStatPriority(training.statPrioritization ?? []), [training.statPrioritization])
-    const hasGlance = heroGlanceHasContent({ debugMode: debug.enableDebugMode, activeTest, srs: racing.enableSmartRaceSolver, planNames, priority: statPriority })
+    const raceStyle = raceStrategyLabel(racing)
+    // The Style chip and the armed-test chip highlight a row whose id depends on current state, so resolve those targets here rather than in the static route map.
+    const raceStyleTargetId = raceStrategyTargetId(racing)
+    // The glance zone holds only the Plans and Priority rows now, so omit it (and its divider) when neither has content.
+    const showGlance = planNames.length > 0 || statPriority.length > 0
     const handleHeroNavigate = useCallback(
         (target: HeroGlanceTarget) => {
             const { screen, params } = HERO_NAV_ROUTES[target]
-            navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen, params, initial: false } }))
+            // Merge the state-dependent highlight target for chips whose row varies (the armed test's row, the race-strategy row).
+            const dynamicTargetId = target === "debugTest" ? activeTest?.searchId : target === "racing" ? raceStyleTargetId : undefined
+            const finalParams = dynamicTargetId ? { ...params, targetId: dynamicTargetId } : params
+            navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen, params: finalParams, initial: false } }))
         },
-        [navigation]
+        [navigation, activeTest, raceStyleTargetId]
     )
 
     return (
@@ -385,19 +395,10 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                 <HeroStatusCard
                     status={heroStatus}
                     profile={heroProfile}
-                    glance={
-                        hasGlance ? (
-                            <HeroGlance
-                                debugMode={debug.enableDebugMode}
-                                activeTest={activeTest}
-                                srs={racing.enableSmartRaceSolver}
-                                planNames={planNames}
-                                spThreshold={spThreshold}
-                                priority={statPriority}
-                                onNavigate={handleHeroNavigate}
-                            />
-                        ) : undefined
+                    chips={
+                        <HeroChips debugMode={debug.enableDebugMode} activeTest={activeTest?.name ?? null} srs={racing.enableSmartRaceSolver} raceStyle={raceStyle} onNavigate={handleHeroNavigate} />
                     }
+                    glance={showGlance ? <HeroGlance planNames={planNames} spThreshold={spThreshold} priority={statPriority} onNavigate={handleHeroNavigate} /> : undefined}
                     cta={
                         <SelectButton
                             variant={getSelectButtonVariant()}
