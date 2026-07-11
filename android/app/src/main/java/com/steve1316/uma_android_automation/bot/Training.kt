@@ -232,7 +232,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
      */
     private fun getCurrentStatCap(statName: StatName): Int {
         val base = getScenarioStatCap(game.scenario, statName)
-        return if (useDynamicStatCaps) campaign.trainee.statCaps[statName]?.takeIf { it >= base } ?: base else base
+        return if (useDynamicStatCaps) plausibleStatCap(base, campaign.trainee.statCaps[statName]) else base
     }
 
     /** The blacklist that applies this turn - empty in the Pre-Debut / Junior Friendship window so bonds can be built on blacklisted facilities, else the configured [blacklist]. */
@@ -546,6 +546,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         /** Adapter for the shared `getCurrentStatCap`. Converts the Android-rich `TrainingConfig` at the boundary. */
         fun getCurrentStatCap(statName: StatName, config: TrainingConfig): Int = sharedGetCurrentStatCap(statName, config.toScoring())
 
+        /**
+         * Reject an OCR'd stat cap that reads below the scenario's base cap as a misread, since sparks / inheritance / duels / extreme bursts only ever raise a cap above the base.
+         *
+         * @param base The scenario's base cap for the stat, used as both the floor and the fallback.
+         * @param ocrCap The OCR'd cap, or null if none was read.
+         * @return `ocrCap` when it is at least `base`, otherwise `base`.
+         */
+        fun plausibleStatCap(base: Int, ocrCap: Int?): Int = ocrCap?.takeIf { it >= base } ?: base
+
         /** Adapter for the shared `softCapEffectivenessMultiplier`. */
         fun softCapEffectivenessMultiplier(currentStat: Int, statGain: Int, statCap: Int): Double = sharedSoftCapEffectivenessMultiplier(currentStat, statGain, statCap)
 
@@ -821,15 +830,19 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             failureChance >= minFailureChance && totalStatGain < gainPerFailPercent * failureChance
 
         /**
-         * Unity Cup burst exemption. A training with a Spirit Explosion gauge ready to burst may be worth a higher failure chance than the base ceiling, so this raises the ceiling to
-         * `burstMax` when a gauge is ready. No-op when no gauge is ready or when `burstMax` is below the base, keeping the default (0) a pure pass-through. Pure and unit-testable.
+         * Unity Cup burst exemption. An Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless
+         * of the setting. Short of that, a training with a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than the base ceiling, so this raises
+         * the ceiling to `burstMax` when a gauge is ready. No-op when no gauge is ready or when `burstMax` is below the base, keeping the default (0) a pure pass-through. Pure and
+         * unit-testable.
          *
          * @param baseFailureChance The normal (or risky) failure-chance ceiling for this training.
          * @param readyToBurst The number of Spirit Explosion gauges ready to burst on this training.
          * @param burstMax The Unity Cup burst failure-chance ceiling from settings. 0 disables the exemption.
+         * @param readyToExtremeBurst The number of Spirit Explosion gauges ready for an Extreme Spirit Burst on this training. When above 0, the ceiling is always 100.
          * @return The effective failure-chance ceiling to apply to this training.
          */
-        fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int): Int = if (readyToBurst > 0) maxOf(baseFailureChance, burstMax) else baseFailureChance
+        fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int, readyToExtremeBurst: Int = 0): Int =
+            if (readyToExtremeBurst > 0) 100 else if (readyToBurst > 0) maxOf(baseFailureChance, burstMax) else baseFailureChance
 
         /**
          * The additive Unity Cup Extreme Spirit Burst score bonus for `count` supports ready to extreme-burst. Shared by the Junior/Classic Unity scorer and the Senior-year path so the
@@ -1740,7 +1753,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless of the setting.
             val readyToExtremeBurst = result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
             val readyToBurst = result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
-            val effectiveFailureChance = if (readyToExtremeBurst > 0) 100 else burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance)
+            val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance, readyToExtremeBurst)
 
             // Filter out trainings that exceed the effective failure chance threshold.
             if (!test && !ignoreFailureChance && result.failureChance > effectiveFailureChance) {
@@ -2144,7 +2157,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             TrainingConfig(
                 currentStats = campaign.trainee.stats.asMap(),
                 // Keep only OCR'd caps at or above the scenario base; sparks / inheritance / duels only raise caps, so a below-base read is a misread and falls back to the table.
-                statCaps = if (useDynamicStatCaps) campaign.trainee.statCaps.filter { (stat, cap) -> cap >= getScenarioStatCap(game.scenario, stat) } else emptyMap(),
+                statCaps =
+                    if (useDynamicStatCaps) {
+                        campaign.trainee.statCaps.mapValues { (stat, cap) -> plausibleStatCap(getScenarioStatCap(game.scenario, stat), cap) }
+                    } else {
+                        emptyMap()
+                    },
                 statPrioritization = statPrioritization,
                 eventChoiceStatPriority = eventChoiceStatPriority,
                 summerTrainingStatPriority = summerTrainingStatPriority,

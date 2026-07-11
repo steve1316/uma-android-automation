@@ -167,6 +167,12 @@ class TrainingExplanationTest {
         assertEquals(40, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 1, burstMax = 40))
         // Setting below the base never lowers the ceiling.
         assertEquals(30, burstExemptFailureChance(baseFailureChance = 30, readyToBurst = 2, burstMax = 20))
+        // No extreme burst ready: readyToExtremeBurst defaults to 0 and behaves exactly as above.
+        assertEquals(15, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 0, burstMax = 0, readyToExtremeBurst = 0))
+        // An extreme burst ready always raises the ceiling to 100, overriding both the base and the normal burst max.
+        assertEquals(100, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 0, burstMax = 0, readyToExtremeBurst = 1))
+        // Extreme burst still wins even when a normal burst is also ready.
+        assertEquals(100, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 1, burstMax = 40, readyToExtremeBurst = 1))
     }
 
     @Test

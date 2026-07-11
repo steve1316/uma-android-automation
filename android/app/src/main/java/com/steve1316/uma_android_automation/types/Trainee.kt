@@ -6,6 +6,7 @@ import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.bot.Training
 import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.IconMoodAwful
 import com.steve1316.uma_android_automation.components.IconMoodBad
@@ -932,8 +933,7 @@ class Trainee {
         // Show the cap the bot actually scores against per stat: the OCR'd cap when it is at least the scenario base (a below-base read is a misread), otherwise the base.
         val effectiveCaps =
             StatName.entries.associateWith { stat ->
-                val base = getScenarioStatCap(scenario, stat)
-                statCaps[stat]?.takeIf { it >= base } ?: base
+                Training.plausibleStatCap(getScenarioStatCap(scenario, stat), statCaps[stat])
             }
         MessageLog.v(TAG, "[TRAINEE] Stats: ${stats.toStringWithCaps(effectiveCaps)}")
         MessageLog.v(TAG, "[TRAINEE] Energy: $energy%")

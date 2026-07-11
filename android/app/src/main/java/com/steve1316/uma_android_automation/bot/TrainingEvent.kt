@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
@@ -363,14 +364,13 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
      * stat priorities. Falls back to the first option when no rows or prediction icons are detected.
      *
      * @param optionLocations The detected horseshoe locations for the contest rows, top to bottom.
+     * @param sourceBitmap The screenshot the caller already captured to find the horseshoe locations, reused here instead of capturing a new one.
      * @return The 0-based index of the contest row to enter, defaulting to 0.
      */
-    private fun handleHappyMeekDuel(optionLocations: ArrayList<Point>): Int {
+    private fun handleHappyMeekDuel(optionLocations: ArrayList<Point>, sourceBitmap: Bitmap): Int {
         val numOptions = optionLocations.size
         MessageLog.v(TAG, "[TRAINING_EVENT] Handling \"Happy Meek's Challenge!\" duel with $numOptions option(s).")
         if (numOptions <= 1) return 0
-
-        val sourceBitmap = game.imageUtils.getSourceBitmap()
 
         // Locate every prediction icon once, tagged with its tier, so each row can be paired with the nearest icon by Y.
         val predictionMatches =
@@ -735,8 +735,9 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             // Handle the URA Finale "Happy Meek's Challenge!" duel by prediction-driven contest pick. Dispatch on the RAW OCR title, not the fuzzy-matched event name, since the duel
             // is not in the event database and would otherwise resolve to an unrelated event.
             MessageLog.i(TAG, "[TRAINING_EVENT] \"Happy Meek's Challenge!\" duel detected for URA Finale.")
-            val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
-            optionSelected = handleHappyMeekDuel(trainingOptionLocations)
+            val duelSourceBitmap = game.imageUtils.getSourceBitmap()
+            val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils, sourceBitmap = duelSourceBitmap)
+            optionSelected = handleHappyMeekDuel(trainingOptionLocations, duelSourceBitmap)
             specialEventHandled = true
             duelHandled = true
         } else if (specialEventResult != null) {

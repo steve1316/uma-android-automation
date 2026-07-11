@@ -146,8 +146,9 @@ class UraFinale(game: Game) : Campaign(game) {
         // Resolve the Happy Meek duel facility once per turn here (single-threaded) so the parallel per-facility training analysis just reads it instead of re-matching the badge on all five.
         // The duel badge sits on one facility button, so its column identifies the duel facility regardless of which facility is currently selected.
         training.duelFacility = null
-        if (LabelDuel.check(game.imageUtils)) {
-            val badge = LabelDuelSmall.findImageWithBitmap(game.imageUtils, game.imageUtils.getSourceBitmap())
+        val sourceBitmap = game.imageUtils.getSourceBitmap()
+        if (LabelDuel.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+            val badge = LabelDuelSmall.findImageWithBitmap(game.imageUtils, sourceBitmap)
             training.duelFacility = badge?.let { duelFacilityForBadgeX(it.x.toInt(), SharedData.displayWidth) }
             MessageLog.i(TAG, "[URA] Happy Meek duel available this turn on the ${training.duelFacility?.name?.lowercase() ?: "(unresolved)"} facility. Training will be biased toward it.")
         }

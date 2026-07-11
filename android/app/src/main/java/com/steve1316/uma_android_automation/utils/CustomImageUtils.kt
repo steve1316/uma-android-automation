@@ -1005,6 +1005,22 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Run the three Spirit Explosion gauge template matches (fill anchor, normal burst chevron, extreme burst chevron) against a screenshot. Extracted so
+     * [analyzeSpiritExplosionGauges]'s initial attempt and its retry-after-sleep attempt share one call instead of repeating all three matches verbatim.
+     *
+     * @param bitmap The screenshot to match against.
+     * @param anchorConfidence Confidence threshold for the spirit-training fill anchor.
+     * @param chevronConfidence Confidence threshold for the normal and extreme burst chevrons.
+     * @return A [Triple] of (fill anchors, normal burst chevrons, extreme burst chevrons).
+     */
+    private fun findSpiritGaugeIcons(bitmap: Bitmap, anchorConfidence: Double, chevronConfidence: Double): Triple<ArrayList<Point>, ArrayList<Point>, ArrayList<Point>> =
+        Triple(
+            IconUnityCupSpiritTraining.findAll(this, sourceBitmap = bitmap, confidence = anchorConfidence),
+            IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = bitmap, confidence = chevronConfidence),
+            IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = bitmap, confidence = chevronConfidence),
+        )
+
+    /**
      * Analyzes Spirit Explosion gauges for the Unity Cup scenario.
      *
      * @param sourceBitmap Optional source bitmap to use. Defaults to null.
@@ -1020,9 +1036,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // anchor can be tuned independently if lowering it surfaces facility-button false positives.
         val chevronConfidence = 0.80
         val anchorConfidence = 0.80
-        var spiritTrainingIcons: ArrayList<Point> = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = anchorConfidence)
-        var spiritExplosionIcons: ArrayList<Point> = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
-        var extremeSpiritExplosionIcons: ArrayList<Point> = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
+        var (spiritTrainingIcons, spiritExplosionIcons, extremeSpiritExplosionIcons) = findSpiritGaugeIcons(currentBitmap, anchorConfidence, chevronConfidence)
 
         // If nothing at all was found, try one more time after a short delay in case the icons were still animating in. Only bail when all three are empty (no gauges/bursts on screen).
         if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
@@ -1036,9 +1050,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             // Take a new screenshot for the retry.
             currentBitmap = getSourceBitmap()
 
-            spiritTrainingIcons = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = anchorConfidence)
-            spiritExplosionIcons = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
-            extremeSpiritExplosionIcons = IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = chevronConfidence)
+            val (retryTrainingIcons, retryExplosionIcons, retryExtremeIcons) = findSpiritGaugeIcons(currentBitmap, anchorConfidence, chevronConfidence)
+            spiritTrainingIcons = retryTrainingIcons
+            spiritExplosionIcons = retryExplosionIcons
+            extremeSpiritExplosionIcons = retryExtremeIcons
             if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
                 return null
             }
@@ -1340,8 +1355,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
     /**
      * Read the per-stat cap denominators ("/NNNN") from the Umamusume Details dialog, one line below each stat value. Anchored on the same LabelStatTrackSurface as the dialog value
-     * read, so it only works while that dialog is open. Each cap is parsed by stripping the leading "/" and keeping the last four digits, with implausible reads rejected. Used at end
-     * of run to stamp the trainee's true final caps for the log and dashboard, independent of the live main-screen cap reads.
+     * read, so it only works while that dialog is open. Each cap is parsed via `parseStatCap`, with implausible reads rejected. Used at end of run to stamp the trainee's true final
+     * caps for the log and dashboard, independent of the live main-screen cap reads.
      *
      * @return A map of stat names to their detected cap, omitting any stat whose cap could not be read plausibly.
      */
@@ -1381,13 +1396,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
             MessageLog.d(TAG, "[DEBUG] determineStatCapsFromDialog:: Raw OCR text for $statName cap: '$text'")
 
-            // Strip the leading "/" and any noise, then keep the last four digits since a slash misread can prepend a stray digit.
-            val digits = text.replace(Regex("[^0-9]"), "")
-            val cap = digits.takeLast(4).toIntOrNull() ?: -1
-            if (cap in 1000..2500) {
+            val cap = parseStatCap(text)
+            if (cap != null) {
                 result[statName] = cap
             } else {
-                MessageLog.w(TAG, "[WARN] determineStatCapsFromDialog:: Implausible cap '$text' -> $cap for $statName. Skipping.")
+                MessageLog.w(TAG, "[WARN] determineStatCapsFromDialog:: Implausible cap '$text' for $statName. Skipping.")
             }
         }
 
