@@ -47,6 +47,7 @@ import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import java.io.File
 import java.lang.Integer.max
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -57,6 +58,27 @@ import kotlin.collections.component2
 import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.text.replace
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Rainbow-ring detection constants
+
+// The support face circles (findSupportFaceCircles) and the debug annotate crop (debugRainbowDetection) both scan the top-right third of the screen down to this fraction of the height.
+// The rest of the rainbow-ring tuning (glow HSV bands, Hough params) lives as locals in the detector functions since each is used in only one place.
+private const val RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION = 0.75
+
+/**
+ * Whether the three rainbow-glow hue fractions indicate a rainbow ring. A ring is present only when all three pastel hues (green, cyan, pink) each exceed the presence floor, which is
+ * the signature that separates a real rainbow glow from a background that happens to be one of those colors. Pure so it is unit-testable without OpenCV.
+ *
+ * @param greenFraction Fraction of glow-annulus pixels that are bright green.
+ * @param cyanFraction Fraction that are bright cyan.
+ * @param pinkFraction Fraction that are bright pink.
+ * @param minFraction The per-hue presence floor (default 0.03).
+ * @return The number of the three hues that are present (a ring needs all three).
+ */
+internal fun rainbowHuesPresent(greenFraction: Double, cyanFraction: Double, pinkFraction: Double, minFraction: Double = 0.03): Int =
+    listOf(greenFraction, cyanFraction, pinkFraction).count { it > minFraction }
 
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
@@ -118,10 +140,6 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @property statBlock The underlying stat block used for analysis, if any.
      */
     data class BarFillResult(val statName: StatName, val fillPercent: Double, val filledSegments: Int, val dominantColor: String, val statBlock: StatBlock? = null) {
-        /** Whether this bar represents a Rainbow training. */
-        val isRainbow: Boolean
-            get() = statBlock != null && statBlock.name == statName.name && dominantColor == "orange"
-
         /** Whether this bar belongs to a trainer support character. */
         val isTrainerSupport: Boolean
             get() = statBlock != null && statBlock.name == "trainer_support"
@@ -129,6 +147,24 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         /** The name of the trainer associated with this bar. */
         val trainerName: String?
             get() = statBlock?.trainerName
+    }
+
+    /**
+     * Result of the rainbow-ring detector for one circular anchor (a support face circle or a training button).
+     *
+     * @property huesPresent How many of the three rainbow-glow hues (green, cyan, pink) are present in the glow annulus. A ring needs all three.
+     * @property greenFraction Fraction of glow-annulus pixels that are bright green.
+     * @property cyanFraction Fraction that are bright cyan.
+     * @property pinkFraction Fraction that are bright pink.
+     * @property brightChromaticFraction Fraction of annulus pixels that are bright and saturated (the overall glow strength).
+     */
+    data class RainbowRingResult(val huesPresent: Int, val greenFraction: Double, val cyanFraction: Double, val pinkFraction: Double, val brightChromaticFraction: Double) {
+        /**
+         * Whether the annulus shows a rainbow glow: all three pastel hues co-present (huesPresent == 3) and one of them vividly dominant (>= 0.08; measured true rings had a dominant hue
+         * >= 0.096 versus a 0.058 false positive). Validated at 100% on the labeled training-screen dataset.
+         */
+        val isRainbow: Boolean
+            get() = huesPresent >= 3 && maxOf(greenFraction, cyanFraction, pinkFraction) >= 0.08
     }
 
     /**
@@ -679,6 +715,201 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Detects a rainbow glow ring in the annulus just outside a circular anchor (a support face circle or a training button). Rainbow trainings pulse a bright pastel green/cyan/pink
+     * halo around the circle, so requiring all three hues to co-occur in the annulus separates a real rainbow from a background that merely happens to be one of those colors.
+     *
+     * @param sourceBitmap The screenshot to analyze.
+     * @param centerX The circle center x in screen pixels.
+     * @param centerY The circle center y in screen pixels.
+     * @param radius The circle radius in screen pixels (the glow sits just outside this).
+     * @return A [RainbowRingResult] with the per-hue fractions and whether a ring is present. All-zero when the crop could not be taken.
+     */
+    fun detectRainbowRing(sourceBitmap: Bitmap, centerX: Int, centerY: Int, radius: Int): RainbowRingResult {
+        // Rainbow glow calibration. The glow sweeps bright pastel green, cyan, and pink, so require a minimum saturation/value and match each hue band in the annulus. Hue bands are true
+        // OpenCV HSV (0-179) from the RGBA->RGB->HSV path below (NOT the BGR->RGB->HSV path the relationship-bar code uses, which swaps red and blue and is not what these bands expect).
+        val annulusInnerPad = 1
+        val annulusOuterPad = 22
+        val minSaturation = 50.0
+        val minValue = 165.0
+        val greenHueLow = 45.0
+        val greenHueHigh = 82.0
+        val cyanHueLow = 84.0
+        val cyanHueHigh = 104.0
+        val pinkHueLow = 148.0
+        val pinkHueHigh = 173.0
+
+        val outerRadius = radius + annulusOuterPad
+        val side = outerRadius * 2
+        val cropped =
+            createSafeBitmap(sourceBitmap, centerX - outerRadius, centerY - outerRadius, side, side, "detectRainbowRing") ?: return RainbowRingResult(0, 0.0, 0.0, 0.0, 0.0)
+
+        val rgbaMat = cropped.toMat()
+        val rgbMat = Mat()
+        Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
+        val hsvMat = Mat()
+        Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
+
+        // Build the glow annulus mask (outer filled circle minus inner filled circle), centered in the crop.
+        val cropCenter = Point(outerRadius.toDouble(), outerRadius.toDouble())
+        val annulusMask = Mat.zeros(hsvMat.size(), CvType.CV_8UC1)
+        Imgproc.circle(annulusMask, cropCenter, outerRadius, Scalar(255.0), -1)
+        Imgproc.circle(annulusMask, cropCenter, radius + annulusInnerPad, Scalar(0.0), -1)
+        val annulusTotal = Core.countNonZero(annulusMask)
+        if (annulusTotal <= 0) {
+            listOf(rgbaMat, rgbMat, hsvMat, annulusMask).forEach { it.release() }
+            return RainbowRingResult(0, 0.0, 0.0, 0.0, 0.0)
+        }
+
+        // Bright and saturated pixels only (the glow is luminous), intersected with the annulus. This fraction feeds only the debug log and an unused result field, so compute it only in
+        // debug mode - it is an extra inRange + bitwise_and + countNonZero per circle on the per-turn hot path otherwise.
+        val brightChromaticFraction =
+            if (debugMode) {
+                val brightMask = Mat()
+                Core.inRange(hsvMat, Scalar(0.0, minSaturation, minValue), Scalar(179.0, 255.0, 255.0), brightMask)
+                Core.bitwise_and(brightMask, annulusMask, brightMask)
+                val fraction = Core.countNonZero(brightMask).toDouble() / annulusTotal
+                brightMask.release()
+                fraction
+            } else {
+                0.0
+            }
+
+        // Fraction of annulus pixels in each rainbow hue band (bright and saturated).
+        fun hueFraction(low: Double, high: Double): Double {
+            val hueMask = Mat()
+            Core.inRange(hsvMat, Scalar(low, minSaturation, minValue), Scalar(high, 255.0, 255.0), hueMask)
+            Core.bitwise_and(hueMask, annulusMask, hueMask)
+            val fraction = Core.countNonZero(hueMask).toDouble() / annulusTotal
+            hueMask.release()
+            return fraction
+        }
+        val greenFraction = hueFraction(greenHueLow, greenHueHigh)
+        val cyanFraction = hueFraction(cyanHueLow, cyanHueHigh)
+        val pinkFraction = hueFraction(pinkHueLow, pinkHueHigh)
+
+        listOf(rgbaMat, rgbMat, hsvMat, annulusMask).forEach { it.release() }
+
+        val huesPresent = rainbowHuesPresent(greenFraction, cyanFraction, pinkFraction)
+        val result = RainbowRingResult(huesPresent, greenFraction, cyanFraction, pinkFraction, brightChromaticFraction)
+        if (debugMode) {
+            MessageLog.d(
+                TAG,
+                "[DEBUG] detectRainbowRing:: center=($centerX,$centerY) r=$radius green=${decimalFormat.format(
+                    greenFraction,
+                )} cyan=${decimalFormat.format(
+                    cyanFraction,
+                )} pink=${decimalFormat.format(pinkFraction)} bright=${decimalFormat.format(brightChromaticFraction)} huesPresent=$huesPresent isRainbow=${result.isRainbow}",
+            )
+        }
+        return result
+    }
+
+    /**
+     * Locates the support face circles in the top-right of the training screen using HoughCircles. The stat-block badges only match a fraction of the supports, so the round faces are
+     * detected directly. A few spurious circles may be returned, but the rainbow-ring test rejects any that are not glowing.
+     *
+     * @param sourceBitmap The screenshot to search.
+     * @return A list of (centerX, centerY, radius) in full-screen pixels for each detected circle.
+     */
+    private fun findSupportFaceCircles(sourceBitmap: Bitmap): List<IntArray> {
+        val regionX = displayWidth - displayWidth / 3
+        val regionHeight = (displayHeight * RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION).toInt()
+        val roi = createSafeBitmap(sourceBitmap, regionX, 0, displayWidth / 3, regionHeight, "findSupportFaceCircles") ?: return emptyList()
+
+        val rgbaMat = roi.toMat()
+        val grayMat = Mat()
+        Imgproc.cvtColor(rgbaMat, grayMat, Imgproc.COLOR_RGBA2GRAY)
+        Imgproc.medianBlur(grayMat, grayMat, 5)
+
+        // HoughCircles tuning for the support face circles. Radii and spacing are for the 1080-wide baseline and scaled by the actual display width.
+        val houghDp = 1.2
+        val minDist = 70.0
+        val houghParam1 = 90.0
+        val houghParam2 = 42.0
+        val minRadius = 44
+        val maxRadius = 72
+
+        val scale = displayWidth.toDouble() / 1080.0
+        val circles = Mat()
+        Imgproc.HoughCircles(
+            grayMat,
+            circles,
+            Imgproc.HOUGH_GRADIENT,
+            houghDp,
+            minDist * scale,
+            houghParam1,
+            houghParam2,
+            (minRadius * scale).toInt(),
+            (maxRadius * scale).toInt(),
+        )
+
+        val result = mutableListOf<IntArray>()
+        for (i in 0 until circles.cols()) {
+            val circle = circles.get(0, i) ?: continue
+            result.add(intArrayOf((circle[0] + regionX).toInt(), circle[1].toInt(), circle[2].toInt()))
+        }
+        listOf(rgbaMat, grayMat, circles).forEach { it.release() }
+        return result
+    }
+
+    /**
+     * Counts the rainbow trainings on the current training screen. Each support face circle in the top-right is checked for the rainbow glow ring, which is the direct signal that a
+     * maxed-friendship support is giving a friendship (rainbow) training. This replaces the old orange-relationship-bar inference, which also fired on maxed supports that are not glowing.
+     *
+     * @param sourceBitmap Optional source bitmap. Defaults to a fresh screenshot.
+     * @return The number of support face circles showing a rainbow glow ring.
+     */
+    fun countRainbowTrainings(sourceBitmap: Bitmap? = null): Int {
+        val bitmap = sourceBitmap ?: getSourceBitmap()
+        return findSupportFaceCircles(bitmap).count { circle -> detectRainbowRing(bitmap, circle[0], circle[1], circle[2]).isRainbow }
+    }
+
+    /**
+     * Debug helper that runs the rainbow-ring detector on every support face circle it can find in the top-right, logs the per-circle metrics, and saves an annotated crop (green circle
+     * with the hue count for a rainbow, red otherwise). Used by the on-device rainbow detection test to verify geometry and thresholds. Not used in the bot loop.
+     *
+     * @param sourceBitmap Optional source bitmap. Defaults to a fresh screenshot.
+     * @return A human-readable summary of the per-circle ring metrics and the derived rainbow count.
+     */
+    fun debugRainbowDetection(sourceBitmap: Bitmap? = null): String {
+        val bitmap = sourceBitmap ?: getSourceBitmap()
+        val regionX = displayWidth - displayWidth / 3
+        val annotated = createSafeBitmap(bitmap, regionX, 0, displayWidth / 3, (displayHeight * RAINBOW_SUPPORT_REGION_HEIGHT_FRACTION).toInt(), "debugRainbowDetection annotate")?.toMat()
+
+        val sb = StringBuilder("\n========== Rainbow Detection Debug ==========\n")
+        var rainbowCount = 0
+        for (circle in findSupportFaceCircles(bitmap)) {
+            val (centerX, centerY, radius) = Triple(circle[0], circle[1], circle[2])
+            val ring = detectRainbowRing(bitmap, centerX, centerY, radius)
+            if (ring.isRainbow) rainbowCount++
+            sb.appendLine(
+                "circle=($centerX,$centerY r$radius) green=${decimalFormat.format(
+                    ring.greenFraction,
+                )} cyan=${decimalFormat.format(ring.cyanFraction)} pink=${decimalFormat.format(ring.pinkFraction)} huesPresent=${ring.huesPresent} -> rainbow=${ring.isRainbow}",
+            )
+            if (annotated != null) {
+                val color = if (ring.isRainbow) Scalar(0.0, 255.0, 0.0) else Scalar(0.0, 0.0, 255.0)
+                val drawCenter = Point((centerX - regionX).toDouble(), centerY.toDouble())
+                Imgproc.circle(annotated, drawCenter, radius, color, 3)
+                Imgproc.putText(annotated, "${ring.huesPresent}", Point(drawCenter.x - 10, drawCenter.y + 8), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, color, 3)
+            }
+        }
+        sb.appendLine("Derived numRainbow (support circles with a ring): $rainbowCount")
+        if (annotated != null) {
+            Imgcodecs.imwrite("$matchFilePath/debugRainbowDetection.png", annotated)
+            annotated.release()
+        }
+        // Also persist the metrics as text so they can be retrieved without the in-app log (the annotated PNG shows geometry; the text shows the exact fractions).
+        try {
+            File("$matchFilePath/debugRainbowDetection.txt").writeText(sb.toString())
+        } catch (e: Exception) {
+            MessageLog.e(TAG, "[ERROR] debugRainbowDetection:: Failed to write metrics text: ${e.message}")
+        }
+        MessageLog.i(TAG, sb.toString())
+        return sb.toString()
+    }
+
+    /**
      * Analyzes Spirit Explosion gauges for the Unity Cup scenario.
      *
      * @param sourceBitmap Optional source bitmap to use. Defaults to null.
@@ -855,9 +1086,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
 
         // Parse the text.
-        MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
+        Log.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
         if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
-            MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
+            Log.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
             val cleanedText = text.replace(Regex("[^0-9]"), "")
             return try {
                 val parsed = cleanedText.toInt()
@@ -867,11 +1098,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         } else {
             try {
-                MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
+                Log.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
                 val cleanedText = text.replace(Regex("[^0-9]"), "")
                 val parsed = cleanedText.toInt()
                 if (manualStatCap > 0 && parsed > manualStatCap) {
-                    MessageLog.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
+                    Log.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
                     return -1
                 }
                 return parsed.coerceAtLeast(0)

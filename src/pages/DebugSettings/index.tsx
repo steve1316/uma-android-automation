@@ -36,6 +36,7 @@ interface DebugTestDescriptor {
         | "debugMode_startMainScreenUpdateTest"
         | "debugMode_startSkillListBuyTest"
         | "debugMode_startScrollBarDetectionTest"
+        | "debugMode_startRainbowDetectionTest"
         | "debugMode_startTrackblazerRaceSelectionTest"
         | "debugMode_startTrackblazerInventorySyncTest"
         | "debugMode_startTrackblazerBuyItemsTest"
@@ -94,6 +95,13 @@ const DEBUG_TESTS: DebugTestDescriptor[] = [
         title: "Start Scrollbar Detection Test",
         description:
             "Disables normal bot operations and starts the Scrollbar detection test. Detects the scrollbar on the current screen and attempts to scroll it up and down to verify functionality.",
+    },
+    {
+        key: "debugMode_startRainbowDetectionTest",
+        searchId: "debug-rainbow-detection-test",
+        title: "Start Rainbow Detection Test",
+        description:
+            "Disables normal bot operations and starts the Rainbow detection test. Run this on the Training screen: it detects the rainbow glow ring on each support face circle for a few seconds, logs the per-support metrics and the derived rainbow count, and saves an annotated crop to help calibrate the detector.",
     },
     {
         key: "debugMode_startTrackblazerRaceSelectionTest",
