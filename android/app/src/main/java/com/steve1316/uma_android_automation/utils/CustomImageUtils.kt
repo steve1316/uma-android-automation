@@ -98,6 +98,7 @@ internal fun <K> argMaxAboveFloor(scores: Map<K, Double>, floor: Double): K? {
     val best = scores.maxByOrNull { it.value } ?: return null
     return if (best.value >= floor) best.key else null
 }
+
 /**
  * Parse the stat cap from the OCR text of the "/NNNN" denominator shown under a stat on the career / training screen. The cap is the largest number present - it is always >= the
  * current value, so taking the max is robust even when the crop catches part of the value. Returns null when no plausible cap is found so the caller can fall back to the
@@ -1122,10 +1123,17 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             if (debugMode) {
                 MessageLog.i(
                     TAG,
-                    "[GAUGE] anchor ${index + 1} at (${iconLocation.x.toInt()}, ${iconLocation.y.toInt()}): outline=$outlinePixels/$totalPixels (${decimalFormat.format(outlineFraction * 100)}%) -> ${if (fillable) "FILLABLE" else "none"}",
+                    "[GAUGE] anchor ${index + 1} at (${iconLocation.x.toInt()}, ${iconLocation.y.toInt()}): outline=$outlinePixels/$totalPixels (${decimalFormat.format(
+                        outlineFraction * 100,
+                    )}%) -> ${if (fillable) "FILLABLE" else "none"}",
                 )
             } else {
-                Log.d(TAG, "[DEBUG] analyzeSpiritExplosionGauges:: Gauge at (${iconLocation.x}, ${iconLocation.y}) outline ${decimalFormat.format(outlineFraction * 100)}% -> ${if (fillable) "fillable" else "none"}")
+                Log.d(
+                    TAG,
+                    "[DEBUG] analyzeSpiritExplosionGauges:: Gauge at (${iconLocation.x}, ${iconLocation.y}) outline ${decimalFormat.format(
+                        outlineFraction * 100,
+                    )}% -> ${if (fillable) "fillable" else "none"}",
+                )
             }
 
             outlineMask.release()

@@ -10,7 +10,6 @@ import com.steve1316.uma_android_automation.bot.Training.Companion.friendshipKey
 import com.steve1316.uma_android_automation.bot.Training.Companion.statEfficiencyKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.unityCupKeyFactors
 import com.steve1316.uma_android_automation.bot.Training.Companion.witOnlyKeyFactor
-import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_android_automation.bot.Training.TrainingConfig
 import com.steve1316.uma_android_automation.bot.Training.TrainingOption
 import com.steve1316.uma_android_automation.types.DateMonth
@@ -19,6 +18,7 @@ import com.steve1316.uma_android_automation.types.DateYear
 import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.utils.CustomImageUtils.BarFillResult
+import com.steve1316.uma_scoring.RawScoreBreakdown
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -185,6 +185,11 @@ class TrainingExplanationTest {
         assertTrue(burstFactors.any { it.contains("burst", ignoreCase = true) }, "Expected a burst factor, got: $burstFactors")
         assertTrue(fillFactors.any { it.contains("fill", ignoreCase = true) || it.contains("Spirit Gauge", ignoreCase = true) }, "Expected a fill factor, got: $fillFactors")
         val all = burstFactors + fillFactors
-        assertFalse(all.any { it.contains("anticipatory", ignoreCase = true) || it.contains("rainbow multiplier", ignoreCase = true) }, "Unity factors must not mention the anticipatory/rainbow multiplier")
+        assertFalse(
+            all.any {
+                it.contains("anticipatory", ignoreCase = true) || it.contains("rainbow multiplier", ignoreCase = true)
+            },
+            "Unity factors must not mention the anticipatory/rainbow multiplier",
+        )
     }
 }

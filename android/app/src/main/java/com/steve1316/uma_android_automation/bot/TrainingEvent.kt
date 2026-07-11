@@ -465,6 +465,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
         sb.appendLine("Event: \"Happy Meek's Challenge!\"")
         sb.appendLine("Current Date: ${campaign.date}")
         sb.appendLine("")
+
         // Format a row's contested stat, falling back to ENERGY for the non-stat "Contest of energy" row.
         fun statLabel(option: DuelContestOption?): String = option?.statName?.name ?: "ENERGY"
 

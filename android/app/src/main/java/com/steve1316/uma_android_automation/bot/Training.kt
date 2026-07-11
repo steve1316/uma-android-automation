@@ -842,7 +842,13 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * @return The effective failure-chance ceiling to apply to this training.
          */
         fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int, readyToExtremeBurst: Int = 0): Int =
-            if (readyToExtremeBurst > 0) 100 else if (readyToBurst > 0) maxOf(baseFailureChance, burstMax) else baseFailureChance
+            if (readyToExtremeBurst > 0) {
+                100
+            } else if (readyToBurst > 0) {
+                maxOf(baseFailureChance, burstMax)
+            } else {
+                baseFailureChance
+            }
 
         /**
          * The additive Unity Cup Extreme Spirit Burst score bonus for `count` supports ready to extreme-burst. Shared by the Junior/Classic Unity scorer and the Senior-year path so the
@@ -982,7 +988,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         fun formatSelectionRankingLine(selectedName: StatName, selectedScore: Double, runnerUpName: StatName, runnerUpScore: Double, modeLabel: String, numExcluded: Int): String {
             val ratioNote = if (runnerUpScore > 0.0) ", ${String.format("%.2f", selectedScore / runnerUpScore)}x higher" else ""
             val excludedNote = if (numExcluded > 0) " ($numExcluded training(s) excluded from ranking: skipped)" else ""
-            return "Selected $selectedName (score ${String.format("%.2f", selectedScore)}) over runner-up $runnerUpName (score ${String.format("%.2f", runnerUpScore)})$ratioNote [mode: $modeLabel]$excludedNote"
+            return "Selected $selectedName (score ${String.format(
+                "%.2f",
+                selectedScore,
+            )}) over runner-up $runnerUpName (score ${String.format("%.2f", runnerUpScore)})$ratioNote [mode: $modeLabel]$excludedNote"
         }
 
         /**

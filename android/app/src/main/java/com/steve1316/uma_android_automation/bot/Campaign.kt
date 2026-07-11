@@ -2322,7 +2322,10 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RECOVER_MOOD
         }
 
-        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = { racing.hasG1RacesAtTurn(date.day) })) {
+        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = {
+                racing.hasG1RacesAtTurn(date.day)
+            })
+        ) {
             g1DayPreScreenResult()?.let { return it }
         }
 

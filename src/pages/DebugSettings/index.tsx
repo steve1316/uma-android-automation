@@ -115,7 +115,13 @@ const DebugSettings = () => {
                             //////////////////////////////////////////////////////////////////////////////////////////////////
                             Debug Mode */}
                         <Section label="Debug Mode">
-                            <ToggleSetting id="enable-debug-mode" title="Enable Debug Mode" description="Allows debugging messages in the log and test images to be created in the /temp/ folder." checked={debug.enableDebugMode} onCheckedChange={(checked) => updateDebug({ enableDebugMode: checked })} />
+                            <ToggleSetting
+                                id="enable-debug-mode"
+                                title="Enable Debug Mode"
+                                description="Allows debugging messages in the log and test images to be created in the /temp/ folder."
+                                checked={debug.enableDebugMode}
+                                onCheckedChange={(checked) => updateDebug({ enableDebugMode: checked })}
+                            />
                         </Section>
                         {debug.enableDebugMode && (
                             <WarningContainer style={{ marginTop: 0, marginBottom: SPACING.md }}>
@@ -248,7 +254,13 @@ const DebugSettings = () => {
                             <View style={{ padding: SPACING.md, paddingBottom: 0 }}>
                                 <Text style={[TYPE.caption, { color: colors.textMuted }]}>Configure the quality settings for screen recording.</Text>
                             </View>
-                            <ToggleSetting id="enable-screen-recording" title="Enable Screen Recording" description="Records the screen while the bot is running. The mp4 file will be saved to the /recordings folder of the app's data directory. Note that performance and battery life may be impacted while recording." checked={debug.enableScreenRecording} onCheckedChange={(checked) => updateDebug({ enableScreenRecording: checked })} />
+                            <ToggleSetting
+                                id="enable-screen-recording"
+                                title="Enable Screen Recording"
+                                description="Records the screen while the bot is running. The mp4 file will be saved to the /recordings folder of the app's data directory. Note that performance and battery life may be impacted while recording."
+                                checked={debug.enableScreenRecording}
+                                onCheckedChange={(checked) => updateDebug({ enableScreenRecording: checked })}
+                            />
                             <View style={{ paddingHorizontal: SPACING.md }}>
                                 <CustomSlider
                                     searchId="recording-bit-rate"
@@ -331,7 +343,13 @@ const DebugSettings = () => {
                                 />
                             </View>
 
-                            <ToggleSetting id="settings-enable-message-id-display" title="Enable Message ID Display" description="Shows message IDs in the message log to help with debugging." checked={debug.enableMessageIdDisplay} onCheckedChange={(checked) => updateDebug({ enableMessageIdDisplay: checked })} />
+                            <ToggleSetting
+                                id="settings-enable-message-id-display"
+                                title="Enable Message ID Display"
+                                description="Shows message IDs in the message log to help with debugging."
+                                checked={debug.enableMessageIdDisplay}
+                                onCheckedChange={(checked) => updateDebug({ enableMessageIdDisplay: checked })}
+                            />
                         </Section>
 
                         {/* //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +368,13 @@ const DebugSettings = () => {
                                 </View>
                                 {DEBUG_TESTS.map((test, idx) => (
                                     <View key={test.key}>
-                                        <ToggleSetting id={test.searchId} title={test.title} description={test.description} checked={!!debug[test.key]} onCheckedChange={(checked) => handleDebugTestToggle(test.key, checked)} />
+                                        <ToggleSetting
+                                            id={test.searchId}
+                                            title={test.title}
+                                            description={test.description}
+                                            checked={!!debug[test.key]}
+                                            onCheckedChange={(checked) => handleDebugTestToggle(test.key, checked)}
+                                        />
                                         {idx < DEBUG_TESTS.length - 1 && <View style={{ height: 1, backgroundColor: colors.borderHair, marginLeft: SPACING.lg }} />}
                                     </View>
                                 ))}

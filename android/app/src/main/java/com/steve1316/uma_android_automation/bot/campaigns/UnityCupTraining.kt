@@ -3,7 +3,6 @@ package com.steve1316.uma_android_automation.bot.campaigns
 import android.graphics.Bitmap
 import android.util.Log
 import com.steve1316.automation_library.utils.MessageLog
-import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.Training

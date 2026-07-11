@@ -306,7 +306,13 @@ const ScenarioOverridesSettings = () => {
                                                 />
                                             </View>
 
-                                            <ToggleSetting id="trackblazer-ignore-low-energy-racing-block" title="Ignore Low Energy Racing Block" description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races." checked={scenarioOverrides.trackblazerIgnoreLowEnergyRacingBlock} onCheckedChange={(checked) => updateOverrideSetting("trackblazerIgnoreLowEnergyRacingBlock", checked)} />
+                                            <ToggleSetting
+                                                id="trackblazer-ignore-low-energy-racing-block"
+                                                title="Ignore Low Energy Racing Block"
+                                                description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races."
+                                                checked={scenarioOverrides.trackblazerIgnoreLowEnergyRacingBlock}
+                                                onCheckedChange={(checked) => updateOverrideSetting("trackblazerIgnoreLowEnergyRacingBlock", checked)}
+                                            />
 
                                             <View style={{ padding: SPACING.md }}>
                                                 <CustomSlider
