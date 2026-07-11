@@ -163,6 +163,12 @@ data class TrainingConfig(
  * @property miscWeight Weight applied to misc score in the raw-score composition.
  * @property juniorEarlyGameFlatBonus Flat score bonus added during Junior Year to encourage gauge filling early.
  * @property relationshipScale Multiplier applied to the aggregate relationship score before adding it to the Unity Cup raw score. Tuned to be a significant bonus without exceeding the rainbow burst threshold.
+ * @property unityFillBaseBonus Flat Unity Cup bonus for a training that can fill at least one Spirit Explosion gauge. Kept on the stat-efficiency scale so strong stat turns still win.
+ * @property unityFillPerGaugeBonus Additional Unity Cup fill bonus per fillable gauge, added on top of `unityFillBaseBonus`.
+ * @property unityBurstBaseBonus Flat Unity Cup bonus for a training with at least one Spirit Explosion gauge ready to burst. Significant but not enough to always override large stat gains.
+ * @property unityBurstPerGaugeBonus Additional Unity Cup burst bonus per gauge ready to burst, added on top of `unityBurstBaseBonus`.
+ * @property unityFillEnergyPenaltyPerGauge Per-fillable-gauge penalty subtracted from the fill bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off).
+ * @property unityBurstEnergyPenaltyPerGauge Per-ready-gauge penalty subtracted from the burst bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off).
  * @property rainbowMultiplierEnabled Multiplier applied to total score in Year 2+ when at least one rainbow is detected and the user has enabled the rainbow training bonus.
  * @property rainbowMultiplierDisabled Multiplier applied when rainbows are detected but the user has disabled the rainbow training bonus. Kept below `rainbowMultiplierEnabled`.
  * @property rainbowPerInstanceBase Base value for the per-rainbow bonus score, geometrically decayed by `rainbowPerInstanceDecay`.
@@ -200,7 +206,7 @@ data class TrainingScoringConstants(
     val statWeightWithoutBars: Double = 0.7,
     val relationshipWeightWithBars: Double = 0.1,
     val miscWeight: Double = 0.3,
-    val juniorEarlyGameFlatBonus: Double = 200.0,
+    val juniorEarlyGameFlatBonus: Double = 100.0,
     val relationshipScale: Double = 1.5,
     val rainbowMultiplierEnabled: Double = 2.0,
     val rainbowMultiplierDisabled: Double = 1.5,
@@ -209,6 +215,12 @@ data class TrainingScoringConstants(
     val anticipatoryMinFillPercent: Double = 50.0,
     val anticipatoryCoefficient: Double = 0.2,
     val anticipatoryCap: Double = 0.6,
+    val unityFillBaseBonus: Double = 60.0,
+    val unityFillPerGaugeBonus: Double = 40.0,
+    val unityBurstBaseBonus: Double = 800.0,
+    val unityBurstPerGaugeBonus: Double = 400.0,
+    val unityFillEnergyPenaltyPerGauge: Double = 0.0,
+    val unityBurstEnergyPenaltyPerGauge: Double = 0.0,
 ) {
     init {
         require(ratioMultipliers.size == ratioBreakpoints.size + 1) {
@@ -216,3 +228,24 @@ data class TrainingScoringConstants(
         }
     }
 }
+
+/**
+ * Ordered decomposition of a raw training score so callers can log exactly how a stat-efficiency score was built. Each score field is the value AFTER its weight is applied.
+ * `total` equals what `calculateRawTrainingScore` returns for the same inputs, so the breakdown is a faithful explanation, not an approximation.
+ *
+ * @property statScoreWeighted Stat-efficiency score after the stat weight.
+ * @property relationshipScoreWeighted Relationship score after the relationship weight.
+ * @property miscScoreWeighted Misc score after the misc weight.
+ * @property rainbowMultiplier Multiplier applied for detected rainbow trainings (1.0 when none apply).
+ * @property anticipatoryMultiplier Multiplier applied for near-max friendship bars (1.0 when none apply).
+ * @property total The final composed score, equal to `calculateRawTrainingScore` for the same inputs.
+ */
+@JsExport
+data class RawScoreBreakdown(
+    val statScoreWeighted: Double,
+    val relationshipScoreWeighted: Double,
+    val miscScoreWeighted: Double,
+    val rainbowMultiplier: Double,
+    val anticipatoryMultiplier: Double,
+    val total: Double,
+)

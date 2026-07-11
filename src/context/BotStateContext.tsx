@@ -56,11 +56,14 @@ export interface Settings {
         enableFarmingFans: boolean
         ignoreConsecutiveRaceWarning: boolean
         daysToRunExtraRaces: number
+        minEnergyForExtraRacing: number
         disableRaceRetries: boolean
         enableFreeRaceRetry: boolean
         enableCompleteCareerOnFailure: boolean
         enableStopOnMandatoryRaces: boolean
         enableForceRacing: boolean
+        enableG1DayPreference: boolean
+        g1DayMinRainbowCount: number
         enableUserInGameRaceAgenda: boolean
         limitRacesToInGameAgenda: boolean
         skipSummerTrainingForAgenda: boolean
@@ -96,6 +99,7 @@ export interface Settings {
         preferredRunningStyle: string
         preferredTrackDistance: string
         preferredTrackSurface: string
+        prioritizeRecoveryForStamina: boolean
         plans: Record<string, SkillPlanSettingsConfig>
     }
 
@@ -242,6 +246,7 @@ export interface Settings {
         trackblazerArtisanHammerMinStockForG2: number
         trackblazerGlowStickFinalReserve: number
         trackblazerGlowStickMinFans: number
+        unityCupBurstMaxFailureChance: number
     }
 }
 
@@ -267,11 +272,14 @@ export const defaultSettings: Settings = {
         enableFarmingFans: false,
         ignoreConsecutiveRaceWarning: false,
         daysToRunExtraRaces: 5,
+        minEnergyForExtraRacing: 30,
         disableRaceRetries: false,
         enableFreeRaceRetry: false,
         enableCompleteCareerOnFailure: false,
         enableStopOnMandatoryRaces: false,
         enableForceRacing: false,
+        enableG1DayPreference: false,
+        g1DayMinRainbowCount: 2,
         enableUserInGameRaceAgenda: false,
         limitRacesToInGameAgenda: true,
         skipSummerTrainingForAgenda: false,
@@ -320,6 +328,7 @@ export const defaultSettings: Settings = {
         preferredRunningStyle: "inherit",
         preferredTrackDistance: "inherit",
         preferredTrackSurface: "no_preference",
+        prioritizeRecoveryForStamina: true,
         plans: Object.keys(skillPlanSettingsPages).reduce(
             (acc, curr) => {
                 acc[curr] = {
@@ -481,7 +490,7 @@ export const defaultSettings: Settings = {
         enableAskTheDocs: false,
     },
     scenarioOverrides: {
-        trackblazerConsecutiveRacesLimit: 5,
+        trackblazerConsecutiveRacesLimit: 3,
         trackblazerEnergyThreshold: 40,
         trackblazerForceTrainEnergyFloor: 20,
         trackblazerShopCheckGrades: ["G1", "G2", "G3"],
@@ -507,6 +516,7 @@ export const defaultSettings: Settings = {
         trackblazerArtisanHammerMinStockForG2: 2,
         trackblazerGlowStickFinalReserve: 1,
         trackblazerGlowStickMinFans: 20000,
+        unityCupBurstMaxFailureChance: 0,
     },
 }
 

@@ -113,6 +113,70 @@ private const val GROUP_PROGRESS_GAP_X = 15
 private const val GROUP_PROGRESS_WIDTH = 120
 
 /**
+ * Whether mood recovery should be skipped because the finale is underway. Recovering mood with at most three turns left wastes one of them, so from the first finale turn (day 73, the
+ * same boundary as GameDate.bIsFinaleSeason's day > 72) the bot should train or race instead. Pure so it is unit-testable without a live Campaign.
+ *
+ * @param day The current turn (1-75).
+ * @return True when the finale has started and mood recovery should be skipped.
+ */
+internal fun shouldSkipMoodRecoveryForFinale(day: Int): Boolean = day >= 73
+
+/**
+ * Parses a mood-recovery-floor setting name into a [Mood]. The floor is the mood the trainee must be below before recovery is attempted, so a higher floor recovers more eagerly.
+ * Unknown values fall back to [Mood.GOOD], which matches the default recover-below-Good behavior. Pure so it is unit-testable without a live Campaign.
+ *
+ * @param name The setting string ("GOOD", "NORMAL", or "BAD").
+ * @return The parsed floor, or [Mood.GOOD] when the name is not recognized.
+ */
+internal fun parseMoodRecoveryFloor(name: String): Mood =
+    when (name.uppercase()) {
+        "NORMAL" -> Mood.NORMAL
+        "BAD" -> Mood.BAD
+        else -> Mood.GOOD
+    }
+
+/**
+ * Resolves the pre-summer preparation action. Before summer training the trainee wants full energy and a Great mood, so this rests when energy is low, recovers mood when it is not yet
+ * Great, and otherwise trains (Wit). Pure so the priority is unit-testable without a live Campaign.
+ *
+ * @param energy The trainee's current energy percentage.
+ * @param mood The trainee's current mood.
+ * @param firstTrainingCheck Whether this is the first training check of the turn, which defers mood recovery in favor of training.
+ * @return The chosen pre-summer action.
+ */
+internal fun resolvePreSummerAction(energy: Int, mood: Mood, firstTrainingCheck: Boolean): MainScreenAction =
+    when {
+        energy < 70 -> MainScreenAction.REST
+        mood < Mood.GREAT && !firstTrainingCheck -> MainScreenAction.RECOVER_MOOD
+        else -> MainScreenAction.TRAIN
+    }
+
+/**
+ * Whether the G1-day preference should peek at the training screen this turn. On a G1 race day the bot would normally take the free race, so this runs only when the feature is enabled,
+ * the trainee is past Junior year, it is not summer or the finale, energy clears the extra-racing floor, and a G1 race is actually available. Pure so the gate is unit-testable.
+ *
+ * @param enabled Whether the G1-day preference setting is turned on.
+ * @param year The trainee's current career year.
+ * @param isSummer Whether it is currently a summer turn (trainings differ and racing is skipped).
+ * @param isFinals Whether the finale is underway.
+ * @param energy The trainee's current energy percentage.
+ * @param minEnergy The extra-racing energy floor the trainee must clear to bother evaluating trainings.
+ * @param hasG1Race Lazily whether a G1 race is scheduled for the current turn. Evaluated last so the SQLite race lookup only runs once the cheap gates (enabled/year/summer/finale/energy) pass.
+ * @return True when the pre-screen should enter the training screen to compare a rainbow training against the race.
+ */
+internal fun shouldRunG1DayPreScreen(enabled: Boolean, year: DateYear, isSummer: Boolean, isFinals: Boolean, energy: Int, minEnergy: Int, hasG1Race: () -> Boolean): Boolean =
+    enabled && year > DateYear.JUNIOR && !isSummer && !isFinals && energy >= minEnergy && hasG1Race()
+
+/**
+ * Whether a rainbow training is strong enough to stay and train instead of taking the G1 race. The best training's rainbow count must meet the configured threshold. Pure and testable.
+ *
+ * @param bestNumRainbow The highest rainbow count across the analyzed trainings this turn.
+ * @param minRainbowCount The minimum rainbow count that justifies training over racing.
+ * @return True when the best training should be trained rather than skipping to the race.
+ */
+internal fun g1DayPrefersTraining(bestNumRainbow: Int, minRainbowCount: Int): Boolean = bestNumRainbow >= minRainbowCount
+
+/**
  * Defines the base campaign class that contains all shared logic for campaign automation.
  *
  * Campaign-specific logic should be implemented in subclasses by overriding the appropriate methods.
@@ -935,12 +999,26 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
+     * The mood the trainee must be strictly below before mood recovery is attempted. The base campaigns recover whenever mood is below Good. Subclasses can lower the floor to spend
+     * fewer turns on mood and more on training or racing.
+     *
+     * @return The recovery floor, defaulting to [Mood.GOOD].
+     */
+    open fun moodRecoveryFloor(): Mood = Mood.GOOD
+
+    /**
      * Determines if mood recovery should be attempted.
      *
      * @param sourceBitmap Current screen bitmap.
      * @return True if mood recovery is needed and possible, false otherwise.
      */
     open fun shouldRecoverMood(sourceBitmap: Bitmap): Boolean {
+        // Finale: recovering mood with at most three turns left wastes a turn, so skip it once the finale starts (mirrors the finale injury-check skip).
+        if (shouldSkipMoodRecoveryForFinale(date.day)) {
+            MessageLog.i(TAG, "[MOOD] Finale underway (day ${date.day}). Skipping mood recovery to preserve the remaining turns for training or racing.")
+            return false
+        }
+
         // Guard: During the first training check, skip mood recovery for Normal mood to allow training analysis first.
         if (training.firstTrainingCheck && trainee.mood == Mood.NORMAL && !ButtonRestAndRecreation.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.i(
@@ -950,15 +1028,16 @@ abstract class Campaign(game: Game) : Task(game) {
             return false
         }
 
-        // Allow subclasses to make item-aware mood recovery decisions.
-        if (trainee.mood <= Mood.NORMAL) {
+        // Allow subclasses to make item-aware mood recovery decisions, but only when the mood is already below the recovery floor.
+        val floor = moodRecoveryFloor()
+        if (trainee.mood < floor) {
             val itemDecision = shouldRecoverMoodFromItems(sourceBitmap)
             if (itemDecision != null) {
                 return itemDecision
             }
         }
 
-        return (trainee.mood < Mood.GOOD)
+        return (trainee.mood < floor)
     }
 
     /**
@@ -2176,29 +2255,36 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RACE
         }
 
-        if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {
-            if (trainee.energy < 70) {
-                MessageLog.i(TAG, "[INFO] Energy is low (${trainee.energy}% < 70%). Forcing rest during $date in preparation for Summer Training.")
-                decisionTracer.recordActionChoice(MainScreenAction.REST, "Pre-summer prep (energy ${trainee.energy}% < 70%)")
-                return MainScreenAction.REST
-            } else if (trainee.mood < Mood.GREAT && !training.firstTrainingCheck) {
-                MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) but Mood is not Great (${trainee.mood}). Forcing mood recovery during $date in preparation for Summer Training.")
-                forcedTargetMood = Mood.GREAT
-                decisionTracer.recordActionChoice(MainScreenAction.RECOVER_MOOD, "Pre-summer prep (energy >= 70%, mood ${trainee.mood} < GREAT)")
-                return MainScreenAction.RECOVER_MOOD
-            } else {
-                MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) and mood is Great. Performing Wit training during $date in preparation for Summer Training.")
-                bForcedWitTraining = true
-                decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Pre-summer prep (energy and mood sufficient; forced Wit training)")
-                return MainScreenAction.TRAIN
-            }
+        // A mandatory career goal (fan / trophy / goal-pts) must race to be met, so it outranks the pre-summer prep optimization below - unless it is a G1-only trophy on a turn
+        // the races DB holds no G1 for, where navigating would just cancel, so fall through to the normal decision and train instead.
+        if (racing.requirementForcesRacingThisTurn()) {
+            MessageLog.i(TAG, "[INFO] Racing requirement is active and the races DB has a qualifying race this turn. Bypassing health and mood checks.")
+            decisionTracer.recordActionChoice(MainScreenAction.RACE, "Racing requirement (fans, trophy, or goal pts) active")
+            return MainScreenAction.RACE
+        } else if (racing.hasTrophyRequirement) {
+            MessageLog.i(TAG, "[INFO] Trophy requirement is active but the races database holds no G1 for this turn ($date). Skipping the race-screen round-trip; continuing with the normal decision.")
         }
 
-        val isRacingRequirementActive = racing.hasFanRequirement || racing.hasTrophyRequirement
-        if (isRacingRequirementActive) {
-            MessageLog.i(TAG, "[INFO] Racing requirement is active. Bypassing health and mood checks.")
-            decisionTracer.recordActionChoice(MainScreenAction.RACE, "Racing requirement (fans or trophy) active")
-            return MainScreenAction.RACE
+        if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {
+            when (resolvePreSummerAction(trainee.energy, trainee.mood, training.firstTrainingCheck)) {
+                MainScreenAction.REST -> {
+                    MessageLog.i(TAG, "[INFO] Energy is low (${trainee.energy}% < 70%). Forcing rest during $date in preparation for Summer Training.")
+                    decisionTracer.recordActionChoice(MainScreenAction.REST, "Pre-summer prep (energy ${trainee.energy}% < 70%)")
+                    return MainScreenAction.REST
+                }
+                MainScreenAction.RECOVER_MOOD -> {
+                    MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) but Mood is not Great (${trainee.mood}). Forcing mood recovery during $date in preparation for Summer Training.")
+                    forcedTargetMood = Mood.GREAT
+                    decisionTracer.recordActionChoice(MainScreenAction.RECOVER_MOOD, "Pre-summer prep (energy >= 70%, mood ${trainee.mood} < GREAT)")
+                    return MainScreenAction.RECOVER_MOOD
+                }
+                else -> {
+                    MessageLog.i(TAG, "[INFO] Energy is sufficient (>= 70%) and mood is Great. Performing Wit training during $date in preparation for Summer Training.")
+                    bForcedWitTraining = true
+                    decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Pre-summer prep (energy and mood sufficient; forced Wit training)")
+                    return MainScreenAction.TRAIN
+                }
+            }
         }
 
         val isFinals = checkFinals()
@@ -2221,6 +2307,10 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RECOVER_MOOD
         }
 
+        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = { racing.hasG1RacesAtTurn(date.day) })) {
+            g1DayPreScreenResult()?.let { return it }
+        }
+
         if (racing.checkEligibilityToStartExtraRacingProcess()) {
             MessageLog.i(TAG, "[INFO] Bot has no injuries, mood is sufficient and extra races can be run today. Setting the action to RACE.")
             decisionTracer.recordActionChoice(MainScreenAction.RACE, "Extra-race eligible (no injury, sufficient mood, eligible day)")
@@ -2229,6 +2319,37 @@ abstract class Campaign(game: Game) : Task(game) {
 
         decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Default fallback after racing/mood/injury checks did not trigger")
         return MainScreenAction.TRAIN
+    }
+
+    /**
+     * Runs the G1-day preference pre-screen. Enters the training screen, analyzes the trainings, and compares the best rainbow count against the threshold to decide whether to stay and
+     * train or back out and race the G1. The analysis is cached, so the follow-up `handleTraining()` reuses it for free when this returns TRAIN. When it returns RACE the cache is cleared
+     * so a stale analysis cannot leak into a later turn. Returns null when the training screen could not be entered, letting the caller fall through to the normal extra-race logic.
+     *
+     * @return TRAIN to stay and train the rainbow, RACE to take the G1 instead, or null when the pre-screen could not run.
+     */
+    private fun g1DayPreScreenResult(): MainScreenAction? {
+        if (!ButtonTraining.click(game.imageUtils)) return null
+        game.wait(0.5)
+
+        training.analyzeTrainings()
+        val bestNumRainbow = training.cachedAnalysisResults?.maxOfOrNull { it.numRainbow } ?: 0
+        val threshold = racing.g1DayMinRainbowCount
+
+        // Back out to the main screen either way. On TRAIN, handleTraining re-enters and reuses the cached analysis; on RACE, the racing flow expects to start from the main screen.
+        ButtonBack.click(game.imageUtils)
+        game.wait(1.0)
+
+        return if (g1DayPrefersTraining(bestNumRainbow, threshold)) {
+            MessageLog.i(TAG, "[INFO] G1-day preference: best training has $bestNumRainbow rainbow(s) >= $threshold. Training instead of racing the G1.")
+            decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "G1-day preference: best training has $bestNumRainbow rainbow(s) >= $threshold threshold")
+            MainScreenAction.TRAIN
+        } else {
+            MessageLog.i(TAG, "[INFO] G1-day preference: best training has only $bestNumRainbow rainbow(s) < $threshold. Racing the G1 instead.")
+            decisionTracer.recordActionChoice(MainScreenAction.RACE, "G1-day preference: best training has only $bestNumRainbow rainbow(s) < $threshold threshold; racing the G1")
+            training.clearAnalysisCache()
+            MainScreenAction.RACE
+        }
     }
 
     /**

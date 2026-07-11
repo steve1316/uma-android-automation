@@ -22,11 +22,22 @@ describe("MiscTab.groupBySubgroup", () => {
         ])
     })
 
-    test("Unity Cup sub-group contains the four scenario-specific entries", () => {
+    test("Unity Cup sub-group contains the scenario-specific entries", () => {
         const all = SCORING_CONSTANTS_CATALOG.filter((e) => e.group === "misc")
         const unity = groupBySubgroup(all).find((g) => g.subgroup === "unityCup")!
         const keys = unity.entries.map((e) => e.key).sort()
-        expect(keys).toEqual(["juniorEarlyGameFlatBonus", "rainbowPerInstanceBase", "rainbowPerInstanceDecay", "relationshipScale"])
+        expect(keys).toEqual([
+            "juniorEarlyGameFlatBonus",
+            "rainbowPerInstanceBase",
+            "rainbowPerInstanceDecay",
+            "relationshipScale",
+            "unityBurstBaseBonus",
+            "unityBurstEnergyPenaltyPerGauge",
+            "unityBurstPerGaugeBonus",
+            "unityFillBaseBonus",
+            "unityFillEnergyPenaltyPerGauge",
+            "unityFillPerGaugeBonus",
+        ])
     })
 
     test("entries without a subgroup are dropped", () => {

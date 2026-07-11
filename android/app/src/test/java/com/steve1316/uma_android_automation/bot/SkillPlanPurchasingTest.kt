@@ -4,7 +4,10 @@ import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.SkillCandida
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateCommonPurchases
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateOptimizeRankPurchases
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateSkillPurchases
+import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.isRecoverySkill
+import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.isStaminaHeavyDistance
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.matchesPreference
+import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.recoveryBoostedRatio
 import com.steve1316.uma_android_automation.bot.SkillPlan.SkillPlanSettings
 import com.steve1316.uma_android_automation.bot.SkillPlan.SpendingStrategy
 import com.steve1316.uma_android_automation.types.RunningStyle
@@ -672,6 +675,33 @@ class SkillPlanPurchasingTest {
         @Test
         fun `explicit style match passes despite non-matching inferred styles`() {
             assertTrue(matchesPreference(null, RunningStyle.FRONT_RUNNER, listOf(RunningStyle.LATE_SURGER), null, null, RunningStyle.FRONT_RUNNER, null))
+        }
+    }
+
+    @Nested
+    @DisplayName("Recovery-skill priority")
+    inner class RecoveryPriorityTests {
+        @Test
+        fun `recovery skills are detected from their description`() {
+            assertTrue(isRecoverySkill("Slightly recovers endurance on the final corner."), "A description mentioning recovery is a recovery skill")
+            assertTrue(isRecoverySkill("RECOVER stamina when overtaken."), "Detection is case-insensitive")
+            assertFalse(isRecoverySkill("Increases velocity slightly on a straight."), "A pure speed skill is not a recovery skill")
+        }
+
+        @Test
+        fun `only Medium and Long builds are stamina-heavy`() {
+            assertTrue(isStaminaHeavyDistance(TrackDistance.MEDIUM), "Medium leans on stamina")
+            assertTrue(isStaminaHeavyDistance(TrackDistance.LONG), "Long leans on stamina the most")
+            assertFalse(isStaminaHeavyDistance(TrackDistance.SPRINT), "Sprint does not lean on recovery")
+            assertFalse(isStaminaHeavyDistance(TrackDistance.MILE), "Mile does not lean on recovery")
+            assertFalse(isStaminaHeavyDistance(null), "No distance preference is not stamina-heavy")
+        }
+
+        @Test
+        fun `recovery ratio is boosted only for recovery skills on stamina-heavy builds`() {
+            assertEquals(3.0, recoveryBoostedRatio(baseRatio = 2.0, isRecovery = true, staminaHeavy = true, boost = 1.5), 0.001, "Recovery skill on a stamina build is boosted")
+            assertEquals(2.0, recoveryBoostedRatio(baseRatio = 2.0, isRecovery = false, staminaHeavy = true, boost = 1.5), 0.001, "A non-recovery skill is never boosted")
+            assertEquals(2.0, recoveryBoostedRatio(baseRatio = 2.0, isRecovery = true, staminaHeavy = false, boost = 1.5), 0.001, "Recovery skill on a non-stamina build is not boosted")
         }
     }
 }

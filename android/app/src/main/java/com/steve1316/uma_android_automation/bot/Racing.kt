@@ -56,6 +56,70 @@ import org.json.JSONObject
 import org.opencv.core.Point
 
 /**
+ * Whether the trainee has enough energy for a plain fan-farming extra race. A floor of 0 disables the check so it never blocks. Pure so it is unit-testable without a live Racing.
+ *
+ * @param energy The trainee's current energy percentage.
+ * @param minEnergy The minimum energy floor for the fan-farming interval fallback.
+ * @return True when energy is at or above the floor, or the floor is disabled.
+ */
+internal fun hasEnoughEnergyForExtraRacing(energy: Int, minEnergy: Int): Boolean = minEnergy <= 0 || energy >= minEnergy
+
+/**
+ * Whether the extra-race pick should defer to the Smart Race Solver instead of standard racing. Any mandatory career goal (fan, trophy, or goal-pts
+ * requirement) forces standard racing, whose double-star and G1-only filtering actually satisfies the goal. The solver only optimizes fans and epithets
+ * and never honors these goals, so routing a requirement to it silently drops it. Pure so it is unit-testable without a live Racing.
+ *
+ * @param hasFanRequirement Whether a minimum-fan-count career goal is active.
+ * @param hasTrophyRequirement Whether a win-a-trophy (G1) career goal is active.
+ * @param hasInsufficientGoalRacePtsRequirement Whether a minimum goal-race-points requirement is active.
+ * @param year The current career year.
+ * @param enableSmartRaceSolver Whether the Smart Race Solver setting is enabled.
+ * @param enableForceRacing Whether the force-racing setting is enabled.
+ * @return True when the solver should pick the race, false to use standard racing.
+ */
+internal fun shouldUseSmartRacing(
+    hasFanRequirement: Boolean,
+    hasTrophyRequirement: Boolean,
+    hasInsufficientGoalRacePtsRequirement: Boolean,
+    year: DateYear,
+    enableSmartRaceSolver: Boolean,
+    enableForceRacing: Boolean,
+): Boolean =
+    when {
+        hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement -> false
+        enableSmartRaceSolver && year != DateYear.JUNIOR -> !enableForceRacing
+        else -> false
+    }
+
+/**
+ * Whether an active racing requirement should force navigation to the race screen this turn. A G1-only trophy can only be satisfied by a G1, so when the races DB holds no G1
+ * for this turn, forcing the race would just cancel after a costly screen round-trip - return false so the caller trains instead. Fan, goal-point, and Pre-OP/G3-or-above
+ * trophy requirements accept other grades, so they always force racing.
+ *
+ * @param hasFanRequirement Whether a fan-count requirement is active.
+ * @param hasTrophyRequirement Whether a trophy requirement is active.
+ * @param hasPreOpOrAboveRequirement Whether the trophy accepts Pre-OP or above.
+ * @param hasG3OrAboveRequirement Whether the trophy accepts G3 or above.
+ * @param hasInsufficientGoalRacePtsRequirement Whether a goal-race-points requirement is active.
+ * @param hasG1ThisTurn Whether the races DB holds a G1 for the current turn (ground truth read from the local races table).
+ * @return True to force navigation to the race screen, false to skip it and let the normal decision run.
+ */
+internal fun requirementForcesRacing(
+    hasFanRequirement: Boolean,
+    hasTrophyRequirement: Boolean,
+    hasPreOpOrAboveRequirement: Boolean,
+    hasG3OrAboveRequirement: Boolean,
+    hasInsufficientGoalRacePtsRequirement: Boolean,
+    hasG1ThisTurn: Boolean,
+): Boolean {
+    if (!(hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement)) return false
+    // A G1-only trophy forces racing only on turns the DB holds a G1 for. Every other active requirement always forces racing.
+    val isG1OnlyTrophy = hasTrophyRequirement && !hasFanRequirement && !hasInsufficientGoalRacePtsRequirement && !hasPreOpOrAboveRequirement && !hasG3OrAboveRequirement
+    if (isG1OnlyTrophy) return hasG1ThisTurn
+    return true
+}
+
+/**
  * Manage and orchestrate the racing process, including mandatory, maiden, and extra races.
  *
  * @property game A reference to the bot's [Game] instance.
@@ -70,6 +134,15 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
     /** The number of days to wait between running extra races. */
     private val daysToRunExtraRaces: Int = SettingsHelper.getIntSetting("racing", "daysToRunExtraRaces")
+
+    /** Minimum energy before the plain fan-farming interval fallback will race. 0 disables it. Gates only the standard cadence, never requirements, the solver, or scenario bypasses. */
+    internal val minEnergyForExtraRacing: Int = SettingsHelper.getIntSetting("racing", "minEnergyForExtraRacing", 30)
+
+    /** Whether to prefer training over the free race on a G1 race day when a strong-enough rainbow training is available. Default off. */
+    val enableG1DayPreference: Boolean = SettingsHelper.getBooleanSetting("racing", "enableG1DayPreference")
+
+    /** Minimum rainbow count on the best training that justifies staying to train instead of taking the G1 race when the G1-day preference is enabled. */
+    val g1DayMinRainbowCount: Int = SettingsHelper.getIntSetting("racing", "g1DayMinRainbowCount", 2)
 
     /** Whether to disable race retries. */
     internal val disableRaceRetries: Boolean = SettingsHelper.getBooleanSetting("racing", "disableRaceRetries")
@@ -697,6 +770,21 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * True when the active requirement should force racing this turn (see `requirementForcesRacing`). Reads the local races DB for the G1-only trophy case.
+     *
+     * @return True to force navigation to the race screen, false to skip it and let the normal decision run.
+     */
+    fun requirementForcesRacingThisTurn(): Boolean =
+        requirementForcesRacing(
+            hasFanRequirement,
+            hasTrophyRequirement,
+            hasPreOpOrAboveRequirement,
+            hasG3OrAboveRequirement,
+            hasInsufficientGoalRacePtsRequirement,
+            hasG1ThisTurn = hasG1RacesAtTurn(campaign.date.day),
+        )
+
+    /**
      * Determines if the extra racing process should be started now or later.
      *
      * @return True if the current date is okay to start the extra racing process and false otherwise.
@@ -720,18 +808,19 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             return false
         }
 
-        // If the setting to force racing extra races is enabled or we have a specific requirement, always return true.
-        if (enableForceRacing || hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement) {
-            Log.d(TAG, "[DEBUG] checkEligibilityToStartExtraRacingProcess:: Force racing or requirement is active so eligibility will be true.")
-            val activeReason =
-                listOf(
-                    if (enableForceRacing) "force-racing" else null,
-                    if (hasFanRequirement) "fan-requirement" else null,
-                    if (hasTrophyRequirement) "trophy-requirement" else null,
-                    if (hasInsufficientGoalRacePtsRequirement) "insufficient-goal-pts" else null,
-                ).filterNotNull().joinToString(", ")
-            campaign.decisionTracer.recordRaceEligibility(eligible = true, reason = "Hard requirement active: $activeReason")
+        // The force-racing setting always navigates to the race screen.
+        if (enableForceRacing) {
+            Log.d(TAG, "[DEBUG] checkEligibilityToStartExtraRacingProcess:: Force racing is enabled so eligibility will be true.")
+            campaign.decisionTracer.recordRaceEligibility(eligible = true, reason = "Force-racing setting is on")
             return true
+        }
+
+        // decideNextAction force-races any requirement a race this turn can satisfy before it ever calls this (via requirementForcesRacingThisTurn), so a requirement still
+        // active here is the unsatisfiable G1-only trophy case - the races DB holds no G1 this turn. Suppress the extra-race fallback so it does not navigate only to cancel.
+        if (hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement) {
+            MessageLog.i(TAG, "[RACE] Requirement active but the races DB holds no qualifying race for turn ${campaign.date.day}. Skipping the extra-race fallback.")
+            campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "Requirement active but no qualifying race in the races DB for this turn")
+            return false
         }
 
         // When the Smart Race Solver is enabled, its schedule is authoritative for extra races. If the solver did not plan a race for
@@ -774,56 +863,15 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             return result
         }
 
-        // If fan or trophy requirement is detected, bypass smart racing logic to force racing.
-        // Both requirements are independent of racing plan and farming fans settings.
-        if (hasFanRequirement) {
-            MessageLog.i(TAG, "[RACE] Fan requirement detected. Bypassing smart racing logic to fulfill requirement.")
-            val result = !raceRepeatWarningCheck
-            campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = "Fan requirement active (raceRepeatWarning=$raceRepeatWarningCheck)")
-            return result
-        } else if (hasTrophyRequirement) {
-            if (hasPreOpOrAboveRequirement || hasG3OrAboveRequirement) {
-                if (hasPreOpOrAboveRequirement) {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement with Pre-OP or above criteria detected. Proceeding to racing screen.")
-                } else {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement with G3 or above criteria detected. Proceeding to racing screen.")
-                }
-                val result = !raceRepeatWarningCheck
-                campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = "Trophy requirement with Pre-OP/G3+ criteria (raceRepeatWarning=$raceRepeatWarningCheck)")
-                return result
-            }
-
-            // Check if G1 races exist at current turn before proceeding.
-            // If no G1 races are available, it will still allow regular racing if it's a regular race day or smart racing day.
-            if (!hasG1RacesAtTurn(campaign.date.day)) {
-                val isRegularRacingDay = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0)
-
-                if (isRegularRacingDay) {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement detected but no G1 races at turn ${campaign.date.day}. Allowing regular racing on eligible day.")
-                } else {
-                    MessageLog.i(TAG, "[RACE] Trophy requirement detected but no G1 races available at turn ${campaign.date.day} and not a regular racing day. Skipping racing.")
-                    campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "Trophy requirement: no G1 races at this turn and not a regular racing day")
-                    return false
-                }
-            } else {
-                MessageLog.i(TAG, "[RACE] Trophy requirement detected. G1 races available at turn ${campaign.date.day}. Proceeding to racing screen.")
-            }
-
-            val result = !raceRepeatWarningCheck
-            campaign.decisionTracer.recordRaceEligibility(
-                eligible = result,
-                reason = "Trophy requirement: G1 races available or eligible regular racing day (raceRepeatWarning=$raceRepeatWarningCheck)",
-            )
-            return result
-        }
-
-        // Standard racing fallback: race on every Nth day of the racing interval.
-        val result = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0) && !raceRepeatWarningCheck
+        // Standard racing fallback: race on every Nth day of the racing interval, but only when energy is above the fan-farming floor so filler races do not drain the trainee.
+        val hasEnoughEnergy = hasEnoughEnergyForExtraRacing(campaign.trainee.energy, minEnergyForExtraRacing)
+        val result = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0) && !raceRepeatWarningCheck && hasEnoughEnergy
         val fallbackReason =
             when {
                 !enableFarmingFans -> "Farming Fans setting is off"
                 (turnsRemaining % daysToRunExtraRaces) != 0 -> "Not a racing-interval day ($turnsRemaining turns remaining, every $daysToRunExtraRaces days)"
                 raceRepeatWarningCheck -> "Race repeat warning is active"
+                !hasEnoughEnergy -> "Energy ${campaign.trainee.energy}% is below the extra-racing floor of $minEnergyForExtraRacing%"
                 else -> "Standard fallback: every-$daysToRunExtraRaces-day racing window matched"
             }
         campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = fallbackReason)
@@ -1439,7 +1487,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
      * @param turnNumber The turn number to check for G1 races.
      * @return True if at least one G1 race exists at the specified turn, false otherwise.
      */
-    private fun hasG1RacesAtTurn(turnNumber: Int): Boolean {
+    internal fun hasG1RacesAtTurn(turnNumber: Int): Boolean {
         val settingsManager = SQLiteSettingsManager(game.myContext)
         if (!settingsManager.isAvailable()) {
             MessageLog.e(TAG, "[ERROR] hasG1RacesAtTurn:: Database not available for G1 race check.")
@@ -1964,24 +2012,20 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 }
             }
 
-            // Determine whether to use smart racing with user-selected races or standard racing.
+            // Determine whether to use smart racing with user-selected races or standard racing. Any mandatory requirement (fan, trophy, or goal pts) uses
+            // standard racing since only it filters to and races the qualifying race - the solver would drop the requirement.
             val useSmartRacing =
-                if (hasFanRequirement || hasInsufficientGoalRacePtsRequirement) {
-                    // If fan or goal pts requirement is needed, force standard racing to ensure the race proceeds and picks double stars.
-                    false
-                } else if (hasTrophyRequirement) {
-                    // Trophy requirement can use smart racing as it filters to G1 races internally.
-                    // Use smart racing for all years except Year 1 (Junior Year).
-                    campaign.date.year != DateYear.JUNIOR
-                } else if (enableSmartRaceSolver && campaign.date.year != DateYear.JUNIOR) {
-                    // Year 2 and 3: Use the Smart Race Solver as long as Force Racing is off. Farming Fans is no longer required.
-                    !enableForceRacing
-                } else {
-                    false
-                }
+                shouldUseSmartRacing(
+                    hasFanRequirement = hasFanRequirement,
+                    hasTrophyRequirement = hasTrophyRequirement,
+                    hasInsufficientGoalRacePtsRequirement = hasInsufficientGoalRacePtsRequirement,
+                    year = campaign.date.year,
+                    enableSmartRaceSolver = enableSmartRaceSolver,
+                    enableForceRacing = enableForceRacing,
+                )
 
             val success =
-                if (useSmartRacing && campaign.date.year != DateYear.JUNIOR) {
+                if (useSmartRacing) {
                     MessageLog.v(TAG, "[RACE] Using Smart Race Solver for Year ${campaign.date.year}.")
                     processSmartRacing()
                 } else {
