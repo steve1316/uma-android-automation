@@ -237,7 +237,7 @@ const searchConfig: SearchOption[] = [
         id: "use-dynamic-stat-caps",
         title: "Read Stat Caps from Screen",
         description:
-            "When enabled, the bot reads each stat's live cap (the '/NNNN' shown under the stat) every turn, so cap increases from sparks, inheritance, Happy Meek duels, and Unity extreme bursts are respected. Disable to always use the fixed per-scenario caps if the reading ever misbehaves.",
+            "When enabled, the bot reads each stat's live cap every turn, so cap increases from sparks, inheritance, etc. are respected. Disable to always use the fixed per-scenario caps if the reading ever misbehaves.",
         page: "TrainingSettings",
     },
     {
