@@ -64,6 +64,19 @@
             "Dirt": "G"
         }
     },
+    "Bamboo Memory": {
+        "name": "Bamboo Memory",
+        "distanceAptitudes": {
+            "Sprint": "A",
+            "Mile": "A",
+            "Medium": "C",
+            "Long": "G"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "D"
+        }
+    },
     "Biwa Hayahide": {
         "name": "Biwa Hayahide",
         "distanceAptitudes": {

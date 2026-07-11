@@ -79,7 +79,7 @@
         "condition": "distance_rate_after_random==50",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -121,7 +121,7 @@
         "condition": "distance_rate>=50&activate_count_heal>=1&order<=3",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -163,7 +163,7 @@
         "condition": "running_style==3&phase_random==1&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 0,
         "upgrade": 201421,
         "downgrade": null
     },
@@ -191,7 +191,7 @@
         "condition": "distance_type==2&distance_rate>=50&change_order_onetime<0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201061,
         "downgrade": null
     },
@@ -233,7 +233,7 @@
         "condition": "distance_type==4&hp_per<=30",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200762
     },
@@ -261,7 +261,7 @@
         "condition": "running_style==4&slope==2&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 201481,
         "downgrade": null
     },
@@ -317,7 +317,7 @@
         "condition": "is_badstart==0&running_style==2&distance_type==4&phase_firsthalf_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 202191,
         "downgrade": null
     },
@@ -331,7 +331,7 @@
         "condition": "running_style==3&phase_random==2&order_rate>50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201442
     },
@@ -415,7 +415,7 @@
         "condition": "running_style==2&order>=2&distance_diff_top<=5&distance_rate>=60&phase==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 3,
         "upgrade": 202411,
         "downgrade": null
     },
@@ -471,7 +471,7 @@
         "condition": "running_style==3&phase_laterhalf_random==0&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 201691,
         "downgrade": null
     },
@@ -569,7 +569,7 @@
         "condition": "is_finalcorner==1&change_order_up_end_after>=3&corner==0",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -611,7 +611,7 @@
         "condition": "distance_type==2&is_overtake==1&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201072
     },
@@ -807,7 +807,7 @@
         "condition": "phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 210042
     },
@@ -863,7 +863,7 @@
         "condition": "phase_random==0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 210052
     },
@@ -1129,7 +1129,7 @@
         "condition": "phase_random==1&order>=2&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -1143,7 +1143,7 @@
         "condition": "weather==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200221,
         "downgrade": null
     },
@@ -1157,7 +1157,7 @@
         "condition": "weather==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200222
     },
@@ -1241,7 +1241,7 @@
         "condition": "running_style_count_same_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200281,
         "downgrade": 200283
     },
@@ -1255,7 +1255,7 @@
         "condition": "running_style_count_same_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200282
     },
@@ -1269,7 +1269,7 @@
         "condition": "always==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200432
     },
@@ -1311,7 +1311,7 @@
         "condition": "distance_type==4&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200742
     },
@@ -1353,7 +1353,7 @@
         "condition": "all_corner_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": 200341,
         "downgrade": 200343
     },
@@ -1395,7 +1395,7 @@
         "condition": "all_corner_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 200342
     },
@@ -1437,7 +1437,7 @@
         "condition": "distance_type==1&phase_laterhalf_random==1&order>=2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": 200991,
         "downgrade": null
     },
@@ -1479,7 +1479,7 @@
         "condition": "running_style==4&phase_random==2&order_rate>50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201502
     },
@@ -1563,7 +1563,7 @@
         "condition": "running_style==4&phase_random==1&order_rate>=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": null,
         "upgrade": null,
         "downgrade": 202022
     },
@@ -1577,7 +1577,7 @@
         "condition": "running_style==3&distance_rate_after_random==50&order_rate>=30&order_rate<=80",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202122
     },
@@ -1591,7 +1591,7 @@
         "condition": "phase==1&order>=2&order_rate<=70&activate_count_middle>=2",
         "precondition": "",
         "inherited": true,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -1605,7 +1605,7 @@
         "condition": "running_style==2&phase_random==2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201372
     },
@@ -1619,7 +1619,7 @@
         "condition": "distance_type==4&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200741,
         "downgrade": null
     },
@@ -1675,7 +1675,7 @@
         "condition": "running_style==2&phase_random==2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201371,
         "downgrade": null
     },
@@ -1745,7 +1745,7 @@
         "condition": "ground_type==2&accumulatetime>=5&infront_near_lane_time>=3",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 202301,
         "downgrade": 202303
     },
@@ -1843,7 +1843,7 @@
         "condition": "running_style==4&phase_random==1&order_rate>=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": null,
         "upgrade": 202021,
         "downgrade": null
     },
@@ -2067,7 +2067,7 @@
         "condition": "phase==1&order>=2&order_rate<=50",
         "precondition": "",
         "inherited": true,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -2081,7 +2081,7 @@
         "condition": "distance_type==4&hp_per<=30",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200761,
         "downgrade": null
     },
@@ -2095,7 +2095,7 @@
         "condition": "is_lastspurt==1&phase_random==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 210081,
         "downgrade": null
     },
@@ -2123,7 +2123,7 @@
         "condition": "season==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200193,
         "downgrade": null
     },
@@ -2151,7 +2151,7 @@
         "condition": "season==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200191,
         "downgrade": 200193
     },
@@ -2165,7 +2165,7 @@
         "condition": "season==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200192
     },
@@ -2221,7 +2221,7 @@
         "condition": "running_style==3&distance_rate_after_random==50&order_rate>=30&order_rate<=80",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 202121,
         "downgrade": null
     },
@@ -2277,7 +2277,7 @@
         "condition": "running_style==3&is_overtake==1&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201401,
         "downgrade": null
     },
@@ -2305,7 +2305,7 @@
         "condition": "running_style==1&is_finalcorner_random==1&order==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 200551,
         "downgrade": null
     },
@@ -2347,7 +2347,7 @@
         "condition": "ground_condition==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200151,
         "downgrade": 200153
     },
@@ -2361,7 +2361,7 @@
         "condition": "ground_condition==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200152
     },
@@ -2375,7 +2375,7 @@
         "condition": "ground_condition==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200153,
         "downgrade": null
     },
@@ -2389,7 +2389,7 @@
         "condition": "running_style==1&is_finalcorner==1&corner==0&order==1&bashin_diff_behind<=1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 202461,
         "downgrade": null
     },
@@ -2487,7 +2487,7 @@
         "condition": "running_style_count_oikomi_otherself>=1&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -2501,7 +2501,7 @@
         "condition": "running_style_count_nige_otherself>=1&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -2529,7 +2529,7 @@
         "condition": "running_style_count_senko_otherself>=1&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -2543,7 +2543,7 @@
         "condition": "always==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200431,
         "downgrade": 200433
     },
@@ -2571,7 +2571,7 @@
         "condition": "ground_type==2&phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": 201681,
         "downgrade": null
     },
@@ -2599,7 +2599,7 @@
         "condition": "distance_type==4&phase_firsthalf_random==1&order_rate>=40&order_rate<=80",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 202071,
         "downgrade": null
     },
@@ -2683,7 +2683,7 @@
         "condition": "distance_type==3&phase_firsthalf_random==2&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 202082
     },
@@ -2837,7 +2837,7 @@
         "condition": "running_style==3&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 1,
         "upgrade": 202151,
         "downgrade": null
     },
@@ -3075,7 +3075,7 @@
         "condition": "running_style==4&slope==2&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201482
     },
@@ -3145,7 +3145,7 @@
         "condition": "is_finalcorner==1&corner==0&order_rate>=40&order_rate<=70&popularity>=4@is_finalcorner==1&corner==0&order_rate>=40&order_rate<=70&popularity<4",
         "precondition": "is_finalcorner==1&change_order_onetime<0@is_finalcorner==1&change_order_onetime<0",
         "inherited": true,
-        "community_tier": 2,
+        "community_tier": null,
         "upgrade": null,
         "downgrade": null
     },
@@ -3313,7 +3313,7 @@
         "condition": "running_style==3&is_overtake==1&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201402
     },
@@ -3341,7 +3341,7 @@
         "condition": "running_style==2&phase_firsthalf_random==2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 201901,
         "downgrade": null
     },
@@ -3369,7 +3369,7 @@
         "condition": "is_badstart==0&running_style==2&distance_type==4&phase_firsthalf_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 202192
     },
@@ -3565,7 +3565,7 @@
         "condition": "running_style==4&is_move_lane==1@running_style==4&is_move_lane==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201471,
         "downgrade": null
     },
@@ -3649,7 +3649,7 @@
         "condition": "phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": 210041,
         "downgrade": null
     },
@@ -3705,7 +3705,7 @@
         "condition": "phase_random==0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": 210051,
         "downgrade": null
     },
@@ -3789,7 +3789,7 @@
         "condition": "phase==1&change_order_onetime>0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200472
     },
@@ -3915,7 +3915,7 @@
         "condition": "distance_rate>=50&corner!=0&order>=3&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -3929,7 +3929,7 @@
         "condition": "phase<=1&accumulatetime>=5&blocked_front_continuetime>=1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200442
     },
@@ -3985,7 +3985,7 @@
         "condition": "distance_rate>=50&order_rate>=40&order_rate<=70&is_overtake==1",
         "precondition": "",
         "inherited": true,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": null
     },
@@ -4055,7 +4055,7 @@
         "condition": "running_style==3&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202152
     },
@@ -4069,7 +4069,7 @@
         "condition": "distance_rate>=50&order_rate_in20_continue==1",
         "precondition": "",
         "inherited": true,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -4181,7 +4181,7 @@
         "condition": "track_id==10008",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": null,
         "upgrade": null,
         "downgrade": 200062
     },
@@ -4209,7 +4209,7 @@
         "condition": "running_style==2&distance_rate>=50&is_overtake==1@running_style==3&distance_rate>=50&is_overtake==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202471,
         "downgrade": null
     },
@@ -4321,7 +4321,7 @@
         "condition": "phase<=1&accumulatetime>=5&blocked_front_continuetime>=1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200441,
         "downgrade": null
     },
@@ -4335,7 +4335,7 @@
         "condition": "ground_type==2&phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201682
     },
@@ -4349,7 +4349,7 @@
         "condition": "running_style==1&phase<=1&change_order_onetime>0&accumulatetime>=5@running_style==1&phase<=1&blocked_side_continuetime>=2&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 201271,
         "downgrade": null
     },
@@ -4363,7 +4363,7 @@
         "condition": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 202401,
         "downgrade": null
     },
@@ -4391,7 +4391,7 @@
         "condition": "rotation==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200021,
         "downgrade": 200023
     },
@@ -4405,7 +4405,7 @@
         "condition": "rotation==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200022
     },
@@ -4419,7 +4419,7 @@
         "condition": "phase>=2&is_finalcorner==1&order<=4&overtake_target_time>=1",
         "precondition": "",
         "inherited": true,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -4447,7 +4447,7 @@
         "condition": "running_style==4&infront_near_lane_time>=1&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 1,
         "upgrade": 201491,
         "downgrade": null
     },
@@ -4461,7 +4461,7 @@
         "condition": "running_style==3&phase_laterhalf_random==0&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201692
     },
@@ -4825,7 +4825,7 @@
         "condition": "running_style==4&phase_firsthalf_random==3&is_lastspurt==1",
         "precondition": "phase==2&distance_diff_rate>=50",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200631,
         "downgrade": null
     },
@@ -4867,7 +4867,7 @@
         "condition": "distance_type==3&all_corner_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 201111,
         "downgrade": 201113
     },
@@ -4881,7 +4881,7 @@
         "condition": "distance_type==3&all_corner_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201112
     },
@@ -4895,7 +4895,7 @@
         "condition": "distance_type==3&straight_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 201101,
         "downgrade": 201103
     },
@@ -4909,7 +4909,7 @@
         "condition": "distance_type==3&straight_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201102
     },
@@ -4923,7 +4923,7 @@
         "condition": "distance_type==1&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201001,
         "downgrade": null
     },
@@ -5007,7 +5007,7 @@
         "condition": "distance_type==3&is_move_lane==1&accumulatetime>=10@distance_type==3&is_move_lane==2&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201142
     },
@@ -5035,7 +5035,7 @@
         "condition": "running_style==4&straight_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 0,
         "upgrade": 201452,
         "downgrade": null
     },
@@ -5091,7 +5091,7 @@
         "condition": "phase>=2&corner!=0&is_finalcorner==0&temptation_count==0&order_rate>=50&order_rate<=70@phase==1&corner!=0&is_finalcorner==1&temptation_count==0&order_rate>=50&order_rate<=70",
         "precondition": "",
         "inherited": true,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -5105,7 +5105,7 @@
         "condition": "running_style==1&slope==1&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 201281,
         "downgrade": null
     },
@@ -5133,7 +5133,7 @@
         "condition": "ground_type==2&ground_condition==3@ground_type==2&ground_condition==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202342,
         "downgrade": 202344
     },
@@ -5147,7 +5147,7 @@
         "condition": "ground_type==2&ground_condition==3@ground_type==2&ground_condition==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202341,
         "downgrade": 202343
     },
@@ -5175,7 +5175,7 @@
         "condition": "distance_type==4&running_style==2&phase==2",
         "precondition": "distance_diff_top<=10&distance_rate>=60&phase==1",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 202481,
         "downgrade": null
     },
@@ -5245,7 +5245,7 @@
         "condition": "running_style==2&phase_firsthalf_random==2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201902
     },
@@ -5385,7 +5385,7 @@
         "condition": "distance_type==2&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202501,
         "downgrade": null
     },
@@ -5455,7 +5455,7 @@
         "condition": "distance_rate_after_random==50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 202032
     },
@@ -5497,7 +5497,7 @@
         "condition": "distance_type==4&phase_firsthalf_random==1&order_rate>=40&order_rate<=80",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 202072
     },
@@ -5567,7 +5567,7 @@
         "condition": "phase_random==1&running_style==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 202371,
         "downgrade": null
     },
@@ -5637,7 +5637,7 @@
         "condition": "ground_type==2&distance_rate>=50&is_other_character_activate_advantage_skill==9",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 3,
         "upgrade": 202361,
         "downgrade": null
     },
@@ -5651,7 +5651,7 @@
         "condition": "is_finalcorner==1&corner==0&order<=5",
         "precondition": "is_finalcorner==1&blocked_side_continuetime>=2",
         "inherited": true,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -5707,7 +5707,7 @@
         "condition": "running_style==3&is_finalcorner==1&corner!=0&is_behind_in==1&change_order_onetime<0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 200611,
         "downgrade": null
     },
@@ -5819,7 +5819,7 @@
         "condition": "phase==1&change_order_onetime>0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 0,
         "upgrade": 200471,
         "downgrade": null
     },
@@ -5889,7 +5889,7 @@
         "condition": "is_lastspurt==1&phase_random==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 210082
     },
@@ -5903,7 +5903,7 @@
         "condition": "running_style==3&is_finalcorner==1&corner==0&order>=2&distance_diff_top<=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202451,
         "downgrade": null
     },
@@ -5931,7 +5931,7 @@
         "condition": "distance_type==1&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201002
     },
@@ -5973,7 +5973,7 @@
         "condition": "distance_type==1&phase_laterhalf_random==1&order>=2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200992
     },
@@ -6169,7 +6169,7 @@
         "condition": "phase_random==1&order>=2&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6211,7 +6211,7 @@
         "condition": "compete_fight_count>0",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -6225,7 +6225,7 @@
         "condition": "motivation>=4",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6239,7 +6239,7 @@
         "condition": "phase==3&is_overtake==1&is_lastspurt==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6253,7 +6253,7 @@
         "condition": "phase_laterhalf_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6267,7 +6267,7 @@
         "condition": "phase_random==3&hp_per>=2&is_lastspurt==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6281,7 +6281,7 @@
         "condition": "activate_count_later_half>=2",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -6337,7 +6337,7 @@
         "condition": "weather==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200231,
         "downgrade": 200233
     },
@@ -6351,7 +6351,7 @@
         "condition": "weather==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200232
     },
@@ -6449,7 +6449,7 @@
         "condition": "is_finalcorner==1&change_order_onetime<0&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6533,7 +6533,7 @@
         "condition": "is_finalcorner==1&order<=5&order_rate<=50",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -6547,7 +6547,7 @@
         "condition": "phase>=2&order_rate>=50&is_finalcorner==1&bashin_diff_infront<=1",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -6589,7 +6589,7 @@
         "condition": "running_style==3&phase_random==1&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201422
     },
@@ -6631,7 +6631,7 @@
         "condition": "running_style==1&slope==1&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201282
     },
@@ -6645,7 +6645,7 @@
         "condition": "always==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -6659,7 +6659,7 @@
         "condition": "rotation==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200013,
         "downgrade": null
     },
@@ -6687,7 +6687,7 @@
         "condition": "rotation==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200011,
         "downgrade": 200013
     },
@@ -6701,7 +6701,7 @@
         "condition": "rotation==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200012
     },
@@ -6715,7 +6715,7 @@
         "condition": "running_style==3&is_finalcorner==1&corner!=0&is_behind_in==1&change_order_onetime<0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200612
     },
@@ -6799,7 +6799,7 @@
         "condition": "distance_type==3&phase_random==1&order<=3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200711,
         "downgrade": null
     },
@@ -6855,7 +6855,7 @@
         "condition": "straight_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 200372
     },
@@ -6953,7 +6953,7 @@
         "condition": "distance_type==4&running_style==3&is_lastspurt==1&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 202421,
         "downgrade": null
     },
@@ -6981,7 +6981,7 @@
         "condition": "running_style==1&phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": 201291,
         "downgrade": null
     },
@@ -7037,7 +7037,7 @@
         "condition": "running_style==4&infront_near_lane_time>=1&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201492
     },
@@ -7065,7 +7065,7 @@
         "condition": "activate_count_end_after>=3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": null
     },
@@ -7093,7 +7093,7 @@
         "condition": "running_style==3&phase_random==2&order_rate>50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 201441,
         "downgrade": null
     },
@@ -7261,7 +7261,7 @@
         "condition": "is_finalcorner_laterhalf==1&corner!=0&order>=3&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -7275,7 +7275,7 @@
         "condition": "running_style==2&is_move_lane==1@running_style==2&is_move_lane==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": 201331,
         "downgrade": null
     },
@@ -7345,7 +7345,7 @@
         "condition": "running_style==4&phase_random==1&distance_diff_rate>=75",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200622
     },
@@ -7415,7 +7415,7 @@
         "condition": "weather==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200241,
         "downgrade": null
     },
@@ -7429,7 +7429,7 @@
         "condition": "weather==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200242
     },
@@ -7443,7 +7443,7 @@
         "condition": "distance_type==3&is_move_lane==1&accumulatetime>=10@distance_type==3&is_move_lane==2&accumulatetime>=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 1,
         "upgrade": 201141,
         "downgrade": null
     },
@@ -7499,7 +7499,7 @@
         "condition": "distance_type==2&phase_random==1&order<=3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 201081,
         "downgrade": null
     },
@@ -7555,7 +7555,7 @@
         "condition": "season==1@season==5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200171,
         "downgrade": 200173
     },
@@ -7569,7 +7569,7 @@
         "condition": "season==1@season==5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200172
     },
@@ -7583,7 +7583,7 @@
         "condition": "season==1@season==5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200173,
         "downgrade": null
     },
@@ -7653,7 +7653,7 @@
         "condition": "distance_type==1&phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200651,
         "downgrade": null
     },
@@ -7765,7 +7765,7 @@
         "condition": "running_style==4&phase_random==1&distance_diff_rate>=75",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200621,
         "downgrade": null
     },
@@ -7793,7 +7793,7 @@
         "condition": "distance_type==3&is_finalcorner==1&overtake_target_time>=2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": 200731,
         "downgrade": null
     },
@@ -7807,7 +7807,7 @@
         "condition": "distance_type==3&running_style==2&phase_laterhalf_random==1&distance_diff_top<=10",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 3,
         "upgrade": 202431,
         "downgrade": null
     },
@@ -7821,7 +7821,7 @@
         "condition": "distance_type==2&distance_rate>=50&change_order_onetime<0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201062
     },
@@ -7863,7 +7863,7 @@
         "condition": "straight_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": 200371,
         "downgrade": null
     },
@@ -7919,7 +7919,7 @@
         "condition": "running_style==4&phase_random==2&order_rate>50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201501,
         "downgrade": null
     },
@@ -7947,7 +7947,7 @@
         "condition": "running_style==3&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 201431,
         "downgrade": null
     },
@@ -7961,7 +7961,7 @@
         "condition": "running_style==4&phase_firsthalf_random==3&is_lastspurt==1",
         "precondition": "phase==2&distance_diff_rate>=50",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200632
     },
@@ -7975,7 +7975,7 @@
         "condition": "running_style_count_oikomi_otherself>=1&phase_random==0&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -7989,7 +7989,7 @@
         "condition": "running_style_count_nige_otherself>=1&phase_random==0&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -8003,7 +8003,7 @@
         "condition": "running_style_count_sashi_otherself>=1&phase_random==0&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -8017,7 +8017,7 @@
         "condition": "running_style_count_senko_otherself>=1&phase_random==0&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -8087,7 +8087,7 @@
         "condition": "season==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200181,
         "downgrade": 200183
     },
@@ -8101,7 +8101,7 @@
         "condition": "season==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200182
     },
@@ -8143,7 +8143,7 @@
         "condition": "weather==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": 200211,
         "downgrade": null
     },
@@ -8157,7 +8157,7 @@
         "condition": "weather==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200212
     },
@@ -8255,7 +8255,7 @@
         "condition": "phase==1&change_order_onetime>0&order_rate>=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -8269,7 +8269,7 @@
         "condition": "near_count>=3&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 201591,
         "downgrade": null
     },
@@ -8381,7 +8381,7 @@
         "condition": "distance_type==3&phase_firsthalf_random==2&order_rate>=40",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 202081,
         "downgrade": null
     },
@@ -8423,7 +8423,7 @@
         "condition": "running_style_equal_popularity_one==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": 200291,
         "downgrade": null
     },
@@ -8437,7 +8437,7 @@
         "condition": "running_style_equal_popularity_one==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 200292
     },
@@ -8451,7 +8451,7 @@
         "condition": "running_style==2&is_move_lane==1@running_style==2&is_move_lane==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 201332
     },
@@ -8479,7 +8479,7 @@
         "condition": "running_style==3&phase_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201432
     },
@@ -8493,7 +8493,7 @@
         "condition": "running_style==4&is_move_lane==1@running_style==4&is_move_lane==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 3,
         "upgrade": null,
         "downgrade": 201472
     },
@@ -8535,7 +8535,7 @@
         "condition": "is_finalcorner==1&bashin_diff_behind<=1&order<=4@is_finalcorner==1&bashin_diff_infront<=1&order<=4",
         "precondition": "",
         "inherited": true,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -8647,7 +8647,7 @@
         "condition": "running_style==1&phase<=1&change_order_onetime>0&accumulatetime>=5@running_style==1&phase<=1&blocked_side_continuetime>=2&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201272
     },
@@ -8661,7 +8661,7 @@
         "condition": "distance_type==3&phase_random==1&order<=3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200712
     },
@@ -8773,7 +8773,7 @@
         "condition": "distance_type==1&phase_random==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200652
     },
@@ -8787,7 +8787,7 @@
         "condition": "distance_rate>=50&corner!=0&order>=3&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -8801,7 +8801,7 @@
         "condition": "near_count>=3&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 201592
     },
@@ -8829,7 +8829,7 @@
         "condition": "running_style==1&is_finalcorner_random==1&order==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200552
     },
@@ -8885,7 +8885,7 @@
         "condition": "distance_type==3&is_finalcorner==1&overtake_target_time>=2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 200732
     },
@@ -8899,7 +8899,7 @@
         "condition": "distance_type==2&is_overtake==1&accumulatetime>=5",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 0,
         "upgrade": 201071,
         "downgrade": null
     },
@@ -8955,7 +8955,7 @@
         "condition": "is_finalcorner==1&corner==0&order<=5",
         "precondition": "is_finalcorner==1&blocked_side_continuetime>=2",
         "inherited": true,
-        "community_tier": 3,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -9053,7 +9053,7 @@
         "condition": "distance_type==1&phase_random==1&order_rate>50",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -9137,7 +9137,7 @@
         "condition": "ground_condition==2@ground_condition==3@ground_condition==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": 200161,
         "downgrade": 200163
     },
@@ -9151,7 +9151,7 @@
         "condition": "ground_condition==2@ground_condition==3@ground_condition==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 1,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 200162
     },
@@ -9179,7 +9179,7 @@
         "condition": "distance_rate>=60&slope==2&phase==1&order_rate>=40&order_rate<=80&remain_distance>=500",
         "precondition": "",
         "inherited": true,
-        "community_tier": 1,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },
@@ -9235,7 +9235,7 @@
         "condition": "season==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 200201,
         "downgrade": 200203
     },
@@ -9249,7 +9249,7 @@
         "condition": "season==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200202
     },
@@ -9417,7 +9417,7 @@
         "condition": "distance_rate>=50&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -9459,7 +9459,7 @@
         "condition": "phase>=2&is_finalcorner==1&order<=4&temptation_count==0@phase>=2&is_finalcorner==1&order<=4",
         "precondition": "",
         "inherited": true,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
