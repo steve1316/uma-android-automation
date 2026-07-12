@@ -1278,8 +1278,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // single marker. Total = every chevron in the row. The caller owns the user-facing progress log; this is the vision-level detail for calibrating the row.
         val completed = blueFlags.indexOfLast { it } + 1
         val total = runs.size
-        val detail = "chevron runs ${runs.map { "${it.first}-${it.last}" }}, filled $blueFlags -> $completed/$total"
-        if (debugMode) MessageLog.i(TAG, "[CHEVRON] $detail.") else Log.d(TAG, "[DEBUG] countEventProgressChevrons:: $detail.")
+        MessageLog.d(
+            TAG,
+            "[DEBUG] countEventProgressChevrons:: chevron runs ${runs.map { "${it.first}-${it.last}" }}, filled $blueFlags -> $completed/$total.",
+        )
         return completed to total
     }
 

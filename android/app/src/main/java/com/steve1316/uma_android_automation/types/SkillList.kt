@@ -487,9 +487,10 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 // page and silently drop every skill below the fold - far worse than the seconds this saves.
                 val cellRanges = (0 until VISIBLE_SKILL_ROWS).flatMap { r -> (0 until 2).map { c -> skillCellLuminanceRange(bitmap, r, c) } }
                 val occupiedCells = cellRanges.count { it >= SKILL_CELL_OCCUPIED_LUMINANCE_RANGE }
-                if (game.debugMode) {
-                    MessageLog.i(TAG, "[INFO] Skills tab cell luminance ranges: $cellRanges (occupied at >= $SKILL_CELL_OCCUPIED_LUMINANCE_RANGE, so $occupiedCells filled).")
-                }
+                MessageLog.d(
+                    TAG,
+                    "[DEBUG] parseDetailsSkillsTab:: Cell luminance ranges: $cellRanges (occupied at >= $SKILL_CELL_OCCUPIED_LUMINANCE_RANGE, so $occupiedCells filled).",
+                )
                 if (occupiedCells < MIN_SKILL_CELLS_FOR_SCROLL) {
                     MessageLog.i(TAG, "[INFO] Skills tab filled only $occupiedCells/$MIN_SKILL_CELLS_FOR_SCROLL cells, so the list cannot scroll. Reading it in one pass.")
                     break
