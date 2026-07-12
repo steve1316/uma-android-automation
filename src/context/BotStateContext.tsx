@@ -249,6 +249,9 @@ export interface Settings {
         trackblazerGlowStickFinalReserve: number
         trackblazerGlowStickMinFans: number
         unityCupBurstMaxFailureChance: number
+        unityCupExtremeBurstMinStatGain: number
+        unityCupBurstTopStatsOnlyAfterJunior: boolean
+        unityCupRetryRaces: boolean
         uraHappyMeekDuelBias: string
     }
 }
@@ -522,6 +525,9 @@ export const defaultSettings: Settings = {
         trackblazerGlowStickFinalReserve: 1,
         trackblazerGlowStickMinFans: 20000,
         unityCupBurstMaxFailureChance: 0,
+        unityCupExtremeBurstMinStatGain: 0,
+        unityCupBurstTopStatsOnlyAfterJunior: false,
+        unityCupRetryRaces: true,
         uraHappyMeekDuelBias: "Moderate",
     },
 }

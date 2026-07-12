@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import com.steve1316.uma_android_automation.bot.Training.Companion.burstAllowedForStat
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateMiscScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRawTrainingScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRelationshipScore
@@ -151,6 +152,8 @@ class TrainingScoringTest {
         enablePrioritizeSkillHints: Boolean = false,
         statsTrainedOverBuffer: Set<StatName> = emptySet(),
         statCaps: Map<StatName, Int> = emptyMap(),
+        unityCupExtremeBurstMinStatGain: Int = 0,
+        unityCupBurstTopStatsOnlyAfterJunior: Boolean = false,
     ): TrainingConfig {
         return TrainingConfig(
             currentStats = currentStats,
@@ -168,6 +171,8 @@ class TrainingScoringTest {
             enablePrioritizeSkillHints = enablePrioritizeSkillHints,
             statsTrainedOverBuffer = statsTrainedOverBuffer,
             statCaps = statCaps,
+            unityCupExtremeBurstMinStatGain = unityCupExtremeBurstMinStatGain,
+            unityCupBurstTopStatsOnlyAfterJunior = unityCupBurstTopStatsOnlyAfterJunior,
         )
     }
 
@@ -738,6 +743,126 @@ class TrainingScoringTest {
         val normalScore = scoreUnityCupTraining(config, normalBurstTraining)
 
         assertTrue(extremeScore > normalScore, "An Extreme Spirit Burst (even on Guts) should outrank a normal burst on the preferred Speed facility")
+    }
+
+    @Test
+    @DisplayName("Extreme burst below the minimum stat-gain threshold is treated as absent")
+    fun testExtremeBurstBelowMinStatGainIsGatedOut() {
+        // Threshold 40 with a projected main-stat gain of 30: the extreme burst must not be prioritized, so the facility scores exactly as if no gauge were present.
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 30, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", unityCupExtremeBurstMinStatGain = 40)
+
+        assertEquals(
+            scoreUnityCupTraining(config, noGauge),
+            scoreUnityCupTraining(config, extremeBurst),
+            "An extreme burst with a main stat gain below the minimum should score identically to the same facility with no gauge",
+        )
+    }
+
+    @Test
+    @DisplayName("Extreme burst at the minimum stat-gain threshold is still prioritized (inclusive boundary)")
+    fun testExtremeBurstAtMinStatGainIsApplied() {
+        // Threshold 40 with a projected main-stat gain of exactly 40: the extreme burst is applied, so the facility scores well above the same facility with no gauge.
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 40, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", unityCupExtremeBurstMinStatGain = 40)
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "An extreme burst with a main stat gain at the minimum should receive the extreme burst bonus",
+        )
+    }
+
+    @Test
+    @DisplayName("Default minimum stat-gain of 0 always executes an available extreme burst")
+    fun testExtremeBurstDefaultThresholdAlwaysApplies() {
+        // Default threshold 0: even a weak main stat gain still gets the extreme burst bonus, preserving the original behavior.
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 5, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup")
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "With the default minimum of 0, an available extreme burst should always receive the bonus",
+        )
+    }
+
+    @Test
+    @DisplayName("burstAllowedForStat: off / Junior / in-top-3 allow, non-top-3 after Junior blocks")
+    fun testBurstAllowedForStatTruthTable() {
+        // Default order top 3 = SPEED, STAMINA, POWER; GUTS and WIT are outside it.
+        val prio = listOf(StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.WIT, StatName.GUTS)
+        assertTrue(burstAllowedForStat(false, DateYear.CLASSIC, prio, StatName.GUTS), "Disabled override always allows a burst")
+        assertTrue(burstAllowedForStat(true, DateYear.JUNIOR, prio, StatName.GUTS), "Junior Year is unrestricted")
+        assertTrue(burstAllowedForStat(true, DateYear.CLASSIC, prio, StatName.POWER), "A top-3 stat is allowed after Junior")
+        assertFalse(burstAllowedForStat(true, DateYear.CLASSIC, prio, StatName.GUTS), "A non-top-3 stat is blocked in Classic")
+        assertFalse(burstAllowedForStat(true, DateYear.SENIOR, prio, StatName.WIT), "A non-top-3 stat is blocked in Senior")
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: after Junior, an extreme burst on a non-top-3 stat is suppressed")
+    fun testBurstTopStatsSuppressesNonTop3ExtremeAfterJunior() {
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 60, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val classic = GameDate(year = DateYear.CLASSIC, month = DateMonth.JANUARY, phase = DatePhase.EARLY)
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", currentDate = classic, unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertEquals(
+            scoreUnityCupTraining(config, noGauge),
+            scoreUnityCupTraining(config, extremeBurst),
+            "A non-top-3 extreme burst after Junior should score identically to the same facility with no gauge",
+        )
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: after Junior, a normal burst on a non-top-3 stat is suppressed")
+    fun testBurstTopStatsSuppressesNonTop3NormalAfterJunior() {
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 30, 0))
+        val normalBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val classic = GameDate(year = DateYear.CLASSIC, month = DateMonth.JANUARY, phase = DatePhase.EARLY)
+        val config = createDefaultConfig(trainingOptions = listOf(normalBurst, noGauge), scenario = "Unity Cup", currentDate = classic, unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertEquals(
+            scoreUnityCupTraining(config, noGauge),
+            scoreUnityCupTraining(config, normalBurst),
+            "A non-top-3 normal burst after Junior should score identically to the same facility with no gauge",
+        )
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: after Junior, a burst on a top-3 stat still applies")
+    fun testBurstTopStatsAllowsTop3AfterJunior() {
+        val speedGains = statGainsToMap(intArrayOf(60, 0, 30, 0, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.SPEED, statGains = speedGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.SPEED, statGains = speedGains, extras = emptyMap())
+        val classic = GameDate(year = DateYear.CLASSIC, month = DateMonth.JANUARY, phase = DatePhase.EARLY)
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", currentDate = classic, unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "A top-3 stat should still receive the burst bonus after Junior",
+        )
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: Junior Year bursts a non-top-3 stat regardless of the gate")
+    fun testBurstTopStatsUnrestrictedInJunior() {
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 60, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        // Default currentDate is Junior, so the gate does not apply even with the override on.
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "Junior Year should burst a non-top-3 stat regardless of the top-3 gate",
+        )
     }
 
     @Test

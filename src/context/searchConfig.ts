@@ -878,6 +878,24 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "unity-cup-extreme-burst-min-stat-gain",
+        title: "Unity Cup Extreme Burst Minimum Stat Gain",
+        description: "Only prioritize an Extreme Spirit Burst when the facility's projected main-stat gain is at least this value. 0 always executes available extreme bursts.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "unity-cup-burst-top-stats-only-after-junior",
+        title: "Unity Cup Burst Only Top 3 Stats After Junior",
+        description: "After Junior Year, only prioritize Spirit Explosion bursts (normal and extreme) on facilities whose stat is in your top 3 prioritized stats. Junior Year is unrestricted.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "unity-cup-retry-races",
+        title: "Unity Cup Retry Races",
+        description: "When enabled, the bot re-runs a lost Unity Cup race, retrying until it wins or attempts are exhausted.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "ura-happy-meek-duel-bias",
         title: "Happy Meek Duel Training Bias",
         description:

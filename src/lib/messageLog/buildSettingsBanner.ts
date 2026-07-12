@@ -238,6 +238,9 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 ✨ Trackblazer Glow Stick Final-Day Reserve: ${settings.scenarioOverrides?.trackblazerGlowStickFinalReserve}
 ✨ Trackblazer Glow Stick Min Fans: ${settings.scenarioOverrides?.trackblazerGlowStickMinFans}
 💥 Unity Cup Burst Failure-Chance Exemption: ${settings.scenarioOverrides?.unityCupBurstMaxFailureChance && settings.scenarioOverrides.unityCupBurstMaxFailureChance > 0 ? `${settings.scenarioOverrides.unityCupBurstMaxFailureChance}%` : "❌"}
+🔥 Unity Cup Extreme Burst Min Stat Gain: ${settings.scenarioOverrides?.unityCupExtremeBurstMinStatGain && settings.scenarioOverrides.unityCupExtremeBurstMinStatGain > 0 ? `${settings.scenarioOverrides.unityCupExtremeBurstMinStatGain}` : "❌"}
+🎯 Unity Cup Burst Only Top 3 Stats After Junior: ${settings.scenarioOverrides?.unityCupBurstTopStatsOnlyAfterJunior ? "✅" : "❌"}
+🔄 Unity Cup Retry Races: ${settings.scenarioOverrides?.unityCupRetryRaces ? "✅" : "❌"}
 ⚔️ URA Happy Meek Duel Bias: ${settings.scenarioOverrides?.uraHappyMeekDuelBias ?? "Moderate"}
 
 ---------- Misc Options ----------

@@ -55,6 +55,9 @@ class UnityCup(game: Game) : Campaign(game) {
     /** Flag indicating if the opponent selection should be overridden. */
     private var bOverrideOpponentSelection: Boolean = false
 
+    /** Whether to retry a lost manually-run Unity Cup race. Read once per bot-run from the Scenario Overrides settings. */
+    private val retryRaces: Boolean = SettingsHelper.getBooleanSetting("scenarioOverrides", "unityCupRetryRaces", true)
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -214,7 +217,7 @@ class UnityCup(game: Game) : Campaign(game) {
                             if (ButtonUnityCupWatchMainRace.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
                                 MessageLog.i(TAG, "[INFO] Clicked Watch Main Race button.")
                                 game.waitForLoading()
-                                racing.runRaceWithRetries()
+                                racing.runRaceWithRetries(retryUntilFirst = retryRaces)
                             } else {
                                 MessageLog.w(TAG, "[WARN] handleRaceEventsUnityCup:: Failed to click the Watch Main Race button.")
                             }
