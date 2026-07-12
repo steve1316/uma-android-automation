@@ -36,6 +36,7 @@ import com.steve1316.uma_android_automation.components.IconUnityCupExtremeSpirit
 import com.steve1316.uma_android_automation.components.IconUnityCupSpiritExplosion
 import com.steve1316.uma_android_automation.components.IconUnityCupSpiritTraining
 import com.steve1316.uma_android_automation.components.LabelEnergy
+import com.steve1316.uma_android_automation.components.LabelEventProgress
 import com.steve1316.uma_android_automation.components.LabelRivalRacer
 import com.steve1316.uma_android_automation.components.LabelStatMaxed
 import com.steve1316.uma_android_automation.components.LabelStatTableHeaderSkillPoints
@@ -248,6 +249,47 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val mat = Mat()
         Utils.bitmapToMat(this, mat)
         return mat
+    }
+
+    /**
+     * Converts this bitmap to a new HSV [Mat], releasing the intermediates. [toMat] yields an RGBA mat, so the alpha is dropped with `RGBA2RGB` and never `BGR2RGB` - the latter swaps red
+     * and blue and would push a blue subject into the red hues, which is the recurring footgun in every hue range in this file.
+     */
+    private fun Bitmap.toHsvMat(): Mat {
+        val rgbaMat = toMat()
+        val rgbMat = Mat()
+        Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
+        val hsvMat = Mat()
+        Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
+        rgbaMat.release()
+        rgbMat.release()
+        return hsvMat
+    }
+
+    /**
+     * Groups the column sums of a mask into runs of consecutive "filled" columns, dropping any run narrower than [minRunWidth]. Each run is one shape when the shapes are separated by
+     * background gaps, so this counts adjacent shapes that template matching cannot (see [countEventProgressChevrons]). Pure so the segmentation can be reasoned about on its own.
+     *
+     * @param columnSums Per-column sums of a 0/255 mask, as produced by `Core.reduce(mask, ..., Core.REDUCE_SUM, CvType.CV_32S)`.
+     * @param minColumnPixels The minimum number of mask pixels a column needs before it counts as part of a shape.
+     * @param minRunWidth The minimum width in columns for a run to be a real shape rather than a border or shadow line.
+     * @return The column ranges of the detected shapes, left to right.
+     */
+    private fun segmentRuns(columnSums: IntArray, minColumnPixels: Int, minRunWidth: Int): List<IntRange> {
+        // REDUCE_SUM over a 0/255 mask yields 255 per set pixel, so scale the pixel threshold instead of dividing every column.
+        val minColumnSum = minColumnPixels * 255
+        val runs = mutableListOf<IntRange>()
+        var x = 0
+        while (x < columnSums.size) {
+            if (columnSums[x] < minColumnSum) {
+                x++
+                continue
+            }
+            val start = x
+            while (x < columnSums.size && columnSums[x] >= minColumnSum) x++
+            if (x - start >= minRunWidth) runs.add(start until x)
+        }
+        return runs
     }
 
     /** Converts this [Mat] to a new ARGB bitmap of matching dimensions. */
@@ -1149,6 +1191,96 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val normalBurstIcons = burstIcons.filterNot { teal -> extremeBurstIcons.any { extreme -> abs(teal.x - extreme.x) <= overlapTolerance && abs(teal.y - extreme.y) <= overlapTolerance } }
 
         return SpiritGaugeResult(numGaugesCanFill, normalBurstIcons.size, extremeBurstIcons.size)
+    }
+
+    /**
+     * Reads the recreation "Event Progress" chain position by segmenting the chevron row to the right of the [LabelEventProgress] pill. Each outing is one chevron: a filled (blue) chevron
+     * is a completed / current step and a hollow (gray) one is pending, so the counts give (completed, total) - e.g. a leading blue chevron before four gray ones is (1, 5). This works for
+     * the chevron-only recreation dates that show no "X/Y" text and is more robust than OCR-ing the number.
+     *
+     * The chevrons are counted by color segmentation rather than template matching. `matchAll` blanks every hit with a thick rectangle that bleeds ~10px past the match, and the chevrons sit
+     * only ~13px apart, so each hit destroys its neighbour and a tightly packed row gets undercounted (a 5-chevron row reads as 3). Masking the row for "not the near-white card background"
+     * instead makes each chevron a run of columns separated by the white gaps, which counts adjacent shapes correctly. Note this only rules template matching out for COUNTING the packed
+     * row - matching a single chevron to LOCATE and click it (as `ScrollList` still does with `ButtonEventProgressChevron`) is unaffected, since one hit never suppresses itself.
+     *
+     * @param sourceBitmap Optional pre-captured screen; a fresh capture is taken when null.
+     * @return The (completed, total) outing counts, or null when the progress row could not be read.
+     */
+    fun countEventProgressChevrons(sourceBitmap: Bitmap? = null): Pair<Int, Int>? {
+        val currentBitmap = sourceBitmap ?: getSourceBitmap()
+
+        // Anchor on the "Event Progress" pill. The chevron row sits on the same line strictly to its right, so start past the pill's right edge to keep the pill's own text out of the mask.
+        val pill = LabelEventProgress.findImageWithBitmap(this, sourceBitmap = currentBitmap)
+        if (pill == null) {
+            MessageLog.w(TAG, "[WARN] countEventProgressChevrons:: Could not find the Event Progress pill. Falling back to the per-run counter.")
+            return null
+        }
+        val pillTemplate = LabelEventProgress.template.getBitmap(this)
+        if (pillTemplate == null) {
+            MessageLog.w(TAG, "[WARN] countEventProgressChevrons:: Could not load the Event Progress template. Falling back to the per-run counter.")
+            return null
+        }
+
+        val rowStartX = (pill.x + pillTemplate.width / 2).toInt() + relWidth(12)
+        val rowStartY = relY(pill.y, -48).coerceAtLeast(0)
+        val rowWidth = (displayWidth - rowStartX - relWidth(16)).coerceAtLeast(1)
+        val rowHeight = relHeight(96)
+        val rowBitmap = createSafeBitmap(currentBitmap, rowStartX, rowStartY, rowWidth, rowHeight, "countEventProgressChevrons") ?: return null
+        saveDebugScreenshot(rowBitmap, "debug_eventProgressRow")
+
+        // A chevron stands out from the near-white card background either by being darker than it (the hollow gray chevron's outline) or by being saturated (the filled blue chevron).
+        // Thresholds estimated from 1080p crops - tune here if the run count is off.
+        val backgroundValueFloor = 225.0
+        val blueLower = Scalar(90.0, 80.0, 80.0)
+        val blueUpper = Scalar(125.0, 255.0, 255.0)
+        val minColumnPixels = 3
+        val minRunWidth = relWidth(24)
+
+        val hsvMat = rowBitmap.toHsvMat()
+        val chevronMask = Mat()
+        val blueMask = Mat()
+        val chevronColumns = Mat()
+        val blueColumns = Mat()
+        val sums: IntArray
+        val blueSums: IntArray
+        try {
+            Core.inRange(hsvMat, Scalar(0.0, 0.0, 0.0), Scalar(179.0, 255.0, backgroundValueFloor), chevronMask)
+            Core.inRange(hsvMat, blueLower, blueUpper, blueMask)
+            // The filled blue may sit above the darkness floor, so fold it in. Done in place - the darkness mask has no other consumer.
+            Core.bitwise_or(chevronMask, blueMask, chevronMask)
+
+            // Column projection. Each chevron is one run of columns carrying mask pixels and the white gaps between them read as empty columns, so the runs count the chevrons directly.
+            // This replaces template matching: matchAll blanks every hit with a thick rectangle that bleeds into the neighbouring chevron, so a tightly packed row of identical shapes
+            // gets undercounted (a 5-chevron row reads as 3).
+            Core.reduce(chevronMask, chevronColumns, 0, Core.REDUCE_SUM, CvType.CV_32S)
+            sums = IntArray(chevronMask.cols()).also { chevronColumns.get(0, 0, it) }
+            Core.reduce(blueMask, blueColumns, 0, Core.REDUCE_SUM, CvType.CV_32S)
+            blueSums = IntArray(blueMask.cols()).also { blueColumns.get(0, 0, it) }
+        } finally {
+            listOf(hsvMat, chevronMask, blueMask, chevronColumns, blueColumns).forEach { it.release() }
+        }
+
+        val runs = segmentRuns(sums, minColumnPixels, minRunWidth)
+        if (runs.isEmpty()) {
+            MessageLog.w(
+                TAG,
+                "[WARN] countEventProgressChevrons:: Found the Event Progress pill at (${pill.x.toInt()}, ${pill.y.toInt()}) but segmented no chevrons in row " +
+                    "[$rowStartX, $rowStartY, $rowWidth, $rowHeight]. Falling back to the per-run counter. Enable debugMode to dump the debug_eventProgressRow crop.",
+            )
+            return null
+        }
+
+        // A chevron is done when its run is mostly the filled blue; the hollow gray one carries almost no blue. Both sums are 255-per-pixel, so the scale cancels in the ratio.
+        val blueRunFractionMin = 0.5
+        val blueFlags = runs.map { run -> run.sumOf { blueSums[it] }.toDouble() / run.sumOf { sums[it] } >= blueRunFractionMin }
+
+        // Completed = the position of the rightmost filled chevron. Using the position (not the raw blue count) is robust whether the game keeps completed steps highlighted or advances a
+        // single marker. Total = every chevron in the row. The caller owns the user-facing progress log; this is the vision-level detail for calibrating the row.
+        val completed = blueFlags.indexOfLast { it } + 1
+        val total = runs.size
+        val detail = "chevron runs ${runs.map { "${it.first}-${it.last}" }}, filled $blueFlags -> $completed/$total"
+        if (debugMode) MessageLog.i(TAG, "[CHEVRON] $detail.") else Log.d(TAG, "[DEBUG] countEventProgressChevrons:: $detail.")
+        return completed to total
     }
 
     /**

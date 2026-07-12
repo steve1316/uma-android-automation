@@ -68,4 +68,37 @@ object DatingSchedule {
     fun isScheduleAbandoned(purePassionTurn: Int, currentTurn: Int, chainComplete: Boolean): Boolean {
         return purePassionTurn > 0 && currentTurn > purePassionTurn && !chainComplete
     }
+
+    /**
+     * Renders a short, honest progress phrase for the recreation chain. The authoritative "X/Y" only exists once the in-game partner dialog has been read,
+     * so before then the phrase avoids a fabricated total - it reports just the outings done this run, or that none have started yet.
+     *
+     * @param outingsStarted The number of outings started this run, kept in sync with the in-game progress.
+     * @param totalOutingsKnown The chain length as last read from the game's "X/Y" progress. Only meaningful when [progressRead] is true.
+     * @param progressRead Whether the authoritative progress has been read from the game (via the Event Progress chevrons, the partner dialog OCR, or the chain-complete label).
+     * @param completed Whether the recreation chain is already complete.
+     * @return A phrase such as "complete", "3/7 completed", "1 done (chain length not yet read)", or "not started (no date done yet)".
+     */
+    fun formatRecreationProgress(outingsStarted: Int, totalOutingsKnown: Int, progressRead: Boolean, completed: Boolean): String {
+        return when {
+            completed -> "complete"
+            progressRead -> "$outingsStarted/$totalOutingsKnown completed"
+            outingsStarted > 0 -> "$outingsStarted done (chain length not yet read)"
+            else -> "not started (no date done yet)"
+        }
+    }
+
+    /**
+     * The soonest pinned turn strictly after [currentTurn] - a regular recreation turn or the Pure Passion turn, whichever comes first - used to preview the
+     * next scheduled outing in the per-turn log.
+     *
+     * @param currentTurn The current 1-indexed career turn (1-72).
+     * @param recreationTurns The set of turns pinned for regular recreation outings.
+     * @param purePassionTurn The single turn pinned for the final outing / Pure Passion activation, or a non-positive value when unset.
+     * @return The next pinned turn after the current one, or null when none remain.
+     */
+    fun nextScheduledTurn(currentTurn: Int, recreationTurns: Set<Int>, purePassionTurn: Int): Int? {
+        // A non-positive (unset) purePassionTurn can never beat the always-positive currentTurn, so the filter drops it without special-casing.
+        return (recreationTurns + purePassionTurn).filter { it > currentTurn }.minOrNull()
+    }
 }
