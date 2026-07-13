@@ -268,6 +268,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🔍 Start Main Screen Update Test: ${settings.debug.debugMode_startMainScreenUpdateTest ? "✅" : "❌"}
 🔍 Start Skill List Buy Test: ${settings.debug.debugMode_startSkillListBuyTest ? "✅" : "❌"}
 🔍 Start Scrollbar Detection Test: ${settings.debug.debugMode_startScrollBarDetectionTest ? "✅" : "❌"}
+🔍 Start Umamusume Details Read Test: ${settings.debug.debugMode_startUmamusumeDetailsReadTest ? "✅" : "❌"}
 🔍 Start Rainbow Detection Test: ${settings.debug.debugMode_startRainbowDetectionTest ? "✅" : "❌"}
 🔍 Start Spirit Gauge Detection Test: ${settings.debug.debugMode_startSpiritGaugeDetectionTest ? "✅" : "❌"}
 🔍 Start Trackblazer Race Selection Test: ${settings.debug.debugMode_startTrackblazerRaceSelectionTest ? "✅" : "❌"}

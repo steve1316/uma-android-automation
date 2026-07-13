@@ -7,6 +7,8 @@ import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ComponentInterface
+import com.steve1316.uma_android_automation.components.IconDialogScrollListBottomRight
+import com.steve1316.uma_android_automation.components.IconDialogScrollListTopLeft
 import com.steve1316.uma_android_automation.components.IconScrollListBottomRight
 import com.steve1316.uma_android_automation.components.IconScrollListTopLeft
 import com.steve1316.uma_android_automation.types.BoundingBox
@@ -15,6 +17,31 @@ import kotlin.math.abs
 
 /** Default maximum processing time in milliseconds. */
 const val MAX_PROCESS_TIME_DEFAULT_MS = 60000
+
+/** Bound on the swipes [ScrollList.scrollToTopBySwiping] will spend, so a scrollbar it cannot read cannot make it spin forever. */
+private const val MAX_SCROLL_TO_TOP_SWIPES = 8
+
+/** How far the scrollbar thumb may sit below the top of its track and still count as being at the top. */
+private const val SCROLL_TOP_TOLERANCE = 4
+
+/**
+ * Creates a [ScrollList] for a list that lives inside a dialog. A dialog draws its own rounded corner markers rather than the full-screen ones, so it needs its own pair of corner templates.
+ *
+ * The inertia tap is off for every dialog list. A dialog's rows are tappable right out to the panel edge, so there is nowhere in the list to put the tap that does not open a row - on the
+ * Umamusume Details skill grid it opens the Skill Details popup.
+ *
+ * @param game Reference to the bot's [Game] instance.
+ * @param bitmap Optional bitmap to detect against, so a caller holding the current frame does not force another screenshot.
+ * @return The [ScrollList], or null when no dialog list is on screen - in which case there was nothing scrollable there to begin with.
+ */
+fun createDialogScrollList(game: Game, bitmap: Bitmap? = null): ScrollList? =
+    ScrollList.create(
+        game,
+        bitmap = bitmap,
+        listTopLeftComponent = IconDialogScrollListTopLeft,
+        listBottomRightComponent = IconDialogScrollListBottomRight,
+        bAllowInertiaTap = false,
+    )
 
 /** Functional interface for a callback that is called whenever an entry is detected while processing the list. */
 fun interface OnEntryDetectedCallback {
@@ -104,7 +131,15 @@ data class ScrollListEntryDetectionConfig(
  * @param bboxEntries The refined [bboxList] with a buffer on the top and bottom to prevent partial entries.
  * @param entryDetectionConfig The configuration for image detection.
  */
-class ScrollList private constructor(private val game: Game, private val bboxList: BoundingBox, entryDetectionConfig: ScrollListEntryDetectionConfig) {
+class ScrollList private constructor(
+    private val game: Game,
+    private val bboxList: BoundingBox,
+    entryDetectionConfig: ScrollListEntryDetectionConfig,
+    private val bAllowInertiaTap: Boolean = true,
+) {
+    /** The detected bounding region of the list on screen. Exposed so a caller with its own row geometry can aim a swipe within the list without re-detecting it. */
+    val listBoundingBox: BoundingBox get() = bboxList
+
     /** The minimum height for a single entry. */
     private val defaultMinEntryHeight: Int = game.imageUtils.relHeight((SharedData.displayHeight * 0.0781).toInt()) // 150px on 1920h
 
@@ -194,6 +229,8 @@ class ScrollList private constructor(private val game: Game, private val bboxLis
          * @param listTopLeftComponent An image component used to detect the top left corner of the list.
          * @param listBottomRightComponent An image component used to detect the bottom right corner of the list.
          * @param entryDetectionConfig Optional image detection configuration.
+         * @param bAllowInertiaTap Whether the list may be tapped to kill its scroll inertia. Turn this off for a list whose rows are tappable to their very edge, since there is then nowhere
+         *    safe to put the tap and it opens a row. See [stopScrolling].
          * @return On success, the [ScrollList] instance. Otherwise, null.
          */
         fun create(
@@ -202,9 +239,10 @@ class ScrollList private constructor(private val game: Game, private val bboxLis
             listTopLeftComponent: ComponentInterface? = null,
             listBottomRightComponent: ComponentInterface? = null,
             entryDetectionConfig: ScrollListEntryDetectionConfig? = null,
+            bAllowInertiaTap: Boolean = true,
         ): ScrollList? {
             val bboxList: BoundingBox = getListBoundingRegion(game, bitmap, listTopLeftComponent, listBottomRightComponent) ?: return null
-            return ScrollList(game, bboxList, entryDetectionConfig ?: ScrollListEntryDetectionConfig())
+            return ScrollList(game, bboxList, entryDetectionConfig ?: ScrollListEntryDetectionConfig(), bAllowInertiaTap)
         }
 
         /**
@@ -621,13 +659,20 @@ class ScrollList private constructor(private val game: Game, private val bboxLis
     }
 
     /**
-     * Stops list inertia by clicking a safe location.
+     * Stops list inertia by clicking a safe location, so the list is not still drifting when it is read.
      *
-     * Prevents list movement after swiping to ensure stable OCR results.
+     * The "safe" zone is the list's left edge, which is only safe on a list whose rows leave a margin there. It is not safe on every list: on the Umamusume Details skill grid the rows are
+     * tappable right up to the panel edge, and a tap here opens the Skill Details popup for whichever skill it lands on. A list built with `bAllowInertiaTap = false` therefore waits the
+     * inertia out instead of tapping it away - see [createDialogScrollList].
      *
      * @param bboxSafeZone Optional region for safe clicks.
      */
     private fun stopScrolling(bboxSafeZone: BoundingBox? = null) {
+        if (!bAllowInertiaTap) {
+            // Nowhere on this list is safe to tap, so let the inertia die down on its own.
+            game.wait(0.5, skipWaitingForLoading = true)
+            return
+        }
         val bboxSafeZone: BoundingBox =
             bboxSafeZone ?: BoundingBox(
                 x = bboxEntries.x,
@@ -652,7 +697,8 @@ class ScrollList private constructor(private val game: Game, private val bboxLis
     }
 
     /**
-     * Scrolls to the top of the list.
+     * Scrolls to the top of the list by dragging the scrollbar thumb, so it moves nothing on a list whose scrollbar only reports the position - see [isScrollBarDraggable]. Prefer
+     * [scrollToTopBySwiping], which works either way.
      *
      * @param bitmap Optional source bitmap to use when detecting scrollbar.
      */
@@ -689,7 +735,7 @@ class ScrollList private constructor(private val game: Game, private val bboxLis
     }
 
     /**
-     * Scrolls to the bottom of the list.
+     * Scrolls to the bottom of the list. Like [scrollToTop], this drags the scrollbar thumb, so it moves nothing on a list whose scrollbar only reports the position.
      *
      * @param bitmap Optional source bitmap to use when detecting scrollbar.
      */
@@ -806,6 +852,64 @@ class ScrollList private constructor(private val game: Game, private val bboxLis
         val y1: Int = (bboxList.y + bboxList.h + (entryHeight * 1.5)).toInt().coerceAtLeast(0)
         game.gestureUtils.swipe(x0.toFloat(), y0.toFloat(), x0.toFloat(), y1.toFloat(), duration = durationMs)
         stopScrolling()
+    }
+
+    /**
+     * Whether this list has a scrollbar, and so has anything below the fold at all.
+     *
+     * @return True when a scrollbar was detected.
+     */
+    fun hasScrollBar(): Boolean = getListScrollBarBoundingRegion().first != null
+
+    /**
+     * Whether this list's scrollbar can be dragged to scroll it, or only reports the position. Drags the thumb away from wherever it sits and checks whether it actually moved, so it leaves the
+     * list scrolled to one end.
+     *
+     * @return True when dragging the thumb moved it.
+     */
+    fun isScrollBarDraggable(): Boolean {
+        val (bboxBar: BoundingBox?, bboxThumb: BoundingBox?) = getListScrollBarBoundingRegion()
+        if (bboxBar == null || bboxThumb == null) return false
+        // Drag towards whichever end the thumb is further from, so there is always room for it to move.
+        if (bboxThumb.y - bboxBar.y <= SCROLL_TOP_TOLERANCE) scrollToBottom() else scrollToTop()
+        val bboxThumbAfter: BoundingBox = getListScrollBarBoundingRegion().second ?: return false
+        return bboxThumbAfter.y != bboxThumb.y
+    }
+
+    /**
+     * Swipes the list's content down by a set distance, leaving the scrollbar alone.
+     *
+     * [scrollDown] always ends its swipe at the top of the list, so starting only [travelPx] below the top is what keeps the travel short. Short and overlapping is usually what a caller wants:
+     * a full-height swipe flings the list into settling mid-row, which straddles the crops of any reader working from fixed row offsets.
+     *
+     * @param travelPx How far the content should travel, in screen pixels.
+     * @param durationMs Swipe duration. Longer is slower and flings less.
+     */
+    fun scrollContentDownBy(travelPx: Int, durationMs: Long = 700L) {
+        val startLoc = Point((bboxList.x + (bboxList.w / 2)).toDouble(), (bboxList.y + travelPx).toDouble())
+        scrollDown(startLoc = startLoc, durationMs = durationMs)
+    }
+
+    /**
+     * Scrolls to the top of the list by swiping its content, watching the scrollbar to know when it has arrived.
+     *
+     * [scrollToTop] drags the scrollbar thumb, which only moves a list whose scrollbar is interactive. The Umamusume Details dialog draws one that is not - see [isScrollBarDraggable] - so that
+     * path silently leaves the list wherever it already was. This swipes the content instead and reads the thumb purely as a position sensor, stopping once it reaches the top of its track.
+     */
+    fun scrollToTopBySwiping() {
+        for (swipes in 0 until MAX_SCROLL_TO_TOP_SWIPES) {
+            val (bboxBar: BoundingBox?, bboxThumb: BoundingBox?) = getListScrollBarBoundingRegion()
+            if (bboxBar == null || bboxThumb == null) {
+                MessageLog.d(TAG, "[DEBUG] scrollToTopBySwiping:: No scrollbar found, so the list has nothing below the fold and is already at its top.")
+                return
+            }
+            if (bboxThumb.y - bboxBar.y <= SCROLL_TOP_TOLERANCE) {
+                MessageLog.d(TAG, "[DEBUG] scrollToTopBySwiping:: The scrollbar thumb is at the top of its track after $swipes swipe(s).")
+                return
+            }
+            scrollUp()
+        }
+        MessageLog.w(TAG, "[WARN] scrollToTopBySwiping:: Gave up after $MAX_SCROLL_TO_TOP_SWIPES swipes without the scrollbar thumb reaching the top of its track.")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////

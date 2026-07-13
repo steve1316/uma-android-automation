@@ -193,6 +193,7 @@ export interface Settings {
         debugMode_startMainScreenUpdateTest: boolean
         debugMode_startSkillListBuyTest: boolean
         debugMode_startScrollBarDetectionTest: boolean
+        debugMode_startUmamusumeDetailsReadTest: boolean
         debugMode_startRainbowDetectionTest: boolean
         debugMode_startSpiritGaugeDetectionTest: boolean
         debugMode_startTrackblazerRaceSelectionTest: boolean
@@ -475,6 +476,7 @@ export const defaultSettings: Settings = {
         debugMode_startMainScreenUpdateTest: false,
         debugMode_startSkillListBuyTest: false,
         debugMode_startScrollBarDetectionTest: false,
+        debugMode_startUmamusumeDetailsReadTest: false,
         debugMode_startRainbowDetectionTest: false,
         debugMode_startSpiritGaugeDetectionTest: false,
         debugMode_startTrackblazerRaceSelectionTest: false,

@@ -17,9 +17,66 @@ import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
+import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import org.opencv.core.Point
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+
+/** Number of skill rows visible at once on the Umamusume Details "Skills" tab before it scrolls. */
+private const val VISIBLE_SKILL_ROWS = 5
+
+/** Columns in the Skills-tab grid (left and right). */
+private const val SKILL_COLUMNS = 2
+
+/** Maximum number of scroll passes when reading the Skills tab (bounds trainees with many skills). */
+private const val MAX_SKILL_SCROLLS = 10
+
+/** Left edge of each Skills-tab grid column, on the 1080-wide reference. */
+private const val SKILL_CELL_X_LEFT = 118
+private const val SKILL_CELL_X_RIGHT = 622
+
+/** Top of the first Skills-tab row and the pitch between rows, on the 1920-tall reference. */
+private const val SKILL_GRID_TOP_Y = 1036
+private const val SKILL_ROW_PITCH_Y = 112
+
+/**
+ * How far one scroll pass travels down the Skills grid, on the 1920-tall reference - roughly 1.7 rows. Short and heavily overlapping on purpose: the grid is read at fixed row offsets, and a
+ * long swipe flings the list so it settles mid-row, leaving the crops straddling two rows. Overlapping passes give every skill several sub-row offsets to be read cleanly at.
+ */
+private const val SKILL_SCROLL_TRAVEL_Y = 190
+
+/** Height of a Skills-tab cell crop, on the 1920-tall reference. Tall enough to capture a name that wraps to two lines (e.g. "Pace Chaser Straightaways"). */
+private const val SKILL_CELL_REF_HEIGHT = 100
+
+/**
+ * The rank glyphs that can trail a skill name, mapped to their templates. Insertion order is load-bearing: the Skill List screen scans these first-match-wins, and the double circle has to be
+ * tried before the single, since a single-ring template also matches the outer ring of a double circle.
+ */
+private val SKILL_GLYPH_COMPONENTS: Map<String, ComponentInterface> =
+    linkedMapOf(
+        "◎" to IconSkillTitleDoubleCircle,
+        "○" to IconSkillTitleCircle,
+        "×" to IconSkillTitleX,
+    )
+
+/**
+ * The two circle glyphs that separate a skill from its upgraded variant. The cross is deliberately absent: a negative skill is identified by its purple tile, and the cross template scores as
+ * high as 0.69 against a cell holding no glyph at all, so offering it as a candidate only invites a false positive.
+ */
+private val SKILL_CIRCLE_GLYPH_COMPONENTS: Map<String, ComponentInterface> = SKILL_GLYPH_COMPONENTS.filterKeys { it != "×" }
+
+/**
+ * Upscale applied to a Skills-tab cell before its rank glyph is scored. The templates are 32x32 while the Details tab draws the glyph at ~25px, so the cell has to grow to bring the two into
+ * register. Measured on a 1080x1920 capture: at this upscale the correct template scores 0.89-0.93 and the wrong one 0.59-0.70, while one step either side collapses the margin (at 1.2x a
+ * double circle scored 0.37 against the single circle's 0.37, a coin flip). Normalizing the cell to a reference size before matching makes this independent of the device resolution.
+ */
+private const val SKILL_GLYPH_UPSCALE = 1.3
+
+/** Correlation a circle template must reach to be believed, sitting between the ~0.45 a glyph-less cell scores and the ~0.89 a real glyph scores. */
+private const val SKILL_GLYPH_MIN_CONFIDENCE = 0.60
+
+/** Matches any rank glyph. Hoisted so [skillBaseName] does not recompile it on every cell it strips. */
+private val SKILL_GLYPH_REGEX = Regex("[○◎×]")
 
 /** A callback that fires whenever we detect an entry in the skill list. */
 fun interface OnEntryDetectedCallback {
@@ -56,35 +113,33 @@ fun stripTrailingGlyphNoise(name: String): String {
     return s
 }
 
-/** Number of skill rows visible at once on the Umamusume Details "Skills" tab before it scrolls. */
-private const val VISIBLE_SKILL_ROWS = 5
-
-/** Columns in the Skills-tab grid (left and right). */
-private const val SKILL_COLUMNS = 2
-
-/** Maximum number of scroll passes when reading the Skills tab (bounds trainees with many skills). */
-private const val MAX_SKILL_SCROLLS = 10
+/**
+ * Strips a skill name down to the base the database keys its variants off, removing both a real rank glyph and one that OCR misread as a letter.
+ *
+ * @param name A skill name that may carry a trailing rank glyph, either as the glyph itself or as OCR noise.
+ * @return The base skill name with no trailing glyph.
+ */
+fun skillBaseName(name: String): String = stripTrailingGlyphNoise(name.replace(SKILL_GLYPH_REGEX, " ").trim())
 
 /**
- * Filled cells the Skills tab must show before it is treated as a scrollable list. The grid holds VISIBLE_SKILL_ROWS x SKILL_COLUMNS = 10 cells, so strictly only a full page can overflow,
- * but this sits below that on purpose. Should the occupancy probe ever undercount a full page (a dim tile reading as empty), a 10-cell gate would skip the scroll and silently drop every
- * skill below the fold. The margin costs a couple of wasted swipes for a trainee holding exactly 8 or 9 skills and buys safety against that far worse failure.
+ * The key a trainee's owned skills are deduped under: the base name, plus a marker for a negative skill.
+ *
+ * The two circles are variants of one skill - the double is an upgrade that replaces the single - so they must collapse to one entry, which is what lets a pass that reads the glyph cleanly
+ * replace one that could not. The cross is a different skill entirely, and 29 base names carry all three variants, so it must not collapse with them.
+ *
+ * @param name A canonical database skill name.
+ * @return The dedupe key.
  */
-private const val MIN_SKILL_CELLS_FOR_SCROLL = 8
-
-/** Left edge of each Skills-tab grid column, on the 1080-wide reference. */
-private const val SKILL_CELL_X_LEFT = 118
-private const val SKILL_CELL_X_RIGHT = 622
-
-/** Top of the first Skills-tab row and the pitch between rows, on the 1920-tall reference. */
-private const val SKILL_GRID_TOP_Y = 1036
-private const val SKILL_ROW_PITCH_Y = 112
+private fun ownedSkillKey(name: String): String = skillBaseName(name) + if (name.trimEnd().endsWith("×")) " ×" else ""
 
 /**
- * Luminance range within a Skills-tab cell above which the cell is judged to hold a skill. An occupied cell carries an icon and dark name text over a light tile so its luminance spans a
- * wide range, while an empty slot below the last skill is flat panel background. Estimated - widen or narrow it from the per-cell ranges logged in debug mode.
+ * One cell of the Details "Skills" tab, read.
+ *
+ * @property name The canonical database name the cell resolved to.
+ * @property bResolved Whether the trailing rank glyph was actually legible. False means the name carries the fuzzy match's arbitrary guess at the glyph, so a later pass over the same cell
+ *    should be allowed to replace it.
  */
-private const val SKILL_CELL_OCCUPIED_LUMINANCE_RANGE = 60
+private data class GlyphResolution(val name: String, val bResolved: Boolean)
 
 /**
  * The result of reading the Umamusume Details "Skills" tab.
@@ -404,30 +459,8 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             skillName = skillName.drop("remove".length).trim()
         }
 
-        // Detect special icons (double-circle, single-circle, cross) that indicate skill levels or status.
-        val componentsToCheck: List<ComponentInterface> =
-            listOf(
-                IconSkillTitleDoubleCircle,
-                IconSkillTitleCircle,
-                IconSkillTitleX,
-            )
-        var match: ComponentInterface? = null
-        for (component in componentsToCheck) {
-            val point: Point? = component.findImageWithBitmap(game.imageUtils, croppedTitle)
-            if (point != null) {
-                match = component
-                break
-            }
-        }
-
-        // Map the detected icon to its corresponding Unicode character.
-        var iconChar: String =
-            when (match) {
-                IconSkillTitleDoubleCircle -> "◎"
-                IconSkillTitleCircle -> "○"
-                IconSkillTitleX -> "×"
-                else -> ""
-            }
+        // Detect the special icon (double-circle, single-circle, cross) that indicates the skill's rank. The entry here draws the glyph at full size, so the templates match it directly.
+        var iconChar: String = SKILL_GLYPH_COMPONENTS.entries.firstOrNull { it.value.findImageWithBitmap(game.imageUtils, croppedTitle) != null }?.key ?: ""
 
         // The base skill name with any trailing misread-glyph letter removed. The database stores glyphs as " <glyph>".
         val baseName: String = stripTrailingGlyphNoise(skillName)
@@ -464,14 +497,22 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      * default Conditions tab). Switches to the Skills tab, OCRs each cell of the 2-column grid, fuzzy-matches names to the skill database, scrolls for trainees with 10+ skills,
      * and reads the unique skill's level from the first cell. Cell geometry is fractions of the display, measured from a 1080x1920 capture.
      *
+     * @param bResetToTop Whether to return the panel to the top of its list first. The career flow opens the dialog fresh so it never needs this, but a debug test run twice over the same open
+     *    dialog finds the list where the last run left it.
      * @return The owned skill names and the unique level.
      */
-    fun parseDetailsSkillsTab(): DetailsSkillsResult {
-        // Switch from the default Conditions tab to the Skills tab (a fixed position in the modal).
-        game.tap(SharedData.displayWidth * 0.736, SharedData.displayHeight * 0.496, "details_skills_tab")
-        game.wait(0.5, skipWaitingForLoading = true)
+    fun parseDetailsSkillsTab(bResetToTop: Boolean = false): DetailsSkillsResult {
+        switchToSkillsTab()
 
-        val ownedNames = LinkedHashSet<String>()
+        // Null once the panel is known not to scroll, which is every gate this needs: a trainee whose skills fit on one page has no scrollbar, so the grid is read in one pass and never swiped.
+        val scrollList: ScrollList? = createDialogScrollList(game)?.takeIf { it.hasScrollBar() }
+        MessageLog.d(TAG, "[DEBUG] parseDetailsSkillsTab:: Skills panel is scrollable: ${scrollList != null}.")
+        if (bResetToTop) scrollList?.scrollToTopBySwiping()
+
+        // Keyed by the glyph-stripped base name plus its polarity, not by the full name. Every pass re-reads the cells the previous pass overlapped, and a skill whose glyph is legible on one
+        // pass but not the next would otherwise land twice under two variants ("Mile Straightaways ◎" and "Mile Straightaways ○") and count as two skills. Collapsing the two circles is the
+        // point; the cross must NOT collapse with them, since 29 base names exist in all three variants and a trainee can hold the debuff and the buff as separate skills.
+        val ownedNames = LinkedHashMap<String, GlyphResolution>()
         var uniqueLevel = 0
         var emptyPasses = 0
         for (pass in 0..MAX_SKILL_SCROLLS) {
@@ -479,23 +520,23 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             var newFound = 0
             for (row in 0 until VISIBLE_SKILL_ROWS) {
                 for (col in 0 until SKILL_COLUMNS) {
-                    val name = readDetailsSkillCell(bitmap, row, col, pass) ?: continue
-                    if (ownedNames.add(name)) newFound++
+                    val read = readDetailsSkillCell(bitmap, row, col, pass) ?: continue
+                    val key = ownedSkillKey(read.name)
+                    val seen = ownedNames[key]
+                    if (seen == null) {
+                        ownedNames[key] = read
+                        newFound++
+                    } else if (!seen.bResolved && read.bResolved) {
+                        // The first read of this skill could not make out its glyph and fell back to the fuzzy match's guess. This pass could, so it wins - the whole point of scrolling in
+                        // overlapping passes is that every cell gets read at several sub-row offsets, and only one of them has to land cleanly.
+                        ownedNames[key] = read
+                    }
                 }
             }
             if (pass == 0) {
                 uniqueLevel = readUniqueSkillLevel(bitmap)
-                // A first page that does not fill the grid cannot overflow, so there is nothing below to scroll to and every swipe from here is wasted (the loop would otherwise always
-                // burn two). Count OCCUPIED cells rather than successfully-read names: a cell whose OCR failed is still a skill, and treating it as absent would skip the scroll on a full
-                // page and silently drop every skill below the fold - far worse than the seconds this saves.
-                val cellRanges = (0 until VISIBLE_SKILL_ROWS).flatMap { r -> (0 until SKILL_COLUMNS).map { c -> skillCellLuminanceRange(bitmap, r, c) } }
-                val occupiedCells = cellRanges.count { it >= SKILL_CELL_OCCUPIED_LUMINANCE_RANGE }
-                MessageLog.d(
-                    TAG,
-                    "[DEBUG] parseDetailsSkillsTab:: Cell luminance ranges: $cellRanges (occupied at >= $SKILL_CELL_OCCUPIED_LUMINANCE_RANGE, so $occupiedCells filled).",
-                )
-                if (occupiedCells < MIN_SKILL_CELLS_FOR_SCROLL) {
-                    MessageLog.i(TAG, "[INFO] Skills tab filled only $occupiedCells/$MIN_SKILL_CELLS_FOR_SCROLL cells, so the list cannot scroll. Reading it in one pass.")
+                if (scrollList == null) {
+                    MessageLog.i(TAG, "[INFO] The Skills tab has no scrollbar, so every skill is already on screen. Reading it in one pass.")
                     break
                 }
             }
@@ -503,24 +544,28 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             // early and drop the rows still below it.
             emptyPasses = if (newFound == 0) emptyPasses + 1 else 0
             if (pass > 0 && emptyPasses >= 2) break
-            if (pass < MAX_SKILL_SCROLLS) scrollSkillsPanel()
+            if (pass < MAX_SKILL_SCROLLS) scrollList?.scrollContentDownBy((SharedData.displayHeight * SKILL_SCROLL_TRAVEL_Y / 1920.0).toInt())
         }
 
-        MessageLog.i(TAG, "[INFO] Read ${ownedNames.size} owned skills (unique Lvl $uniqueLevel): ${ownedNames.joinToString(", ")}")
-        return DetailsSkillsResult(ownedNames.toList(), uniqueLevel)
+        val skillNames: List<String> = ownedNames.values.map { it.name }
+        MessageLog.i(TAG, "[INFO] Read ${skillNames.size} owned skills (unique Lvl $uniqueLevel): ${skillNames.joinToString(", ")}")
+        return DetailsSkillsResult(skillNames, uniqueLevel)
+    }
+
+    /** Switches the Umamusume Details dialog from its default Conditions tab to the Skills tab (a fixed position in the modal). Tapping it when already there is harmless. */
+    private fun switchToSkillsTab() {
+        game.tap(SharedData.displayWidth * 0.736, SharedData.displayHeight * 0.496, "details_skills_tab")
+        game.wait(0.5, skipWaitingForLoading = true)
     }
 
     /**
-     * OCRs and database-matches one skill cell of the Details "Skills" tab.
+     * The width of one Skills-tab cell crop on the 1080-wide reference. This is also the reference width the cell is normalized to before its rank glyph is template-matched.
      *
-     * @param bitmap The current screen bitmap.
      * @param row The 0-indexed grid row.
      * @param col The grid column (0 = left, 1 = right).
-     * @return The canonical skill name, or null when the cell is empty or unmatched.
+     * @return The cell's reference width.
      */
-    private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): String? {
-        val w = SharedData.displayWidth.toDouble()
-        val h = SharedData.displayHeight.toDouble()
+    private fun detailsSkillCellRefWidth(row: Int, col: Int): Int {
         val x0 = if (col == 0) SKILL_CELL_X_LEFT else SKILL_CELL_X_RIGHT
         // The unique skill (row 0, col 0) shows "Lvl N" on the right, so its name region stops short to avoid reading the level.
         val x1 =
@@ -529,29 +574,55 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 col == 0 -> 505
                 else -> 1010
             }
+        return x1 - x0
+    }
+
+    /**
+     * The screen region of one Skills-tab cell holding the skill's name and its trailing rank glyph. The skill icon sits left of SKILL_CELL_X_LEFT, so it falls outside the crop.
+     *
+     * @param row The 0-indexed grid row.
+     * @param col The grid column (0 = left, 1 = right).
+     * @param pass The scroll pass this cell is being read on.
+     * @return The cell's bounding box in screen coordinates.
+     */
+    private fun detailsSkillCellBbox(row: Int, col: Int, pass: Int): BoundingBox {
+        val w = SharedData.displayWidth.toDouble()
+        val h = SharedData.displayHeight.toDouble()
+        val x0 = if (col == 0) SKILL_CELL_X_LEFT else SKILL_CELL_X_RIGHT
         // Page 0 sits on the grid, but after a swipe the list settles ~40px low, so shift only the scrolled passes down to pull a wrapped name's second line into the crop without
         // clipping the tops of the aligned first-page rows.
         val yTop = SKILL_GRID_TOP_Y + row * SKILL_ROW_PITCH_Y + (if (pass == 0) 0 else 40)
-        val bbox =
-            BoundingBox(
-                x = (w * x0 / 1080.0).toInt(),
-                y = (h * yTop / 1920.0).toInt(),
-                w = (w * (x1 - x0) / 1080.0).toInt(),
-                // Tall enough to capture a name that wraps to two lines (e.g. "Pace Chaser Straightaways").
-                h = (h * 100 / 1920.0).toInt(),
-            )
+        return BoundingBox(
+            x = (w * x0 / 1080.0).toInt(),
+            y = (h * yTop / 1920.0).toInt(),
+            w = (w * detailsSkillCellRefWidth(row, col) / 1080.0).toInt(),
+            h = (h * SKILL_CELL_REF_HEIGHT / 1920.0).toInt(),
+        )
+    }
+
+    /**
+     * OCRs and database-matches one skill cell of the Details "Skills" tab.
+     *
+     * @param bitmap The current screen bitmap.
+     * @param row The 0-indexed grid row.
+     * @param col The grid column (0 = left, 1 = right).
+     * @param pass The scroll pass this cell is being read on.
+     * @return The canonical skill name and whether its rank glyph was legible, or null when the cell is empty or unmatched.
+     */
+    private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): GlyphResolution? {
+        val bbox = detailsSkillCellBbox(row, col, pass)
         val crop = game.imageUtils.createSafeBitmap(bitmap, bbox, "detailsSkill_${row}_$col") ?: return null
         if (game.debugMode) game.imageUtils.saveBitmap(crop, "detailsSkill_${row}_$col")
 
         // Collapse the newline between wrapped lines into a single space so a two-line name matches its one-line database key.
         val text = extractText(crop).trim().replace(Regex("\\s+"), " ").replace(Regex("\\bl\\b"), "I")
         if (text.length < 2) return null
-        val base = stripTrailingGlyphNoise(text.replace(Regex("[○◎×]"), " ").trim())
+        val base = skillBaseName(text)
         if (base.length < 2) return null
         var name = game.skillDatabase.checkSkillName(base, fuzzySearch = true) ?: return null
         // The database stores +/-/upgraded variants as "<name> ○ / ◎ / ×". A skill on the Skills tab is positive unless it sits on a purple (negative) tile, so a non-purple
         // tile must never resolve to the "×" (negative) variant just because the base fuzzy-matched it. Default the positive correction to the base "○" (upgraded "◎" is rarer).
-        if (name.trimEnd().endsWith("×") && !isNegativeSkillCell(bitmap, row, col)) {
+        if (name.trimEnd().endsWith("×") && !isNegativeSkillCell(bitmap, row, col, pass)) {
             name = game.skillDatabase.checkSkillName("$base ○", fuzzySearch = true)
                 ?: game.skillDatabase.checkSkillName("$base ◎", fuzzySearch = true)
                 ?: name
@@ -559,43 +630,55 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         // Reject a truncated read: if the OCR base is a strict prefix of a longer matched skill (5+ chars shorter), the cell's wrapped second line was clipped and the fuzzy match
         // grabbed a shorter same-prefix skill (e.g. "Pace Chaser" -> "Pace Chaser Savvy"). Returning null lets a better-aligned scroll pass read the full name instead of locking in
         // the wrong one.
-        val matchedBase = stripTrailingGlyphNoise(name.replace(Regex("[○◎×]"), " ").trim())
+        val matchedBase = skillBaseName(name)
         if (base.length + 5 <= matchedBase.length && matchedBase.startsWith(base, ignoreCase = true)) return null
-        return name
+        val resolution = resolveCircleGlyph(crop, name, matchedBase, row, col)
+        MessageLog.d(
+            TAG,
+            "[DEBUG] readDetailsSkillCell:: Cell ($row, $col) on pass $pass read \"$text\", stripped to \"$base\", resolved to \"${resolution.name}\" (glyph legible: ${resolution.bResolved}).",
+        )
+        return resolution
     }
 
     /**
-     * The spread between the darkest and brightest pixel of a Skills-tab cell on the un-scrolled page-0 grid. An occupied cell carries an icon and dark name text over a light tile, so its
-     * luminance spans a wide range; an empty slot below the last skill is flat panel background and spans almost none. Used to tell "a skill is here" from "nothing is here" without caring
-     * which tile colour it is, and - unlike the OCR - it still reports a cell as occupied when its name fails to read.
+     * Picks between a skill's single-circle and double-circle variants by scoring the cell's rank glyph against both templates.
      *
-     * @param bitmap The current screen bitmap.
+     * The database stores an upgraded skill as its own key, "<name> ◎" alongside "<name> ○", differing only by that character. The name OCR strips the glyph before matching, so the fuzzy
+     * search sees the same base for both and which one it lands on is arbitrary - that is why an owned "Mile Straightaways ◎" was reported as "Mile Straightaways ○". Only a name the database
+     * holds in both variants is ambiguous, so only that case pays for the template match, and such a cell is guaranteed to be showing one of the two glyphs. That makes this a straight argmax
+     * between the two candidates rather than a hunt for whether a glyph is present at all.
+     *
+     * @param crop The cell crop holding the skill name and its trailing glyph.
+     * @param name The canonical database name the OCR resolved to, whose glyph may be the wrong one.
+     * @param matchedBase That name with its rank glyph stripped.
      * @param row The 0-indexed grid row.
      * @param col The grid column (0 = left, 1 = right).
-     * @return The cell's luminance range (0-255), or 0 when the cell falls outside the bitmap.
+     * @return The name, carrying the glyph the templates actually saw, and whether they were convincing enough to say.
      */
-    private fun skillCellLuminanceRange(bitmap: Bitmap, row: Int, col: Int): Int {
-        val w = SharedData.displayWidth.toDouble()
-        val h = SharedData.displayHeight.toDouble()
-        // Span the cell's icon + name, sharing readDetailsSkillCell's origin and row pitch (page-0 grid, so no scrolled-pass offset).
-        val sx = (w * (if (col == 0) SKILL_CELL_X_LEFT else SKILL_CELL_X_RIGHT) / 1080.0).toInt()
-        val sy = (h * (SKILL_GRID_TOP_Y + row * SKILL_ROW_PITCH_Y) / 1920.0).toInt()
-        // Clamp the sample area to the bitmap once rather than bounds-checking every pixel. A cell that falls entirely off the bitmap then simply samples nothing.
-        val regionW = minOf((w * 390 / 1080.0).toInt(), bitmap.width - sx)
-        val regionH = minOf((h * 96 / 1920.0).toInt(), bitmap.height - sy)
-        var minLuminance = 255
-        var maxLuminance = 0
-        for (y in 0 until regionH step 4) {
-            for (x in 0 until regionW step 4) {
-                val pixel = bitmap.getPixel(sx + x, sy + y)
-                // Rec. 601 luma, kept in integer math - a flat-vs-textured test does not need the precision of a float conversion per pixel.
-                val luminance = ((((pixel shr 16) and 0xFF) * 299) + (((pixel shr 8) and 0xFF) * 587) + ((pixel and 0xFF) * 114)) / 1000
-                if (luminance < minLuminance) minLuminance = luminance
-                if (luminance > maxLuminance) maxLuminance = luminance
-            }
+    private fun resolveCircleGlyph(crop: Bitmap, name: String, matchedBase: String, row: Int, col: Int): GlyphResolution {
+        // A negative skill is already settled: the caller confirmed the cell's tile is purple, and only the cross belongs on a purple tile. 29 base names in the database carry all three
+        // variants (Rainy Days, Muddy, Right-Handed, ...), so without this the cross would be argmaxed against the two circles it is not even a candidate for, and a debuff would silently
+        // resolve into the matching buff.
+        if (name.trimEnd().endsWith("×")) return GlyphResolution(name, bResolved = true)
+
+        val singleCircle: String = game.skillDatabase.checkSkillName("$matchedBase ○") ?: return GlyphResolution(name, bResolved = true)
+        val doubleCircle: String = game.skillDatabase.checkSkillName("$matchedBase ◎") ?: return GlyphResolution(name, bResolved = true)
+
+        val glyph: String? =
+            game.imageUtils.findBestTemplateMatch(
+                crop,
+                SKILL_CIRCLE_GLYPH_COMPONENTS,
+                (detailsSkillCellRefWidth(row, col) * SKILL_GLYPH_UPSCALE).toInt(),
+                (SKILL_CELL_REF_HEIGHT * SKILL_GLYPH_UPSCALE).toInt(),
+                minConfidence = SKILL_GLYPH_MIN_CONFIDENCE,
+            )
+        // Neither template cleared the floor, so the glyph was not legible here - a crop clipped mid-scroll, most likely. Keep the fuzzy match's guess but report it as unresolved, so a
+        // later, better-aligned pass over the same cell can replace it.
+        return when (glyph) {
+            "◎" -> GlyphResolution(doubleCircle, bResolved = true)
+            "○" -> GlyphResolution(singleCircle, bResolved = true)
+            else -> GlyphResolution(name, bResolved = false)
         }
-        // Nothing sampled leaves the bounds crossed - report no spread rather than a negative one.
-        return if (maxLuminance < minLuminance) 0 else maxLuminance - minLuminance
     }
 
     /**
@@ -604,14 +687,16 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      * @param bitmap The current screen bitmap.
      * @param row The 0-indexed grid row.
      * @param col The grid column (0 = left, 1 = right).
+     * @param pass The scroll pass this cell is being read on.
      * @return True when the cell background reads as purple.
      */
-    private fun isNegativeSkillCell(bitmap: Bitmap, row: Int, col: Int): Boolean {
+    private fun isNegativeSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): Boolean {
         val w = SharedData.displayWidth.toDouble()
         val h = SharedData.displayHeight.toDouble()
-        // The patch sits on the tile's right edge, inset from the cell origin, and steps by the same row pitch as the rest of the grid.
+        // The patch sits on the tile's right edge. Take its row origin from the same box the OCR crops, so it follows the scrolled-pass offset - sampling the un-scrolled grid on a scrolled
+        // pass lands 40px into a 112px row pitch, i.e. on the neighbouring tile, and would read that tile's colour instead of this one's.
         val sx = (w * (if (col == 0) 470 else 990) / 1080.0).toInt()
-        val sy = (h * (1050 + row * SKILL_ROW_PITCH_Y) / 1920.0).toInt()
+        val sy = detailsSkillCellBbox(row, col, pass).y + (h * 14 / 1920.0).toInt()
         val patchW = (w * 40 / 1080.0).toInt()
         val patchH = (h * 40 / 1920.0).toInt()
         var r = 0L
@@ -662,15 +747,6 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             )
         // Levels are 1-6, so take the last digit to shrug off any stray "Lvl" characters that bled into the crop.
         return text.filter { it.isDigit() }.lastOrNull()?.digitToIntOrNull() ?: 0
-    }
-
-    /** Swipes up within the skills panel to reveal the next page of skills (for trainees with 10+ skills). */
-    private fun scrollSkillsPanel() {
-        val cx = (SharedData.displayWidth / 2).toFloat()
-        // A short, slow swipe (~1.7 rows) reduces fling and heavily overlaps the previous page, so every skill passes through the visible area at several sub-row offsets across
-        // passes - on at least one of which a two-line name is aligned enough to read fully rather than clipped.
-        game.gestureUtils.swipe(cx, (SharedData.displayHeight * 0.66).toFloat(), cx, (SharedData.displayHeight * 0.56).toFloat(), 700L)
-        game.wait(0.5, skipWaitingForLoading = true)
     }
 
     /**

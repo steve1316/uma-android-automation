@@ -38,6 +38,7 @@ import com.steve1316.uma_android_automation.components.ButtonTraining
 import com.steve1316.uma_android_automation.components.ButtonTryAgain
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRace
 import com.steve1316.uma_android_automation.components.DialogInterface
+import com.steve1316.uma_android_automation.components.DialogUmamusumeDetails
 import com.steve1316.uma_android_automation.components.DialogUtils
 import com.steve1316.uma_android_automation.components.IconGoalRibbon
 import com.steve1316.uma_android_automation.components.IconInfirmaryEventHeader
@@ -73,6 +74,7 @@ import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import com.steve1316.uma_android_automation.utils.ScrollList
+import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import com.steve1316.uma_scoring.RankAptitudes
 import com.steve1316.uma_scoring.SkillScoreInput
 import com.steve1316.uma_scoring.estimateRank
@@ -340,6 +342,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 "debugMode_startRaceListDetectionTest" to racing::startRaceListDetectionTest,
                 "debugMode_startMainScreenUpdateTest" to this::startMainScreenUpdateTest,
                 "debugMode_startScrollBarDetectionTest" to ::startScrollBarDetectionTest,
+                "debugMode_startUmamusumeDetailsReadTest" to ::startUmamusumeDetailsReadTest,
                 "debugMode_startSkillListBuyTest" to skillPlan::startSkillListBuyTest,
                 "debugMode_startRainbowDetectionTest" to ::startRainbowDetectionTest,
             )
@@ -455,38 +458,63 @@ abstract class Campaign(game: Game) : Task(game) {
     fun startScrollBarDetectionTest() {
         MessageLog.i(TAG, "\n[TEST] Now beginning scrollbar detection test on the current screen.")
 
-        // Initial detection pass.
-        val scrollList = ScrollList.create(game)
+        // Pick the corner markers from what is actually on screen rather than trying one set and falling back on the other. Falling back does not work: the corner templates are 11x11 and 16x16
+        // near-featureless arcs that match any rounded edge, so the wrong set does not fail, it succeeds on junk. Run against the Umamusume Details dialog, the full-screen markers matched two
+        // unrelated edges at 0.918 and 0.912 and returned a 585x68 sliver of the stats panel as "the list", so the dialog markers were never even tried.
+        val bIsDialogOpen: Boolean = DialogUtils.check(game.imageUtils)
+        val listKind: String = if (bIsDialogOpen) "dialog" else "full-screen"
+        val scrollList: ScrollList? = if (bIsDialogOpen) createDialogScrollList(game) else ScrollList.create(game)
         if (scrollList == null) {
-            MessageLog.i(TAG, "[TEST] Could not detect a list on the current screen.")
+            MessageLog.i(TAG, "[TEST] Could not detect a $listKind list on the current screen.")
+            return
+        }
+        MessageLog.i(TAG, "[TEST] Detected a $listKind list bounded by ${scrollList.listBoundingBox}.")
+
+        val (bboxBar, bboxThumb) = scrollList.getListScrollBarBoundingRegion()
+        if (bboxBar == null || bboxThumb == null) {
+            MessageLog.i(TAG, "[TEST] No scrollbar detected, so this list has nothing below the fold and cannot scroll.")
+            return
+        }
+        MessageLog.i(TAG, "[TEST] Scrollbar detected at $bboxBar with its thumb at $bboxThumb.")
+
+        // Is this scrollbar a control or only an indicator? It matters: the Umamusume Details lists draw one that reports the position but moves nothing when dragged, and a caller that trusts
+        // it silently leaves the list wherever it already was.
+        if (scrollList.isScrollBarDraggable()) {
+            MessageLog.i(TAG, "[TEST] Dragging the thumb moved it, so this scrollbar can be dragged to scroll the list.")
+        } else {
+            MessageLog.i(TAG, "[TEST] Dragging the thumb did not move it, so this scrollbar only reports the position. This list can only be scrolled by swiping its content.")
+        }
+
+        // Now swipe the content, which moves every list.
+        MessageLog.i(TAG, "[TEST] Attempting to scroll DOWN by swiping the content...")
+        scrollList.scrollDown()
+        MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}. Attempting to scroll UP again...")
+        scrollList.scrollUp()
+        MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}.")
+
+        MessageLog.i(TAG, "[TEST] Scrollbar detection test complete.")
+    }
+
+    /**
+     * Debug test for the Umamusume Details dialog readers. Open the dialog yourself, then start the bot: this reads the trainee's active conditions, switches to the Skills tab, and reads the
+     * owned skills and the unique skill's level. The dialog is left open so the screen can be re-inspected afterwards, which means a second run would find both lists where the first one left
+     * them - so each list is put back to the top of its tab before it is read.
+     */
+    open fun startUmamusumeDetailsReadTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Umamusume Details read test. The Umamusume Details dialog must already be open.")
+        if (DialogUtils.getDialog(game.imageUtils)?.name != DialogUmamusumeDetails.name) {
+            MessageLog.w(TAG, "[TEST] The Umamusume Details dialog is not open. Open it from the career Main Screen via the Full Stats button and run the test again.")
             return
         }
 
-        val scrollBarRegion = scrollList.getListScrollBarBoundingRegion()
-        if (scrollBarRegion.first != null) {
-            MessageLog.i(TAG, "[TEST] Scrollbar detected at: ${scrollBarRegion.first}")
-            if (scrollBarRegion.second != null) {
-                MessageLog.i(TAG, "[TEST] Scrollbar thumb detected at: ${scrollBarRegion.second}")
-            } else {
-                MessageLog.i(TAG, "[TEST] No scrollbar thumb detected.")
-            }
+        val conditions = ConditionList(game).parseDetailsConditionsTab(bResetToTop = true)
+        MessageLog.i(TAG, "[TEST] Positive conditions (${conditions.positive.size}): ${conditions.positive.joinToString(", ").ifEmpty { "none" }}")
+        MessageLog.i(TAG, "[TEST] Negative conditions (${conditions.negative.size}): ${conditions.negative.joinToString(", ").ifEmpty { "none" }}")
 
-            // Try scrolling down.
-            MessageLog.i(TAG, "[TEST] Attempting to scroll DOWN...")
-            scrollList.scrollDown()
-            MessageLog.i(TAG, "[TEST] Scroll DOWN attempted.")
+        val skills = SkillList(game, this).parseDetailsSkillsTab(bResetToTop = true)
+        MessageLog.i(TAG, "[TEST] Owned skills (${skills.skillNames.size}, unique Lvl ${skills.uniqueLevel}): ${skills.skillNames.joinToString(", ").ifEmpty { "none" }}")
 
-            game.wait(1.0)
-
-            // Try scrolling up.
-            MessageLog.i(TAG, "[TEST] Attempting to scroll UP...")
-            scrollList.scrollUp()
-            MessageLog.i(TAG, "[TEST] Scroll UP attempted.")
-
-            MessageLog.i(TAG, "[TEST] Scrollbar detection test complete.")
-        } else {
-            MessageLog.i(TAG, "[TEST] No scrollbar detected on the current screen.")
-        }
+        MessageLog.i(TAG, "[TEST] Umamusume Details read test complete.")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////

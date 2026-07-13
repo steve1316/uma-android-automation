@@ -1190,7 +1190,14 @@ const searchConfig: SearchOption[] = [
         id: "debug-scrollbar-detection-test",
         title: "Start Scrollbar Detection Test",
         description:
-            "Disables normal bot operations and starts the Scrollbar detection test. Detects the scrollbar on the current screen and attempts to scroll it up and down to verify functionality.",
+            "Disables normal bot operations and starts the Scrollbar detection test. Detects the list on the current screen, whether it is a full-screen list or one drawn inside a dialog, and reports its scrollbar. It then checks whether that scrollbar can actually be dragged to scroll, since some lists draw one that only reports the position, and finally scrolls the list up and down to verify functionality.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-umamusume-details-read-test",
+        title: "Start Umamusume Details Read Test",
+        description:
+            "Disables normal bot operations and starts the Umamusume Details read test. Open the Umamusume Details dialog yourself first: it reads the trainee's active conditions, switches to the Skills tab, and reads the owned skills and unique skill level. Both lists are scrolled back to the top first, so the test can be run repeatedly on the same open dialog.",
         page: "DebugSettings",
     },
     {
