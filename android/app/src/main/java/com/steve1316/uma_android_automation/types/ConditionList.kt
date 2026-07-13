@@ -128,7 +128,18 @@ class ConditionList(private val game: Game) {
         if (!isBad && !isGood) return RowRead.EndOfList
 
         val statusTitle =
-            imageUtils.performOCROnRegion(sourceBitmap, cropX, cropY, cropWidth, cropHeight, useThreshold = false, useGrayscale = true, scale = 2.0, ocrEngine = "mlkit", debugName = "conditionRow_${pass}_$row").trim()
+            imageUtils.performOCROnRegion(
+                sourceBitmap,
+                cropX,
+                cropY,
+                cropWidth,
+                cropHeight,
+                useThreshold = false,
+                useGrayscale = true,
+                scale = 2.0,
+                ocrEngine = "mlkit",
+                debugName = "conditionRow_${pass}_$row",
+            ).trim()
         if (statusTitle.length < 3) return RowRead.Unreadable
         return RowRead.Condition(statusTitle, isBad)
     }

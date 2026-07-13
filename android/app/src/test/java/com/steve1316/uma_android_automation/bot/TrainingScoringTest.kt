@@ -1,15 +1,20 @@
 package com.steve1316.uma_android_automation.bot
 
+import com.steve1316.uma_android_automation.bot.Training.Companion.burstAllowedForStat
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateMiscScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRawTrainingScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateRelationshipScore
 import com.steve1316.uma_android_automation.bot.Training.Companion.calculateStatEfficiencyScore
+import com.steve1316.uma_android_automation.bot.Training.Companion.computeEffectiveBlacklist
+import com.steve1316.uma_android_automation.bot.Training.Companion.getCurrentStatCap
 import com.steve1316.uma_android_automation.bot.Training.Companion.getFinaleStatBonus
 import com.steve1316.uma_android_automation.bot.Training.Companion.getRemainingFinaleRaces
+import com.steve1316.uma_android_automation.bot.Training.Companion.getScenarioStatCap
 import com.steve1316.uma_android_automation.bot.Training.Companion.levelBoostMultiplier
 import com.steve1316.uma_android_automation.bot.Training.Companion.scoreFriendshipTraining
 import com.steve1316.uma_android_automation.bot.Training.Companion.scoreUnityCupTraining
 import com.steve1316.uma_android_automation.bot.Training.Companion.scoringConstantsFromMap
+import com.steve1316.uma_android_automation.bot.Training.Companion.softCapEffectivenessMultiplier
 import com.steve1316.uma_android_automation.bot.Training.TrainingConfig
 import com.steve1316.uma_android_automation.bot.Training.TrainingOption
 import com.steve1316.uma_android_automation.types.DateMonth
@@ -77,6 +82,18 @@ class TrainingScoringTest {
         )
     }
 
+    @Test
+    @DisplayName("Effective blacklist is empty in the Pre-Debut / Junior friendship window and the configured blacklist otherwise")
+    fun computeEffectiveBlacklistWindow() {
+        val blacklist = listOf<StatName?>(StatName.STAMINA, StatName.GUTS)
+        // Friendship window (Pre-Debut / Junior): blacklist ignored so bonds can still be built on blacklisted facilities.
+        assertTrue(computeEffectiveBlacklist(blacklist, bIsPreDebut = true, year = DateYear.JUNIOR).isEmpty(), "pre-debut -> ignore blacklist")
+        assertTrue(computeEffectiveBlacklist(blacklist, bIsPreDebut = false, year = DateYear.JUNIOR).isEmpty(), "junior -> ignore blacklist")
+        // Outside the window: blacklist respected.
+        assertEquals(blacklist, computeEffectiveBlacklist(blacklist, bIsPreDebut = false, year = DateYear.CLASSIC), "classic -> respect blacklist")
+        assertEquals(blacklist, computeEffectiveBlacklist(blacklist, bIsPreDebut = false, year = DateYear.SENIOR), "senior -> respect blacklist")
+    }
+
     /**
      * Converts a Map<String, Int> of stats to a Map<StatName, Int>.
      *
@@ -134,6 +151,9 @@ class TrainingScoringTest {
         skillHintsPerLocation: Map<StatName, Int> = StatName.entries.associateWith { 0 },
         enablePrioritizeSkillHints: Boolean = false,
         statsTrainedOverBuffer: Set<StatName> = emptySet(),
+        statCaps: Map<StatName, Int> = emptyMap(),
+        unityCupExtremeBurstMinStatGain: Int = 0,
+        unityCupBurstTopStatsOnlyAfterJunior: Boolean = false,
     ): TrainingConfig {
         return TrainingConfig(
             currentStats = currentStats,
@@ -150,6 +170,9 @@ class TrainingScoringTest {
             skillHintsPerLocation = skillHintsPerLocation,
             enablePrioritizeSkillHints = enablePrioritizeSkillHints,
             statsTrainedOverBuffer = statsTrainedOverBuffer,
+            statCaps = statCaps,
+            unityCupExtremeBurstMinStatGain = unityCupExtremeBurstMinStatGain,
+            unityCupBurstTopStatsOnlyAfterJunior = unityCupBurstTopStatsOnlyAfterJunior,
         )
     }
 
@@ -708,6 +731,141 @@ class TrainingScoringTest {
     }
 
     @Test
+    @DisplayName("An Extreme Spirit Burst outranks a normal burst on a better facility")
+    fun testExtremeSpiritBurstOutranksNormalBurst() {
+        // Extreme burst lands on Guts (the least-preferred burst facility); the normal burst lands on Speed (which also gets the facility-preference bump).
+        val extremeBurstTraining =
+            createDefaultTrainingOption(name = StatName.GUTS, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1, "spiritGaugesReadyToBurst" to 0, "spiritGaugesCanFill" to 0))
+        val normalBurstTraining = createDefaultTrainingOption(name = StatName.SPEED, extras = mapOf("spiritGaugesReadyToBurst" to 1, "spiritGaugesCanFill" to 0))
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurstTraining, normalBurstTraining), scenario = "Unity Cup")
+
+        val extremeScore = scoreUnityCupTraining(config, extremeBurstTraining)
+        val normalScore = scoreUnityCupTraining(config, normalBurstTraining)
+
+        assertTrue(extremeScore > normalScore, "An Extreme Spirit Burst (even on Guts) should outrank a normal burst on the preferred Speed facility")
+    }
+
+    @Test
+    @DisplayName("Extreme burst below the minimum stat-gain threshold is treated as absent")
+    fun testExtremeBurstBelowMinStatGainIsGatedOut() {
+        // Threshold 40 with a projected main-stat gain of 30: the extreme burst must not be prioritized, so the facility scores exactly as if no gauge were present.
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 30, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", unityCupExtremeBurstMinStatGain = 40)
+
+        assertEquals(
+            scoreUnityCupTraining(config, noGauge),
+            scoreUnityCupTraining(config, extremeBurst),
+            "An extreme burst with a main stat gain below the minimum should score identically to the same facility with no gauge",
+        )
+    }
+
+    @Test
+    @DisplayName("Extreme burst at the minimum stat-gain threshold is still prioritized (inclusive boundary)")
+    fun testExtremeBurstAtMinStatGainIsApplied() {
+        // Threshold 40 with a projected main-stat gain of exactly 40: the extreme burst is applied, so the facility scores well above the same facility with no gauge.
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 40, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", unityCupExtremeBurstMinStatGain = 40)
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "An extreme burst with a main stat gain at the minimum should receive the extreme burst bonus",
+        )
+    }
+
+    @Test
+    @DisplayName("Default minimum stat-gain of 0 always executes an available extreme burst")
+    fun testExtremeBurstDefaultThresholdAlwaysApplies() {
+        // Default threshold 0: even a weak main stat gain still gets the extreme burst bonus, preserving the original behavior.
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 5, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup")
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "With the default minimum of 0, an available extreme burst should always receive the bonus",
+        )
+    }
+
+    @Test
+    @DisplayName("burstAllowedForStat: off / Junior / in-top-3 allow, non-top-3 after Junior blocks")
+    fun testBurstAllowedForStatTruthTable() {
+        // Default order top 3 = SPEED, STAMINA, POWER; GUTS and WIT are outside it.
+        val prio = listOf(StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.WIT, StatName.GUTS)
+        assertTrue(burstAllowedForStat(false, DateYear.CLASSIC, prio, StatName.GUTS), "Disabled override always allows a burst")
+        assertTrue(burstAllowedForStat(true, DateYear.JUNIOR, prio, StatName.GUTS), "Junior Year is unrestricted")
+        assertTrue(burstAllowedForStat(true, DateYear.CLASSIC, prio, StatName.POWER), "A top-3 stat is allowed after Junior")
+        assertFalse(burstAllowedForStat(true, DateYear.CLASSIC, prio, StatName.GUTS), "A non-top-3 stat is blocked in Classic")
+        assertFalse(burstAllowedForStat(true, DateYear.SENIOR, prio, StatName.WIT), "A non-top-3 stat is blocked in Senior")
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: after Junior, an extreme burst on a non-top-3 stat is suppressed")
+    fun testBurstTopStatsSuppressesNonTop3ExtremeAfterJunior() {
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 60, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val classic = GameDate(year = DateYear.CLASSIC, month = DateMonth.JANUARY, phase = DatePhase.EARLY)
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", currentDate = classic, unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertEquals(
+            scoreUnityCupTraining(config, noGauge),
+            scoreUnityCupTraining(config, extremeBurst),
+            "A non-top-3 extreme burst after Junior should score identically to the same facility with no gauge",
+        )
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: after Junior, a normal burst on a non-top-3 stat is suppressed")
+    fun testBurstTopStatsSuppressesNonTop3NormalAfterJunior() {
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 30, 0))
+        val normalBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        val classic = GameDate(year = DateYear.CLASSIC, month = DateMonth.JANUARY, phase = DatePhase.EARLY)
+        val config = createDefaultConfig(trainingOptions = listOf(normalBurst, noGauge), scenario = "Unity Cup", currentDate = classic, unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertEquals(
+            scoreUnityCupTraining(config, noGauge),
+            scoreUnityCupTraining(config, normalBurst),
+            "A non-top-3 normal burst after Junior should score identically to the same facility with no gauge",
+        )
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: after Junior, a burst on a top-3 stat still applies")
+    fun testBurstTopStatsAllowsTop3AfterJunior() {
+        val speedGains = statGainsToMap(intArrayOf(60, 0, 30, 0, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.SPEED, statGains = speedGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.SPEED, statGains = speedGains, extras = emptyMap())
+        val classic = GameDate(year = DateYear.CLASSIC, month = DateMonth.JANUARY, phase = DatePhase.EARLY)
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", currentDate = classic, unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "A top-3 stat should still receive the burst bonus after Junior",
+        )
+    }
+
+    @Test
+    @DisplayName("Burst-top-stats override: Junior Year bursts a non-top-3 stat regardless of the gate")
+    fun testBurstTopStatsUnrestrictedInJunior() {
+        val gutsGains = statGainsToMap(intArrayOf(0, 0, 0, 60, 0))
+        val extremeBurst = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = mapOf("spiritGaugesReadyToExtremeBurst" to 1))
+        val noGauge = createDefaultTrainingOption(name = StatName.GUTS, statGains = gutsGains, extras = emptyMap())
+        // Default currentDate is Junior, so the gate does not apply even with the override on.
+        val config = createDefaultConfig(trainingOptions = listOf(extremeBurst, noGauge), scenario = "Unity Cup", unityCupBurstTopStatsOnlyAfterJunior = true)
+
+        assertTrue(
+            scoreUnityCupTraining(config, extremeBurst) > scoreUnityCupTraining(config, noGauge) + 1000.0,
+            "Junior Year should burst a non-top-3 stat regardless of the top-3 gate",
+        )
+    }
+
+    @Test
     @DisplayName("Speed and Wit get facility preference bonuses when spirit gauge bursting")
     fun testFacilityPreferenceBonusesForBursting() {
         // Zero out stat gains to isolate facility bonuses.
@@ -1124,11 +1282,11 @@ class TrainingScoringTest {
     @Test
     @DisplayName("Stat near cap blocked by finale bonus adjustment (turn 60, 3 races remaining)")
     fun testFinaleAdjustmentBlocksTrainingNearCap() {
-        // With 3 finale races remaining, effective cap = 1200 - 100 - 45 = 1055.
-        // A stat at 1060 should be blocked.
+        // URA Finale caps Speed at 1400. With 3 finale races remaining, effective cap = 1400 - 100 - 45 = 1255.
+        // A stat at 1260 should be blocked.
         val currentStats =
             mapOf(
-                StatName.SPEED to 1060,
+                StatName.SPEED to 1260,
                 StatName.STAMINA to 400,
                 StatName.POWER to 400,
                 StatName.GUTS to 400,
@@ -1151,17 +1309,17 @@ class TrainingScoringTest {
 
         val score = calculateRawTrainingScore(config, training)
 
-        assertEquals(0.0, score, "Stat at 1060 should be blocked when effective cap is 1055 (turn 60, 3 finale races)")
+        assertEquals(0.0, score, "Stat at 1260 should be blocked when effective cap is 1255 (turn 60, 3 finale races)")
     }
 
     @Test
     @DisplayName("Same stat allowed when fewer finale races remain (turn 74, 1 race remaining)")
     fun testFinaleAdjustmentAllowsTrainingWithFewerRaces() {
-        // With 1 finale race remaining, effective cap = 1200 - 100 - 15 = 1085.
-        // A stat at 1060 should NOT be blocked.
+        // URA Finale caps Speed at 1400. With 1 finale race remaining, effective cap = 1400 - 100 - 15 = 1285.
+        // A stat at 1260 should NOT be blocked.
         val currentStats =
             mapOf(
-                StatName.SPEED to 1060,
+                StatName.SPEED to 1260,
                 StatName.STAMINA to 400,
                 StatName.POWER to 400,
                 StatName.GUTS to 400,
@@ -1184,17 +1342,17 @@ class TrainingScoringTest {
 
         val score = calculateRawTrainingScore(config, training)
 
-        assertTrue(score > 0.0, "Stat at 1060 should be allowed when effective cap is 1085 (turn 74, 1 finale race)")
+        assertTrue(score > 0.0, "Stat at 1260 should be allowed when effective cap is 1285 (turn 74, 1 finale race)")
     }
 
     @Test
     @DisplayName("No finale adjustment on turn 75 (all races done)")
     fun testNoFinaleAdjustmentOnFinalTurn() {
-        // With 0 finale races remaining, effective cap = 1200 - 100 = 1100 (unchanged).
-        // A stat at 1060 with potential 1080 should NOT be blocked.
+        // URA Finale caps Speed at 1400. With 0 finale races remaining, effective cap = 1400 - 100 = 1300.
+        // A stat at 1260 with potential 1280 should NOT be blocked.
         val currentStats =
             mapOf(
-                StatName.SPEED to 1060,
+                StatName.SPEED to 1260,
                 StatName.STAMINA to 400,
                 StatName.POWER to 400,
                 StatName.GUTS to 400,
@@ -1217,7 +1375,7 @@ class TrainingScoringTest {
 
         val score = calculateRawTrainingScore(config, training)
 
-        assertTrue(score > 0.0, "Stat at 1060 should be allowed on turn 75 with no finale adjustment (effective cap = 1100)")
+        assertTrue(score > 0.0, "Stat at 1260 should be allowed on turn 75 with no finale adjustment (effective cap = 1300)")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1407,6 +1565,8 @@ class TrainingScoringTest {
         assertEquals(400.0, c.unityBurstPerGaugeBonus)
         assertEquals(0.0, c.unityFillEnergyPenaltyPerGauge)
         assertEquals(0.0, c.unityBurstEnergyPenaltyPerGauge)
+        assertEquals(2000.0, c.unityExtremeBurstBaseBonus)
+        assertEquals(1000.0, c.unityExtremeBurstPerGaugeBonus)
         assertEquals(2.0, c.rainbowMultiplierEnabled)
         assertEquals(1.5, c.rainbowMultiplierDisabled)
         assertEquals(200.0, c.rainbowPerInstanceBase)
@@ -1594,5 +1754,76 @@ class TrainingScoringTest {
         val result = scoringConstantsFromMap(mapOf("priorityCoefficient" to "oops", "miscWeight" to Double.NaN))
         assertEquals(defaults.priorityCoefficient, result.priorityCoefficient, 1e-9, "Non-numeric value should fall back")
         assertEquals(defaults.miscWeight, result.miscWeight, 1e-9, "NaN value should fall back")
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Dynamic per-stat stat caps (July 2026)
+
+    @Test
+    @DisplayName("getScenarioStatCap: per-scenario per-stat caps")
+    fun getScenarioStatCapPerScenario() {
+        // URA Finale: all five stats cap at 1400.
+        for (stat in StatName.entries) {
+            assertEquals(1400, getScenarioStatCap("URA Finale", stat), "URA Finale $stat cap should be 1400")
+        }
+        // Unity Cup: SPD/STA/POW/GUTS 1300, WIT 1800.
+        assertEquals(1300, getScenarioStatCap("Unity Cup", StatName.SPEED), "Unity Cup Speed cap")
+        assertEquals(1300, getScenarioStatCap("Unity Cup", StatName.STAMINA), "Unity Cup Stamina cap")
+        assertEquals(1300, getScenarioStatCap("Unity Cup", StatName.POWER), "Unity Cup Power cap")
+        assertEquals(1300, getScenarioStatCap("Unity Cup", StatName.GUTS), "Unity Cup Guts cap")
+        assertEquals(1800, getScenarioStatCap("Unity Cup", StatName.WIT), "Unity Cup Wit cap")
+        // Trackblazer: STA 1900, WIT 1500, everything else 1200.
+        assertEquals(1900, getScenarioStatCap("Trackblazer", StatName.STAMINA), "Trackblazer Stamina cap")
+        assertEquals(1500, getScenarioStatCap("Trackblazer", StatName.WIT), "Trackblazer Wit cap")
+        assertEquals(1200, getScenarioStatCap("Trackblazer", StatName.SPEED), "Trackblazer Speed cap")
+        assertEquals(1200, getScenarioStatCap("Trackblazer", StatName.POWER), "Trackblazer Power cap")
+        // Unknown scenario falls back to 1200 for every stat.
+        assertEquals(1200, getScenarioStatCap("Something Else", StatName.WIT), "Unknown scenario default cap")
+    }
+
+    @Test
+    @DisplayName("softCapEffectivenessMultiplier: below 1200 full, above 1200 half, blended across the threshold")
+    fun softCapEffectivenessMultiplierBlends() {
+        val cap = 1400
+        // Entire gain below the soft-cap threshold -> fully effective.
+        assertEquals(1.0, softCapEffectivenessMultiplier(1000, 20, cap), 1e-9, "gain entirely below 1200")
+        // Entire gain above the threshold -> half effective.
+        assertEquals(0.5, softCapEffectivenessMultiplier(1300, 20, cap), 1e-9, "gain entirely above 1200")
+        // Gain straddles the threshold (10 below at 1.0 + 10 above at 0.5 = 15 / 20).
+        assertEquals(0.75, softCapEffectivenessMultiplier(1190, 20, cap), 1e-9, "gain straddling 1200")
+        // Gain overflows the real cap (10 in the soft zone at 0.5 + 10 wasted above cap = 5 / 20).
+        assertEquals(0.25, softCapEffectivenessMultiplier(1390, 20, cap), 1e-9, "gain overflowing the cap")
+        // Already at the cap -> no effective gain.
+        assertEquals(0.0, softCapEffectivenessMultiplier(1400, 20, cap), 1e-9, "already at cap")
+        // No gain -> neutral multiplier.
+        assertEquals(1.0, softCapEffectivenessMultiplier(1000, 0, cap), 1e-9, "no gain")
+    }
+
+    @Test
+    @DisplayName("getCurrentStatCap: OCR'd statCaps override the per-scenario table")
+    fun getCurrentStatCapUsesDynamicOverride() {
+        // No override -> scenario table (URA -> 1400).
+        val baseConfig = createDefaultConfig(scenario = "URA Finale")
+        assertEquals(1400, getCurrentStatCap(StatName.SPEED, baseConfig), "no override falls back to the URA table cap")
+        // An OCR'd cap (raised by sparks/inheritance/duels) wins over the static table.
+        val dynamicConfig = createDefaultConfig(scenario = "URA Finale", statCaps = mapOf(StatName.SPEED to 1460))
+        assertEquals(1460, getCurrentStatCap(StatName.SPEED, dynamicConfig), "OCR'd cap overrides the table")
+        // A stat without an OCR'd entry still falls back to the table.
+        assertEquals(1400, getCurrentStatCap(StatName.WIT, dynamicConfig), "unlisted stat falls back to the table cap")
+    }
+
+    @Test
+    @DisplayName("calculateStatEfficiencyScore: a gain fully above 1200 is worth half a gain fully below")
+    fun statEfficiencyAppliesSoftCap() {
+        // Only Speed gains, so the summed score is just Speed's contribution. Both currents sit far above the Medium Speed target (800), so both land in the same top ratio bucket
+        // and only the soft-cap multiplier differs: 1.0 fully below 1200 vs 0.5 fully above.
+        val training = createDefaultTrainingOption(name = StatName.SPEED, statGains = statGainsToMap(intArrayOf(20, 0, 0, 0, 0)))
+        val belowThreshold = mapOf(StatName.SPEED to 1000, StatName.STAMINA to 400, StatName.POWER to 400, StatName.GUTS to 400, StatName.WIT to 400)
+        val aboveThreshold = mapOf(StatName.SPEED to 1300, StatName.STAMINA to 400, StatName.POWER to 400, StatName.GUTS to 400, StatName.WIT to 400)
+        val scoreBelow = calculateStatEfficiencyScore(createDefaultConfig(trainingOptions = listOf(training), currentStats = belowThreshold), training)
+        val scoreAbove = calculateStatEfficiencyScore(createDefaultConfig(trainingOptions = listOf(training), currentStats = aboveThreshold), training)
+        assertTrue(scoreBelow > 0.0, "sanity: the below-threshold score is positive")
+        assertEquals(scoreBelow * 0.5, scoreAbove, 1e-6, "a gain fully above 1200 should be half as effective")
     }
 }

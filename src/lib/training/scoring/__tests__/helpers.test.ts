@@ -56,18 +56,33 @@ describe("getFinaleStatBonus", () => {
 })
 
 describe("getCurrentStatCap", () => {
-    test("returns 1200 for SPEED in URA scenario", () => {
-        expect(getCurrentStatCap(StatName.SPEED, makeConfig({ scenario: "URA" }))).toBe(1200)
+    test("URA Finale caps every stat at 1400", () => {
+        for (const stat of [StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.GUTS, StatName.WIT]) {
+            expect(getCurrentStatCap(stat, makeConfig({ scenario: "URA Finale" }))).toBe(1400)
+        }
     })
 
-    test("returns 1200 for WIT regardless of scenario name", () => {
-        expect(getCurrentStatCap(StatName.WIT, makeConfig({ scenario: "Unity Cup" }))).toBe(1200)
+    test("Unity Cup caps WIT at 1800 and the rest at 1300", () => {
+        expect(getCurrentStatCap(StatName.WIT, makeConfig({ scenario: "Unity Cup" }))).toBe(1800)
+        expect(getCurrentStatCap(StatName.SPEED, makeConfig({ scenario: "Unity Cup" }))).toBe(1300)
     })
 
-    test("returns 1200 for every stat", () => {
-        const config = makeConfig()
+    test("Trackblazer caps STAMINA at 1900, WIT at 1500, and others at 1200", () => {
+        expect(getCurrentStatCap(StatName.STAMINA, makeConfig({ scenario: "Trackblazer" }))).toBe(1900)
+        expect(getCurrentStatCap(StatName.WIT, makeConfig({ scenario: "Trackblazer" }))).toBe(1500)
+        expect(getCurrentStatCap(StatName.SPEED, makeConfig({ scenario: "Trackblazer" }))).toBe(1200)
+    })
+
+    test("an unknown scenario falls back to 1200 for every stat", () => {
+        const config = makeConfig({ scenario: "Mystery" })
         for (const stat of [StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.GUTS, StatName.WIT]) {
             expect(getCurrentStatCap(stat, config)).toBe(1200)
         }
+    })
+
+    test("an OCR'd statCaps entry overrides the per-scenario table", () => {
+        const config = makeConfig({ scenario: "URA Finale", statCaps: { [StatName.SPEED]: 1460 } })
+        expect(getCurrentStatCap(StatName.SPEED, config)).toBe(1460)
+        expect(getCurrentStatCap(StatName.WIT, config)).toBe(1400)
     })
 })

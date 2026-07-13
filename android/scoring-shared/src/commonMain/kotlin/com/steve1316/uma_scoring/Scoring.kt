@@ -11,26 +11,70 @@ import kotlin.math.pow
 /** Stats gained per finale race win, per stat. Slightly above the actual +10 to account for misc event/card gains. */
 private const val FINALE_RACE_STAT_BONUS = 15
 
+/** Fallback stat cap used for scenarios / stats not raised by the 2026-07-01 rebalance, and when no live per-stat cap has been OCR'd. */
+private const val DEFAULT_STAT_CAP = 1200
+
+/** Stat value at and below which training is fully effective. Above it (up to the real cap) a stat point is worth `BEYOND_SOFT_CAP_EFFECTIVENESS` as much, per the 2026-07-01 rebalance. */
+private const val SOFT_CAP_THRESHOLD = 1200
+
+/** Effectiveness multiplier applied to the portion of a stat gain that lands above `SOFT_CAP_THRESHOLD`. The rebalance made beyond-1200 stats half as valuable (was ~1/8). */
+private const val BEYOND_SOFT_CAP_EFFECTIVENESS = 0.5
+
 /**
- * Retrieve the scenario-specific cap for a given stat. Currently a stub returning a flat 1200 for every scenario - kept as a function so callers thread through the scenario
- * name and we have a hook to differentiate per-scenario caps later without a signature change.
+ * Retrieve the scenario-specific base cap for a given stat. The 2026-07-01 rebalance raised caps per scenario and per stat, so the table below is the base (spark-free) cap for
+ * each scenario. Sparks / inheritance / duels / extreme bursts raise the real in-run cap above this - those are read live via `TrainingConfig.statCaps` and take precedence in
+ * `getCurrentStatCap`. This static table is the fallback when no live cap has been OCR'd.
  *
  * @param scenario The campaign name.
  * @param statName The stat being capped.
- * @return The maximum value for the specified stat in the given scenario.
+ * @return The base maximum value for the specified stat in the given scenario.
  */
 @JsExport
-fun getScenarioStatCap(scenario: String, statName: StatName): Int = 1200
+fun getScenarioStatCap(scenario: String, statName: StatName): Int =
+    when (scenario) {
+        "URA Finale" -> 1400
+        "Unity Cup" -> if (statName == StatName.WIT) 1800 else 1300
+        "Trackblazer" ->
+            when (statName) {
+                StatName.STAMINA -> 1900
+                StatName.WIT -> 1500
+                else -> DEFAULT_STAT_CAP
+            }
+        else -> DEFAULT_STAT_CAP
+    }
 
 /**
- * Retrieve the current stat cap given a scoring config.
+ * Retrieve the current stat cap given a scoring config. Prefers the live OCR'd cap in `config.statCaps` (which reflects spark / inheritance / duel / extreme-burst increases) and
+ * falls back to the static per-scenario table when no live cap is present for the stat.
  *
  * @param statName The stat name.
- * @param config The scoring config (only `config.scenario` is consulted).
+ * @param config The scoring config supplying the live `statCaps` and the `scenario` fallback.
  * @return Stat cap.
  */
 @JsExport
-fun getCurrentStatCap(statName: StatName, config: TrainingConfig): Int = getScenarioStatCap(config.scenario, statName)
+fun getCurrentStatCap(statName: StatName, config: TrainingConfig): Int =
+    config.statCaps[statName]?.takeIf { it > 0 } ?: getScenarioStatCap(config.scenario, statName)
+
+/**
+ * Effectiveness multiplier for a stat gain under the soft-cap model. A stat point at or below `SOFT_CAP_THRESHOLD` is fully effective. Points from the threshold up to `statCap`
+ * are worth `BEYOND_SOFT_CAP_EFFECTIVENESS` as much (the 2026-07-01 rebalance halved beyond-1200 value). Points that would land above `statCap` are wasted. The result is the
+ * effective fraction of the whole gain, so a caller just multiplies a stat score by it. Returns 1.0 for a non-positive gain.
+ *
+ * @param currentStat The stat's current value before training.
+ * @param statGain The raw stat gain from the training.
+ * @param statCap The real (dynamic) cap for the stat.
+ * @return Effective fraction of the gain, in [0.0, 1.0].
+ */
+@JsExport
+fun softCapEffectivenessMultiplier(currentStat: Int, statGain: Int, statCap: Int): Double {
+    if (statGain <= 0) return 1.0
+    val end = minOf(currentStat + statGain, statCap)
+    if (end <= currentStat) return 0.0
+    val fullPortion = (minOf(end, SOFT_CAP_THRESHOLD) - currentStat).coerceAtLeast(0)
+    val softPortion = (end - maxOf(currentStat, SOFT_CAP_THRESHOLD)).coerceAtLeast(0)
+    val effectiveGain = fullPortion + softPortion * BEYOND_SOFT_CAP_EFFECTIVENESS
+    return effectiveGain / statGain
+}
 
 /**
  * Number of remaining finale races based on the current turn. Finale races occur on turns 73, 74, and 75. Before the finale (turn <= 72), all 3 races remain.
@@ -125,8 +169,12 @@ fun calculateStatEfficiencyScore(config: TrainingConfig, training: TrainingOptio
                     1.0
                 }
 
+            // Beyond 1200 a stat point is worth less (half by default), so devalue the portion of this gain that lands in the soft-cap zone up to the stat's real (dynamic) cap.
+            val softCapMultiplier = softCapEffectivenessMultiplier(currentStat, statGain, getCurrentStatCap(statName, config))
+
             var statScore = statGain.toDouble()
             statScore *= ratioMultiplier
+            statScore *= softCapMultiplier
             statScore *= priorityMultiplier
             statScore *= levelMultiplier
             statScore *= mainStatBonus
@@ -370,5 +418,7 @@ fun scoringConstantsFromMap(settings: Map<String, Any?>, defaults: TrainingScori
         unityBurstPerGaugeBonus = d("unityBurstPerGaugeBonus", defaults.unityBurstPerGaugeBonus),
         unityFillEnergyPenaltyPerGauge = d("unityFillEnergyPenaltyPerGauge", defaults.unityFillEnergyPenaltyPerGauge),
         unityBurstEnergyPenaltyPerGauge = d("unityBurstEnergyPenaltyPerGauge", defaults.unityBurstEnergyPenaltyPerGauge),
+        unityExtremeBurstBaseBonus = d("unityExtremeBurstBaseBonus", defaults.unityExtremeBurstBaseBonus),
+        unityExtremeBurstPerGaugeBonus = d("unityExtremeBurstPerGaugeBonus", defaults.unityExtremeBurstPerGaugeBonus),
     )
 }

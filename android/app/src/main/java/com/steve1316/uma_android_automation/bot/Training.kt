@@ -51,6 +51,7 @@ import com.steve1316.uma_scoring.getScenarioStatCap as sharedGetScenarioStatCap
 import com.steve1316.uma_scoring.levelBoostMultiplier as sharedLevelBoostMultiplier
 import com.steve1316.uma_scoring.rawTrainingScoreComponents as sharedRawTrainingScoreComponents
 import com.steve1316.uma_scoring.scoringConstantsFromMap as sharedScoringConstantsFromMap
+import com.steve1316.uma_scoring.softCapEffectivenessMultiplier as sharedSoftCapEffectivenessMultiplier
 
 /**
  * Handle the training process, including analysis of options, scoring recommendations, and execution.
@@ -138,10 +139,16 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     internal val summerTrainingStatPriority: List<StatName> = summerTrainingStatPriorityRaw.ifEmpty { statPrioritization }
 
     /** The maximum allowed failure chance for training. */
-    private val maximumFailureChance: Int = SettingsHelper.getIntSetting("training", "maximumFailureChance")
+    protected val maximumFailureChance: Int = SettingsHelper.getIntSetting("training", "maximumFailureChance")
 
     /** Unity Cup only: the failure-chance ceiling a training with a Spirit Explosion gauge ready to burst may reach before being skipped. 0 (default) disables the exemption. */
     private val unityCupBurstMaxFailureChance: Int = SettingsHelper.getIntSetting("scenarioOverrides", "unityCupBurstMaxFailureChance", 0)
+
+    /** Unity Cup only: minimum projected main-stat gain a facility must have before its Extreme Spirit Burst is prioritized. 0 (default) always executes available extreme bursts. */
+    private val unityCupExtremeBurstMinStatGain: Int = SettingsHelper.getIntSetting("scenarioOverrides", "unityCupExtremeBurstMinStatGain", 0)
+
+    /** Unity Cup only: after Junior Year, only prioritize Spirit Explosion bursts (normal and extreme) on facilities whose stat is in the top 3 prioritized stats. false (default) is unrestricted. */
+    private val unityCupBurstTopStatsOnlyAfterJunior: Boolean = SettingsHelper.getBooleanSetting("scenarioOverrides", "unityCupBurstTopStatsOnlyAfterJunior", false)
 
     /** Whether to skip training for stats at their cap. */
     private val disableTrainingOnMaxedStat: Boolean = SettingsHelper.getBooleanSetting("training", "disableTrainingOnMaxedStat")
@@ -185,6 +192,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** Whether to ignore per-distance stat targets and treat every stat's target as the scenario stat cap. When ON, the bot keeps the ratio multiplier in the "encourage training" band for every stat. */
     internal val disableStatTargets: Boolean = SettingsHelper.getBooleanSetting("training", "disableStatTargets", false)
 
+    /** When true, live per-stat caps OCR'd from the career / training screen override the static per-scenario cap table. Disable to always use the fixed per-scenario caps if the reading misbehaves. */
+    internal val useDynamicStatCaps: Boolean = SettingsHelper.getBooleanSetting("training", "useDynamicStatCaps", true)
+
     /** Cached screen location of the Energy label, used as the anchor for training level OCR. Resolved lazily on first use, reused for the rest of the bot session. */
     private var cachedEnergyLocation: Point? = null
 
@@ -211,7 +221,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
     /** Whether every training is unavailable because it is restricted (cannot-perform) or blacklisted. Resting cannot fix that, so it is not an energy problem. */
     private val allTrainingsRestrictedOrBlacklisted: Boolean
-        get() = restrictedTrainingNames.size == StatName.entries.size || (restrictedTrainingNames.size + blacklist.size) >= StatName.entries.size
+        get() = restrictedTrainingNames.size == StatName.entries.size || (restrictedTrainingNames.size + effectiveBlacklist().size) >= StatName.entries.size
 
     /** Whether the last analysis produced no viable training (failure chances too high, or energy depleted), so energy recovery is warranted. */
     var needsEnergyRecovery: Boolean = false
@@ -220,14 +230,19 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     internal var firstTrainingCheck = true
 
     /**
-     * Retrieve the current stat cap for a given stat.
+     * Retrieve the current stat cap for a given stat: the OCR'd cap when dynamic caps are enabled and it is at least the scenario base (a below-base read is a misread), otherwise the
+     * per-scenario table value. Mirrors the resolution used by the shared scorer and [com.steve1316.uma_android_automation.types.Trainee.logInfo].
      *
      * @param statName The stat name.
      * @return The current maximum value for the specified stat.
      */
     private fun getCurrentStatCap(statName: StatName): Int {
-        return getScenarioStatCap(game.scenario, statName)
+        val base = getScenarioStatCap(game.scenario, statName)
+        return if (useDynamicStatCaps) plausibleStatCap(base, campaign.trainee.statCaps[statName]) else base
     }
+
+    /** The blacklist that applies this turn - empty in the Pre-Debut / Junior Friendship window so bonds can be built on blacklisted facilities, else the configured [blacklist]. */
+    private fun effectiveBlacklist(): List<StatName?> = computeEffectiveBlacklist(blacklist, campaign.date.bIsPreDebut, campaign.date.year)
 
     /**
      * Store analysis results for a training during parallel processing.
@@ -283,6 +298,14 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 trainingLevel = trainingLevel,
                 skipReason = reason,
             )
+
+        /** Whether this training has a Unity Cup Spirit Explosion gauge ready to burst (normal or extreme) - a guaranteed-success turn that must not be skipped or normalized away. */
+        val isBurstReady: Boolean
+            get() = (extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0 || (extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0) > 0
+
+        /** The projected gain for this training's own stat, which is the value the risky-training and Unity Cup burst gates compare against. */
+        val mainStatGain: Int
+            get() = statGains[name] ?: 0
     }
 
     /**
@@ -311,6 +334,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val trainingLevel: Int? = null,
         val skipReason: String? = null,
     ) {
+        /** The projected gain for this training's own stat, which is the value the Unity Cup burst gates compare against. */
+        val mainStatGain: Int
+            get() = statGains[name] ?: 0
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -367,6 +394,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
      * @property enablePrioritizeNearMaxFriendship Whether to apply an anticipatory rainbow multiplier in Year 2+ when a training has multiple near-max (green/blue) friendship bars.
      * @property statsTrainedOverBuffer Set of stats that have already exceeded their cap buffer.
      * @property scoring All tunable numeric constants for the scoring math. Defaults to current hardcoded values.
+     * @property statCaps Live per-stat caps OCR'd from the career/training screen. A present entry overrides the static per-scenario cap table in scoring.
+     * @property unityCupExtremeBurstMinStatGain Unity Cup only: minimum projected main-stat gain a facility must have before its Extreme Spirit Burst is prioritized. 0 (default) always
+     *   executes available extreme bursts.
+     * @property unityCupBurstTopStatsOnlyAfterJunior Unity Cup only: after Junior Year, only prioritize bursts (normal and extreme) on facilities whose stat is in the top 3 prioritized
+     *   stats. false (default) is unrestricted.
      */
     data class TrainingConfig(
         // Global configuration.
@@ -388,57 +420,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val enablePrioritizeNearMaxFriendship: Boolean = true,
         val statsTrainedOverBuffer: Set<StatName> = emptySet(),
         val scoring: TrainingScoringConstants = TrainingScoringConstants(),
-    ) {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as TrainingConfig
-
-            if (currentStats != other.currentStats) return false
-            if (statPrioritization != other.statPrioritization) return false
-            if (eventChoiceStatPriority != other.eventChoiceStatPriority) return false
-            if (summerTrainingStatPriority != other.summerTrainingStatPriority) return false
-            if (statTargets != other.statTargets) return false
-            if (currentDate != other.currentDate) return false
-            if (scenario != other.scenario) return false
-            if (enableRainbowTrainingBonus != other.enableRainbowTrainingBonus) return false
-            if (blacklist != other.blacklist) return false
-            if (disableTrainingOnMaxedStat != other.disableTrainingOnMaxedStat) return false
-            if (trainingOptions != other.trainingOptions) return false
-            if (skillHintsPerLocation != other.skillHintsPerLocation) return false
-            if (enablePrioritizeSkillHints != other.enablePrioritizeSkillHints) return false
-            if (enableTrainingLevelWeighting != other.enableTrainingLevelWeighting) return false
-            if (disableStatTargets != other.disableStatTargets) return false
-            if (enablePrioritizeNearMaxFriendship != other.enablePrioritizeNearMaxFriendship) return false
-            if (statsTrainedOverBuffer != other.statsTrainedOverBuffer) return false
-            if (scoring != other.scoring) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = currentStats.hashCode()
-            result = 31 * result + statPrioritization.hashCode()
-            result = 31 * result + eventChoiceStatPriority.hashCode()
-            result = 31 * result + summerTrainingStatPriority.hashCode()
-            result = 31 * result + statTargets.hashCode()
-            result = 31 * result + currentDate.hashCode()
-            result = 31 * result + scenario.hashCode()
-            result = 31 * result + enableRainbowTrainingBonus.hashCode()
-            result = 31 * result + blacklist.hashCode()
-            result = 31 * result + disableTrainingOnMaxedStat.hashCode()
-            result = 31 * result + trainingOptions.hashCode()
-            result = 31 * result + skillHintsPerLocation.hashCode()
-            result = 31 * result + enablePrioritizeSkillHints.hashCode()
-            result = 31 * result + enableTrainingLevelWeighting.hashCode()
-            result = 31 * result + disableStatTargets.hashCode()
-            result = 31 * result + enablePrioritizeNearMaxFriendship.hashCode()
-            result = 31 * result + statsTrainedOverBuffer.hashCode()
-            result = 31 * result + scoring.hashCode()
-            return result
-        }
-    }
+        val statCaps: Map<StatName, Int> = emptyMap(),
+        val unityCupExtremeBurstMinStatGain: Int = 0,
+        val unityCupBurstTopStatsOnlyAfterJunior: Boolean = false,
+    )
 
     companion object {
         /** The logging tag for this class. */
@@ -505,6 +490,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     "unityBurstPerGaugeBonus",
                     "unityFillEnergyPenaltyPerGauge",
                     "unityBurstEnergyPenaltyPerGauge",
+                    "unityExtremeBurstBaseBonus",
+                    "unityExtremeBurstPerGaugeBonus",
                 )
             val intKeys = listOf("mainStatThresholdSpeed", "mainStatThresholdStamina", "mainStatThresholdPower", "mainStatThresholdGuts", "mainStatThresholdWit")
             // Use NaN as the per-key default so we can distinguish "user set it" from "missing"; scoringConstantsFromMap drops NaN via isFinite check.
@@ -526,6 +513,18 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         /** Adapter for the shared `getCurrentStatCap`. Converts the Android-rich `TrainingConfig` at the boundary. */
         fun getCurrentStatCap(statName: StatName, config: TrainingConfig): Int = sharedGetCurrentStatCap(statName, config.toScoring())
+
+        /**
+         * Reject an OCR'd stat cap that reads below the scenario's base cap as a misread, since sparks / inheritance / duels / extreme bursts only ever raise a cap above the base.
+         *
+         * @param base The scenario's base cap for the stat, used as both the floor and the fallback.
+         * @param ocrCap The OCR'd cap, or null if none was read.
+         * @return `ocrCap` when it is at least `base`, otherwise `base`.
+         */
+        fun plausibleStatCap(base: Int, ocrCap: Int?): Int = ocrCap?.takeIf { it >= base } ?: base
+
+        /** Adapter for the shared `softCapEffectivenessMultiplier`. */
+        fun softCapEffectivenessMultiplier(currentStat: Int, statGain: Int, statCap: Int): Double = sharedSoftCapEffectivenessMultiplier(currentStat, statGain, statCap)
 
         /** Adapter for the shared `getRemainingFinaleRaces`. */
         fun getRemainingFinaleRaces(currentDay: Int): Int = sharedGetRemainingFinaleRaces(currentDay)
@@ -598,6 +597,18 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         }
 
         /**
+         * The blacklist that actually applies on a given turn. During the Pre-Debut / Junior Friendship window it is empty so blacklisted facilities can still be trained to build
+         * support-card bonds; outside the window it is the configured blacklist. Mirrors the window that [scoreTraining] uses to select [scoreFriendshipTraining].
+         *
+         * @param blacklist The user-configured training blacklist.
+         * @param bIsPreDebut Whether the current turn is Pre-Debut.
+         * @param year The current campaign year.
+         * @return The effective blacklist for the turn.
+         */
+        fun computeEffectiveBlacklist(blacklist: List<StatName?>, bIsPreDebut: Boolean, year: DateYear): List<StatName?> =
+            if (bIsPreDebut || year == DateYear.JUNIOR) emptyList() else blacklist
+
+        /**
          * Score the training option based on friendship bar progress.
          *
          * This method prefers training options with the least relationship progress, specifically focusing on blue bars.
@@ -635,25 +646,49 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          *
          * The priority order is as follows:
          * 1. Stat Efficiency: Raw stat gains toward targets.
-         * 2. Spirit Explosion: Trainings with gauges ready to burst.
-         * 3. Gauge Filling: Trainings that can fill Spirit Explosion gauges.
-         * 4. Relationship: Relationship building.
+         * 2. Extreme Spirit Burst: A support ready for an Extreme Spirit Burst (biggest boost, raises caps, 0% fail, one-time).
+         * 3. Spirit Explosion: Trainings with gauges ready to burst.
+         * 4. Gauge Filling: Trainings that can fill Spirit Explosion gauges.
+         * 5. Relationship: Relationship building.
          *
          * @param config The [TrainingConfig] containing global scoring inputs.
          * @param training The [TrainingOption] to score.
          * @return A score representing the Unity Cup training value.
          */
         fun scoreUnityCupTraining(config: TrainingConfig, training: TrainingOption): Double {
-            MessageLog.v(TAG, "\n[TRAINING] Starting process to score ${training.name} Training for Unity Cup with redirected priority: Stats > Burst > Filling.")
+            MessageLog.v(TAG, "\n[TRAINING] Starting process to score ${training.name} Training for Unity Cup with redirected priority: Stats > Extreme > Burst > Filling.")
 
             val numSpiritGaugesCanFill = training.extras["spiritGaugesCanFill"] as? Int ?: 0
-            val numSpiritGaugesReadyToBurst = training.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val rawReadyToBurst = training.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val rawReadyToExtremeBurst = training.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
+
+            // A burst blocked by one of the optional Unity Cup gates is treated as absent, so zero its count once here (the same idiom processAnalysisResults uses) rather than threading
+            // the gates through each bonus block below. An extreme burst must clear the minimum projected main-stat gain so a weak stat turn does not waste the one-time burst, and after
+            // Junior Year both burst tiers must land on a top 3 prioritized stat when that override is on. Both default to off, leaving the counts untouched.
+            // Scoring deliberately does not apply the risky minimum-main-stat-gain gate that burstFailureExemptionAllowed applies. That gate governs only the failure-chance ceiling, and
+            // TrainingConfig carries no risk settings by design. A low-gain burst at a safe failure chance should still win on burst value, so gating it here would gut Unity Cup mode.
+            val numSpiritGaugesReadyToExtremeBurst = if (extremeBurstAllowed(config, training)) rawReadyToExtremeBurst else 0
+            val numSpiritGaugesReadyToBurst = if (burstAllowedForStat(config, training.name)) rawReadyToBurst else 0
+            if (rawReadyToExtremeBurst > 0 && numSpiritGaugesReadyToExtremeBurst == 0) {
+                MessageLog.i(TAG, "[TRAINING] [${training.name}] Skipping EXTREME burst priority: ${extremeBurstSkipReason(config, training)}.")
+            }
+            if (rawReadyToBurst > 0 && numSpiritGaugesReadyToBurst == 0) {
+                MessageLog.i(TAG, "[TRAINING] [${training.name}] Skipping burst priority: not a top 3 prioritized stat after Junior Year.")
+            }
 
             // 1. Primary Priority: Stat Efficiency.
             var score = calculateStatEfficiencyScore(config, training)
             MessageLog.i(TAG, "[TRAINING] [${training.name}] Base stat efficiency score: ${String.format("%.2f", score)}")
 
-            // 2. Second Priority: Trainings with Spirit Explosion Gauges ready to burst.
+            // 2. Highest bonus: Extreme Spirit Burst. Much larger than a normal burst, raises stat caps, cannot fail, and is one-time, so it always outranks a normal burst. Applied as a
+            // strictly larger, stat-agnostic bonus (no facility preference) so the extreme facility is picked whenever it is present.
+            if (numSpiritGaugesReadyToExtremeBurst > 0) {
+                val bonus = extremeBurstBonus(config.scoring, numSpiritGaugesReadyToExtremeBurst)
+                score += bonus
+                MessageLog.i(TAG, "[TRAINING] [${training.name}] Adding EXTREME burst bonus for $numSpiritGaugesReadyToExtremeBurst gauge(s): $bonus")
+            }
+
+            // 3. Trainings with Spirit Explosion Gauges ready to burst.
             if (numSpiritGaugesReadyToBurst > 0) {
                 // We give a significant bonus for bursting, but not so much that it always overrides huge stat gains elsewhere. The optional energy penalty reflects the extra energy a
                 // Special Training burst costs, scaled by the number of gauges involved (default 0, so behavior is unchanged unless the user tunes it).
@@ -693,7 +728,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // 3. Third Priority: Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
+            // 4. Trainings that can fill Spirit Explosion Gauges (not at 100% yet).
             if (numSpiritGaugesCanFill > 0) {
                 // Score increases with number of gauges that can be filled. Kept on the stat-efficiency scale so a strong stat turn still outranks pure gauge-filling.
                 // Each gauge fills by 25% per training execution. The optional energy penalty (default 0) reflects the extra energy filling costs, scaled by the number of gauges involved.
@@ -708,7 +743,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // 4. Fourth Priority: Relationship bars.
+            // 5. Relationship bars.
             if (training.relationshipBars.isNotEmpty()) {
                 val relationshipScore = calculateRelationshipScore(config, training)
                 val scaledRelationshipScore = relationshipScore * config.scoring.relationshipScale // Scaled to be a significant bonus but below bursting.
@@ -777,15 +812,111 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             failureChance >= minFailureChance && totalStatGain < gainPerFailPercent * failureChance
 
         /**
-         * Unity Cup burst exemption. A training with a Spirit Explosion gauge ready to burst may be worth a higher failure chance than the base ceiling, so this raises the ceiling to
-         * `burstMax` when a gauge is ready. No-op when no gauge is ready or when `burstMax` is below the base, keeping the default (0) a pure pass-through. Pure and unit-testable.
+         * Unity Cup burst exemption. An Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless
+         * of the setting. Short of that, a training with a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than the base ceiling, so this raises
+         * the ceiling to `burstMax` when a gauge is ready. No-op when no gauge is ready or when `burstMax` is below the base, keeping the default (0) a pure pass-through. Pure and
+         * unit-testable.
          *
          * @param baseFailureChance The normal (or risky) failure-chance ceiling for this training.
          * @param readyToBurst The number of Spirit Explosion gauges ready to burst on this training.
          * @param burstMax The Unity Cup burst failure-chance ceiling from settings. 0 disables the exemption.
+         * @param readyToExtremeBurst The number of Spirit Explosion gauges ready for an Extreme Spirit Burst on this training. When above 0, the ceiling is always 100.
          * @return The effective failure-chance ceiling to apply to this training.
          */
-        fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int): Int = if (readyToBurst > 0) maxOf(baseFailureChance, burstMax) else baseFailureChance
+        fun burstExemptFailureChance(baseFailureChance: Int, readyToBurst: Int, burstMax: Int, readyToExtremeBurst: Int = 0): Int =
+            if (readyToExtremeBurst > 0) {
+                100
+            } else if (readyToBurst > 0) {
+                maxOf(baseFailureChance, burstMax)
+            } else {
+                baseFailureChance
+            }
+
+        /**
+         * The additive Unity Cup Extreme Spirit Burst score bonus for `count` supports ready to extreme-burst. Shared by the Junior/Classic Unity scorer and the Senior-year path so the
+         * formula has a single home.
+         *
+         * @param scoring The active [TrainingScoringConstants].
+         * @param count The number of supports ready for an Extreme Spirit Burst.
+         * @return The additive extreme-burst bonus.
+         */
+        fun extremeBurstBonus(scoring: TrainingScoringConstants, count: Int): Double = scoring.unityExtremeBurstBaseBonus + (count * scoring.unityExtremeBurstPerGaugeBonus)
+
+        /**
+         * Whether a Spirit Explosion burst (normal or extreme) should be prioritized for `stat`. When the "top stats only after Junior" override is on, a burst is only allowed after
+         * Junior Year on facilities whose stat is in the top 3 prioritized stats. Junior Year and the disabled default are always allowed. Pure and unit-testable.
+         *
+         * @param enabled Whether the "burst only top 3 stats after Junior" override is on.
+         * @param year The current career year.
+         * @param prioritization The ordered stat prioritization list (already empty-normalized to all stats).
+         * @param stat The facility's stat being considered for a burst.
+         * @return True if a burst may be prioritized for this stat, false if it should be treated as no burst.
+         */
+        fun burstAllowedForStat(enabled: Boolean, year: DateYear, prioritization: List<StatName>, stat: StatName): Boolean =
+            !enabled || year == DateYear.JUNIOR || prioritization.take(3).contains(stat)
+
+        /**
+         * Config-shaped overload of [burstAllowedForStat] for the pure scorers, which already hold the whole [TrainingConfig]. The primitive overload stays for `processAnalysisResults`,
+         * which works from instance state and has no config.
+         *
+         * @param config The active [TrainingConfig].
+         * @param stat The facility's stat being considered for a burst.
+         * @return True if a burst may be prioritized for this stat, false if it should be treated as no burst.
+         */
+        fun burstAllowedForStat(config: TrainingConfig, stat: StatName): Boolean =
+            burstAllowedForStat(config.unityCupBurstTopStatsOnlyAfterJunior, config.currentDate.year, config.statPrioritization, stat)
+
+        /**
+         * Whether an available Extreme Spirit Burst should be prioritized. It must clear both Unity Cup gates: the "top 3 stats after Junior" override (already resolved into
+         * `burstAllowed`) and the minimum projected main-stat gain. Primitive overload for `processAnalysisResults`, which works from instance state and has no config.
+         *
+         * @param burstAllowed Whether a burst is allowed on this facility's stat, from [burstAllowedForStat].
+         * @param mainStatGain The training's projected gain in its own main stat.
+         * @param minStatGain The Unity Cup extreme-burst minimum main stat gain from settings.
+         * @return True if the extreme burst may be prioritized, false if it should be treated as absent.
+         */
+        fun extremeBurstAllowed(burstAllowed: Boolean, mainStatGain: Int, minStatGain: Int): Boolean = burstAllowed && mainStatGain >= minStatGain
+
+        /**
+         * Config-shaped overload of [extremeBurstAllowed] for the pure scorers, which already hold the whole [TrainingConfig]. Shared by the Junior/Classic Unity scorer and the
+         * Senior-year path so the gate has a single home.
+         *
+         * @param config The active [TrainingConfig].
+         * @param training The training option being considered.
+         * @return True if the extreme burst may be prioritized, false if it should be treated as absent.
+         */
+        fun extremeBurstAllowed(config: TrainingConfig, training: TrainingOption): Boolean =
+            extremeBurstAllowed(burstAllowedForStat(config, training.name), training.mainStatGain, config.unityCupExtremeBurstMinStatGain)
+
+        /**
+         * Whether an available normal Spirit Explosion burst has earned the raised failure-chance ceiling that feeds [burstExemptFailureChance]. It must clear the "top 3 stats after
+         * Junior" override (already resolved into `burstAllowed`) and, when Risky Training is on, the Minimum Main Stat Gain Threshold. A training too weak to earn the risky ceiling
+         * is too weak to earn the burst ceiling, so its burst is treated as absent. Inert when Risky Training is off, since the threshold is only meaningful alongside it.
+         *
+         * This gates the failure-chance ceiling only. The scorer does not consult it, and the expected-value gate deliberately does not either.
+         *
+         * @param burstAllowed Whether a burst is allowed on this facility's stat, from [burstAllowedForStat].
+         * @param enableRiskyTraining Whether Risky Training is enabled.
+         * @param mainStatGain The training's projected gain in its own main stat.
+         * @param minStatGain The Minimum Main Stat Gain Threshold from settings.
+         * @return True if the burst may raise this training's failure-chance ceiling.
+         */
+        fun burstFailureExemptionAllowed(burstAllowed: Boolean, enableRiskyTraining: Boolean, mainStatGain: Int, minStatGain: Int): Boolean =
+            burstAllowed && (!enableRiskyTraining || mainStatGain >= minStatGain)
+
+        /**
+         * Why an available Extreme Spirit Burst was not prioritized. Only meaningful when [extremeBurstAllowed] returned false.
+         *
+         * @param config The active [TrainingConfig].
+         * @param training The training option being considered.
+         * @return The skip reason for the log.
+         */
+        fun extremeBurstSkipReason(config: TrainingConfig, training: TrainingOption): String =
+            if (!burstAllowedForStat(config, training.name)) {
+                "not a top 3 prioritized stat after Junior Year"
+            } else {
+                "main stat gain ${training.mainStatGain} is below the minimum ${config.unityCupExtremeBurstMinStatGain}"
+            }
 
         /**
          * Key factors for the Friendship scoring mode. Mirrors `scoreFriendshipTraining`, which ranks purely by relationship-bar color.
@@ -853,10 +984,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          * @return The list of key-factor strings.
          */
         fun unityCupKeyFactors(selected: TrainingOption): List<String> {
+            val readyToExtremeBurst = selected.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
             val readyToBurst = selected.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
             val canFill = selected.extras["spiritGaugesCanFill"] as? Int ?: 0
             return when {
-                readyToBurst > 0 -> listOf("Has $readyToBurst Spirit Gauge(s) ready to burst (highest priority).")
+                readyToExtremeBurst > 0 -> listOf("Has $readyToExtremeBurst support(s) ready for an Extreme Spirit Burst (highest priority).")
+                readyToBurst > 0 -> listOf("Has $readyToBurst Spirit Gauge(s) ready to burst (high priority).")
                 canFill > 0 -> listOf("Can fill $canFill Spirit Gauge(s).")
                 else -> emptyList()
             }
@@ -913,7 +1046,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         fun formatSelectionRankingLine(selectedName: StatName, selectedScore: Double, runnerUpName: StatName, runnerUpScore: Double, modeLabel: String, numExcluded: Int): String {
             val ratioNote = if (runnerUpScore > 0.0) ", ${String.format("%.2f", selectedScore / runnerUpScore)}x higher" else ""
             val excludedNote = if (numExcluded > 0) " ($numExcluded training(s) excluded from ranking: skipped)" else ""
-            return "Selected $selectedName (score ${String.format("%.2f", selectedScore)}) over runner-up $runnerUpName (score ${String.format("%.2f", runnerUpScore)})$ratioNote [mode: $modeLabel]$excludedNote"
+            return "Selected $selectedName (score ${String.format(
+                "%.2f",
+                selectedScore,
+            )}) over runner-up $runnerUpName (score ${String.format("%.2f", runnerUpScore)})$ratioNote [mode: $modeLabel]$excludedNote"
         }
 
         /**
@@ -1336,9 +1472,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
         }
 
-        // Now analyze each stat.
+        // Now analyze each stat. The effective blacklist is empty in the Pre-Debut / Junior Friendship window, so blacklisted facilities are still analyzed to build bonds.
+        val activeBlacklist = effectiveBlacklist()
         for (statName in StatName.entries) {
-            if (!test && statName in blacklist) {
+            if (!test && statName in activeBlacklist) {
                 MessageLog.i(TAG, "[TRAINING] Skipping $statName training due to being blacklisted.")
                 continue
             }
@@ -1671,29 +1808,34 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         // Process results and output logs in training order.
         for (result in results) {
-            // Check if risky training logic should apply based on main stat gain.
-            val mainStatGain: Int = result.statGains[result.name] ?: 0
-            val baseFailureChance =
-                if (enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain) {
-                    riskyTrainingMaxFailureChance
-                } else {
-                    maximumFailureChance
-                }
-            // Unity Cup burst exemption: a gauge ready to burst may be worth a higher failure chance than usual. No-op unless the setting is raised and a gauge is ready to burst.
-            val readyToBurst = result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
-            val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance)
+            // Whether risky training opted into this training. This one rule decides the raised failure ceiling, the burst exemption below, and the expected-value exemption further
+            // down, so it is named once here rather than respelled at each use.
+            val mainStatGain: Int = result.mainStatGain
+            val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
+            val baseFailureChance = if (riskyExempt) riskyTrainingMaxFailureChance else maximumFailureChance
 
-            // Filter out trainings that exceed the effective failure chance threshold.
+            // Unity Cup burst exemption: a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than usual (tunable ceiling, no-op at the default 0). An
+            // Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless of the setting.
+            // A blocked burst is treated as absent by zeroing its count, so it cannot force the exemption. None of these touch result.isBurstReady, so a genuine 0% reading stays
+            // protected from the cross-validation correction regardless of the settings.
+            val burstAllowed = burstAllowedForStat(unityCupBurstTopStatsOnlyAfterJunior, campaign.date.year, statPrioritization, result.name)
+            val rawReadyToExtremeBurst = result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
+            val rawReadyToBurst = result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val readyToExtremeBurst = if (extremeBurstAllowed(burstAllowed, mainStatGain, unityCupExtremeBurstMinStatGain)) rawReadyToExtremeBurst else 0
+            val readyToBurst = if (burstFailureExemptionAllowed(burstAllowed, enableRiskyTraining, mainStatGain, riskyTrainingMinStatGain)) rawReadyToBurst else 0
+            val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance, readyToExtremeBurst)
+
+            // Filter out trainings that exceed the effective failure chance threshold. The ceiling reported here is the one actually applied, which a ready burst may have raised.
             if (!test && !ignoreFailureChance && result.failureChance > effectiveFailureChance) {
                 val skipReason =
-                    if (enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain) {
+                    if (riskyExempt) {
                         MessageLog.i(
                             TAG,
-                            "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding risky threshold ($riskyTrainingMaxFailureChance%) despite high main stat gain of $mainStatGain.",
+                            "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%) despite high main stat gain of $mainStatGain.",
                         )
                         "high failure chance (risky)"
                     } else {
-                        MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($maximumFailureChance%).")
+                        MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%).")
                         "high failure chance"
                     }
 
@@ -1716,9 +1858,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
 
             // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when a Unity Cup
-            // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance).
-            val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
-            val burstExempt = (result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0
+            // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance). Unlike the failure-chance exemption above, this one reads
+            // isBurstReady directly and is deliberately not gated on the minimum main stat gain: it waives a value heuristic rather than a user-set risk ceiling.
+            val burstExempt = result.isBurstReady
             if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
                 val totalStatGain = result.statGains.values.sum()
                 if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {
@@ -1789,6 +1931,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val corrected = crossValidateFailureChances(input, campaign.trainee.energy)
 
         for (result in validResults) {
+            // A facility with a Spirit Explosion gauge ready to burst (normal or extreme) is a guaranteed-success (0% fail) turn, so its low reading is real and must NOT be "corrected"
+            // upward by the monotonic cross-validation - doing so would wrongly inflate a burst turn's failure chance.
+            if (result.isBurstReady) continue
             val newValue = corrected[result.name] ?: continue
             if (newValue != result.failureChance) {
                 MessageLog.w(
@@ -2081,12 +2226,20 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val trainingConfig =
             TrainingConfig(
                 currentStats = campaign.trainee.stats.asMap(),
+                // Keep only OCR'd caps at or above the scenario base; sparks / inheritance / duels only raise caps, so a below-base read is a misread and falls back to the table.
+                statCaps =
+                    if (useDynamicStatCaps) {
+                        campaign.trainee.statCaps.mapValues { (stat, cap) -> plausibleStatCap(getScenarioStatCap(game.scenario, stat), cap) }
+                    } else {
+                        emptyMap()
+                    },
                 statPrioritization = statPrioritization,
                 eventChoiceStatPriority = eventChoiceStatPriority,
                 summerTrainingStatPriority = summerTrainingStatPriority,
                 statTargets =
                     if (disableStatTargets) {
-                        StatName.entries.associateWith { getScenarioStatCap(game.scenario, it) }
+                        // Train toward each stat's real cap (OCR'd dynamic cap when available, else the per-scenario base), not a flat scenario value.
+                        StatName.entries.associateWith { getCurrentStatCap(it) }
                     } else {
                         val baseTargets = campaign.trainee.getPhaseStatTargets(campaign.date.year)
                         if (enableRunningStyleStaminaAdjustment && campaign.trainee.bHasSetRunningStyle) {
@@ -2098,7 +2251,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 currentDate = campaign.date,
                 scenario = game.scenario,
                 enableRainbowTrainingBonus = enableRainbowTrainingBonus,
-                blacklist = blacklist,
+                blacklist = effectiveBlacklist(),
                 disableTrainingOnMaxedStat = disableTrainingOnMaxedStat,
                 trainingOptions = trainingMap.values.toList(),
                 skillHintsPerLocation = skillHintsPerLocation,
@@ -2108,6 +2261,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 enablePrioritizeNearMaxFriendship = enablePrioritizeNearMaxFriendship,
                 statsTrainedOverBuffer = statsTrainedOverBuffer,
                 scoring = scoringConstantsFromSettings(),
+                unityCupExtremeBurstMinStatGain = unityCupExtremeBurstMinStatGain,
+                unityCupBurstTopStatsOnlyAfterJunior = unityCupBurstTopStatsOnlyAfterJunior,
             )
 
         // Compute scores and determine the best training option.
@@ -2146,7 +2301,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 lastSelectionSource = SelectionSource.FORCED_FROM_SKIPPED
                 return pick.name
             }
-            val defaulted = trainingMap.keys.firstOrNull { it !in blacklist }
+            val defaulted = trainingMap.keys.firstOrNull { it !in effectiveBlacklist() }
             MessageLog.i(
                 TAG,
                 "[TRAINING] Analysis produced no scored entries. forceSelection=true → defaulting to first non-blacklisted training: ${defaulted ?: "none available"}.",
@@ -2155,7 +2310,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             return defaulted
         }
 
-        val unforced = trainingMap.keys.firstOrNull { it !in blacklist }
+        val unforced = trainingMap.keys.firstOrNull { it !in effectiveBlacklist() }
         MessageLog.i(
             TAG,
             "[TRAINING] Analysis returned no winning training. forceSelection=false → returning first non-blacklisted training: ${unforced ?: "none available"}. Caller decides whether to execute.",
@@ -2214,8 +2369,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 "${it.name.lowercase().replaceFirstChar { char -> char.titlecase() }}=${targets[it]}"
             }
         if (config.disableStatTargets) {
-            val cap = getScenarioStatCap(config.scenario, StatName.SPEED)
-            sb.appendLine("Stat Targets: Disabled (treating cap=$cap as the target for all stats)")
+            sb.appendLine("Stat Targets: Disabled (training toward the per-stat caps): $targetsFormatted")
         } else {
             sb.appendLine("Stat Targets ($preferredDistance) [$phaseLabel]: $targetsFormatted")
         }
@@ -2576,8 +2730,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val runnerUps = mutableListOf<DecisionTracer.TrainingRunnerUp>()
         StatName.entries.forEach { stat ->
             if (stat == picked) return@forEach
-            // Blacklisted trainings are intentional user config, not a per-turn decision - omit so the report stays focused.
-            if (stat in blacklist) return@forEach
+            // Blacklisted trainings are intentional user config, not a per-turn decision - omit so the report stays focused. In the Friendship window the effective blacklist is empty, so bonded blacklisted facilities still appear.
+            if (stat in effectiveBlacklist()) return@forEach
             val skipEntry = skippedTrainingMap[stat]
             val analyzedEntry = analyzed.firstOrNull { it.name == stat }
             when {

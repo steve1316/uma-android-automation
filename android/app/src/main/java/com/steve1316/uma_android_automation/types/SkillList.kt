@@ -59,8 +59,32 @@ fun stripTrailingGlyphNoise(name: String): String {
 /** Number of skill rows visible at once on the Umamusume Details "Skills" tab before it scrolls. */
 private const val VISIBLE_SKILL_ROWS = 5
 
+/** Columns in the Skills-tab grid (left and right). */
+private const val SKILL_COLUMNS = 2
+
 /** Maximum number of scroll passes when reading the Skills tab (bounds trainees with many skills). */
 private const val MAX_SKILL_SCROLLS = 10
+
+/**
+ * Filled cells the Skills tab must show before it is treated as a scrollable list. The grid holds VISIBLE_SKILL_ROWS x SKILL_COLUMNS = 10 cells, so strictly only a full page can overflow,
+ * but this sits below that on purpose. Should the occupancy probe ever undercount a full page (a dim tile reading as empty), a 10-cell gate would skip the scroll and silently drop every
+ * skill below the fold. The margin costs a couple of wasted swipes for a trainee holding exactly 8 or 9 skills and buys safety against that far worse failure.
+ */
+private const val MIN_SKILL_CELLS_FOR_SCROLL = 8
+
+/** Left edge of each Skills-tab grid column, on the 1080-wide reference. */
+private const val SKILL_CELL_X_LEFT = 118
+private const val SKILL_CELL_X_RIGHT = 622
+
+/** Top of the first Skills-tab row and the pitch between rows, on the 1920-tall reference. */
+private const val SKILL_GRID_TOP_Y = 1036
+private const val SKILL_ROW_PITCH_Y = 112
+
+/**
+ * Luminance range within a Skills-tab cell above which the cell is judged to hold a skill. An occupied cell carries an icon and dark name text over a light tile so its luminance spans a
+ * wide range, while an empty slot below the last skill is flat panel background. Estimated - widen or narrow it from the per-cell ranges logged in debug mode.
+ */
+private const val SKILL_CELL_OCCUPIED_LUMINANCE_RANGE = 60
 
 /**
  * The result of reading the Umamusume Details "Skills" tab.
@@ -454,17 +478,32 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             val bitmap = game.imageUtils.getSourceBitmap()
             var newFound = 0
             for (row in 0 until VISIBLE_SKILL_ROWS) {
-                for (col in 0 until 2) {
+                for (col in 0 until SKILL_COLUMNS) {
                     val name = readDetailsSkillCell(bitmap, row, col, pass) ?: continue
                     if (ownedNames.add(name)) newFound++
                 }
             }
-            if (pass == 0) uniqueLevel = readUniqueSkillLevel(bitmap)
+            if (pass == 0) {
+                uniqueLevel = readUniqueSkillLevel(bitmap)
+                // A first page that does not fill the grid cannot overflow, so there is nothing below to scroll to and every swipe from here is wasted (the loop would otherwise always
+                // burn two). Count OCCUPIED cells rather than successfully-read names: a cell whose OCR failed is still a skill, and treating it as absent would skip the scroll on a full
+                // page and silently drop every skill below the fold - far worse than the seconds this saves.
+                val cellRanges = (0 until VISIBLE_SKILL_ROWS).flatMap { r -> (0 until SKILL_COLUMNS).map { c -> skillCellLuminanceRange(bitmap, r, c) } }
+                val occupiedCells = cellRanges.count { it >= SKILL_CELL_OCCUPIED_LUMINANCE_RANGE }
+                MessageLog.d(
+                    TAG,
+                    "[DEBUG] parseDetailsSkillsTab:: Cell luminance ranges: $cellRanges (occupied at >= $SKILL_CELL_OCCUPIED_LUMINANCE_RANGE, so $occupiedCells filled).",
+                )
+                if (occupiedCells < MIN_SKILL_CELLS_FOR_SCROLL) {
+                    MessageLog.i(TAG, "[INFO] Skills tab filled only $occupiedCells/$MIN_SKILL_CELLS_FOR_SCROLL cells, so the list cannot scroll. Reading it in one pass.")
+                    break
+                }
+            }
             // Stop only after two consecutive passes reveal nothing new, so a single fling that settles mid-row (its cells straddle the grid and read as empty) does not end the scan
             // early and drop the rows still below it.
             emptyPasses = if (newFound == 0) emptyPasses + 1 else 0
             if (pass > 0 && emptyPasses >= 2) break
-            scrollSkillsPanel()
+            if (pass < MAX_SKILL_SCROLLS) scrollSkillsPanel()
         }
 
         MessageLog.i(TAG, "[INFO] Read ${ownedNames.size} owned skills (unique Lvl $uniqueLevel): ${ownedNames.joinToString(", ")}")
@@ -482,7 +521,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): String? {
         val w = SharedData.displayWidth.toDouble()
         val h = SharedData.displayHeight.toDouble()
-        val x0 = if (col == 0) 118 else 622
+        val x0 = if (col == 0) SKILL_CELL_X_LEFT else SKILL_CELL_X_RIGHT
         // The unique skill (row 0, col 0) shows "Lvl N" on the right, so its name region stops short to avoid reading the level.
         val x1 =
             when {
@@ -492,7 +531,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             }
         // Page 0 sits on the grid, but after a swipe the list settles ~40px low, so shift only the scrolled passes down to pull a wrapped name's second line into the crop without
         // clipping the tops of the aligned first-page rows.
-        val yTop = 1036 + row * 112 + (if (pass == 0) 0 else 40)
+        val yTop = SKILL_GRID_TOP_Y + row * SKILL_ROW_PITCH_Y + (if (pass == 0) 0 else 40)
         val bbox =
             BoundingBox(
                 x = (w * x0 / 1080.0).toInt(),
@@ -526,6 +565,40 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * The spread between the darkest and brightest pixel of a Skills-tab cell on the un-scrolled page-0 grid. An occupied cell carries an icon and dark name text over a light tile, so its
+     * luminance spans a wide range; an empty slot below the last skill is flat panel background and spans almost none. Used to tell "a skill is here" from "nothing is here" without caring
+     * which tile colour it is, and - unlike the OCR - it still reports a cell as occupied when its name fails to read.
+     *
+     * @param bitmap The current screen bitmap.
+     * @param row The 0-indexed grid row.
+     * @param col The grid column (0 = left, 1 = right).
+     * @return The cell's luminance range (0-255), or 0 when the cell falls outside the bitmap.
+     */
+    private fun skillCellLuminanceRange(bitmap: Bitmap, row: Int, col: Int): Int {
+        val w = SharedData.displayWidth.toDouble()
+        val h = SharedData.displayHeight.toDouble()
+        // Span the cell's icon + name, sharing readDetailsSkillCell's origin and row pitch (page-0 grid, so no scrolled-pass offset).
+        val sx = (w * (if (col == 0) SKILL_CELL_X_LEFT else SKILL_CELL_X_RIGHT) / 1080.0).toInt()
+        val sy = (h * (SKILL_GRID_TOP_Y + row * SKILL_ROW_PITCH_Y) / 1920.0).toInt()
+        // Clamp the sample area to the bitmap once rather than bounds-checking every pixel. A cell that falls entirely off the bitmap then simply samples nothing.
+        val regionW = minOf((w * 390 / 1080.0).toInt(), bitmap.width - sx)
+        val regionH = minOf((h * 96 / 1920.0).toInt(), bitmap.height - sy)
+        var minLuminance = 255
+        var maxLuminance = 0
+        for (y in 0 until regionH step 4) {
+            for (x in 0 until regionW step 4) {
+                val pixel = bitmap.getPixel(sx + x, sy + y)
+                // Rec. 601 luma, kept in integer math - a flat-vs-textured test does not need the precision of a float conversion per pixel.
+                val luminance = ((((pixel shr 16) and 0xFF) * 299) + (((pixel shr 8) and 0xFF) * 587) + ((pixel and 0xFF) * 114)) / 1000
+                if (luminance < minLuminance) minLuminance = luminance
+                if (luminance > maxLuminance) maxLuminance = luminance
+            }
+        }
+        // Nothing sampled leaves the bounds crossed - report no spread rather than a negative one.
+        return if (maxLuminance < minLuminance) 0 else maxLuminance - minLuminance
+    }
+
+    /**
      * Detects whether a Skills-tab cell holds a negative skill, identified by its purple tile (positive skills use gold / silver / rainbow tiles).
      *
      * @param bitmap The current screen bitmap.
@@ -536,8 +609,9 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     private fun isNegativeSkillCell(bitmap: Bitmap, row: Int, col: Int): Boolean {
         val w = SharedData.displayWidth.toDouble()
         val h = SharedData.displayHeight.toDouble()
+        // The patch sits on the tile's right edge, inset from the cell origin, and steps by the same row pitch as the rest of the grid.
         val sx = (w * (if (col == 0) 470 else 990) / 1080.0).toInt()
-        val sy = (h * (1050 + row * 112) / 1920.0).toInt()
+        val sy = (h * (1050 + row * SKILL_ROW_PITCH_Y) / 1920.0).toInt()
         val patchW = (w * 40 / 1080.0).toInt()
         val patchH = (h * 40 / 1920.0).toInt()
         var r = 0L

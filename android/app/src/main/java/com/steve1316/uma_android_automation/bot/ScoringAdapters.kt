@@ -47,6 +47,7 @@ fun Training.TrainingConfig.toScoring(): ScoringTrainingConfig =
         enablePrioritizeNearMaxFriendship = enablePrioritizeNearMaxFriendship,
         statsTrainedOverBuffer = statsTrainedOverBuffer,
         scoring = scoring,
+        statCaps = statCaps,
     )
 
 /** Project the Android-rich `Training.TrainingOption` into the shared `TrainingOption` the scoring math reads. Drops OCR-correction data, scenario `extras`, and the skip-reason string. */

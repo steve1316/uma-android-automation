@@ -101,14 +101,21 @@ class TrainingEventRecognizer(private val game: Game, private val imageUtils: Cu
     private val ocrMatchingCache = mutableMapOf<String, MatchingResult>()
 
     /**
-     * Store a quadruple of values for training event results.
+     * The result of recognizing a training event.
      *
-     * @property first The list of event option rewards.
-     * @property second The confidence score of the match.
-     * @property third The title of the matched event.
-     * @property fourth The name of the character or support card.
+     * @property eventOptionRewards The list of reward strings for each option.
+     * @property confidence The confidence score of the best match.
+     * @property eventTitle The title of the matched database event.
+     * @property rawOcrTitle The raw OCR'd title text before fuzzy-matching to a known event. Used to detect dynamic events (e.g. the Happy Meek duel) that are not in the event database.
+     * @property characterOrSupportName The name of the character or support card that owns the matched event.
      */
-    data class Quadruple<out A, out B, out C, out D>(val first: A, val second: B, val third: C, val fourth: D)
+    data class RecognizedEvent(
+        val eventOptionRewards: ArrayList<String>,
+        val confidence: Double,
+        val eventTitle: String,
+        val rawOcrTitle: String,
+        val characterOrSupportName: String,
+    )
 
     /**
      * Store the result of finding the most similar string in the event data.
@@ -325,11 +332,14 @@ class TrainingEventRecognizer(private val game: Game, private val imageUtils: Cu
      *
      * This method performs OCR on the event title and matches it against known event data. If the confidence is low and automatic retry is enabled, it increments the threshold and retries.
      *
-     * @return A [Quadruple] containing the event option rewards, confidence score, event title, and character/support name.
+     * @return A [RecognizedEvent] containing the event option rewards, confidence score, matched event title, raw OCR'd title, and character/support name.
      */
-    fun start(): Quadruple<ArrayList<String>, Double, String, String> {
+    fun start(): RecognizedEvent {
         // Initialize the best result found with default values.
         var bestResult = MatchingResult(0.0, "", "", "", arrayListOf(), "")
+
+        // The raw OCR'd title that produced bestResult, kept so dynamic events not in the database (e.g. the Happy Meek duel) can be dispatched on the actual on-screen title.
+        var bestRawTitle = ""
 
         var increment = 0.0
 
@@ -349,12 +359,14 @@ class TrainingEventRecognizer(private val game: Game, private val imageUtils: Cu
                 if (matchingResult.eventTitle.isNotEmpty() && eventPatterns.containsKey(matchingResult.eventTitle)) {
                     MessageLog.i(TAG, "[TRAINING_EVENT_RECOGNIZER] Special event \"${matchingResult.eventTitle}\" detected.")
                     bestResult = matchingResult
+                    bestRawTitle = ocrResult
                     break
                 }
 
                 // Update the best result if the current matching result has higher confidence.
                 if (matchingResult.confidence >= bestResult.confidence) {
                     bestResult = matchingResult
+                    bestRawTitle = ocrResult
                 }
 
                 // Log the result of the recognition attempt.
@@ -409,6 +421,6 @@ class TrainingEventRecognizer(private val game: Game, private val imageUtils: Cu
                 else -> ""
             }
 
-        return Quadruple(bestResult.eventOptionRewards, bestResult.confidence, bestResult.eventTitle, characterOrSupportName)
+        return RecognizedEvent(bestResult.eventOptionRewards, bestResult.confidence, bestResult.eventTitle, bestRawTitle, characterOrSupportName)
     }
 }

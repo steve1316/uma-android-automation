@@ -1,11 +1,20 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Campaign
+import com.steve1316.uma_android_automation.bot.campaigns.DuelContestOption
+import com.steve1316.uma_android_automation.bot.campaigns.DuelPrediction
+import com.steve1316.uma_android_automation.bot.campaigns.chooseDuelContest
+import com.steve1316.uma_android_automation.bot.campaigns.nearestDuelPrediction
+import com.steve1316.uma_android_automation.bot.campaigns.parseContestStat
 import com.steve1316.uma_android_automation.components.ButtonClose
 import com.steve1316.uma_android_automation.components.ButtonNext
+import com.steve1316.uma_android_automation.components.IconDuelBad
+import com.steve1316.uma_android_automation.components.IconDuelGood
+import com.steve1316.uma_android_automation.components.IconDuelGreat
 import com.steve1316.uma_android_automation.components.IconTrainingEventHorseshoe
 import com.steve1316.uma_android_automation.types.Mood
 import com.steve1316.uma_android_automation.types.NegativeStatus
@@ -350,6 +359,57 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Handle the URA Finale "Happy Meek's Challenge!" duel. Each row is a "Contest of <stat>!" option with a win-prediction icon. Reads every row's stat via OCR, classifies its
+     * prediction tier by template-matching the great / good / bad icons (an unmatched row is the X tier), then picks the best contest per [chooseDuelContest] and the trainee's
+     * stat priorities. Falls back to the first option when no rows or prediction icons are detected.
+     *
+     * @param optionLocations The detected horseshoe locations for the contest rows, top to bottom.
+     * @param sourceBitmap The screenshot the caller already captured to find the horseshoe locations, reused here instead of capturing a new one.
+     * @return The 0-based index of the contest row to enter, defaulting to 0.
+     */
+    private fun handleHappyMeekDuel(optionLocations: ArrayList<Point>, sourceBitmap: Bitmap): Int {
+        val numOptions = optionLocations.size
+        MessageLog.v(TAG, "[TRAINING_EVENT] Handling \"Happy Meek's Challenge!\" duel with $numOptions option(s).")
+        if (numOptions <= 1) return 0
+
+        // Locate every prediction icon once, tagged with its tier, so each row can be paired with the nearest icon by Y.
+        val predictionMatches =
+            listOf(DuelPrediction.GREAT to IconDuelGreat, DuelPrediction.GOOD to IconDuelGood, DuelPrediction.BAD to IconDuelBad).flatMap { (prediction, component) ->
+                component.findAllWithBitmap(game.imageUtils, sourceBitmap).map { prediction to it.y.toInt() }
+            }
+        MessageLog.v(TAG, "[TRAINING_EVENT] Detected ${predictionMatches.size} duel prediction icon(s).")
+
+        // Roughly half the row pitch is a safe tolerance for pairing a prediction icon to its row.
+        val rowTolerance = game.imageUtils.relHeight(90)
+
+        val options =
+            optionLocations.mapIndexed { i, location ->
+                val ocrText =
+                    game.imageUtils.performOCROnRegion(
+                        sourceBitmap,
+                        game.imageUtils.relX(location.x, 45),
+                        game.imageUtils.relY(location.y, -30),
+                        600,
+                        60,
+                        useThreshold = false,
+                        useGrayscale = true,
+                        scale = 1.0,
+                        ocrEngine = "tesseract",
+                        debugName = "handleHappyMeekDuel_option_${i + 1}",
+                    )
+                val statName = parseContestStat(ocrText)
+                val prediction = nearestDuelPrediction(location.y.toInt(), predictionMatches, rowTolerance)
+                MessageLog.i(TAG, "[TRAINING_EVENT] Duel option ${i + 1}: \"$ocrText\" -> stat=$statName, prediction=$prediction")
+                DuelContestOption(statName, prediction)
+            }
+
+        val selected = chooseDuelContest(options, campaign.training.eventChoiceStatPriority)
+        MessageLog.i(TAG, "[TRAINING_EVENT] Duel pick: option ${selected + 1} (stat=${options.getOrNull(selected)?.statName}, prediction=${options.getOrNull(selected)?.prediction}).")
+        printDuelSummary(options, selected)
+        return selected
+    }
+
+    /**
      * Print a formatted summary of the Training Event and the selected option.
      *
      * @param eventTitle The detected event title from OCR.
@@ -389,6 +449,35 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
         sb.appendLine("")
         sb.appendLine("Selected: Option ${selectedOption + 1}")
         sb.appendLine("============================================")
+        MessageLog.v(TAG, sb.toString())
+    }
+
+    /**
+     * Print a formatted summary of the Happy Meek duel and the chosen contest. Mirrors printEventSummary but lists each contest's stat and win-prediction tier instead of event
+     * rewards, since the duel is not a database event and would otherwise print the unrelated fuzzy-matched event's rewards.
+     *
+     * @param options The per-row contest options, each with its contested stat and prediction tier.
+     * @param selectedOption The 0-based index of the chosen contest row.
+     */
+    private fun printDuelSummary(options: List<DuelContestOption>, selectedOption: Int) {
+        val sb = StringBuilder()
+        sb.appendLine("\n========== Happy Meek Duel Summary ==========")
+        sb.appendLine("Event: \"Happy Meek's Challenge!\"")
+        sb.appendLine("Current Date: ${campaign.date}")
+        sb.appendLine("")
+
+        // Format a row's contested stat, falling back to ENERGY for the non-stat "Contest of energy" row.
+        fun statLabel(option: DuelContestOption?): String = option?.statName?.name ?: "ENERGY"
+
+        sb.appendLine("Contests:")
+        options.forEachIndexed { index, option ->
+            val selectionMarker = if (index == selectedOption) " <---- SELECTED" else ""
+            sb.appendLine("  Option ${index + 1}: ${statLabel(option)} - ${option.prediction}$selectionMarker")
+        }
+        sb.appendLine("")
+        val chosen = options.getOrNull(selectedOption)
+        sb.appendLine("Selected: Option ${selectedOption + 1} (${statLabel(chosen)}, ${chosen?.prediction})")
+        sb.appendLine("=============================================")
         MessageLog.v(TAG, sb.toString())
     }
 
@@ -596,11 +685,12 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             return
         }
 
-        val (eventRewards, confidence, eventTitle, characterOrSupportName) = trainingEventRecognizer.start()
+        val (eventRewards, confidence, eventTitle, rawTitle, characterOrSupportName) = trainingEventRecognizer.start()
 
         val regex = Regex("[a-zA-Z]+")
         var optionSelected = 0
         var specialEventHandled = false
+        var duelHandled = false
         var isTutorialEvent = false
         var tutorialOptionCount = 0
 
@@ -642,6 +732,15 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils)
             optionSelected = selectUnityCupTeamNameEvent(trainingOptionLocations)
             specialEventHandled = true
+        } else if (game.scenario == "URA Finale" && rawTitle.contains("Happy Meek", ignoreCase = true) && rawTitle.contains("Challenge", ignoreCase = true)) {
+            // Handle the URA Finale "Happy Meek's Challenge!" duel by prediction-driven contest pick. Dispatch on the RAW OCR title, not the fuzzy-matched event name, since the duel
+            // is not in the event database and would otherwise resolve to an unrelated event.
+            MessageLog.i(TAG, "[TRAINING_EVENT] \"Happy Meek's Challenge!\" duel detected for URA Finale.")
+            val duelSourceBitmap = game.imageUtils.getSourceBitmap()
+            val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils, sourceBitmap = duelSourceBitmap)
+            optionSelected = handleHappyMeekDuel(trainingOptionLocations, duelSourceBitmap)
+            specialEventHandled = true
+            duelHandled = true
         } else if (specialEventResult != null) {
             val (selectedOptionIndex, _) = specialEventResult
             optionSelected = selectedOptionIndex
@@ -717,8 +816,8 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
                 }
             }
 
-            // Print summary for special event overrides (character/support overrides are handled in their branches).
-            if (specialEventHandled) {
+            // Print summary for special event overrides (character/support overrides are handled in their branches). The Happy Meek duel prints its own summary, so skip the generic one.
+            if (specialEventHandled && !duelHandled) {
                 printEventSummary(eventTitle, characterOrSupportName, eventRewards, null, optionSelected, confidence)
             }
         } else {

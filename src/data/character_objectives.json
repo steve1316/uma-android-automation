@@ -518,6 +518,89 @@
             }
         ]
     },
+    "Bamboo Memory": {
+        "name": "Bamboo Memory",
+        "mandatoryRaces": [
+            {
+                "turn": 44,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Swan Stakes",
+                        "grade": "G2",
+                        "surface": "Turf",
+                        "distanceType": "Sprint",
+                        "fans": 5900
+                    }
+                ]
+            },
+            {
+                "turn": 54,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Takamatsunomiya Kinen",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Sprint",
+                        "fans": 13000
+                    }
+                ]
+            },
+            {
+                "turn": 59,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Yasuda Kinen",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 13000
+                    }
+                ]
+            },
+            {
+                "turn": 60,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Takarazuka Kinen",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 15000
+                    }
+                ]
+            },
+            {
+                "turn": 66,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Sprinters Stakes",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Sprint",
+                        "fans": 13000
+                    }
+                ]
+            },
+            {
+                "turn": 70,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Mile Championship",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 11000
+                    }
+                ]
+            }
+        ]
+    },
     "Biwa Hayahide": {
         "name": "Biwa Hayahide",
         "mandatoryRaces": [

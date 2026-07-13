@@ -2,11 +2,13 @@ package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.Training
 import com.steve1316.uma_android_automation.bot.TrainingScoringMode
 import com.steve1316.uma_android_automation.types.DateYear
+import com.steve1316.uma_android_automation.utils.CustomImageUtils.SpiritGaugeResult
 
 /**
  * Unity Cup-specific Training subclass that customizes scoring and analysis behavior.
@@ -20,15 +22,10 @@ class UnityCupTraining(game: Game, campaign: Campaign) : Training(game, campaign
             Thread {
                 val startTime = System.currentTimeMillis()
                 try {
-                    val gaugeResult = game.imageUtils.analyzeSpiritExplosionGauges(sourceBitmap)
-                    if (gaugeResult != null) {
-                        result.extras["spiritGaugesCanFill"] = gaugeResult.numGaugesCanFill
-                        result.extras["spiritGaugesReadyToBurst"] = gaugeResult.numGaugesReadyToBurst
-                    }
+                    writeGaugeExtras(result, game.imageUtils.analyzeSpiritExplosionGauges(sourceBitmap))
                 } catch (e: Exception) {
                     Log.e(TAG, "[ERROR] Error in Spirit Explosion Gauge analysis: ${e.stackTraceToString()}")
-                    result.extras["spiritGaugesCanFill"] = 0
-                    result.extras["spiritGaugesReadyToBurst"] = 0
+                    writeGaugeExtras(result, null)
                 } finally {
                     result.latch.countDown()
                     Log.d(TAG, "[DEBUG] Total time to analyze Spirit Explosion Gauge for ${result.name}: ${System.currentTimeMillis() - startTime}ms")
@@ -37,19 +34,24 @@ class UnityCupTraining(game: Game, campaign: Campaign) : Training(game, campaign
         } else {
             val startTime = System.currentTimeMillis()
             try {
-                val gaugeResult = game.imageUtils.analyzeSpiritExplosionGauges(sourceBitmap)
-                if (gaugeResult != null) {
-                    result.extras["spiritGaugesCanFill"] = gaugeResult.numGaugesCanFill
-                    result.extras["spiritGaugesReadyToBurst"] = gaugeResult.numGaugesReadyToBurst
-                } else {
-                    result.extras["spiritGaugesCanFill"] = 0
-                    result.extras["spiritGaugesReadyToBurst"] = 0
-                }
+                writeGaugeExtras(result, game.imageUtils.analyzeSpiritExplosionGauges(sourceBitmap))
             } finally {
                 result.latch.countDown()
                 Log.d(TAG, "[DEBUG] Total time to analyze Spirit Explosion Gauge for ${result.name}: ${System.currentTimeMillis() - startTime}ms")
             }
         }
+    }
+
+    /**
+     * Write the Spirit Explosion gauge counts into the training analysis extras, defaulting every count to 0 when analysis returned nothing (no gauges found or detection failed).
+     *
+     * @param result The training analysis result whose extras receive the gauge counts.
+     * @param gaugeResult The analyzed gauge counts, or null when detection failed or found no gauges.
+     */
+    private fun writeGaugeExtras(result: TrainingAnalysisResult, gaugeResult: SpiritGaugeResult?) {
+        result.extras["spiritGaugesCanFill"] = gaugeResult?.numGaugesCanFill ?: 0
+        result.extras["spiritGaugesReadyToBurst"] = gaugeResult?.numGaugesReadyToBurst ?: 0
+        result.extras["spiritGaugesReadyToExtremeBurst"] = gaugeResult?.numGaugesReadyToExtremeBurst ?: 0
     }
 
     override fun getTrainingScoringMode(): TrainingScoringMode {
@@ -64,15 +66,29 @@ class UnityCupTraining(game: Game, campaign: Campaign) : Training(game, campaign
         return if (campaign.date.year < DateYear.SENIOR) {
             scoreUnityCupTraining(config, option)
         } else {
-            super.scoreTraining(config, option)
+            // Senior year uses the standard stat-efficiency scorer, but an Extreme Spirit Burst is still near-mandatory (bigger boost, raises caps, 0% fail, one-time), so keep prioritizing
+            // it here by adding the same bonus on top of the base score. Normal bursts / gauge-filling stay Junior/Classic-only.
+            val base = super.scoreTraining(config, option)
+            val extremeCount = option.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
+            if (extremeCount > 0 && extremeBurstAllowed(config, option)) {
+                val extremeBonus = extremeBurstBonus(config.scoring, extremeCount)
+                MessageLog.i(TAG, "[TRAINING] [${option.name}] Adding EXTREME burst bonus for $extremeCount gauge(s) in Senior year: $extremeBonus")
+                base + extremeBonus
+            } else {
+                if (extremeCount > 0) {
+                    MessageLog.i(TAG, "[TRAINING] [${option.name}] Skipping EXTREME burst priority in Senior year: ${extremeBurstSkipReason(config, option)}.")
+                }
+                base
+            }
         }
     }
 
     override fun getExtraLogFields(training: TrainingOption): List<String> {
         val canFill = training.extras["spiritGaugesCanFill"] as? Int ?: 0
         val readyToBurst = training.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
-        return if (canFill > 0 || readyToBurst > 0) {
-            listOf("Spirit Gauges: fillable=$canFill, ready to burst=$readyToBurst")
+        val readyToExtremeBurst = training.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
+        return if (canFill > 0 || readyToBurst > 0 || readyToExtremeBurst > 0) {
+            listOf("Spirit Gauges: fillable=$canFill, ready to burst=$readyToBurst, ready to extreme burst=$readyToExtremeBurst")
         } else {
             emptyList()
         }

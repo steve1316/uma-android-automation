@@ -234,10 +234,17 @@ const searchConfig: SearchOption[] = [
         page: "TrainingSettings",
     },
     {
+        id: "use-dynamic-stat-caps",
+        title: "Read Stat Caps from Screen",
+        description:
+            "When enabled, the bot reads each stat's live cap every turn, so cap increases from sparks, inheritance, etc. are respected. Disable to always use the fixed per-scenario caps if the reading ever misbehaves.",
+        page: "TrainingSettings",
+    },
+    {
         id: "disable-stat-targets",
         title: "Disable Stat Targets",
         description:
-            "When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to the in-game stat cap (1200), so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list.",
+            "When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to its in-game stat cap, so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list.",
         page: "TrainingSettings",
     },
     {
@@ -871,6 +878,31 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "unity-cup-extreme-burst-min-stat-gain",
+        title: "Unity Cup Extreme Burst Minimum Stat Gain",
+        description: "Only prioritize an Extreme Spirit Burst when the facility's projected main-stat gain is at least this value. 0 always executes available extreme bursts.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "unity-cup-burst-top-stats-only-after-junior",
+        title: "Unity Cup Burst Only Top 3 Stats After Junior",
+        description: "After Junior Year, only prioritize Spirit Explosion bursts (normal and extreme) on facilities whose stat is in your top 3 prioritized stats. Junior Year is unrestricted.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "unity-cup-retry-races",
+        title: "Unity Cup Retry Races",
+        description: "When enabled, the bot re-runs a lost Unity Cup race, retrying until it wins or attempts are exhausted.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "ura-happy-meek-duel-bias",
+        title: "Happy Meek Duel Training Bias",
+        description:
+            "How strongly to steer URA Finale training toward a facility showing a Happy Meek duel badge. Winning a duel raises the cap and boosts that stat. Moderate prefers the duel when it is close to the best pick, Aggressive prefers it more strongly, Off ignores duels.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "trackblazer-energy-threshold",
         title: "Trackblazer Energy Threshold",
         description: "The energy level below which the bot will attempt to use energy-restoring items in the Trackblazer scenario.",
@@ -1159,6 +1191,13 @@ const searchConfig: SearchOption[] = [
         title: "Start Scrollbar Detection Test",
         description:
             "Disables normal bot operations and starts the Scrollbar detection test. Detects the scrollbar on the current screen and attempts to scroll it up and down to verify functionality.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-spirit-gauge-detection-test",
+        title: "Start Spirit Gauge Detection Test",
+        description:
+            "Disables normal bot operations and starts the Unity Cup Spirit Gauge detection test. Run this on the Training screen: it selects each of the five facilities in turn and logs the detected fillable / burst / extreme spirit gauge counts, saving the gauge crops to help verify detection.",
         page: "DebugSettings",
     },
     {

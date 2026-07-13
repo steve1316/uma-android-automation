@@ -10,6 +10,7 @@ export interface DebugTestDescriptor {
         | "debugMode_startSkillListBuyTest"
         | "debugMode_startScrollBarDetectionTest"
         | "debugMode_startRainbowDetectionTest"
+        | "debugMode_startSpiritGaugeDetectionTest"
         | "debugMode_startTrackblazerRaceSelectionTest"
         | "debugMode_startTrackblazerInventorySyncTest"
         | "debugMode_startTrackblazerBuyItemsTest"
@@ -75,6 +76,13 @@ export const DEBUG_TESTS: DebugTestDescriptor[] = [
         title: "Start Rainbow Detection Test",
         description:
             "Disables normal bot operations and starts the Rainbow detection test. Run this on the Training screen: it detects the rainbow glow ring on each support face circle for a few seconds, logs the per-support metrics and the derived rainbow count, and saves an annotated crop to help calibrate the detector.",
+    },
+    {
+        key: "debugMode_startSpiritGaugeDetectionTest",
+        searchId: "debug-spirit-gauge-detection-test",
+        title: "Start Spirit Gauge Detection Test",
+        description:
+            "Disables normal bot operations and starts the Unity Cup Spirit Gauge detection test. Run this on the Training screen: it selects each of the five facilities in turn and logs the detected fillable / burst / extreme spirit gauge counts, saving the gauge crops to help verify detection.",
     },
     {
         key: "debugMode_startTrackblazerRaceSelectionTest",

@@ -6,6 +6,7 @@ import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.bot.Training
 import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.IconMoodAwful
 import com.steve1316.uma_android_automation.components.IconMoodBad
@@ -32,6 +33,7 @@ import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_scoring.RankResult
+import com.steve1316.uma_scoring.getScenarioStatCap
 import org.opencv.core.Point
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -120,6 +122,27 @@ class Trainee {
             }
 
             /**
+             * Formats the stats with their per-stat caps as "Spd=<value>/<cap>, ...", matching [toString]'s abbreviations. A stat whose cap is missing or non-positive falls back to
+             * just its value so the line never renders "/0" or "/null".
+             *
+             * @param caps The effective per-stat cap to show (the OCR'd value, or the scenario default when no plausible cap was read).
+             * @return The formatted "Spd=.../..., Sta=.../..., ..." string.
+             */
+            fun toStringWithCaps(caps: Map<StatName, Int>): String {
+                fun part(abbr: String, value: Int, stat: StatName): String {
+                    val cap = caps[stat]
+                    return if (cap != null && cap > 0) "$abbr=$value/$cap" else "$abbr=$value"
+                }
+                return listOf(
+                    part("Spd", speed, StatName.SPEED),
+                    part("Sta", stamina, StatName.STAMINA),
+                    part("Pow", power, StatName.POWER),
+                    part("Gut", guts, StatName.GUTS),
+                    part("Wit", wit, StatName.WIT),
+                ).joinToString(", ")
+            }
+
+            /**
              * Returns the stat values as an [IntArray] in a fixed order.
              *
              * @return An array of stat values in order: Speed, Stamina, Power, Guts, Wit.
@@ -157,6 +180,9 @@ class Trainee {
 
     /** The trainee's current stat values (Speed, Stamina, Power, Guts, Wit). */
     val stats: Stats = Stats()
+
+    /** Live per-stat caps OCR'd from the "/NNNN" denominators on the main / training screen (raised by sparks, inheritance, duels, extreme bursts). Only stats with a plausible read appear; the rest fall back to the per-scenario cap table. */
+    val statCaps: MutableMap<StatName, Int> = mutableMapOf()
 
     /** Mapping of [TrackSurface] types to the trainee's [Aptitude]. */
     val trackSurfaceAptitudes: MutableMap<TrackSurface, Aptitude> =
@@ -823,6 +849,36 @@ class Trainee {
     }
 
     /**
+     * Read the live per-stat caps from the "/NNNN" denominators on the main / training screen and store the plausible ones in [statCaps]. A failed read keeps the previous cap for
+     * that stat, so a transient OCR miss does not drop a good value. This is the live per-turn read. The end-of-run dialog caps are read separately by [updateStatCapsFromDialog].
+     * Runs sequentially (five small reads) as one parallel task within `performTurnStartUpdates`.
+     *
+     * @param imageUtils Reference to a [CustomImageUtils] instance.
+     * @param sourceBitmap The shared main-screen bitmap.
+     * @param skillPointsLocation The pre-found skill-points label location used as the OCR anchor.
+     */
+    fun updateStatCaps(imageUtils: CustomImageUtils, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null) {
+        if (sourceBitmap == null || skillPointsLocation == null) return
+        for (statName in StatName.entries) {
+            if (!BotService.isRunning) return
+            val cap = imageUtils.determineSingleStatCap(statName, sourceBitmap, skillPointsLocation)
+            if (cap > 0) statCaps[statName] = cap
+        }
+    }
+
+    /**
+     * Read the true final per-stat caps straight from the Umamusume Details dialog and store the plausible ones in [statCaps]. Called once at end of run while that dialog is open,
+     * so the final log and dashboard show the caps the trainee actually finished with rather than the last main-screen read. A failed read keeps the previous cap for that stat.
+     *
+     * @param imageUtils Reference to a [CustomImageUtils] instance.
+     */
+    fun updateStatCapsFromDialog(imageUtils: CustomImageUtils) {
+        for ((statName, cap) in imageUtils.determineStatCapsFromDialog()) {
+            if (cap > 0) statCaps[statName] = cap
+        }
+    }
+
+    /**
      * Updates the trainee's [mood] state from the current screen.
      *
      * If no mood can be detected, the current state remains unchanged.
@@ -865,12 +921,21 @@ class Trainee {
         }
     }
 
-    /** Logs the trainee's current state in a structured format for the Remote Log Viewer dashboard. */
-    fun logInfo() {
+    /**
+     * Logs the trainee's current state in a structured format for the Remote Log Viewer dashboard.
+     *
+     * @param scenario The active scenario name, used to fall back to the per-scenario cap table for any stat whose cap was not read from the screen.
+     */
+    fun logInfo(scenario: String) {
         if (name.isNotEmpty()) {
             MessageLog.v(TAG, "[TRAINEE] Name: $name")
         }
-        MessageLog.v(TAG, "[TRAINEE] Stats: $stats")
+        // Show the cap the bot actually scores against per stat: the OCR'd cap when it is at least the scenario base (a below-base read is a misread), otherwise the base.
+        val effectiveCaps =
+            StatName.entries.associateWith { stat ->
+                Training.plausibleStatCap(getScenarioStatCap(scenario, stat), statCaps[stat])
+            }
+        MessageLog.v(TAG, "[TRAINEE] Stats: ${stats.toStringWithCaps(effectiveCaps)}")
         MessageLog.v(TAG, "[TRAINEE] Energy: $energy%")
         MessageLog.v(TAG, "[TRAINEE] Mood: ${mood.name}")
         MessageLog.v(TAG, "[TRAINEE] Fans: $fans")

@@ -1,6 +1,8 @@
 package com.steve1316.uma_android_automation.bot
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -9,7 +11,8 @@ import org.junit.jupiter.api.Test
 /**
  * Unit tests for [DatingSchedule], the pure helpers driving the support-card recreation schedule.
  *
- * Covers pinned-turn membership, whether the final outing may start, and the hold-the-final-outing gating for both Team Sirius (7 outings) and Heirs to the Throne (5 outings).
+ * Covers pinned-turn membership, whether the final outing may start, the hold-the-final-outing gating for both Team Sirius (7 outings) and Heirs to the Throne (5 outings),
+ * the honest progress phrasing, and the next-scheduled-turn preview.
  */
 @DisplayName("DatingSchedule Tests")
 class DatingScheduleTest {
@@ -145,6 +148,65 @@ class DatingScheduleTest {
         @Test
         fun `Sirius is never abandoned without a pure passion turn`() {
             assertFalse(DatingSchedule.isScheduleAbandoned(purePassionTurn = -1, currentTurn = 70, chainComplete = false))
+        }
+    }
+
+    @Nested
+    @DisplayName("formatRecreationProgress()")
+    inner class FormatRecreationProgressTests {
+        @Test
+        fun `reports complete regardless of the counts`() {
+            assertEquals("complete", DatingSchedule.formatRecreationProgress(outingsStarted = 2, totalOutingsKnown = 7, progressRead = true, completed = true))
+        }
+
+        @Test
+        fun `reports the read X of Y count`() {
+            assertEquals("3/7 completed", DatingSchedule.formatRecreationProgress(outingsStarted = 3, totalOutingsKnown = 7, progressRead = true, completed = false))
+        }
+
+        @Test
+        fun `reports the run count without a total before progress is read`() {
+            assertEquals(
+                "1 done (chain length not yet read)",
+                DatingSchedule.formatRecreationProgress(outingsStarted = 1, totalOutingsKnown = 7, progressRead = false, completed = false),
+            )
+        }
+
+        @Test
+        fun `reports not started before any date is done`() {
+            assertEquals(
+                "not started (no date done yet)",
+                DatingSchedule.formatRecreationProgress(outingsStarted = 0, totalOutingsKnown = 7, progressRead = false, completed = false),
+            )
+        }
+    }
+
+    @Nested
+    @DisplayName("nextScheduledTurn()")
+    inner class NextScheduledTurnTests {
+        @Test
+        fun `first pinned turn before the chain starts`() {
+            assertEquals(35, DatingSchedule.nextScheduledTurn(currentTurn = 30, recreationTurns = setOf(35, 43, 52, 58), purePassionTurn = 60))
+        }
+
+        @Test
+        fun `next recreation turn mid-chain`() {
+            assertEquals(52, DatingSchedule.nextScheduledTurn(currentTurn = 43, recreationTurns = setOf(35, 43, 52, 58), purePassionTurn = 60))
+        }
+
+        @Test
+        fun `pure passion turn once past the last recreation turn`() {
+            assertEquals(60, DatingSchedule.nextScheduledTurn(currentTurn = 58, recreationTurns = setOf(35, 43, 52, 58), purePassionTurn = 60))
+        }
+
+        @Test
+        fun `null once past every pinned turn`() {
+            assertNull(DatingSchedule.nextScheduledTurn(currentTurn = 61, recreationTurns = setOf(35, 43, 52, 58), purePassionTurn = 60))
+        }
+
+        @Test
+        fun `ignores an unset pure passion turn`() {
+            assertNull(DatingSchedule.nextScheduledTurn(currentTurn = 58, recreationTurns = setOf(29, 35, 43, 47, 52, 55, 58), purePassionTurn = -1))
         }
     }
 }

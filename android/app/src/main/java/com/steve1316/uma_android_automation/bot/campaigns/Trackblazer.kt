@@ -1205,7 +1205,7 @@ class Trackblazer(game: Game) : Campaign(game) {
             .add("Glow Stick Final-Day Reserve", glowStickFinalReserve)
             .add("Glow Stick Min Fans", glowStickMinFans)
 
-    override fun gatherDecisionExtraState(): Map<String, String> =
+    override fun gatherCampaignDecisionExtraState(): Map<String, String> =
         mapOf(
             "Megaphone Turns" to trainee.megaphoneTurnCounter.toString(),
             "Consecutive Races" to consecutiveRaceCount.toString(),

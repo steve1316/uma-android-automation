@@ -817,6 +817,15 @@
         "Drive Destination": [
             "Speed +5\nMood +1\nMaruzensky bond +5",
             "Wit +5\nMood +1\nMaruzensky bond +5"
+        ],
+        "(❯)\nA Seaside Resort, Love is in the Air": [
+            "Randomly either\n----------\nSpeed +10\n----------\n\n----------\nSpeed +15\nWit +5\nMaruzensky bond +15"
+        ],
+        "(❯❯)\nThrilling Memories Still in My Heart": [
+            "Randomly either\n----------\nSpeed +10\n----------\n\n----------\nSpeed +15\nPower +5\nFocus hint +1\nMaruzensky bond +15"
+        ],
+        "(❯❯❯)\nShine On Forever": [
+            "Speed +30\nWit +10\nTop Runner hint +1"
         ]
     },
     "Marvelous Sunday": {
@@ -1168,6 +1177,16 @@
         ],
         "(❯❯❯)\nSundown Sinks into Night": [
             "Randomly either\n----------\n※ Can only happen if you chose the 1st option during the 1st event\nSkill points +40\nUma Stan hint +1\nNakayama Festa bond +5\n----------\n\n----------\n※ Can only happen if you chose the 2nd option during the 1st event\nStamina +15\nGuts +15\nSkill points +20\nCome What May hint +3\nNakayama Festa bond +5\n----------\n\n----------\n※ Can only happen if you chose the 2nd option during the 1st event\nMood -1\nGuts +10\nAll I've Got hint +3\nNakayama Festa bond +5"
+        ],
+        "(❯)\nAll In": [
+            "Wit +10\nSkill points +20\nNakayama Festa bond +5"
+        ],
+        "(❯❯)\nEat 'Em and Weep": [
+            "Nakayama Festa bond +10\n※ Will affect the outcome of the 3rd event",
+            "Nakayama Festa bond +10\n※ Will affect the outcome of the 3rd event"
+        ],
+        "(❯❯❯)\nUpping the Ante": [
+            "Randomly either\n----------\n※ Can only happen if you chose the 1st option during the 2nd event\nSpeed +20\nStamina +20\nWit +20\nSkill points +30\nNothing Ventured hint +3\nNakayama Festa bond +5\n----------\n\n----------\n※ Can only happen if you chose the 2nd option during the 2nd event\nSpeed +10\nWit +10\nSkill points +20\nNothing Ventured hint +1\nNakayama Festa bond +5\n----------\n\n----------\nSkill points +10\nRisky Business hint +1"
         ]
     },
     "Narita Brian": {
@@ -1482,6 +1501,15 @@
         "(❯❯❯)\nSomeday, I'll Bloom!": [
             "Randomly either\n----------\nEnergy -15\nStamina +10\nSkill points +5\nSpeed Star hint +1\nSakura Chiyono O bond +5\n----------\n\n----------\nEnergy -15\nStamina +30\nSkill points +20\nSpeed Star hint +3\nSakura Chiyono O bond +5",
             "Speed +5\nStamina +10\nPower +5\nSkill points +30\nSakura Chiyono O bond +5"
+        ],
+        "(❯)\nRepaying Your Kindness": [
+            "Mood +1\nGuts +10\nSakura Chiyono O bond +5"
+        ],
+        "(❯❯)\nBecause I Want You to Smile": [
+            "Guts +15\nSakura Chiyono O bond +5"
+        ],
+        "(❯❯❯)\nI Gift You Fun and Joy!": [
+            "Randomly either\n----------\nGuts +10\nWit +10\nStep on the Gas! hint +3\nSakura Chiyono O bond +5\n----------\n\n----------\nGuts +5\nWit +5\nAcceleration hint +2/+3\nSakura Chiyono O bond +5"
         ]
     },
     "Sasami Anshinzawa": {
@@ -1719,6 +1747,9 @@
         ],
         "(❯❯)\nThis Is an Umadol!": [
             "Skill points +25\nTop Pick hint +1\nSmart Falcon bond +5"
+        ],
+        "(❯❯❯)\nMy Umadol Way! ☆": [
+            "Randomly either\n----------\nMaximum Energy +4\nStamina +5\nPower +5\nWit +5\nPrudent Positioning hint +1\n----------\n\n----------\nMaximum Energy +4\nStamina +15\nPower +15\nWit +15\nCenter Stage hint +3"
         ]
     },
     "Special Week": {

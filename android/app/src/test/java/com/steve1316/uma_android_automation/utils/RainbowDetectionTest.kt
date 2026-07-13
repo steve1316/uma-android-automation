@@ -25,7 +25,10 @@ class RainbowDetectionTest {
     @Test
     @DisplayName("A ring also needs one vividly dominant hue, rejecting uniformly-faint look-alikes")
     fun testRainbowRingDominantHue() {
-        assertTrue(RainbowRingResult(huesPresent = 3, greenFraction = 0.07, cyanFraction = 0.06, pinkFraction = 0.20, brightChromaticFraction = 0.5).isRainbow, "All three hues with a vivid dominant is a rainbow")
+        assertTrue(
+            RainbowRingResult(huesPresent = 3, greenFraction = 0.07, cyanFraction = 0.06, pinkFraction = 0.20, brightChromaticFraction = 0.5).isRainbow,
+            "All three hues with a vivid dominant is a rainbow",
+        )
         assertFalse(
             RainbowRingResult(huesPresent = 3, greenFraction = 0.058, cyanFraction = 0.037, pinkFraction = 0.043, brightChromaticFraction = 0.5).isRainbow,
             "All three barely above the floor but none dominant (an enlarged button's faint sparkle) is not a rainbow",

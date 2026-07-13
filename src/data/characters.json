@@ -828,6 +828,164 @@
             "Speed +15\nAll stats +3\nSkill points +45\nCorner Adept ○ hint +2\nYayoi Akikawa bond +4"
         ]
     },
+    "Bamboo Memory": {
+        "Good Deed Week": [
+            "Mood +1\nPower +5",
+            "Speed +5\nStamina +5"
+        ],
+        "Kindred Spirits": [
+            "Guts +10",
+            "Energy +5\nSpeed +5"
+        ],
+        "The End of the Disciplinary Committee?!": [
+            "Speed +5\nPower +10",
+            "Target in Sight ○ hint +1"
+        ],
+        "Beyond Fiction!": [
+            "Randomly either\n----------\nPower +20\nGuts +20\n----------\n\n----------\nEnergy -5\nPower +20\nGuts +10\n----------\n\n----------\nEnergy -10\nPower +10\nGuts +5",
+            "Energy +10"
+        ],
+        "Red-Hot Ramen Rumble!": [
+            "Energy +10\nSkill points +5",
+            "Randomly either\n----------\nEnergy +30\nSkill points +10\nor (~10%)\nor (~10%)\nEnergy +30\nSkill points +10\nSpeed -5\nPower +5\nGet Slow Metabolism status"
+        ],
+        "Dreaming Big With My Rivals!": [
+            "Power +20",
+            "Speed +20"
+        ],
+        "Behind the Dream": [
+            "Wit +10\nSkill points +15",
+            "Guts +20"
+        ],
+        "Vibing?": [
+            "Stamina +20\n(random) Get Practice Perfect ○ status",
+            "Power +20\n(random) Get Practice Perfect ○ status"
+        ],
+        "Hanging with the Girls!": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Bamboo's Dilemma": [
+            "Stamina +5\nGuts +5",
+            "Stamina +5\nPower +5"
+        ],
+        "Run into the Sunset!": [
+            "Guts +10",
+            "Power +10",
+            "Speed +10"
+        ],
+        "Bamboo and the Troubled Student": [
+            "Wit +10",
+            "Stamina +10"
+        ],
+        "Swords and Racing": [
+            "Speed +10",
+            "Guts +10"
+        ],
+        "I'm the BEST OF THE BEST!": [
+            "Power +30\nGuts +30\nSprint Straightaways ○ hint +2\nHomestretch Haste hint +2"
+        ],
+        "Dance Lesson": [
+            "Wit +10",
+            "Power +10"
+        ],
+        "New Year's Resolutions": [
+            "Guts +10",
+            "Energy +20",
+            "Skill points +20"
+        ],
+        "Victory! (G1)\n1st": [
+            "Energy -15\n1 random stat +10\nSkill points +45\n(random) Hint for a skill related to the race",
+            "Energy -5/-20\n1 random stat +10\nSkill points +45\n(random) Hint for a skill related to the race"
+        ],
+        "Victory! (G2/G3)\n1st": [
+            "Energy -15\n1 random stat +8\nSkill points +35\n(random) Hint for a skill related to the race",
+            "Energy -5/-20\n1 random stat +8\nSkill points +35\n(random) Hint for a skill related to the race"
+        ],
+        "Victory! (Pre/OP)\n1st": [
+            "Energy -15\n1 random stat +5\nSkill points +30\n(random) Hint for a skill related to the race",
+            "Energy -5/-20\n1 random stat +5\nSkill points +30\n(random) Hint for a skill related to the race"
+        ],
+        "Solid Showing (G1)\n2nd-5th": [
+            "Energy -20\n1 random stat +8\nSkill points +45\n(random) Hint for a skill related to the race",
+            "Energy -10/-30\n1 random stat +8\nSkill points +45\n(random) Hint for a skill related to the race"
+        ],
+        "Solid Showing (G2/G3)\n2nd-5th": [
+            "Energy -20\n1 random stat +5\nSkill points +35\n(random) Hint for a skill related to the race",
+            "Energy -10/-30\n1 random stat +5\nSkill points +35\n(random) Hint for a skill related to the race"
+        ],
+        "Solid Showing (Pre/OP)\n2nd-5th": [
+            "Energy -20\n1 random stat +3\nSkill points +30\n(random) Hint for a skill related to the race",
+            "Energy -10/-30\n1 random stat +3\nSkill points +30\n(random) Hint for a skill related to the race"
+        ],
+        "Defeat (G1)\n6th or worse": [
+            "Energy -25\n1 random stat +4\nSkill points +25\n(random) Hint for a skill related to the race",
+            "Energy -15/-35\n1 random stat +4\nSkill points +25\n(random) Hint for a skill related to the race"
+        ],
+        "Defeat (G2/G3)\n6th or worse": [
+            "Energy -25\n1 random stat +3\nSkill points +20\n(random) Hint for a skill related to the race",
+            "Energy -15/-35\n1 random stat +3\nSkill points +20\n(random) Hint for a skill related to the race"
+        ],
+        "Defeat (Pre/OP)\n6th or worse": [
+            "Energy -25\nSkill points +10\n(random) Hint for a skill related to the race",
+            "Energy -15/-35\nSkill points +10\n(random) Hint for a skill related to the race"
+        ],
+        "Etsuko's Elated Coverage (G1)": [
+            "Energy -15\nMood +1\n1 random stat +10\nSkill points +45\nFans +500\n(random) Hint for a skill related to the race\nEtsuko Otonashi bond +15"
+        ],
+        "Etsuko's Elated Coverage (G2/G3)": [
+            "Energy -15\nMood +1\n1 random stat +8\nSkill points +35\nFans +500\n(random) Hint for a skill related to the race\nEtsuko Otonashi bond +15"
+        ],
+        "Etsuko's Elated Coverage (Pre/OP)": [
+            "Energy -15\nMood +1\n1 random stat +5\nSkill points +30\nFans +500\n(random) Hint for a skill related to the race\nEtsuko Otonashi bond +15"
+        ],
+        "Etsuko's Exhaustive Coverage (G1)": [
+            "Randomly either\n----------\nEnergy -25\nMood -1\n1 random stat +4\nSkill points +25\nEtsuko Otonashi bond -10\n----------\n\n----------\nEnergy -15\nMood +1\n1 random stat +4\nSkill points +25\nEtsuko Otonashi bond +15",
+            "Energy -20\n1 random stat +4\nSkill points +25\nEtsuko Otonashi bond +10"
+        ],
+        "Etsuko's Exhaustive Coverage (G2/G3)": [
+            "Randomly either\n----------\nEnergy -25\nMood -1\n1 random stat +3\nSkill points +20\nEtsuko Otonashi bond -10\n----------\n\n----------\nEnergy -15\nMood +1\n1 random stat +3\nSkill points +20\nEtsuko Otonashi bond +15",
+            "Energy -20\n1 random stat +3\nSkill points +20\nEtsuko Otonashi bond +10"
+        ],
+        "Etsuko's Exhaustive Coverage (Pre/OP)": [
+            "Randomly either\n----------\nEnergy -25\nMood -1\nSkill points +10\nEtsuko Otonashi bond -10\n----------\n\n----------\nEnergy -15\nMood +1\nSkill points +10\nEtsuko Otonashi bond +15",
+            "Energy -20\nSkill points +10\nEtsuko Otonashi bond +10"
+        ],
+        "Bonus at start": [
+            "Skill points +120"
+        ],
+        "Failed training (Get Well Soon!)": [
+            "Mood -1\nLast trained stat -5\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -1\nLast trained stat -10\n(random) Get Practice Poor status\n----------\n\n----------\nGet Practice Perfect ○ status"
+        ],
+        "Failed training (Don't Overdo It!)": [
+            "Energy +10\nMood -2\nLast trained stat -10\n2 random stats -10\n(random) Get Practice Poor status",
+            "Randomly either\n----------\nMood -3\nLast trained stat -10\n2 random stats -10\nGet Practice Poor status\n----------\n\n----------\nEnergy +10\nGet Practice Perfect ○ status"
+        ],
+        "Extra Training": [
+            "Energy -5\nLast trained stat +5\n(random) Heal a negative status effect\nYayoi Akikawa bond +5",
+            "Energy +5"
+        ],
+        "At Summer Camp (Year 2)": [
+            "Power +10",
+            "Guts +10"
+        ],
+        "Fan Letter": [
+            "Mood +1\nSkill points +30"
+        ],
+        "New Year's Shrine Visit": [
+            "Energy +30",
+            "All stats +5",
+            "Skill points +35"
+        ],
+        "Acupuncture (Just an Acupuncturist, No Worries! ☆)": [
+            "Randomly either\n----------\nAll stats +20\nor (~70%)\nor (~70%)\nMood -2\nAll stats -15\nGet Night Owl status",
+            "Randomly either\n----------\nObtain Corner Recovery ○ skill\nObtain Straightaway Recovery skill\nor (~55%)\nor (~55%)\nEnergy -20\nMood -2",
+            "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
+            "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
+            "Energy +10"
+        ]
+    },
     "Biwa Hayahide": {
         "Victory! (G1)\n1st": [
             "Energy -15\n1 random stat +10\nSkill points +45\n(random) Hint for a skill related to the race",
@@ -2213,6 +2371,15 @@
         "Ideal Image": [
             "Speed +20\n(random) Get Charming ○ status",
             "Power +20\n(random) Get Charming ○ status"
+        ],
+        "Victory!": [
+            "pl None\nAll stats +10  /  +8  /  +5\nSkill points +45  /  +35  /  +30"
+        ],
+        "Solid Showing": [
+            "pl None\n2 random stats +8  /  +5  /  +3\nSkill points +45  /  +35  /  +30"
+        ],
+        "Defeat": [
+            "pl None\n2 random stats +4  /  +3  /  +0\nSkill points +25  /  +20  /  +10"
         ]
     },
     "Gold Ship": {
@@ -2379,6 +2546,17 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Welcome to Gol-Chateau": [
+            "Skill points +15",
+            "Guts +20"
+        ],
+        "The Beach House (Family)": [
+            "Speed +10"
+        ],
+        "Golshi, Master of Marine Creatures": [
+            "Summer Runner ○ hint +2\n(random) Get Practice Perfect ○ status",
+            "Power +20\n(random) Get Practice Perfect ○ status"
         ]
     },
     "Grass Wonder": {
@@ -5036,6 +5214,9 @@
         ],
         "After the Kikuka Sho: Fighting the Current": [
             "Standard race rewards\nSteadfast hint +2"
+        ],
+        "After the Tenno Sho (Autumn): Against the Thunder": [
+            "All stats +3\nSkill points +45\nSteadfast hint +2\nYayoi Akikawa bond +4"
         ]
     },
     "Mejiro Bright": {
@@ -5552,6 +5733,17 @@
         "Elegance": [
             "Stamina +10\nPower +10\n(random) Get Practice Perfect ○ status",
             "Wit +20\n(random) Get Practice Perfect ○ status"
+        ],
+        "More than a Photo, a Blueprint": [
+            "Wit +20",
+            "Energy +10"
+        ],
+        "You're My Trainer": [
+            "Randomly either\n----------\nSpeed +10\nWit +10\nPlaytime's Over! hint +3\n----------\n\n----------\nPower +20\n----------\n\n----------\nWit +10"
+        ],
+        "I Won't React to Troublemakers!": [
+            "Stamina +20\n(random) Get Charming ○ status",
+            "Summer Runner ○ hint +2\n(random) Get Charming ○ status"
         ]
     },
     "Mejiro Palmer": {

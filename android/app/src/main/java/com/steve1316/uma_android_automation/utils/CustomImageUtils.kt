@@ -32,9 +32,11 @@ import com.steve1316.uma_android_automation.components.IconStatBlockWit
 import com.steve1316.uma_android_automation.components.IconStatSupportEtsukoOtonashi
 import com.steve1316.uma_android_automation.components.IconStatSupportRikoKashimoto
 import com.steve1316.uma_android_automation.components.IconStatSupportYayoiAkikawa
+import com.steve1316.uma_android_automation.components.IconUnityCupExtremeSpiritExplosion
 import com.steve1316.uma_android_automation.components.IconUnityCupSpiritExplosion
 import com.steve1316.uma_android_automation.components.IconUnityCupSpiritTraining
 import com.steve1316.uma_android_automation.components.LabelEnergy
+import com.steve1316.uma_android_automation.components.LabelEventProgress
 import com.steve1316.uma_android_automation.components.LabelRivalRacer
 import com.steve1316.uma_android_automation.components.LabelStatMaxed
 import com.steve1316.uma_android_automation.components.LabelStatTableHeaderSkillPoints
@@ -55,6 +57,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.text.replace
@@ -95,6 +98,22 @@ internal fun rainbowHuesPresent(greenFraction: Double, cyanFraction: Double, pin
 internal fun <K> argMaxAboveFloor(scores: Map<K, Double>, floor: Double): K? {
     val best = scores.maxByOrNull { it.value } ?: return null
     return if (best.value >= floor) best.key else null
+}
+
+/**
+ * Parse the stat cap from the OCR text of the "/NNNN" denominator shown under a stat on the career / training screen. The cap is the largest number present - it is always >= the
+ * current value, so taking the max is robust even when the crop catches part of the value. Returns null when no plausible cap is found so the caller can fall back to the
+ * per-scenario cap table. The caller additionally rejects any cap below the scenario's base cap, since sparks / inheritance / duels only ever raise caps.
+ *
+ * @param text Raw OCR text of the cap-denominator region.
+ * @return The parsed stat cap in [1000, 2000], or null if none is plausible.
+ */
+internal fun parseStatCap(text: String): Int? {
+    // Plausible OCR'd cap range: base scenario caps start at 1200 (a read below 1000 is a value misread), and the game hard-caps stats at 2000 (a read above it is an OCR misread).
+    val minPlausibleCap = 1000
+    val maxPlausibleCap = 2000
+    val candidate = Regex("\\d+").findAll(text).mapNotNull { it.value.toIntOrNull() }.maxOrNull() ?: return null
+    return if (candidate in minPlausibleCap..maxPlausibleCap) candidate else null
 }
 
 /** Utility functions for image processing via CV like OpenCV. */
@@ -188,9 +207,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * Defines the result of analyzing Spirit Explosion gauges.
      *
      * @property numGaugesCanFill Number of gauges that can be filled by this training.
-     * @property numGaugesReadyToBurst Number of gauges that are already full and ready to burst.
+     * @property numGaugesReadyToBurst Number of gauges that are already full and ready to burst (normal Spirit Burst).
+     * @property numGaugesReadyToExtremeBurst Number of supports ready for an Extreme Spirit Burst (purple flames) - a bigger, cap-raising, 0% fail one-time burst.
      */
-    data class SpiritGaugeResult(val numGaugesCanFill: Int, val numGaugesReadyToBurst: Int)
+    data class SpiritGaugeResult(val numGaugesCanFill: Int, val numGaugesReadyToBurst: Int, val numGaugesReadyToExtremeBurst: Int)
 
     /**
      * Defines the result of detecting stat gains from a training session.
@@ -229,6 +249,47 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val mat = Mat()
         Utils.bitmapToMat(this, mat)
         return mat
+    }
+
+    /**
+     * Converts this bitmap to a new HSV [Mat], releasing the intermediates. [toMat] yields an RGBA mat, so the alpha is dropped with `RGBA2RGB` and never `BGR2RGB` - the latter swaps red
+     * and blue and would push a blue subject into the red hues, which is the recurring footgun in every hue range in this file.
+     */
+    private fun Bitmap.toHsvMat(): Mat {
+        val rgbaMat = toMat()
+        val rgbMat = Mat()
+        Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
+        val hsvMat = Mat()
+        Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
+        rgbaMat.release()
+        rgbMat.release()
+        return hsvMat
+    }
+
+    /**
+     * Groups the column sums of a mask into runs of consecutive "filled" columns, dropping any run narrower than [minRunWidth]. Each run is one shape when the shapes are separated by
+     * background gaps, so this counts adjacent shapes that template matching cannot (see [countEventProgressChevrons]). Pure so the segmentation can be reasoned about on its own.
+     *
+     * @param columnSums Per-column sums of a 0/255 mask, as produced by `Core.reduce(mask, ..., Core.REDUCE_SUM, CvType.CV_32S)`.
+     * @param minColumnPixels The minimum number of mask pixels a column needs before it counts as part of a shape.
+     * @param minRunWidth The minimum width in columns for a run to be a real shape rather than a border or shadow line.
+     * @return The column ranges of the detected shapes, left to right.
+     */
+    private fun segmentRuns(columnSums: IntArray, minColumnPixels: Int, minRunWidth: Int): List<IntRange> {
+        // REDUCE_SUM over a 0/255 mask yields 255 per set pixel, so scale the pixel threshold instead of dividing every column.
+        val minColumnSum = minColumnPixels * 255
+        val runs = mutableListOf<IntRange>()
+        var x = 0
+        while (x < columnSums.size) {
+            if (columnSums[x] < minColumnSum) {
+                x++
+                continue
+            }
+            val start = x
+            while (x < columnSums.size && columnSums[x] >= minColumnSum) x++
+            if (x - start >= minRunWidth) runs.add(start until x)
+        }
+        return runs
     }
 
     /** Converts this [Mat] to a new ARGB bitmap of matching dimensions. */
@@ -468,14 +529,15 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     useThreshold = false,
                     useGrayscale = true,
                     scale = 2.0,
-                    ocrEngine = "mlkit",
+                    ocrEngine = "tesseract_digits",
                     debugName = "TrainingFailureChance",
                 )
 
-            // Parse the result.
+            // Parse the result. Take the digit run immediately before the "%" sign (falling back to the first digit run) instead of concatenating every digit - a low-contrast 0% bubble can
+            // make the general recognizer emit stray digits, and blind concatenation fused them into phantom values like 10 / 12. The "o" -> "0" swap and the > 100 guard stay as backstops.
             return try {
-                // Replace OCR misidentification of 'o/O' with '0'.
-                val cleanedResult = detectedText.lowercase().replace("o", "0").replace("%", "").replace("failure", "").replace("\n", "").replace(Regex("[^0-9]"), "").trim()
+                val normalized = detectedText.lowercase().replace("o", "0").replace("failure", "")
+                val cleanedResult = (Regex("(\\d+)\\s*%").find(normalized)?.groupValues?.get(1) ?: Regex("\\d+").find(normalized)?.value)?.trim().orEmpty()
 
                 val value = cleanedResult.toInt()
 
@@ -969,6 +1031,39 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Saves a bitmap to the temp folder for offline debugging (e.g. calibrating the spirit gauge detection against a known screen or crop). No-op unless debug mode is on.
+     *
+     * @param bitmap The bitmap to save.
+     * @param name The file name (without extension) under the temp folder.
+     */
+    fun saveDebugScreenshot(bitmap: Bitmap, name: String) {
+        if (!debugMode) return
+        // toMat() yields an RGBA Mat but imwrite writes it as BGRA, so convert first or the saved PNG has red and blue swapped.
+        val rgba = bitmap.toMat()
+        val bgr = Mat()
+        Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR)
+        Imgcodecs.imwrite("$matchFilePath/$name.png", bgr)
+        rgba.release()
+        bgr.release()
+    }
+
+    /**
+     * Run the three Spirit Explosion gauge template matches (fill anchor, normal burst chevron, extreme burst chevron) against a screenshot. Extracted so
+     * [analyzeSpiritExplosionGauges]'s initial attempt and its retry-after-sleep attempt share one call instead of repeating all three matches verbatim.
+     *
+     * @param bitmap The screenshot to match against.
+     * @param anchorConfidence Confidence threshold for the spirit-training fill anchor.
+     * @param chevronConfidence Confidence threshold for the normal and extreme burst chevrons.
+     * @return A [Triple] of (fill anchors, normal burst chevrons, extreme burst chevrons).
+     */
+    private fun findSpiritGaugeIcons(bitmap: Bitmap, anchorConfidence: Double, chevronConfidence: Double): Triple<ArrayList<Point>, ArrayList<Point>, ArrayList<Point>> =
+        Triple(
+            IconUnityCupSpiritTraining.findAll(this, sourceBitmap = bitmap, confidence = anchorConfidence),
+            IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = bitmap, confidence = chevronConfidence),
+            IconUnityCupExtremeSpiritExplosion.findAll(this, sourceBitmap = bitmap, confidence = chevronConfidence),
+        )
+
+    /**
      * Analyzes Spirit Explosion gauges for the Unity Cup scenario.
      *
      * @param sourceBitmap Optional source bitmap to use. Defaults to null.
@@ -978,11 +1073,16 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // Take a single screenshot first to avoid buffer overflow.
         var currentBitmap = sourceBitmap ?: getSourceBitmap()
 
-        // Find all Spirit Training icons (there may be multiple for the currently selected training).
-        var spiritTrainingIcons: ArrayList<Point> = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
+        // Detect all three templates unconditionally. The fill anchor (spirit-training icon), the normal teal burst flame, and the purple Extreme flame are independent - a support that
+        // is ready to burst shows only the flame with no in-progress fill anchor, so gating burst detection on the anchors would miss it. All three are matched at a lower confidence (0.80)
+        // because their grayscale match scores sit around 0.82-0.98 - at 0.9 they coin-flip and get missed (the fill anchor undercounted fillable gauges at 0.9). Kept separate so the
+        // anchor can be tuned independently if lowering it surfaces facility-button false positives.
+        val chevronConfidence = 0.80
+        val anchorConfidence = 0.80
+        var (spiritTrainingIcons, spiritExplosionIcons, extremeSpiritExplosionIcons) = findSpiritGaugeIcons(currentBitmap, anchorConfidence, chevronConfidence)
 
-        // If no gauges detected, try one more time after a short delay just in case the icon was bouncing.
-        if (spiritTrainingIcons.isEmpty()) {
+        // If nothing at all was found, try one more time after a short delay in case the icons were still animating in. Only bail when all three are empty (no gauges/bursts on screen).
+        if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
             try {
                 Thread.sleep(150)
             } catch (e: InterruptedException) {
@@ -993,84 +1093,196 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             // Take a new screenshot for the retry.
             currentBitmap = getSourceBitmap()
 
-            spiritTrainingIcons = IconUnityCupSpiritTraining.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
-            if (spiritTrainingIcons.isEmpty()) {
+            val (retryTrainingIcons, retryExplosionIcons, retryExtremeIcons) = findSpiritGaugeIcons(currentBitmap, anchorConfidence, chevronConfidence)
+            spiritTrainingIcons = retryTrainingIcons
+            spiritExplosionIcons = retryExplosionIcons
+            extremeSpiritExplosionIcons = retryExtremeIcons
+            if (spiritTrainingIcons.isEmpty() && spiritExplosionIcons.isEmpty() && extremeSpiritExplosionIcons.isEmpty()) {
                 return null
             }
         }
 
-        // Find all Spirit Explosion icons to determine burst readiness.
-        val spiritExplosionIcons: ArrayList<Point> = IconUnityCupSpiritExplosion.findAll(this, sourceBitmap = currentBitmap, confidence = 0.9)
+        // Spirit gauge calibration. The gauge is a small droplet at a fixed slot to the LEFT of the training icon (offsets for the 1080-wide baseline, scaled by display width). "Fillable"
+        // = a gauge is present (empty or partial), signalled by its bright-blue OUTLINE ring in HSV (0-179 hue from the crop's RGBA->RGB->HSV path) - robust vs pale sky and grayish rooms.
+        val gaugeOffsetX = -199
+        val gaugeOffsetY = 62
+        val gaugeSlotWidth = 62
+        val gaugeSlotHeight = 78
+        val outlineHueLow = 100.0
+        val outlineHueHigh = 120.0
+        val outlineSatMin = 185.0
+        val outlineValueLow = 120.0
+        val outlineValueHigh = 225.0
+        val fillableOutlineFraction = 0.005
 
-        // Analyze all gauges for all spirit training icons to count how many can be filled.
+        // The anchor and the burst / extreme flames all live in the upper-right support column. The same chevron shapes also badge the bottom facility buttons (level-up indicators) and
+        // match every template at high confidence, so keep only points above this fraction of the screen height. Without it every training screen reads a phantom extreme burst off the
+        // Guts button's chevron badge and can over-count fillable gauges.
+        val supportColumnMaxYFraction = 0.55
+        val maxAnchorY = displayHeight * supportColumnMaxYFraction
+        val supportAnchors = spiritTrainingIcons.filter { it.y <= maxAnchorY }
+        val burstIcons = spiritExplosionIcons.filter { it.y <= maxAnchorY }
+        val extremeBurstIcons = extremeSpiritExplosionIcons.filter { it.y <= maxAnchorY }
+
+        // Count how many supports have a fillable gauge. The gauge is a droplet at a fixed slot to the LEFT of its training icon
+        // (see the gauge calibration locals above). A support is fillable when a gauge is present (empty or partial), detected by the
+        // gauge's bright-blue outline ring - reliable across sky and grayish classroom backgrounds where a raw gray-count is not.
         var numGaugesCanFill = 0
-        for ((index, iconLocation) in spiritTrainingIcons.withIndex()) {
-            // Gauge is located to the left of the icon. Analyze the gauge region.
-            // The gauge is gray inside (same gray as relationship bars), no dividers.
-            // We need to calculate the percentage fill: gray pixels vs other colors (white, blue, etc.).
-            val gaugeStartX = relX(iconLocation.x, -175)
-            val gaugeStartY = relY(iconLocation.y, 85)
-            val gaugeWidth = relWidth(30)
-            val gaugeHeight = relHeight(40)
-            Log.d(
-                TAG,
-                "[DEBUG] analyzeSpiritExplosionGauges:: Spirit Training icon location: (${iconLocation.x}, ${iconLocation.y}), gauge starting at ($gaugeStartX, $gaugeStartY), width: $gaugeWidth, height: $gaugeHeight",
-            )
+        for ((index, iconLocation) in supportAnchors.withIndex()) {
+            val gaugeStartX = relX(iconLocation.x, gaugeOffsetX)
+            val gaugeStartY = relY(iconLocation.y, gaugeOffsetY)
+            val gaugeWidth = relWidth(gaugeSlotWidth)
+            val gaugeHeight = relHeight(gaugeSlotHeight)
 
             val gaugeBitmap = createSafeBitmap(currentBitmap, gaugeStartX, gaugeStartY, gaugeWidth, gaugeHeight, "analyzeSpiritExplosionGauges") ?: continue
 
             val gaugeMat = gaugeBitmap.toMat()
-            if (debugMode) Imgcodecs.imwrite("$matchFilePath/debug_spiritExplosionGauge${index + 1}.png", gaugeMat)
 
-            // Convert to RGB and then to HSV for better color detection.
+            // toMat gives an RGBA mat, so drop alpha to true RGB (not COLOR_BGR2RGB, which would swap red/blue and push the blue outline to a red hue that the outline range misses).
             val rgbMat = Mat()
-            Imgproc.cvtColor(gaugeMat, rgbMat, Imgproc.COLOR_BGR2RGB)
+            Imgproc.cvtColor(gaugeMat, rgbMat, Imgproc.COLOR_RGBA2RGB)
             val hsvMat = Mat()
             Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
 
-            // Define gray color range (same as relationship bars gray).
-            // Gray typically has low saturation and medium value.
-            val grayLower = Scalar(0.0, 0.0, 50.0)
-            val grayUpper = Scalar(180.0, 50.0, 200.0)
+            saveDebugScreenshot(gaugeBitmap, "debug_spiritExplosionGauge${index + 1}")
 
-            val grayMask = Mat()
-            Core.inRange(hsvMat, grayLower, grayUpper, grayMask)
-            val grayPixels = Core.countNonZero(grayMask)
-
+            val outlineMask = Mat()
+            Core.inRange(
+                hsvMat,
+                Scalar(outlineHueLow, outlineSatMin, outlineValueLow),
+                Scalar(outlineHueHigh, 255.0, outlineValueHigh),
+                outlineMask,
+            )
+            val outlinePixels = Core.countNonZero(outlineMask)
             val totalPixels = gaugeMat.rows() * gaugeMat.cols()
-            // Gray pixels represent the unfilled portion, so filled pixels = total - gray.
-            val filledPixels = totalPixels - grayPixels
-            val fillPercent =
-                if (totalPixels > 0) {
-                    (filledPixels.toDouble() / totalPixels.toDouble()) * 100.0
-                } else {
-                    0.0
-                }
+            val outlineFraction = if (totalPixels > 0) outlinePixels.toDouble() / totalPixels else 0.0
 
-            // Round to nearest threshold: 0%, 25%, 50%, 75%, 100%.
-            val roundedFillPercent =
-                when {
-                    fillPercent < 12.5 -> 0.0
-                    fillPercent < 37.5 -> 25.0
-                    fillPercent < 62.5 -> 50.0
-                    fillPercent < 87.5 -> 75.0
-                    else -> 100.0
-                }
+            val fillable = outlineFraction > fillableOutlineFraction
+            if (fillable) numGaugesCanFill++
 
-            // Count gauges that can be filled.
-            if (roundedFillPercent < 100.0) {
-                numGaugesCanFill++
+            // Per-anchor detail. A debug run (and the on-screen debug test) gets the richer MessageLog line showing WHY a gauge was or was not counted (blue-outline ratio at the gauge
+            // slot). A normal run gets the same event as a plain logcat trace, so it is never logged twice.
+            if (debugMode) {
+                MessageLog.i(
+                    TAG,
+                    "[GAUGE] anchor ${index + 1} at (${iconLocation.x.toInt()}, ${iconLocation.y.toInt()}): outline=$outlinePixels/$totalPixels (${decimalFormat.format(
+                        outlineFraction * 100,
+                    )}%) -> ${if (fillable) "FILLABLE" else "none"}",
+                )
+            } else {
+                Log.d(
+                    TAG,
+                    "[DEBUG] analyzeSpiritExplosionGauges:: Gauge at (${iconLocation.x}, ${iconLocation.y}) outline ${decimalFormat.format(
+                        outlineFraction * 100,
+                    )}% -> ${if (fillable) "fillable" else "none"}",
+                )
             }
 
-            Log.d(TAG, "[DEBUG] analyzeSpiritExplosionGauges:: Spirit Explosion Gauge at (${iconLocation.x}, ${iconLocation.y}): ${decimalFormat.format(roundedFillPercent)}% filled")
-
-            grayMask.release()
+            outlineMask.release()
             hsvMat.release()
             rgbMat.release()
             gaugeMat.release()
         }
 
-        return SpiritGaugeResult(numGaugesCanFill, spiritExplosionIcons.size)
+        // A purple Extreme chevron also matches the teal template at nearly the same location (identical shape, only the color differs), so drop any teal match that overlaps a purple one -
+        // it is the same chevron and is already counted as an extreme. The purple template only matches true Extreme chevrons, so location overlap alone classifies correctly with no
+        // double-counting of a single support as both a normal burst and an extreme.
+        val overlapTolerance = relWidth(40)
+        val normalBurstIcons = burstIcons.filterNot { teal -> extremeBurstIcons.any { extreme -> abs(teal.x - extreme.x) <= overlapTolerance && abs(teal.y - extreme.y) <= overlapTolerance } }
+
+        return SpiritGaugeResult(numGaugesCanFill, normalBurstIcons.size, extremeBurstIcons.size)
+    }
+
+    /**
+     * Reads the recreation "Event Progress" chain position by segmenting the chevron row to the right of the [LabelEventProgress] pill. Each outing is one chevron: a filled (blue) chevron
+     * is a completed / current step and a hollow (gray) one is pending, so the counts give (completed, total) - e.g. a leading blue chevron before four gray ones is (1, 5). This works for
+     * the chevron-only recreation dates that show no "X/Y" text and is more robust than OCR-ing the number.
+     *
+     * The chevrons are counted by color segmentation rather than template matching. `matchAll` blanks every hit with a thick rectangle that bleeds ~10px past the match, and the chevrons sit
+     * only ~13px apart, so each hit destroys its neighbour and a tightly packed row gets undercounted (a 5-chevron row reads as 3). Masking the row for "not the near-white card background"
+     * instead makes each chevron a run of columns separated by the white gaps, which counts adjacent shapes correctly. Note this only rules template matching out for COUNTING the packed
+     * row - matching a single chevron to LOCATE and click it (as `ScrollList` still does with `ButtonEventProgressChevron`) is unaffected, since one hit never suppresses itself.
+     *
+     * @param sourceBitmap Optional pre-captured screen; a fresh capture is taken when null.
+     * @return The (completed, total) outing counts, or null when the progress row could not be read.
+     */
+    fun countEventProgressChevrons(sourceBitmap: Bitmap? = null): Pair<Int, Int>? {
+        val currentBitmap = sourceBitmap ?: getSourceBitmap()
+
+        // Anchor on the "Event Progress" pill. The chevron row sits on the same line strictly to its right, so start past the pill's right edge to keep the pill's own text out of the mask.
+        val pill = LabelEventProgress.findImageWithBitmap(this, sourceBitmap = currentBitmap)
+        if (pill == null) {
+            MessageLog.w(TAG, "[WARN] countEventProgressChevrons:: Could not find the Event Progress pill. Falling back to the per-run counter.")
+            return null
+        }
+        val pillTemplate = LabelEventProgress.template.getBitmap(this)
+        if (pillTemplate == null) {
+            MessageLog.w(TAG, "[WARN] countEventProgressChevrons:: Could not load the Event Progress template. Falling back to the per-run counter.")
+            return null
+        }
+
+        val rowStartX = (pill.x + pillTemplate.width / 2).toInt() + relWidth(12)
+        val rowStartY = relY(pill.y, -48).coerceAtLeast(0)
+        val rowWidth = (displayWidth - rowStartX - relWidth(16)).coerceAtLeast(1)
+        val rowHeight = relHeight(96)
+        val rowBitmap = createSafeBitmap(currentBitmap, rowStartX, rowStartY, rowWidth, rowHeight, "countEventProgressChevrons") ?: return null
+        saveDebugScreenshot(rowBitmap, "debug_eventProgressRow")
+
+        // A chevron stands out from the near-white card background either by being darker than it (the hollow gray chevron's outline) or by being saturated (the filled blue chevron).
+        // Thresholds estimated from 1080p crops - tune here if the run count is off.
+        val backgroundValueFloor = 225.0
+        val blueLower = Scalar(90.0, 80.0, 80.0)
+        val blueUpper = Scalar(125.0, 255.0, 255.0)
+        val minColumnPixels = 3
+        val minRunWidth = relWidth(24)
+
+        val hsvMat = rowBitmap.toHsvMat()
+        val chevronMask = Mat()
+        val blueMask = Mat()
+        val chevronColumns = Mat()
+        val blueColumns = Mat()
+        val sums: IntArray
+        val blueSums: IntArray
+        try {
+            Core.inRange(hsvMat, Scalar(0.0, 0.0, 0.0), Scalar(179.0, 255.0, backgroundValueFloor), chevronMask)
+            Core.inRange(hsvMat, blueLower, blueUpper, blueMask)
+            // The filled blue may sit above the darkness floor, so fold it in. Done in place - the darkness mask has no other consumer.
+            Core.bitwise_or(chevronMask, blueMask, chevronMask)
+
+            // Column projection. Each chevron is one run of columns carrying mask pixels and the white gaps between them read as empty columns, so the runs count the chevrons directly.
+            // This replaces template matching: matchAll blanks every hit with a thick rectangle that bleeds into the neighbouring chevron, so a tightly packed row of identical shapes
+            // gets undercounted (a 5-chevron row reads as 3).
+            Core.reduce(chevronMask, chevronColumns, 0, Core.REDUCE_SUM, CvType.CV_32S)
+            sums = IntArray(chevronMask.cols()).also { chevronColumns.get(0, 0, it) }
+            Core.reduce(blueMask, blueColumns, 0, Core.REDUCE_SUM, CvType.CV_32S)
+            blueSums = IntArray(blueMask.cols()).also { blueColumns.get(0, 0, it) }
+        } finally {
+            listOf(hsvMat, chevronMask, blueMask, chevronColumns, blueColumns).forEach { it.release() }
+        }
+
+        val runs = segmentRuns(sums, minColumnPixels, minRunWidth)
+        if (runs.isEmpty()) {
+            MessageLog.w(
+                TAG,
+                "[WARN] countEventProgressChevrons:: Found the Event Progress pill at (${pill.x.toInt()}, ${pill.y.toInt()}) but segmented no chevrons in row " +
+                    "[$rowStartX, $rowStartY, $rowWidth, $rowHeight]. Falling back to the per-run counter. Enable debugMode to dump the debug_eventProgressRow crop.",
+            )
+            return null
+        }
+
+        // A chevron is done when its run is mostly the filled blue; the hollow gray one carries almost no blue. Both sums are 255-per-pixel, so the scale cancels in the ratio.
+        val blueRunFractionMin = 0.5
+        val blueFlags = runs.map { run -> run.sumOf { blueSums[it] }.toDouble() / run.sumOf { sums[it] } >= blueRunFractionMin }
+
+        // Completed = the position of the rightmost filled chevron. Using the position (not the raw blue count) is robust whether the game keeps completed steps highlighted or advances a
+        // single marker. Total = every chevron in the row. The caller owns the user-facing progress log; this is the vision-level detail for calibrating the row.
+        val completed = blueFlags.indexOfLast { it } + 1
+        val total = runs.size
+        MessageLog.d(
+            TAG,
+            "[DEBUG] countEventProgressChevrons:: chevron runs ${runs.map { "${it.first}-${it.last}" }}, filled $blueFlags -> $completed/$total.",
+        )
+        return completed to total
     }
 
     /**
@@ -1255,8 +1467,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                             MessageLog.w(TAG, "[WARN] determineStatValues:: No numbers found in '$text' for $statName")
                             result[statName] = -1
                         } else if (isAptitudeDialog) {
-                            // The value box holds only the value (no cap or rank badge), but OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value by
-                            // concatenating every digit in reading order rather than treating the pieces as separate numbers. The 2500 ceiling drops a clearly-bogus read.
+                            // The value crop covers only the value line (the cap below is read separately), but OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value
+                            // by concatenating every digit in reading order rather than treating the pieces as separate numbers. The 2500 ceiling drops a clearly-bogus read.
                             val value = text.replace(Regex("[^0-9]"), "").toIntOrNull() ?: -1
                             result[statName] = if (value in 1..2500) value else -1
                         } else {
@@ -1281,6 +1493,108 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
 
         return result.toMap()
+    }
+
+    /**
+     * Read the per-stat cap denominators ("/NNNN") from the Umamusume Details dialog, one line below each stat value. Anchored on the same LabelStatTrackSurface as the dialog value
+     * read, so it only works while that dialog is open. Each cap is parsed via `parseStatCap`, with implausible reads rejected. Used at end of run to stamp the trainee's true final
+     * caps for the log and dashboard, independent of the live main-screen cap reads.
+     *
+     * @return A map of stat names to their detected cap, omitting any stat whose cap could not be read plausibly.
+     */
+    fun determineStatCapsFromDialog(): Map<StatName, Int> {
+        val (finalLocation, finalSourceBitmap) = LabelStatTrackSurface.find(this)
+        val result: MutableMap<StatName, Int> = mutableMapOf()
+
+        if (finalLocation == null) {
+            MessageLog.e(TAG, "[ERROR] determineStatCapsFromDialog:: Could not anchor the cap reads on LabelStatTrackSurface.")
+            return result.toMap()
+        }
+
+        val templateBitmap = LabelStatTrackSurface.template.getBitmap(this)
+        if (templateBitmap == null) {
+            MessageLog.e(TAG, "[ERROR] determineStatCapsFromDialog:: Could not get template bitmap for LabelStatTrackSurface.")
+            return result.toMap()
+        }
+
+        val halfW = templateBitmap.width / 2
+        val halfH = templateBitmap.height / 2
+
+        StatName.entries.forEachIndexed { index, statName ->
+            // The cap ("/NNNN") sits one line below the value in the same column: same offsetX as the value read, 44px lower (measured on-device against the saved cap crop).
+            val text =
+                performOCROnRegion(
+                    finalSourceBitmap,
+                    relX(finalLocation.x, -halfW + 10 + (index * 200)),
+                    relY(finalLocation.y, -halfH - 66),
+                    relWidth(105),
+                    relHeight(26),
+                    useThreshold = false,
+                    useGrayscale = true,
+                    scale = 2.0,
+                    ocrEngine = "tesseract_digits",
+                    debugName = "${statName}StatCapDialog",
+                )
+
+            MessageLog.d(TAG, "[DEBUG] determineStatCapsFromDialog:: Raw OCR text for $statName cap: '$text'")
+
+            val cap = parseStatCap(text)
+            if (cap != null) {
+                result[statName] = cap
+            } else {
+                MessageLog.w(TAG, "[WARN] determineStatCapsFromDialog:: Implausible cap '$text' for $statName. Skipping.")
+            }
+        }
+
+        return result.toMap()
+    }
+
+    /**
+     * Read the cap denominator ("/NNNN") shown under a single stat on the career / training main screen. Anchored on the same skill-points label as the value read, offset one line
+     * down. Caps appear only on the main / training screen (not the aptitude dialog), so this reads the main-screen layout. Returns the parsed cap, or -1 when no plausible cap is
+     * found so the caller keeps the per-scenario table cap. NOTE: the cap-region vertical offset is a starting point tuned on-device against the saved `${statName}StatCap` crop.
+     *
+     * @param statName The stat whose cap to read.
+     * @param sourceBitmap Optional shared source bitmap (enables thread-safe parallel reads).
+     * @param skillPointsLocation Optional pre-found skill-points label location.
+     * @return The parsed stat cap, or -1 if none is plausible.
+     */
+    fun determineSingleStatCap(statName: StatName, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null): Int {
+        val (finalLocation, finalSourceBitmap) =
+            if (sourceBitmap == null && skillPointsLocation == null) {
+                LabelStatTableHeaderSkillPoints.find(this)
+            } else {
+                Pair(skillPointsLocation, sourceBitmap)
+            }
+
+        if (finalLocation == null || finalSourceBitmap == null) {
+            MessageLog.e(TAG, "[ERROR] determineSingleStatCap:: Could not start the process of detecting the stat cap for $statName.")
+            return -1
+        }
+
+        // The cap sits one line below the stat value (value region is offsetY 20, height 50). Same 170px horizontal spacing; the vertical offset is tuned on-device via the crop.
+        val index = statName.ordinal
+        val offsetX = -862 + (index * 170)
+        val offsetY = 64
+        val width = 110
+        val height = 44
+
+        val text =
+            performOCROnRegion(
+                finalSourceBitmap,
+                relX(finalLocation.x, offsetX),
+                relY(finalLocation.y, offsetY),
+                relWidth(width),
+                relHeight(height),
+                useThreshold = false,
+                useGrayscale = true,
+                scale = 2.0,
+                ocrEngine = "tesseract_digits",
+                debugName = "${statName}StatCap",
+            )
+
+        Log.d(TAG, "[DEBUG] determineSingleStatCap:: Raw OCR text for $statName cap: '$text'")
+        return parseStatCap(text) ?: -1
     }
 
     /**

@@ -3052,7 +3052,8 @@
             let activeTab = "logs"
             // Cap on rendered log entries. Trimming the oldest bounds DOM size so a debug flood cannot make each frame's
             // reflow progressively heavier and saturate the main thread (which starved clicks like the log Download button).
-            const MAX_LOG_ENTRIES = 5000
+            // Matched to the server replay buffer (MAX_BUFFER_SIZE in LogStreamServer.kt) so the viewer shows the full retained history.
+            const MAX_LOG_ENTRIES = 15000
 
             let reconnectAttempts = 0
             let reconnectInterval = null

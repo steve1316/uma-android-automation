@@ -1104,10 +1104,10 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     /**
      * Executes the race with retry logic.
      *
-     * @param isMandatory True if this is a mandatory race, which always retries until 1st place whenever possible.
+     * @param retryUntilFirst True to keep retrying until 1st place whenever possible (mandatory races and Unity Cup races).
      * @return True if the bot completed the race; otherwise false.
      */
-    fun runRaceWithRetries(isMandatory: Boolean = false): Boolean {
+    fun runRaceWithRetries(retryUntilFirst: Boolean = false): Boolean {
         MessageLog.i(TAG, "[RACE] Proceeding to handle the race...")
         game.wait(0.5, skipWaitingForLoading = true)
 
@@ -1215,11 +1215,11 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     attemptRaceRetry(bitmap)
                 }
 
-                // Mandatory races always retry until 1st place whenever possible.
-                isMandatory &&
+                // Retry-until-1st races (mandatory races and Unity Cup) retry whenever possible.
+                retryUntilFirst &&
                     ButtonTryAgainAlt.checkDisabled(game.imageUtils, sourceBitmap = bitmap) == false &&
                     !LabelCongratulations.check(game.imageUtils, sourceBitmap = bitmap) -> {
-                    MessageLog.i(TAG, "[RACE] Mandatory race finished below 1st place. Retrying for the win...")
+                    MessageLog.i(TAG, "[RACE] Finished below 1st place. Retrying for the win...")
                     if (ButtonTryAgainAlt.click(game.imageUtils, sourceBitmap = bitmap)) {
                         game.wait(3.0)
                     }
@@ -1723,7 +1723,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         game.waitForLoading()
 
         // Skip the race if possible, otherwise run it manually.
-        runRaceWithRetries(isMandatory = true)
+        runRaceWithRetries(retryUntilFirst = true)
         finalizeRaceResults()
 
         MessageLog.v(TAG, "[RACE] Racing process for Mandatory Race is completed. Grade: ${lastRaceGrade ?: "Mandatory"}")

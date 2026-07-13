@@ -274,6 +274,9 @@ abstract class Campaign(game: Game) : Task(game) {
     /** The group-event chain length as last read from the game's "X/Y" progress, or the configured fallback until the partner dialog is first read. */
     protected var recreationTotalOutingsKnown: Int = recreationTotalOutings
 
+    /** Whether the authoritative chain progress has been read this run - true once the partner dialog "X/Y" is OCR'd or the chain-complete label is seen. */
+    protected var recreationProgressRead: Boolean = false
+
     /** The turn number when the stop-at-date check first started. */
     protected var stopAtDateInitialTurnNumber: Int = -1
 
@@ -440,7 +443,7 @@ abstract class Campaign(game: Game) : Task(game) {
         openFansDialog()
         handleDialogs()
 
-        trainee.logInfo()
+        trainee.logInfo(game.scenario)
         MessageLog.i(TAG, "\n[TEST] Main Screen update test complete.")
     }
 
@@ -675,6 +678,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 val prevRunningStyle = trainee.runningStyle
                 trainee.updateAptitudes(game.imageUtils)
                 trainee.updateStats(game.imageUtils, isAptitudeDialog = true)
+                trainee.updateStatCapsFromDialog(game.imageUtils)
                 trainee.bTemporaryRunningStyleAptitudesUpdated = false
 
                 // Read the trainee's name once per run while the dialog is still open.
@@ -979,10 +983,25 @@ abstract class Campaign(game: Game) : Task(game) {
     open fun gatherDecisionSettings(): DecisionTracer.SettingsSnapshot = DecisionTracer.SettingsSnapshot()
 
     /**
-     * Campaign-specific extra state that does not live on `Trainee` itself (for example Trackblazer's `consecutiveRaceCount`). Returned as
-     * a display-friendly key/value map appended to the State section of the Decision Report.
+     * The per-turn extra state appended to the State section of the Decision Report. The base contributes the schedule-only Next Recreation / Pure Passion
+     * turns when the dating schedule is enabled (recreation-chain progress itself is logged by [logRecreationProgress], not shown here), then merges each
+     * campaign's own state from [gatherCampaignDecisionExtraState]. This is intentionally not open, so a subclass can never silently drop the shared entries
+     * by overriding the wrong method.
      */
-    open fun gatherDecisionExtraState(): Map<String, String> = emptyMap()
+    fun gatherDecisionExtraState(): Map<String, String> =
+        buildMap {
+            if (enableDatingSchedule) {
+                put("Next Recreation Turn", DatingSchedule.nextScheduledTurn(date.day, recreationTurns, purePassionTurn)?.toString() ?: "-")
+                if (purePassionTurn > 0) put("Pure Passion Turn", purePassionTurn.toString())
+            }
+            putAll(gatherCampaignDecisionExtraState())
+        }
+
+    /**
+     * Campaign-specific extra state that does not live on `Trainee` itself (for example Trackblazer's `consecutiveRaceCount`). Merged into the Decision
+     * Report by [gatherDecisionExtraState]. Subclasses override this alone - the shared recreation entries are added by the base regardless.
+     */
+    open fun gatherCampaignDecisionExtraState(): Map<String, String> = emptyMap()
 
     /**
      * Determines whether item-based mood recovery should override the default mood recovery logic.
@@ -1425,9 +1444,9 @@ abstract class Campaign(game: Game) : Task(game) {
                     MessageLog.v(TAG, "[MOOD] Successfully recovered mood via recreation date.")
                 }
             } else {
-                // Otherwise, recover mood as normal.
-                // Note that if a date was already completed, the Recreation popup will still show so it will require an additional step to recover mood.
-                recreationDateCompleted = true
+                // Otherwise, recover mood as normal. Do NOT mark the date completed here: an absent date icon can simply mean the date has not unlocked yet
+                // (it unlocks randomly), not that the chain is finished. Completion is set only by the authoritative LabelRecreationDateComplete check.
+                // If a date really was already completed, the Recreation popup still shows, so recovering mood needs the extra step below.
                 if (!ButtonRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
                     ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap)
                 }
@@ -1536,6 +1555,27 @@ abstract class Campaign(game: Game) : Task(game) {
         return false
     }
 
+    /**
+     * Records an authoritative read of the recreation chain position, so the per-run counter is corrected to the real position and survives a bot restart or dates done manually. Both
+     * readers (the chevron row and the in-game "X/Y" text) land here so the three fields never drift apart.
+     *
+     * @param source Human-readable name of the reader, used in the log line.
+     * @param progress The (completed, total) outing counts, or null when that reader could not resolve them.
+     */
+    private fun applyChainProgress(source: String, progress: Pair<Int, Int>?) {
+        val (completed, total) = progress ?: return
+        recreationOutingsStarted = completed
+        recreationTotalOutingsKnown = total
+        recreationProgressRead = true
+        MessageLog.i(TAG, "[RECREATION_DATE] Event progress read from $source as $completed/$total.")
+    }
+
+    /** Emits the consistent recreation-chain progress line shared by every outcome branch of [handleRecreationDate], honest about progress not yet read. */
+    private fun logRecreationProgress() {
+        val phrase = DatingSchedule.formatRecreationProgress(recreationOutingsStarted, recreationTotalOutingsKnown, recreationProgressRead, recreationDateCompleted)
+        MessageLog.i(TAG, "[RECREATION_DATE] Progress: $phrase.")
+    }
+
     /** Whether the final chain outing may be taken right now - only on the Pure Passion turn (or when the schedule or Pure Passion turn is off). */
     private fun allowFinalOutingNow(): Boolean = DatingSchedule.allowFinalOuting(enableDatingSchedule, purePassionTurn, date.day)
 
@@ -1558,10 +1598,14 @@ abstract class Campaign(game: Game) : Task(game) {
 
             MessageLog.v(TAG, "\n[RECREATION_DATE] Recreation has a possible date available.")
             game.wait(1.0)
+            // One capture serves both the completion check and the chevron read below - nothing taps the screen between them.
+            val popupBitmap = game.imageUtils.getSourceBitmap()
             // Check if all of the possible dates have been completed.
-            if (LabelRecreationDateComplete.check(game.imageUtils)) {
+            if (LabelRecreationDateComplete.check(game.imageUtils, sourceBitmap = popupBitmap)) {
                 MessageLog.v(TAG, "[RECREATION_DATE] Recreation date is already completed.")
                 recreationDateCompleted = true
+                recreationProgressRead = true
+                logRecreationProgress()
                 if (recoverMoodIfCompleted) {
                     MessageLog.v(TAG, "[RECREATION_DATE] Mood requires recovery. Recovering mood with the Umamusume now...")
                     LabelRecreationUmamusume.click(game.imageUtils)
@@ -1573,6 +1617,9 @@ abstract class Campaign(game: Game) : Task(game) {
                     true
                 }
             } else {
+                // Read the chain position from the Event Progress chevron row on the base recreation popup (blue = done, gray = pending). This is the primary signal - it works for the
+                // chevron-only dates that show no "X/Y" text and covers both the group-dialog and legacy paths below. The per-run counter is still incremented after the date is started.
+                applyChainProgress("chevrons", game.imageUtils.countEventProgressChevrons(popupBitmap))
                 // If not complete, handle both regular support dates and Group Support Card dates.
                 // Group Support Cards open a "Choose Recreation Partner" dialog.
                 if (IconRecreationDateOpen.click(game.imageUtils)) {
@@ -1591,11 +1638,10 @@ abstract class Campaign(game: Game) : Task(game) {
                             cancelPartnerDialog()
                         }
                     } else {
-                        // Read the in-game group-event progress (e.g. "3/4"). This is the authoritative chain position, so it holds correctly even after a bot restart or manual play.
-                        getGroupEventProgress(game.imageUtils.getSourceBitmap())?.let { (completed, total) ->
-                            recreationOutingsStarted = completed
-                            recreationTotalOutingsKnown = total
-                            MessageLog.i(TAG, "[RECREATION_DATE] Group event progress read as $completed/$total.")
+                        // Fall back to OCR-ing the in-game "X/Y" group-event progress only when the chevron read above did not resolve. This is the authoritative chain position when the
+                        // text is present, so it holds correctly even after a bot restart or manual play.
+                        if (!recreationProgressRead) {
+                            applyChainProgress("the X/Y text", getGroupEventProgress(game.imageUtils.getSourceBitmap()))
                         }
 
                         if (DatingSchedule.shouldHoldFinalOuting(recreationOutingsStarted, recreationTotalOutingsKnown, allowFinalOuting)) {
@@ -1619,7 +1665,8 @@ abstract class Campaign(game: Game) : Task(game) {
 
                             if (bResult) {
                                 recreationOutingsStarted++
-                                MessageLog.v(TAG, "[RECREATION_DATE] Started a date from the partner selection dialog. Outings started this run: $recreationOutingsStarted.")
+                                MessageLog.v(TAG, "[RECREATION_DATE] Started a date from the partner selection dialog.")
+                                logRecreationProgress()
                                 game.waitForLoading()
                                 true
                             } else {
@@ -1633,6 +1680,7 @@ abstract class Campaign(game: Game) : Task(game) {
                     recreationOutingsStarted++
                     game.waitForLoading()
                     MessageLog.v(TAG, "[RECREATION_DATE] Recreation date can be done.")
+                    logRecreationProgress()
                     true
                 } else {
                     MessageLog.e(TAG, "[ERROR] handleRecreationDate:: Failed to find a way to start the recreation date.")
@@ -2044,7 +2092,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
         // Compute the estimated overall rank, then print the trainee info after all turn-start updates and potential fan count updates.
         updateEstimatedRank()
-        trainee.logInfo()
+        trainee.logInfo(game.scenario)
 
         // Surface analytics right after the trainee scan, before the scenario item/shop pass, so a restart shows the resumed run promptly.
         RunAnalytics.onTurnStart(trainee, date)
@@ -2085,9 +2133,10 @@ abstract class Campaign(game: Game) : Task(game) {
             return
         }
 
-        // Use CountDownLatch to run the operations in parallel.
-        // 1 racingRequirements (skipped during summer) + 5 stats + 1 skill points + 1 mood + 1 energy = 9 (or 8) threads.
-        val latch = if (date.isSummer() && !(racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) CountDownLatch(8) else CountDownLatch(9)
+        // Run the per-turn reads in parallel. 5 stats + skill points + mood + energy = 8, plus racing requirements (outside summer) and the stat-cap OCR (only when dynamic caps are on).
+        val includeRacingThread = !date.isSummer() || (racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)
+        val readStatCaps = training.useDynamicStatCaps
+        val latch = CountDownLatch(8 + (if (includeRacingThread) 1 else 0) + (if (readStatCaps) 1 else 0))
 
         MessageLog.disableOutput = true
 
@@ -2117,7 +2166,7 @@ abstract class Campaign(game: Game) : Task(game) {
         }.apply { isDaemon = true }.start()
 
         // Thread 8: Update racing requirements.
-        if (!date.isSummer() || (racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) {
+        if (includeRacingThread) {
             Thread {
                 try {
                     racing.checkRacingRequirements(sourceBitmap)
@@ -2139,6 +2188,19 @@ abstract class Campaign(game: Game) : Task(game) {
                 latch.countDown()
             }
         }.apply { isDaemon = true }.start()
+
+        // Thread 10: Update stat caps (only shown on the main / training screen, and only when dynamic caps are on - otherwise the 5 OCR reads and the misread caps in the log are wasted).
+        if (readStatCaps) {
+            Thread {
+                try {
+                    trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
+                } catch (e: Exception) {
+                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
+                } finally {
+                    latch.countDown()
+                }
+            }.apply { isDaemon = true }.start()
+        }
 
         // Wait for all threads to complete.
         try {
@@ -2307,7 +2369,10 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RECOVER_MOOD
         }
 
-        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = { racing.hasG1RacesAtTurn(date.day) })) {
+        if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = {
+                racing.hasG1RacesAtTurn(date.day)
+            })
+        ) {
             g1DayPreScreenResult()?.let { return it }
         }
 
@@ -2497,7 +2562,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 handleDialogs()
 
                 // Print the final Trainee information.
-                trainee.logInfo()
+                trainee.logInfo(game.scenario)
 
                 return TaskResult.Success(
                     TaskResultCode.TASK_RESULT_COMPLETE,

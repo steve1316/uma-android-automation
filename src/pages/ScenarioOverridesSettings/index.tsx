@@ -12,6 +12,10 @@ import { Input } from "../../components/ui/input"
 import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalRadioRow } from "../../components/ui/modal-list"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
+import { Row } from "../../components/ui/row"
+import { ValuePill } from "../../components/ui/value-pill"
+import { ModalHeader } from "../../components/ui/modal-header"
+import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
 import { CircleCheckBig, Trash2 } from "lucide-react-native"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
@@ -24,7 +28,14 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 
 /** Scenarios that currently have a dedicated set of overrides on this page. Only these appear in the campaign picker, since picking any other scenario would render nothing. */
-const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup"] as const
+const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup", "URA Finale"] as const
+
+/** Options for the URA Finale Happy Meek duel training-bias picker. The `value` doubles as the short text shown in the row's right-side pill. */
+const DUEL_BIAS_OPTIONS = [
+    { value: "Off", label: "Off - never bias toward the duel facility" },
+    { value: "Moderate", label: "Moderate - prefer the duel when it is close to the best pick" },
+    { value: "Aggressive", label: "Aggressive - strongly prefer the duel facility" },
+] as const
 
 /** Props for `ChipMultiSelect`. */
 interface ChipMultiSelectProps {
@@ -86,6 +97,7 @@ const ScenarioOverridesSettings = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [showResetAll, setShowResetAll] = useState(false)
     const [scenarioPickerOpen, setScenarioPickerOpen] = useState(false)
+    const [duelBiasPickerOpen, setDuelBiasPickerOpen] = useState(false)
 
     // Which scenario the page is currently editing overrides for. Independent of the bot's active scenario (`general.scenario`) so switching campaigns here does not change the bot's actual run target.
     const [editingCampaign, setEditingCampaign] = useState<string>(SCENARIOS_WITH_OVERRIDES[0])
@@ -195,12 +207,27 @@ const ScenarioOverridesSettings = () => {
     /** Reset the Unity Cup Training section to defaults. */
     const resetUnityCupDefaults = useCallback(() => {
         updateOverrideSetting("unityCupBurstMaxFailureChance", defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance)
+        updateOverrideSetting("unityCupExtremeBurstMinStatGain", defaultSettings.scenarioOverrides.unityCupExtremeBurstMinStatGain)
+        updateOverrideSetting("unityCupBurstTopStatsOnlyAfterJunior", defaultSettings.scenarioOverrides.unityCupBurstTopStatsOnlyAfterJunior)
+    }, [updateOverrideSetting, defaultSettings])
+
+    /** Reset the Unity Cup Racing section to defaults. */
+    const resetUnityCupRacingDefaults = useCallback(() => {
+        updateOverrideSetting("unityCupRetryRaces", defaultSettings.scenarioOverrides.unityCupRetryRaces)
+    }, [updateOverrideSetting, defaultSettings])
+
+    /** Reset the URA Finale Training section to defaults. */
+    const resetUraFinaleDefaults = useCallback(() => {
+        updateOverrideSetting("uraHappyMeekDuelBias", defaultSettings.scenarioOverrides.uraHappyMeekDuelBias)
     }, [updateOverrideSetting, defaultSettings])
 
     /** Reset the currently-edited scenario's overrides to defaults. */
     const resetAllDefaults = useCallback(() => {
         if (activeCampaign === "Unity Cup") {
             resetUnityCupDefaults()
+            resetUnityCupRacingDefaults()
+        } else if (activeCampaign === "URA Finale") {
+            resetUraFinaleDefaults()
         } else {
             resetRacingDefaults()
             resetEnergyDefaults()
@@ -209,7 +236,17 @@ const ScenarioOverridesSettings = () => {
             resetConservationDefaults()
         }
         setShowResetAll(false)
-    }, [activeCampaign, resetRacingDefaults, resetEnergyDefaults, resetTrainingDefaults, resetShopDefaults, resetConservationDefaults, resetUnityCupDefaults])
+    }, [
+        activeCampaign,
+        resetRacingDefaults,
+        resetEnergyDefaults,
+        resetTrainingDefaults,
+        resetShopDefaults,
+        resetConservationDefaults,
+        resetUnityCupDefaults,
+        resetUnityCupRacingDefaults,
+        resetUraFinaleDefaults,
+    ])
 
     const styles = useMemo(
         () =>
@@ -287,7 +324,13 @@ const ScenarioOverridesSettings = () => {
                                                 />
                                             </View>
 
-                                            <ToggleSetting id="trackblazer-ignore-low-energy-racing-block" title="Ignore Low Energy Racing Block" description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races." checked={scenarioOverrides.trackblazerIgnoreLowEnergyRacingBlock} onCheckedChange={(checked) => updateOverrideSetting("trackblazerIgnoreLowEnergyRacingBlock", checked)} />
+                                            <ToggleSetting
+                                                id="trackblazer-ignore-low-energy-racing-block"
+                                                title="Ignore Low Energy Racing Block"
+                                                description="When enabled, the Trackblazer bot will not block racing when energy is critically low (<=1%) with 3+ consecutive races."
+                                                checked={scenarioOverrides.trackblazerIgnoreLowEnergyRacingBlock}
+                                                onCheckedChange={(checked) => updateOverrideSetting("trackblazerIgnoreLowEnergyRacingBlock", checked)}
+                                            />
 
                                             <View style={{ padding: SPACING.md }}>
                                                 <CustomSlider
@@ -731,22 +774,71 @@ const ScenarioOverridesSettings = () => {
                                 )}
 
                                 {activeCampaign === "Unity Cup" && (
-                                    <Section label="Training" collapsible labelRight={makeResetLink(resetUnityCupDefaults)}>
-                                        <View style={{ padding: SPACING.md }}>
-                                            <CustomSlider
-                                                searchId="unity-cup-burst-max-failure-chance"
-                                                value={scenarioOverrides.unityCupBurstMaxFailureChance}
-                                                placeholder={defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance}
-                                                onValueChange={(value) => updateOverrideSetting("unityCupBurstMaxFailureChance", value)}
-                                                min={0}
-                                                max={100}
-                                                step={5}
-                                                label="Burst Failure-Chance Exemption"
-                                                showValue={true}
-                                                showLabels={true}
-                                                description="Allow a training with a Spirit Explosion gauge ready to burst up to this failure chance before it is skipped. 0 disables the exemption and uses the normal failure limit."
+                                    <>
+                                        <Section label="Training" collapsible labelRight={makeResetLink(resetUnityCupDefaults)}>
+                                            <View style={{ padding: SPACING.md }}>
+                                                <CustomSlider
+                                                    searchId="unity-cup-burst-max-failure-chance"
+                                                    value={scenarioOverrides.unityCupBurstMaxFailureChance}
+                                                    placeholder={defaultSettings.scenarioOverrides.unityCupBurstMaxFailureChance}
+                                                    onValueChange={(value) => updateOverrideSetting("unityCupBurstMaxFailureChance", value)}
+                                                    min={0}
+                                                    max={100}
+                                                    step={5}
+                                                    label="Burst Failure-Chance Exemption"
+                                                    showValue={true}
+                                                    showLabels={true}
+                                                    description="Allow a training with a Spirit Explosion gauge ready to burst up to this failure chance before it is skipped. 0 disables the exemption and uses the normal failure limit."
+                                                />
+                                                <CustomSlider
+                                                    searchId="unity-cup-extreme-burst-min-stat-gain"
+                                                    value={scenarioOverrides.unityCupExtremeBurstMinStatGain}
+                                                    placeholder={defaultSettings.scenarioOverrides.unityCupExtremeBurstMinStatGain}
+                                                    onValueChange={(value) => updateOverrideSetting("unityCupExtremeBurstMinStatGain", value)}
+                                                    min={0}
+                                                    max={100}
+                                                    step={1}
+                                                    label="Extreme Burst Minimum Stat Gain"
+                                                    showValue={true}
+                                                    showLabels={true}
+                                                    description="Only prioritize an Extreme Spirit Burst when the facility's projected main-stat gain is at least this value. 0 always executes available extreme bursts."
+                                                />
+                                            </View>
+                                            <ToggleSetting
+                                                id="unity-cup-burst-top-stats-only-after-junior"
+                                                title="Burst Only Top 3 Stats After Junior"
+                                                description="After Junior Year, only prioritize Spirit Explosion bursts (normal and extreme) on facilities whose stat is in your top 3 prioritized stats. Junior Year is unrestricted."
+                                                checked={scenarioOverrides.unityCupBurstTopStatsOnlyAfterJunior}
+                                                onCheckedChange={(checked) => updateOverrideSetting("unityCupBurstTopStatsOnlyAfterJunior", checked)}
                                             />
-                                        </View>
+                                        </Section>
+
+                                        <Section label="Racing" collapsible labelRight={makeResetLink(resetUnityCupRacingDefaults)}>
+                                            <ToggleSetting
+                                                id="unity-cup-retry-races"
+                                                title="Retry Unity Cup Races"
+                                                description="When enabled, the bot re-runs a lost Unity Cup race, retrying until it wins or attempts are exhausted."
+                                                checked={scenarioOverrides.unityCupRetryRaces}
+                                                onCheckedChange={(checked) => updateOverrideSetting("unityCupRetryRaces", checked)}
+                                            />
+                                        </Section>
+                                    </>
+                                )}
+
+                                {activeCampaign === "URA Finale" && (
+                                    <Section label="Training" collapsible labelRight={makeResetLink(resetUraFinaleDefaults)}>
+                                        <SearchableItem
+                                            id="ura-happy-meek-duel-bias"
+                                            title="Happy Meek Duel Training Bias"
+                                            description="How strongly to steer training toward a facility showing a Happy Meek duel badge. Winning a duel raises the cap and boosts that stat. Moderate prefers the duel when it is close to the best pick, Aggressive prefers it more strongly, Off ignores duels."
+                                        >
+                                            <Row
+                                                title="Happy Meek Duel Bias"
+                                                description="Steer training toward a facility with a duel badge so the bot enters and wins the duel."
+                                                onPress={() => setDuelBiasPickerOpen(true)}
+                                                right={<ValuePill label={DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.value ?? "Moderate"} />}
+                                            />
+                                        </SearchableItem>
                                     </Section>
                                 )}
 
@@ -816,6 +908,27 @@ const ScenarioOverridesSettings = () => {
                             onPress={() => {
                                 setEditingCampaign(scenario)
                                 setScenarioPickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
+
+            <SheetModal
+                visible={duelBiasPickerOpen}
+                onRequestClose={() => setDuelBiasPickerOpen(false)}
+                header={<ModalHeader title="HAPPY MEEK DUEL BIAS" onClose={() => setDuelBiasPickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {DUEL_BIAS_OPTIONS.map((o) => (
+                        <ModalRadioRow
+                            key={o.value}
+                            label={o.label}
+                            selected={o.value === scenarioOverrides.uraHappyMeekDuelBias}
+                            onPress={() => {
+                                updateOverrideSetting("uraHappyMeekDuelBias", o.value)
+                                setDuelBiasPickerOpen(false)
                             }}
                         />
                     ))}

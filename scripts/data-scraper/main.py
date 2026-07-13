@@ -266,52 +266,55 @@ class SkillScraper(BaseScraper):
         """Scrapes Game8's skill tier list, reading rank from each table's preceding header since the tables lack IDs.
 
         Returns:
-            A dict mapping skill name to tier (see `h4_tier_map`).
+            A dict mapping skill name to tier (see `tier_letter_map`).
         """
         soup = fetch_soup("https://game8.co/games/Umamusume-Pretty-Derby/archives/536805")
 
-        h4_tier_map = {
-            "hs_1": 0,  # SS
-            "hs_2": 1,  # S
-            "hs_3": 2,  # A
-            "hs_4": 3,  # B
+        tier_letter_map = {
+            "SS": 0,
+            "S": 1,
+            "A": 2,
+            "B": 3,
         }
 
         res = {}
 
-        for h4_id, tier_name in h4_tier_map.items():
-            h4 = soup.find("h4", id=h4_id)
-            if not h4:
+        # Game8 now lists skills under per-category "<tier> Tier <category> Skills" h3 headers (e.g. "SS Tier Acceleration Skills"), with the skills in the first table after each header.
+        # Read the tier from the header text since the tables have no ids.
+        for h3 in soup.find_all("h3", class_="a-header--3"):
+            match = re.match(r"^(SS|S|A|B) Tier\b", h3.get_text(strip=True))
+            if not match:
                 continue
-            # The tier names sit in the second table after each header.
-            tables = h4.find_next_siblings("table")
-            if len(tables) < 2:
+            tier_name = tier_letter_map[match.group(1)]
+            table = h3.find_next("table")
+            if table is None:
                 continue
 
-            for td in tables[1].find_all("td"):
+            for td in table.find_all("td"):
                 for div in td.find_all("div"):
                     anchors = div.find_all("a")
                     if not anchors:
                         continue
-                    skill_name = anchors[-1].get_text(strip=True)
-                    # Make sure we use the same special characters as GameTora.
-                    skill_name = skill_name.replace("◯", "○")
-                    skill_name = skill_name.replace("◎", "◎")
-                    # Get rid of any double spaces.
-                    skill_name = skill_name.replace("  ", "")
-                    if skill_name in res and res[skill_name] != tier_name:
-                        logging.warning(
-                            f"Skill is already in tier map with conflicting value: {skill_name} ({tier_name} != {res[skill_name]})"
-                        )
-                        continue
-                    res[skill_name] = tier_name
+                    anchor_text = anchors[-1].get_text(strip=True)
+                    # Game8 sometimes packs an aptitude's two grades into one cell as "X ○ / X ◎", so register each grade separately to match GameTora.
+                    for skill_name in anchor_text.split(" / "):
+                        # Make sure we use the same special characters as GameTora.
+                        skill_name = skill_name.replace("◯", "○")
+                        skill_name = skill_name.replace("◎", "◎")
+                        # Get rid of any double spaces.
+                        skill_name = skill_name.replace("  ", "")
+                        if skill_name in res and res[skill_name] != tier_name:
+                            logging.warning(
+                                f"Skill is already in tier map with conflicting value: {skill_name} ({tier_name} != {res[skill_name]})"
+                            )
+                            continue
+                        res[skill_name] = tier_name
 
         # Fix tier-list misspellings so names match GameTora. Add an entry if a skill warns as unknown.
         rename_map = {
             "Let's Pump Some Iron": "Let's Pump Some Iron!",
             "Fast and Furious": "Fast & Furious",
             "Mile Straightaway ○": "Mile Straightaways ○",
-            "Mile Straightaway ◎": "Mile Straightaways ◎",
             "Flowery ☆ Maneuver": "Flowery☆Maneuver",
             "OMG! ☆ The Final Sprint (ﾟ∀ﾟ)": "OMG! (ﾟ∀ﾟ) The Final Sprint! ☆",
         }

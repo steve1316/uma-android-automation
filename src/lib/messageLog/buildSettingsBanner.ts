@@ -143,7 +143,8 @@ export function buildSettingsBanner(settings: Settings): string {
 🤖 Enable YOLO Stat Detection: ${settings.training.enableYoloStatDetection ? "✅" : "❌"}
 
 ---------- Training Stat Targets by Distance ----------
-🛑 Disable Stat Targets: ${settings.training.disableStatTargets ? "✅ (all stats treated as cap=1200)" : "❌"}
+📏 Read Stat Caps from Screen: ${settings.training.useDynamicStatCaps ? "✅" : "❌"}
+🛑 Disable Stat Targets: ${settings.training.disableStatTargets ? "✅ (all stats treated as their scenario cap)" : "❌"}
 🎯 Classic Year Milestone: ${settings.training.classicMilestonePercent}%
 🎯 Senior Year Milestone: ${settings.training.seniorMilestonePercent}%
 ${sprintTargetsString}
@@ -237,6 +238,10 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 ✨ Trackblazer Glow Stick Final-Day Reserve: ${settings.scenarioOverrides?.trackblazerGlowStickFinalReserve}
 ✨ Trackblazer Glow Stick Min Fans: ${settings.scenarioOverrides?.trackblazerGlowStickMinFans}
 💥 Unity Cup Burst Failure-Chance Exemption: ${settings.scenarioOverrides?.unityCupBurstMaxFailureChance && settings.scenarioOverrides.unityCupBurstMaxFailureChance > 0 ? `${settings.scenarioOverrides.unityCupBurstMaxFailureChance}%` : "❌"}
+🔥 Unity Cup Extreme Burst Min Stat Gain: ${settings.scenarioOverrides?.unityCupExtremeBurstMinStatGain && settings.scenarioOverrides.unityCupExtremeBurstMinStatGain > 0 ? `${settings.scenarioOverrides.unityCupExtremeBurstMinStatGain}` : "❌"}
+🎯 Unity Cup Burst Only Top 3 Stats After Junior: ${settings.scenarioOverrides?.unityCupBurstTopStatsOnlyAfterJunior ? "✅" : "❌"}
+🔄 Unity Cup Retry Races: ${settings.scenarioOverrides?.unityCupRetryRaces ? "✅" : "❌"}
+⚔️ URA Happy Meek Duel Bias: ${settings.scenarioOverrides?.uraHappyMeekDuelBias ?? "Moderate"}
 
 ---------- Misc Options ----------
 🔍 Enable Claw Machine Attempt: ${settings.general.enableClawMachineAttempt ? "✅" : "❌"}
@@ -264,6 +269,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🔍 Start Skill List Buy Test: ${settings.debug.debugMode_startSkillListBuyTest ? "✅" : "❌"}
 🔍 Start Scrollbar Detection Test: ${settings.debug.debugMode_startScrollBarDetectionTest ? "✅" : "❌"}
 🔍 Start Rainbow Detection Test: ${settings.debug.debugMode_startRainbowDetectionTest ? "✅" : "❌"}
+🔍 Start Spirit Gauge Detection Test: ${settings.debug.debugMode_startSpiritGaugeDetectionTest ? "✅" : "❌"}
 🔍 Start Trackblazer Race Selection Test: ${settings.debug.debugMode_startTrackblazerRaceSelectionTest ? "✅" : "❌"}
 🔍 Start Trackblazer Inventory Sync Test: ${settings.debug.debugMode_startTrackblazerInventorySyncTest ? "✅" : "❌"}
 🔍 Start Trackblazer Buy Items Test: ${settings.debug.debugMode_startTrackblazerBuyItemsTest ? "✅" : "❌"}

@@ -142,6 +142,7 @@ export interface Settings {
         enablePrioritizeSkillHints: boolean
         enableTrainingLevelWeighting: boolean
         disableStatTargets: boolean
+        useDynamicStatCaps: boolean
         enableTrainingAnalysisValidation: boolean
         enableYoloStatDetection: boolean
         classicMilestonePercent: number
@@ -193,6 +194,7 @@ export interface Settings {
         debugMode_startSkillListBuyTest: boolean
         debugMode_startScrollBarDetectionTest: boolean
         debugMode_startRainbowDetectionTest: boolean
+        debugMode_startSpiritGaugeDetectionTest: boolean
         debugMode_startTrackblazerRaceSelectionTest: boolean
         debugMode_startTrackblazerInventorySyncTest: boolean
         debugMode_startTrackblazerBuyItemsTest: boolean
@@ -247,6 +249,10 @@ export interface Settings {
         trackblazerGlowStickFinalReserve: number
         trackblazerGlowStickMinFans: number
         unityCupBurstMaxFailureChance: number
+        unityCupExtremeBurstMinStatGain: number
+        unityCupBurstTopStatsOnlyAfterJunior: boolean
+        unityCupRetryRaces: boolean
+        uraHappyMeekDuelBias: string
     }
 }
 
@@ -429,6 +435,7 @@ export const defaultSettings: Settings = {
         enablePrioritizeSkillHints: false,
         enableTrainingLevelWeighting: true,
         disableStatTargets: false,
+        useDynamicStatCaps: true,
         enableTrainingAnalysisValidation: false,
         enableYoloStatDetection: false,
         classicMilestonePercent: 33,
@@ -469,6 +476,7 @@ export const defaultSettings: Settings = {
         debugMode_startSkillListBuyTest: false,
         debugMode_startScrollBarDetectionTest: false,
         debugMode_startRainbowDetectionTest: false,
+        debugMode_startSpiritGaugeDetectionTest: false,
         debugMode_startTrackblazerRaceSelectionTest: false,
         debugMode_startTrackblazerInventorySyncTest: false,
         debugMode_startTrackblazerBuyItemsTest: false,
@@ -517,6 +525,10 @@ export const defaultSettings: Settings = {
         trackblazerGlowStickFinalReserve: 1,
         trackblazerGlowStickMinFans: 20000,
         unityCupBurstMaxFailureChance: 0,
+        unityCupExtremeBurstMinStatGain: 0,
+        unityCupBurstTopStatsOnlyAfterJunior: false,
+        unityCupRetryRaces: true,
+        uraHappyMeekDuelBias: "Moderate",
     },
 }
 

@@ -116,6 +116,7 @@ data class TrainingOption(
  * @property enablePrioritizeNearMaxFriendship When true (Year 2+), trainings with multiple near-max friendship bars receive the anticipatory rainbow multiplier.
  * @property statsTrainedOverBuffer Set of stats that already used their single rainbow allowance over the buffer.
  * @property scoring The numeric tuning constants. Default reproduces current hardcoded behavior.
+ * @property statCaps Live per-stat caps OCR'd from the career/training screen (raised by sparks, inheritance, duels, extreme bursts). A present entry overrides the static per-scenario table in `getCurrentStatCap`. Empty means fall back to the table.
  */
 @JsExport
 data class TrainingConfig(
@@ -134,6 +135,7 @@ data class TrainingConfig(
     val enablePrioritizeNearMaxFriendship: Boolean = true,
     val statsTrainedOverBuffer: Set<StatName> = emptySet(),
     val scoring: TrainingScoringConstants = TrainingScoringConstants(),
+    val statCaps: Map<StatName, Int> = emptyMap(),
 )
 
 /**
@@ -169,6 +171,8 @@ data class TrainingConfig(
  * @property unityBurstPerGaugeBonus Additional Unity Cup burst bonus per gauge ready to burst, added on top of `unityBurstBaseBonus`.
  * @property unityFillEnergyPenaltyPerGauge Per-fillable-gauge penalty subtracted from the fill bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off).
  * @property unityBurstEnergyPenaltyPerGauge Per-ready-gauge penalty subtracted from the burst bonus to reflect Special Training's extra energy cost. Gauge-count-scaled proxy, default 0 (off).
+ * @property unityExtremeBurstBaseBonus Flat Unity Cup bonus for a training with a support ready for an Extreme Spirit Burst. Larger than a normal burst so the extreme facility always outranks it.
+ * @property unityExtremeBurstPerGaugeBonus Additional Unity Cup Extreme Spirit Burst bonus per ready support, added on top of `unityExtremeBurstBaseBonus`.
  * @property rainbowMultiplierEnabled Multiplier applied to total score in Year 2+ when at least one rainbow is detected and the user has enabled the rainbow training bonus.
  * @property rainbowMultiplierDisabled Multiplier applied when rainbows are detected but the user has disabled the rainbow training bonus. Kept below `rainbowMultiplierEnabled`.
  * @property rainbowPerInstanceBase Base value for the per-rainbow bonus score, geometrically decayed by `rainbowPerInstanceDecay`.
@@ -221,6 +225,8 @@ data class TrainingScoringConstants(
     val unityBurstPerGaugeBonus: Double = 400.0,
     val unityFillEnergyPenaltyPerGauge: Double = 0.0,
     val unityBurstEnergyPenaltyPerGauge: Double = 0.0,
+    val unityExtremeBurstBaseBonus: Double = 2000.0,
+    val unityExtremeBurstPerGaugeBonus: Double = 1000.0,
 ) {
     init {
         require(ratioMultipliers.size == ratioBreakpoints.size + 1) {
