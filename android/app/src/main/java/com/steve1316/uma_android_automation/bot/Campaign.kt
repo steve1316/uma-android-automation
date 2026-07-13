@@ -38,6 +38,7 @@ import com.steve1316.uma_android_automation.components.ButtonTraining
 import com.steve1316.uma_android_automation.components.ButtonTryAgain
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRace
 import com.steve1316.uma_android_automation.components.DialogInterface
+import com.steve1316.uma_android_automation.components.DialogUmamusumeDetails
 import com.steve1316.uma_android_automation.components.DialogUtils
 import com.steve1316.uma_android_automation.components.IconGoalRibbon
 import com.steve1316.uma_android_automation.components.IconInfirmaryEventHeader
@@ -341,6 +342,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 "debugMode_startRaceListDetectionTest" to racing::startRaceListDetectionTest,
                 "debugMode_startMainScreenUpdateTest" to this::startMainScreenUpdateTest,
                 "debugMode_startScrollBarDetectionTest" to ::startScrollBarDetectionTest,
+                "debugMode_startUmamusumeDetailsReadTest" to ::startUmamusumeDetailsReadTest,
                 "debugMode_startSkillListBuyTest" to skillPlan::startSkillListBuyTest,
                 "debugMode_startRainbowDetectionTest" to ::startRainbowDetectionTest,
             )
@@ -491,6 +493,28 @@ abstract class Campaign(game: Game) : Task(game) {
         MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}.")
 
         MessageLog.i(TAG, "[TEST] Scrollbar detection test complete.")
+    }
+
+    /**
+     * Debug test for the Umamusume Details dialog readers. Open the dialog yourself, then start the bot: this reads the trainee's active conditions, switches to the Skills tab, and reads the
+     * owned skills and the unique skill's level. The dialog is left open so the screen can be re-inspected afterwards, which means a second run would find both lists where the first one left
+     * them - so each list is put back to the top of its tab before it is read.
+     */
+    open fun startUmamusumeDetailsReadTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Umamusume Details read test. The Umamusume Details dialog must already be open.")
+        if (DialogUtils.getDialog(game.imageUtils)?.name != DialogUmamusumeDetails.name) {
+            MessageLog.w(TAG, "[TEST] The Umamusume Details dialog is not open. Open it from the career Main Screen via the Full Stats button and run the test again.")
+            return
+        }
+
+        val conditions = ConditionList(game).parseDetailsConditionsTab(bResetToTop = true)
+        MessageLog.i(TAG, "[TEST] Positive conditions (${conditions.positive.size}): ${conditions.positive.joinToString(", ").ifEmpty { "none" }}")
+        MessageLog.i(TAG, "[TEST] Negative conditions (${conditions.negative.size}): ${conditions.negative.joinToString(", ").ifEmpty { "none" }}")
+
+        val skills = SkillList(game, this).parseDetailsSkillsTab(bResetToTop = true)
+        MessageLog.i(TAG, "[TEST] Owned skills (${skills.skillNames.size}, unique Lvl ${skills.uniqueLevel}): ${skills.skillNames.joinToString(", ").ifEmpty { "none" }}")
+
+        MessageLog.i(TAG, "[TEST] Umamusume Details read test complete.")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////

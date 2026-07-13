@@ -1194,6 +1194,13 @@ const searchConfig: SearchOption[] = [
         page: "DebugSettings",
     },
     {
+        id: "debug-umamusume-details-read-test",
+        title: "Start Umamusume Details Read Test",
+        description:
+            "Disables normal bot operations and starts the Umamusume Details read test. Open the Umamusume Details dialog yourself first: it reads the trainee's active conditions, switches to the Skills tab, and reads the owned skills and unique skill level. Both lists are scrolled back to the top first, so the test can be run repeatedly on the same open dialog.",
+        page: "DebugSettings",
+    },
+    {
         id: "debug-spirit-gauge-detection-test",
         title: "Start Spirit Gauge Detection Test",
         description:
