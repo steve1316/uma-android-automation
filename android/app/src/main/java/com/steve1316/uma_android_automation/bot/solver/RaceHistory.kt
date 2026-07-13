@@ -6,12 +6,11 @@ import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonBurger
 import com.steve1316.uma_android_automation.components.ButtonCareer
 import com.steve1316.uma_android_automation.components.ButtonClose
-import com.steve1316.uma_android_automation.components.IconDialogScrollListBottomRight
-import com.steve1316.uma_android_automation.components.IconDialogScrollListTopLeft
 import com.steve1316.uma_android_automation.components.IconRaceHistory1st
 import com.steve1316.uma_android_automation.components.LabelStrategy
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
+import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import org.opencv.core.Point
 
 /**
@@ -98,12 +97,7 @@ object RaceHistory {
             // Use the Career dialog's own scroll-list corner icons so the bbox bounds
             // the actual race-history list region. Then let ScrollList iterate via
             // LabelStrategy as the per-row anchor and drive its own scrolling.
-            val list =
-                ScrollList.create(
-                    game,
-                    listTopLeftComponent = IconDialogScrollListTopLeft,
-                    listBottomRightComponent = IconDialogScrollListBottomRight,
-                )
+            val list = createDialogScrollList(game)
             if (list == null) {
                 MessageLog.w(TAG, "[WARN] scrape:: Failed to detect race history list bounds; aborting scrape.")
                 closeBackToMainScreen(game)
