@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Image, Pressable, InteractionManage
 import { useRoute } from "@react-navigation/native"
 import Ionicons from "@react-native-vector-icons/ionicons"
 import { useTheme } from "../../context/ThemeContext"
-import { ScenarioOverridesContext, BotMetaContext, Settings } from "../../context/BotStateContext"
+import { ScenarioOverridesContext, BotMetaContext, GeneralMiscContext, Settings } from "../../context/BotStateContext"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import CustomSlider from "../../components/CustomSlider"
 import CustomButton from "../../components/CustomButton"
@@ -36,6 +36,16 @@ const DUEL_BIAS_OPTIONS = [
     { value: "Moderate", label: "Moderate - prefer the duel when it is close to the best pick" },
     { value: "Aggressive", label: "Aggressive - strongly prefer the duel facility" },
 ] as const
+
+/**
+ * Resolves the bot's active scenario to a campaign this page can render overrides for.
+ *
+ * @param scenario The bot's active scenario from `general.scenario`. Can be empty or a scenario that has no overrides.
+ * @returns The matching campaign, or the first campaign with overrides when there is no match.
+ */
+const resolveOverridesCampaign = (scenario: string) => {
+    return SCENARIOS_WITH_OVERRIDES.find((s) => s === scenario) ?? SCENARIOS_WITH_OVERRIDES[0]
+}
 
 /** Props for `ChipMultiSelect`. */
 interface ChipMultiSelectProps {
@@ -89,6 +99,7 @@ const ScenarioOverridesSettings = () => {
     usePerformanceLogging("ScenarioOverridesSettings")
     const { colors } = useTheme()
     const { scenarioOverrides, updateScenarioOverrides } = useContext(ScenarioOverridesContext)
+    const { general } = useContext(GeneralMiscContext)
     const { defaultSettings } = useContext(BotMetaContext)
     const route = useRoute<any>()
     const scrollViewRef = useRef<ScrollView>(null)
@@ -99,9 +110,14 @@ const ScenarioOverridesSettings = () => {
     const [scenarioPickerOpen, setScenarioPickerOpen] = useState(false)
     const [duelBiasPickerOpen, setDuelBiasPickerOpen] = useState(false)
 
-    // Which scenario the page is currently editing overrides for. Independent of the bot's active scenario (`general.scenario`) so switching campaigns here does not change the bot's actual run target.
-    const [editingCampaign, setEditingCampaign] = useState<string>(SCENARIOS_WITH_OVERRIDES[0])
+    // Which scenario the page is currently editing overrides for. Seeded from the bot's active scenario and re-synced whenever it changes.
+    // Switching campaigns here stays local to the page and does not change the bot's actual run target (`general.scenario`).
+    const [editingCampaign, setEditingCampaign] = useState(() => resolveOverridesCampaign(general.scenario))
     const activeCampaign = editingCampaign
+
+    useEffect(() => {
+        setEditingCampaign(resolveOverridesCampaign(general.scenario))
+    }, [general.scenario])
 
     // Two-phase mount, mirroring the TrainingSettings deferral pattern from PR #299. Renders the page header on the first paint
     // so navigation feels instant; the heavy accordion body commits one tick later via InteractionManager. When navigating in
