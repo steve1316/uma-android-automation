@@ -7,6 +7,8 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonConditions
+import com.steve1316.uma_android_automation.utils.ScrollList
+import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import org.opencv.core.Point
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,6 +20,12 @@ private const val VISIBLE_CONDITION_ROWS = 3
 
 /** Maximum scroll passes. Conditions never approach the skill count, so this stays small. */
 private const val MAX_CONDITION_SCROLLS = 6
+
+/**
+ * How far one scroll pass travels down the Conditions sublist, on the 1920-tall reference - roughly 1.3 rows. Short and heavily overlapping on purpose: the rows are read at fixed offsets from
+ * the tab button, and a long swipe flings the list so it settles mid-row, leaving the crops straddling two rows.
+ */
+private const val CONDITION_SCROLL_TRAVEL_Y = 234
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,11 +67,26 @@ class ConditionList(private val game: Game) {
      * Reads every active condition, scrolling the sublist until a frame ends short or two passes reveal nothing new.
      * The common case (0 to 3 conditions) ends on the first frame with no swipe.
      *
+     * @param bResetToTop Whether to switch back to the Conditions tab and return the sublist to the top first. The career flow opens the dialog fresh on this tab so it never needs this, but a
+     *    debug test run twice over the same open dialog finds the dialog on whichever tab the last run left it.
      * @return The deduped positive and negative condition names.
      */
-    fun parseDetailsConditionsTab(): DetailsConditionsResult {
+    fun parseDetailsConditionsTab(bResetToTop: Boolean = false): DetailsConditionsResult {
         val imageUtils = game.imageUtils
-        val refPoint = ButtonConditions.findImageWithBitmap(imageUtils = imageUtils, sourceBitmap = imageUtils.getSourceBitmap()) ?: Point(285.0, 1210.0)
+        if (bResetToTop) switchToConditionsTab()
+
+        // Every crop below is placed relative to this button, so without it there is no way to know where the sublist sits. Guessing a fixed position would only work on the one screen size
+        // it was measured on, and on any other device it would quietly crop the wrong pixels and report a trainee as having no conditions at all - so fail loudly instead.
+        val refPoint: Point? = ButtonConditions.find(imageUtils).first
+        if (refPoint == null) {
+            MessageLog.e(TAG, "[ERROR] parseDetailsConditionsTab:: Could not find the Conditions tab button to anchor the sublist. Skipping the conditions read.")
+            return DetailsConditionsResult(emptyList(), emptyList())
+        }
+        // Null once the sublist is known not to scroll, which is every gate this needs: a trainee carrying only a few conditions has no scrollbar, so it is read in one pass and never swiped.
+        val scrollList: ScrollList? = createDialogScrollList(game)?.takeIf { it.hasScrollBar() }
+        MessageLog.d(TAG, "[DEBUG] parseDetailsConditionsTab:: Conditions sublist is scrollable: ${scrollList != null}.")
+        if (bResetToTop) scrollList?.scrollToTopBySwiping()
+
         val positives = mutableListOf<String>()
         val negatives = mutableListOf<String>()
         var emptyPasses = 0
@@ -92,8 +115,9 @@ class ConditionList(private val game: Game) {
             emptyPasses = if (newFound == 0) emptyPasses + 1 else 0
             // Frame ended short: bottom reached. Otherwise stop only after two empty passes so a fling settling mid-row does not end the scan early.
             if (!frameFull) break
+            if (scrollList == null) break
             if (pass > 0 && emptyPasses >= 2) break
-            if (pass < MAX_CONDITION_SCROLLS) scrollConditionsPanel()
+            if (pass < MAX_CONDITION_SCROLLS) scrollList.scrollContentDownBy((SharedData.displayHeight * CONDITION_SCROLL_TRAVEL_Y / 1920.0).toInt())
         }
         MessageLog.i(TAG, "[INFO] Read ${positives.size} positive, ${negatives.size} negative conditions. Positive: ${positives.joinToString(", ")}. Negative: ${negatives.joinToString(", ")}.")
         return DetailsConditionsResult(positives, negatives)
@@ -145,12 +169,13 @@ class ConditionList(private val game: Game) {
     }
 
     /**
-     * Scrolls the Conditions sublist up with a short, slow, overlapping swipe (anti-fling) to avoid overshooting rows.
-     * Endpoints are calibrated against a crowded conditions screen.
+     * Switches the Details dialog to its Conditions tab (a fixed position in the modal, mirroring the Skills tab beside it). Tapping it when already there is harmless.
+     *
+     * This taps rather than looking the tab up, because neither tab button's template matches the tab bar reliably: each is captured in one state, while the bar draws the open tab green and
+     * the closed one white. Against a screen showing the Skills tab open, the Skills template scores 0.43 and the Conditions template 0.56 - both far below the 0.8 needed to match.
      */
-    private fun scrollConditionsPanel() {
-        val cx = (SharedData.displayWidth / 2).toFloat()
-        game.gestureUtils.swipe(cx, (SharedData.displayHeight * 0.82).toFloat(), cx, (SharedData.displayHeight * 0.70).toFloat(), 700L)
+    private fun switchToConditionsTab() {
+        game.tap(SharedData.displayWidth * 0.264, SharedData.displayHeight * 0.496, "details_conditions_tab")
         game.wait(0.5, skipWaitingForLoading = true)
     }
 }
