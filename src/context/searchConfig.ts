@@ -1190,7 +1190,7 @@ const searchConfig: SearchOption[] = [
         id: "debug-scrollbar-detection-test",
         title: "Start Scrollbar Detection Test",
         description:
-            "Disables normal bot operations and starts the Scrollbar detection test. Detects the scrollbar on the current screen and attempts to scroll it up and down to verify functionality.",
+            "Disables normal bot operations and starts the Scrollbar detection test. Detects the list on the current screen, whether it is a full-screen list or one drawn inside a dialog, and reports its scrollbar. It then checks whether that scrollbar can actually be dragged to scroll, since some lists draw one that only reports the position, and finally scrolls the list up and down to verify functionality.",
         page: "DebugSettings",
     },
     {

@@ -73,6 +73,7 @@ import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import com.steve1316.uma_android_automation.utils.ScrollList
+import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import com.steve1316.uma_scoring.RankAptitudes
 import com.steve1316.uma_scoring.SkillScoreInput
 import com.steve1316.uma_scoring.estimateRank
@@ -455,38 +456,41 @@ abstract class Campaign(game: Game) : Task(game) {
     fun startScrollBarDetectionTest() {
         MessageLog.i(TAG, "\n[TEST] Now beginning scrollbar detection test on the current screen.")
 
-        // Initial detection pass.
-        val scrollList = ScrollList.create(game)
+        // Pick the corner markers from what is actually on screen rather than trying one set and falling back on the other. Falling back does not work: the corner templates are 11x11 and 16x16
+        // near-featureless arcs that match any rounded edge, so the wrong set does not fail, it succeeds on junk. Run against the Umamusume Details dialog, the full-screen markers matched two
+        // unrelated edges at 0.918 and 0.912 and returned a 585x68 sliver of the stats panel as "the list", so the dialog markers were never even tried.
+        val bIsDialogOpen: Boolean = DialogUtils.check(game.imageUtils)
+        val listKind: String = if (bIsDialogOpen) "dialog" else "full-screen"
+        val scrollList: ScrollList? = if (bIsDialogOpen) createDialogScrollList(game) else ScrollList.create(game)
         if (scrollList == null) {
-            MessageLog.i(TAG, "[TEST] Could not detect a list on the current screen.")
+            MessageLog.i(TAG, "[TEST] Could not detect a $listKind list on the current screen.")
             return
         }
+        MessageLog.i(TAG, "[TEST] Detected a $listKind list bounded by ${scrollList.listBoundingBox}.")
 
-        val scrollBarRegion = scrollList.getListScrollBarBoundingRegion()
-        if (scrollBarRegion.first != null) {
-            MessageLog.i(TAG, "[TEST] Scrollbar detected at: ${scrollBarRegion.first}")
-            if (scrollBarRegion.second != null) {
-                MessageLog.i(TAG, "[TEST] Scrollbar thumb detected at: ${scrollBarRegion.second}")
-            } else {
-                MessageLog.i(TAG, "[TEST] No scrollbar thumb detected.")
-            }
-
-            // Try scrolling down.
-            MessageLog.i(TAG, "[TEST] Attempting to scroll DOWN...")
-            scrollList.scrollDown()
-            MessageLog.i(TAG, "[TEST] Scroll DOWN attempted.")
-
-            game.wait(1.0)
-
-            // Try scrolling up.
-            MessageLog.i(TAG, "[TEST] Attempting to scroll UP...")
-            scrollList.scrollUp()
-            MessageLog.i(TAG, "[TEST] Scroll UP attempted.")
-
-            MessageLog.i(TAG, "[TEST] Scrollbar detection test complete.")
-        } else {
-            MessageLog.i(TAG, "[TEST] No scrollbar detected on the current screen.")
+        val (bboxBar, bboxThumb) = scrollList.getListScrollBarBoundingRegion()
+        if (bboxBar == null || bboxThumb == null) {
+            MessageLog.i(TAG, "[TEST] No scrollbar detected, so this list has nothing below the fold and cannot scroll.")
+            return
         }
+        MessageLog.i(TAG, "[TEST] Scrollbar detected at $bboxBar with its thumb at $bboxThumb.")
+
+        // Is this scrollbar a control or only an indicator? It matters: the Umamusume Details lists draw one that reports the position but moves nothing when dragged, and a caller that trusts
+        // it silently leaves the list wherever it already was.
+        if (scrollList.isScrollBarDraggable()) {
+            MessageLog.i(TAG, "[TEST] Dragging the thumb moved it, so this scrollbar can be dragged to scroll the list.")
+        } else {
+            MessageLog.i(TAG, "[TEST] Dragging the thumb did not move it, so this scrollbar only reports the position. This list can only be scrolled by swiping its content.")
+        }
+
+        // Now swipe the content, which moves every list.
+        MessageLog.i(TAG, "[TEST] Attempting to scroll DOWN by swiping the content...")
+        scrollList.scrollDown()
+        MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}. Attempting to scroll UP again...")
+        scrollList.scrollUp()
+        MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}.")
+
+        MessageLog.i(TAG, "[TEST] Scrollbar detection test complete.")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
