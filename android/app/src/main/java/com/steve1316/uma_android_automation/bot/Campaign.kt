@@ -1167,6 +1167,7 @@ abstract class Campaign(game: Game) : Task(game) {
         return if (IconRaceDayRibbon.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.v(TAG, "[INFO] Bot is at the preparation screen with a mandatory race ready to be completed.")
             if (game.scenario == "Unity Cup") game.wait(1.0)
+            refreshDateForMandatoryRace()
             true
         } else if (IconGoalRibbon.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             // Most likely the user started the bot here so a delay will need to be placed to allow the start banner of the Service to disappear.
@@ -1175,8 +1176,11 @@ abstract class Campaign(game: Game) : Task(game) {
             // Walk back to the preparation screen.
             ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
             game.wait(1.0)
+            refreshDateForMandatoryRace()
             true
         } else if (game.scenario == "Unity Cup" && ButtonUnityCupRace.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+            // The date is deliberately not refreshed here. The opponent-selection screen carries neither the Main screen nor the Race List anchor that the
+            // date OCR needs, and the Unity Cup race handling does not look a race up by turn anyway.
             MessageLog.v(TAG, "[INFO] Bot is awaiting opponent selection for a Unity Cup race.")
             true
         } else {
@@ -1389,6 +1393,9 @@ abstract class Campaign(game: Game) : Task(game) {
      *
      * A training or rest action advances the game into the mandatory race screens, bypassing the Main screen where [updateDate] normally runs.
      * Without this, the race name is looked up against the previous turn, which matches the wrong race and gets the wrong per-distance running style.
+     *
+     * Only call this from a screen the date OCR can actually read, which means one that carries the Main screen or the Race List anchor.
+     * The Unity Cup opponent-selection screen carries neither, so [checkMandatoryRacePrepScreen] skips it.
      */
     private fun refreshDateForMandatoryRace() {
         if (bHasCheckedDateThisTurn) return
@@ -2572,7 +2579,6 @@ abstract class Campaign(game: Game) : Task(game) {
                 // If the bot is at the Training Event screen, that means there are selectable options for rewards.
                 handleTrainingEvent()
             } else if (checkMandatoryRacePrepScreen()) {
-                refreshDateForMandatoryRace()
                 // If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
                 if (!handleRaceEvents() && racing.detectedMandatoryRaceCheck) {
                     return TaskResult.Success(
