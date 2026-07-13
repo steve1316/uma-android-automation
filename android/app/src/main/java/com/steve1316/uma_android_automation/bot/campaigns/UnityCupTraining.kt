@@ -70,16 +70,13 @@ class UnityCupTraining(game: Game, campaign: Campaign) : Training(game, campaign
             // it here by adding the same bonus on top of the base score. Normal bursts / gauge-filling stay Junior/Classic-only.
             val base = super.scoreTraining(config, option)
             val extremeCount = option.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
-            val mainStatGain = option.statGains[option.name] ?: 0
-            val burstAllowed = burstAllowedForStat(config.unityCupBurstTopStatsOnlyAfterJunior, config.currentDate.year, config.statPrioritization, option.name)
-            if (extremeCount > 0 && mainStatGain >= config.unityCupExtremeBurstMinStatGain && burstAllowed) {
+            if (extremeCount > 0 && extremeBurstAllowed(config, option)) {
                 val extremeBonus = extremeBurstBonus(config.scoring, extremeCount)
                 MessageLog.i(TAG, "[TRAINING] [${option.name}] Adding EXTREME burst bonus for $extremeCount gauge(s) in Senior year: $extremeBonus")
                 base + extremeBonus
             } else {
                 if (extremeCount > 0) {
-                    val reason = if (!burstAllowed) "not a top 3 prioritized stat after Junior Year" else "main stat gain $mainStatGain is below the minimum ${config.unityCupExtremeBurstMinStatGain}"
-                    MessageLog.i(TAG, "[TRAINING] [${option.name}] Skipping EXTREME burst priority in Senior year: $reason.")
+                    MessageLog.i(TAG, "[TRAINING] [${option.name}] Skipping EXTREME burst priority in Senior year: ${extremeBurstSkipReason(config, option)}.")
                 }
                 base
             }
