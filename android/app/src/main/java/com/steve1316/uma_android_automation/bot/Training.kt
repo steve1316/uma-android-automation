@@ -665,6 +665,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // A burst blocked by one of the optional Unity Cup gates is treated as absent, so zero its count once here (the same idiom processAnalysisResults uses) rather than threading
             // the gates through each bonus block below. An extreme burst must clear the minimum projected main-stat gain so a weak stat turn does not waste the one-time burst, and after
             // Junior Year both burst tiers must land on a top 3 prioritized stat when that override is on. Both default to off, leaving the counts untouched.
+            // Scoring deliberately does not apply the risky minimum-main-stat-gain gate that burstFailureExemptionAllowed applies. That gate governs only the failure-chance ceiling, and
+            // TrainingConfig carries no risk settings by design. A low-gain burst at a safe failure chance should still win on burst value, so gating it here would gut Unity Cup mode.
             val numSpiritGaugesReadyToExtremeBurst = if (extremeBurstAllowed(config, training)) rawReadyToExtremeBurst else 0
             val numSpiritGaugesReadyToBurst = if (burstAllowedForStat(config, training.name)) rawReadyToBurst else 0
             if (rawReadyToExtremeBurst > 0 && numSpiritGaugesReadyToExtremeBurst == 0) {
@@ -865,15 +867,42 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             burstAllowedForStat(config.unityCupBurstTopStatsOnlyAfterJunior, config.currentDate.year, config.statPrioritization, stat)
 
         /**
-         * Whether an available Extreme Spirit Burst on `training` should be prioritized. It must clear both Unity Cup gates: the minimum projected main-stat gain, and the "top 3 stats
-         * after Junior" override. Shared by the Junior/Classic Unity scorer and the Senior-year path so the gate has a single home.
+         * Whether an available Extreme Spirit Burst should be prioritized. It must clear both Unity Cup gates: the "top 3 stats after Junior" override (already resolved into
+         * `burstAllowed`) and the minimum projected main-stat gain. Primitive overload for `processAnalysisResults`, which works from instance state and has no config.
+         *
+         * @param burstAllowed Whether a burst is allowed on this facility's stat, from [burstAllowedForStat].
+         * @param mainStatGain The training's projected gain in its own main stat.
+         * @param minStatGain The Unity Cup extreme-burst minimum main stat gain from settings.
+         * @return True if the extreme burst may be prioritized, false if it should be treated as absent.
+         */
+        fun extremeBurstAllowed(burstAllowed: Boolean, mainStatGain: Int, minStatGain: Int): Boolean = burstAllowed && mainStatGain >= minStatGain
+
+        /**
+         * Config-shaped overload of [extremeBurstAllowed] for the pure scorers, which already hold the whole [TrainingConfig]. Shared by the Junior/Classic Unity scorer and the
+         * Senior-year path so the gate has a single home.
          *
          * @param config The active [TrainingConfig].
          * @param training The training option being considered.
          * @return True if the extreme burst may be prioritized, false if it should be treated as absent.
          */
         fun extremeBurstAllowed(config: TrainingConfig, training: TrainingOption): Boolean =
-            burstAllowedForStat(config, training.name) && training.mainStatGain >= config.unityCupExtremeBurstMinStatGain
+            extremeBurstAllowed(burstAllowedForStat(config, training.name), training.mainStatGain, config.unityCupExtremeBurstMinStatGain)
+
+        /**
+         * Whether an available normal Spirit Explosion burst has earned the raised failure-chance ceiling that feeds [burstExemptFailureChance]. It must clear the "top 3 stats after
+         * Junior" override (already resolved into `burstAllowed`) and, when Risky Training is on, the Minimum Main Stat Gain Threshold. A training too weak to earn the risky ceiling
+         * is too weak to earn the burst ceiling, so its burst is treated as absent. Inert when Risky Training is off, since the threshold is only meaningful alongside it.
+         *
+         * This gates the failure-chance ceiling only. The scorer does not consult it, and the expected-value gate deliberately does not either.
+         *
+         * @param burstAllowed Whether a burst is allowed on this facility's stat, from [burstAllowedForStat].
+         * @param enableRiskyTraining Whether Risky Training is enabled.
+         * @param mainStatGain The training's projected gain in its own main stat.
+         * @param minStatGain The Minimum Main Stat Gain Threshold from settings.
+         * @return True if the burst may raise this training's failure-chance ceiling.
+         */
+        fun burstFailureExemptionAllowed(burstAllowed: Boolean, enableRiskyTraining: Boolean, mainStatGain: Int, minStatGain: Int): Boolean =
+            burstAllowed && (!enableRiskyTraining || mainStatGain >= minStatGain)
 
         /**
          * Why an available Extreme Spirit Burst was not prioritized. Only meaningful when [extremeBurstAllowed] returned false.
@@ -1779,34 +1808,34 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         // Process results and output logs in training order.
         for (result in results) {
-            // Check if risky training logic should apply based on main stat gain.
+            // Whether risky training opted into this training. This one rule decides the raised failure ceiling, the burst exemption below, and the expected-value exemption further
+            // down, so it is named once here rather than respelled at each use.
             val mainStatGain: Int = result.mainStatGain
-            val baseFailureChance =
-                if (enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain) {
-                    riskyTrainingMaxFailureChance
-                } else {
-                    maximumFailureChance
-                }
+            val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
+            val baseFailureChance = if (riskyExempt) riskyTrainingMaxFailureChance else maximumFailureChance
+
             // Unity Cup burst exemption: a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than usual (tunable ceiling, no-op at the default 0). An
             // Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless of the setting.
-            // Respect the burst gates: a below-min-stat-gain extreme burst, or (after Junior) a burst on a non-top-3 stat, is treated as absent so it does not force the failure-chance
-            // exemption. Neither touches result.isBurstReady, so a genuine 0% reading stays protected from the cross-validation correction regardless of the settings.
+            // A blocked burst is treated as absent by zeroing its count, so it cannot force the exemption. None of these touch result.isBurstReady, so a genuine 0% reading stays
+            // protected from the cross-validation correction regardless of the settings.
             val burstAllowed = burstAllowedForStat(unityCupBurstTopStatsOnlyAfterJunior, campaign.date.year, statPrioritization, result.name)
-            val readyToExtremeBurst = if (burstAllowed && mainStatGain >= unityCupExtremeBurstMinStatGain) (result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0) else 0
-            val readyToBurst = if (burstAllowed) (result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0) else 0
+            val rawReadyToExtremeBurst = result.extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0
+            val rawReadyToBurst = result.extras["spiritGaugesReadyToBurst"] as? Int ?: 0
+            val readyToExtremeBurst = if (extremeBurstAllowed(burstAllowed, mainStatGain, unityCupExtremeBurstMinStatGain)) rawReadyToExtremeBurst else 0
+            val readyToBurst = if (burstFailureExemptionAllowed(burstAllowed, enableRiskyTraining, mainStatGain, riskyTrainingMinStatGain)) rawReadyToBurst else 0
             val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance, readyToExtremeBurst)
 
-            // Filter out trainings that exceed the effective failure chance threshold.
+            // Filter out trainings that exceed the effective failure chance threshold. The ceiling reported here is the one actually applied, which a ready burst may have raised.
             if (!test && !ignoreFailureChance && result.failureChance > effectiveFailureChance) {
                 val skipReason =
-                    if (enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain) {
+                    if (riskyExempt) {
                         MessageLog.i(
                             TAG,
-                            "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding risky threshold ($riskyTrainingMaxFailureChance%) despite high main stat gain of $mainStatGain.",
+                            "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%) despite high main stat gain of $mainStatGain.",
                         )
                         "high failure chance (risky)"
                     } else {
-                        MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($maximumFailureChance%).")
+                        MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%).")
                         "high failure chance"
                     }
 
@@ -1829,8 +1858,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
 
             // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when a Unity Cup
-            // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance).
-            val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
+            // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance). Unlike the failure-chance exemption above, this one reads
+            // isBurstReady directly and is deliberately not gated on the minimum main stat gain: it waives a value heuristic rather than a user-set risk ceiling.
             val burstExempt = result.isBurstReady
             if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
                 val totalStatGain = result.statGains.values.sum()

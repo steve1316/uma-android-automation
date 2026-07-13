@@ -1,7 +1,9 @@
 package com.steve1316.uma_android_automation.bot
 
 import com.steve1316.uma_android_automation.bot.Training.Companion.burstExemptFailureChance
+import com.steve1316.uma_android_automation.bot.Training.Companion.burstFailureExemptionAllowed
 import com.steve1316.uma_android_automation.bot.Training.Companion.defaultScoringModeFor
+import com.steve1316.uma_android_automation.bot.Training.Companion.extremeBurstAllowed
 import com.steve1316.uma_android_automation.bot.Training.Companion.failsExpectedValueGate
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatDecisionTrace
 import com.steve1316.uma_android_automation.bot.Training.Companion.formatScoreBreakdown
@@ -173,6 +175,53 @@ class TrainingExplanationTest {
         assertEquals(100, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 0, burstMax = 0, readyToExtremeBurst = 1))
         // Extreme burst still wins even when a normal burst is also ready.
         assertEquals(100, burstExemptFailureChance(baseFailureChance = 15, readyToBurst = 1, burstMax = 40, readyToExtremeBurst = 1))
+    }
+
+    @Test
+    @DisplayName("A normal burst only earns the raised failure ceiling when it clears the risky minimum main stat gain")
+    fun testBurstFailureExemptionAllowed() {
+        // Risky Training on: a gain below the threshold has not earned the burst ceiling.
+        assertFalse(burstFailureExemptionAllowed(burstAllowed = true, enableRiskyTraining = true, mainStatGain = 14, minStatGain = 40))
+        // Exactly at the threshold is enough, so the boundary is inclusive.
+        assertTrue(burstFailureExemptionAllowed(burstAllowed = true, enableRiskyTraining = true, mainStatGain = 40, minStatGain = 40))
+        // Risky Training off: the threshold is meaningless, so the burst keeps its exemption at any gain.
+        assertTrue(burstFailureExemptionAllowed(burstAllowed = true, enableRiskyTraining = false, mainStatGain = 1, minStatGain = 40))
+        // A burst disallowed on this stat is absent no matter how large the gain.
+        assertFalse(burstFailureExemptionAllowed(burstAllowed = false, enableRiskyTraining = false, mainStatGain = 99, minStatGain = 40))
+    }
+
+    @Test
+    @DisplayName("Issue #400: a 14-gain burst-ready training under a 40 threshold keeps its base 20% ceiling instead of the 25% burst ceiling")
+    fun testBurstExemptionDoesNotOverrideMinStatGain() {
+        // The reporter's turn: Max Failure 20%, Risky Training on with Min Main Stat Gain 40, Unity Cup Burst Exemption 25%.
+        // STAMINA had 1 gauge ready to burst but only a 14 main stat gain, so the burst must not raise its ceiling to 25% and let a 24% failure chance through.
+        val readyToBurst = if (burstFailureExemptionAllowed(burstAllowed = true, enableRiskyTraining = true, mainStatGain = 14, minStatGain = 40)) 1 else 0
+        assertEquals(20, burstExemptFailureChance(baseFailureChance = 20, readyToBurst = readyToBurst, burstMax = 25), "A below-threshold burst must not raise the ceiling above the base")
+
+        // The same training with a gain that clears the threshold does earn the 25% ceiling and survives.
+        val earnedReadyToBurst = if (burstFailureExemptionAllowed(burstAllowed = true, enableRiskyTraining = true, mainStatGain = 45, minStatGain = 40)) 1 else 0
+        assertEquals(25, burstExemptFailureChance(baseFailureChance = 20, readyToBurst = earnedReadyToBurst, burstMax = 25))
+    }
+
+    @Test
+    @DisplayName("extremeBurstAllowed gates on the extreme minimum gain, and the config overload wires its arguments through to the primitive")
+    fun testExtremeBurstAllowed() {
+        // Primitive overload: the extreme burst needs its own minimum gain, independent of Risky Training.
+        assertFalse(extremeBurstAllowed(burstAllowed = true, mainStatGain = 19, minStatGain = 20))
+        assertTrue(extremeBurstAllowed(burstAllowed = true, mainStatGain = 20, minStatGain = 20))
+        assertFalse(extremeBurstAllowed(burstAllowed = false, mainStatGain = 99, minStatGain = 20))
+        // The default (0) minimum always allows the extreme burst.
+        assertTrue(extremeBurstAllowed(burstAllowed = true, mainStatGain = 0, minStatGain = 0))
+
+        // The config overload delegates to the primitive. These two blocks pin the argument wiring: one gate blocks on gain, the other on the stat, so a swapped argument would fail.
+        // The end-to-end behaviour of both gates through the scorer is already covered by TrainingScoringTest.
+        val junior = config(DateYear.JUNIOR).copy(unityCupExtremeBurstMinStatGain = 20)
+        assertFalse(extremeBurstAllowed(junior, option(name = StatName.SPEED, statGains = mapOf(StatName.SPEED to 15))))
+        assertTrue(extremeBurstAllowed(junior, option(name = StatName.SPEED, statGains = mapOf(StatName.SPEED to 30))))
+
+        // After Junior with the top-3 override on, a non-top-3 stat is blocked no matter how large the gain.
+        val classic = config(DateYear.CLASSIC).copy(unityCupExtremeBurstMinStatGain = 20, unityCupBurstTopStatsOnlyAfterJunior = true)
+        assertFalse(extremeBurstAllowed(classic, option(name = StatName.GUTS, statGains = mapOf(StatName.GUTS to 60))))
     }
 
     @Test
