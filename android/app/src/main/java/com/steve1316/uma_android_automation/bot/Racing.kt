@@ -228,6 +228,12 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     /** Retries used on the current race. Shared by the button-based and dialog-based retry paths so both honor the per-race limit. */
     var retriesThisRace: Int = 0
 
+    /**
+     * Whether the race being run is retried until 1st place (mandatory races and Unity Cup).
+     * Set by [runRaceWithRetries] so the dialog-based retry path can see it too.
+     */
+    var bRetryUntilFirst: Boolean = false
+
     /** Whether to stop the bot when a mandatory race is detected. */
     internal val enableStopOnMandatoryRace: Boolean = SettingsHelper.getBooleanSetting("racing", "enableStopOnMandatoryRaces")
 
@@ -357,6 +363,72 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
         /** The threshold for fuzzy string matching (0.0 to 1.0). */
         private const val SIMILARITY_THRESHOLD = 0.7
+
+        /** Matches the distance token of a formatted race name (e.g. "3000m"), tolerating the letter O that OCR reads in place of a zero. */
+        private val DISTANCE_TOKEN_REGEX = Regex("""\b[0-9Oo]{3,4}m\b""")
+
+        /** Matches the parenthesized distance category of a formatted race name (e.g. "(Long)"). */
+        private val DISTANCE_CATEGORY_REGEX = Regex("""\((sprint|mile|med|long)\)""", RegexOption.IGNORE_CASE)
+
+        /**
+         * Repairs the distance token of an OCR'd race name by turning the letter O back into a zero.
+         *
+         * ML Kit reads "3000m" as "300Om" often enough to derail the lookup.
+         * Only the distance token is rewritten so letters elsewhere in the name are left alone.
+         *
+         * @param detectedName The race name as read from the screen.
+         * @return The race name with its distance token repaired.
+         */
+        fun normalizeRaceName(detectedName: String): String {
+            return DISTANCE_TOKEN_REGEX.replace(detectedName) { match -> match.value.replace('O', '0').replace('o', '0') }
+        }
+
+        /**
+         * Parses the distance category out of a formatted race name.
+         *
+         * @param detectedName The race name as read from the screen.
+         * @return The distance category, or null if the name does not spell one out.
+         */
+        fun distanceCategoryFromRaceName(detectedName: String): TrackDistance? {
+            val category = DISTANCE_CATEGORY_REGEX.find(detectedName)?.groupValues?.get(1)?.lowercase() ?: return null
+            // The race name abbreviates Medium to "Med". Every other category is spelled the same as its enum entry.
+            return if (category == "med") TrackDistance.MEDIUM else TrackDistance.fromName(category)
+        }
+
+        /**
+         * Checks that a candidate race's distance does not contradict the distance category spelled out in the detected name.
+         *
+         * Whole-string fuzzy matching scores a 3000m Long race against an 1800m Mile race at 0.9 because they share a track name and most tokens.
+         * The winning candidate needs this sanity check. A name with no category cannot contradict anything, so every candidate is accepted.
+         *
+         * @param detectedName The race name as read from the screen.
+         * @param candidateDistance The distance of the candidate race from the database.
+         * @return True if the candidate is consistent with the detected name.
+         */
+        fun matchesDetectedDistance(detectedName: String, candidateDistance: TrackDistance): Boolean {
+            val detectedDistance = distanceCategoryFromRaceName(detectedName) ?: return true
+            return detectedDistance == candidateDistance
+        }
+
+        /**
+         * Decides whether the retry budgets still allow another retry of the current race.
+         *
+         * The Try Again prompt appears as a dialog or as an on-screen button, each with its own handler. This is the budget check both apply.
+         *
+         * The dialog surface (`Campaign.shouldRetryRace`) passes `retryUntilFirst`, so mandatory and Unity Cup races skip the per-race cap.
+         * The button surface ([canRetryGrade]) does not, since [runRaceWithRetries] already gives those races their own uncapped fallback branch.
+         * Exempting them here as well would drain the run-wide pool before they ever reach that branch. The pool bounds both surfaces either way.
+         *
+         * @param raceRetries The retries left in the run-wide pool.
+         * @param retriesThisRace The retries already used on the current race.
+         * @param maxRetriesPerRace The per-race retry cap.
+         * @param retryUntilFirst Whether the current race is exempt from the per-race cap.
+         * @return True if the race may be retried again.
+         */
+        fun canRetryRace(raceRetries: Int, retriesThisRace: Int, maxRetriesPerRace: Int, retryUntilFirst: Boolean): Boolean {
+            if (raceRetries <= 0) return false
+            return retryUntilFirst || retriesThisRace < maxRetriesPerRace
+        }
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1075,8 +1147,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         !disableRaceRetries &&
             lastRaceGrade != null &&
             retryEligibleGrades.contains(lastRaceGrade) &&
-            raceRetries > 0 &&
-            retriesThisRace < maxRetriesPerRace &&
+            canRetryRace(raceRetries, retriesThisRace, maxRetriesPerRace, retryUntilFirst = false) &&
             ButtonTryAgainAlt.checkDisabled(game.imageUtils, sourceBitmap = sourceBitmap) == false
 
     /**
@@ -1114,6 +1185,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         // Flag used to prevent us from attempting to select a running style after we've already successfully selected a running style once.
         var bDidSelectRaceStrategy = false
         retriesThisRace = 0
+        bRetryUntilFirst = retryUntilFirst
 
         // Safety counter to prevent infinite loop.
         var loopCount = 0
@@ -1320,6 +1392,12 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         return try {
             MessageLog.i(TAG, "[RACE] Looking up race for turn $turnNumber with detected name: \"$detectedName\".")
 
+            // Repair the distance token before matching. OCR reads "3000m" as "300Om" often enough to derail both the exact and the fuzzy match.
+            val normalizedName = normalizeRaceName(detectedName)
+            if (normalizedName != detectedName) {
+                MessageLog.i(TAG, "[RACE] Repaired the detected name to: \"$normalizedName\".")
+            }
+
             val database = settingsManager.readableDatabase
             if (database == null) {
                 MessageLog.e(TAG, "[ERROR] lookupRaceInDatabase:: Database not available for race lookup.")
@@ -1342,7 +1420,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                         RACES_COLUMN_TURN_NUMBER,
                     ),
                     "$RACES_COLUMN_TURN_NUMBER = ? AND $RACES_COLUMN_NAME_FORMATTED = ?",
-                    arrayOf(turnNumber.toString(), detectedName),
+                    arrayOf(turnNumber.toString(), normalizedName),
                     null,
                     null,
                     null,
@@ -1410,7 +1488,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
             do {
                 val nameFormatted = fuzzyCursor.getString(3)
-                val similarity = similarityService.score(detectedName, nameFormatted)
+                val similarity = similarityService.score(normalizedName, nameFormatted)
 
                 if (similarity >= SIMILARITY_THRESHOLD) {
                     val race =
@@ -1423,6 +1501,17 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                             trackDistance = fuzzyCursor.getString(5),
                             turnNumber = fuzzyCursor.getInt(6),
                         )
+
+                    // Jaro-Winkler scores races that share a track name and most tokens very highly.
+                    // A candidate that contradicts the detected distance must be dropped.
+                    if (!matchesDetectedDistance(normalizedName, race.trackDistance)) {
+                        MessageLog.i(
+                            TAG,
+                            "[RACE] Rejected fuzzy match \"${race.name}\" AKA \"$nameFormatted\": its distance (${race.trackDistance}) contradicts the detected name.",
+                        )
+                        continue
+                    }
+
                     fuzzyMatches.add(Pair(race, similarity))
                     if (similarity > bestScore) bestScore = similarity
                     if (game.debugMode) {
