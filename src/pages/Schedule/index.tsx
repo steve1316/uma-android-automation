@@ -253,7 +253,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                 <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.sm }}>
                     <TabStrip items={TAB_ITEMS} activeKey={activeKey} onChange={onChangeTab} style={{ marginBottom: SPACING.sm }} />
                 </View>
-                <ScrollView ref={scrollViewRef} contentContainerStyle={{ paddingHorizontal: SPACING.md, paddingBottom: 96 }} showsVerticalScrollIndicator={false}>
+                <ScrollView ref={scrollViewRef} nestedScrollEnabled contentContainerStyle={{ paddingHorizontal: SPACING.md, paddingBottom: 96 }} showsVerticalScrollIndicator={false}>
                     {/* Both tabs stay mounted - toggling display avoids re-mounting the heavy Race Solver tab (its 700ms+ section build) on every switch. */}
                     <View style={{ display: activeKey === "raceSolver" ? "flex" : "none" }}>
                         <RaceSolverTab />

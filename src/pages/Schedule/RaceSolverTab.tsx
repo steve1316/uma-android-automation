@@ -608,6 +608,7 @@ function RaceSolverTab() {
                                             </View>
                                         )}
                                         keyboardShouldPersistTaps="handled"
+                                        nestedScrollEnabled
                                     />
                                 </View>
                             </SearchableItem>
@@ -649,6 +650,7 @@ function RaceSolverTab() {
                                             </View>
                                         )}
                                         keyboardShouldPersistTaps="handled"
+                                        nestedScrollEnabled
                                     />
                                 </View>
                             </SearchableItem>
