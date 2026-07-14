@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { View, Text, Pressable } from "react-native"
 import { useTheme } from "../../../context/ThemeContext"
-import { APTITUDE_RANKS, AptitudeMap } from "../../../lib/solver/constants"
+import { APTITUDE_RANKS, AptitudeMap, splitEpithetBullets } from "../../../lib/solver/constants"
 
 interface AptitudeRowProps {
     /** The aptitude slot this row controls (e.g. "Sprint", "Mile"). */
@@ -61,10 +61,7 @@ interface EpithetChipProps {
  */
 export const EpithetChip = memo(({ epithet, selected, onToggle, styles }: EpithetChipProps) => {
     const { colors } = useTheme()
-    const bullets = epithet.bullet_points ?? []
-    // Last bullet is the reward; earlier bullets are conditions.
-    const conditionBullets = bullets.length > 1 ? bullets.slice(0, -1) : []
-    const rewardBullet = bullets.length > 0 ? bullets[bullets.length - 1] : null
+    const { reward: rewardBullet, conditions: conditionBullets } = splitEpithetBullets(epithet.bullet_points ?? [])
     // Red dot in the corner flags epithets the solver can't track or advance (see "Epithets without matchers" info block).
     const hasMatchers = (epithet.matchers ?? []).length > 0
     return (

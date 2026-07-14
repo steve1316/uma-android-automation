@@ -1,12 +1,13 @@
-import epithetsData from "../../data/epithets.json"
 import {
     APT_ORDER,
     AptitudeMap,
     BASE_SP_BY_GRADE,
     BASE_STAT_BY_GRADE,
     COUNTRY_NAMES,
+    EPITHETS_BY_NAME,
     EpithetEntry,
     MatcherProgress,
+    normalizeGrade,
     OP_GRADES,
     PreviewStats,
     RaceEntry,
@@ -194,7 +195,7 @@ const matcherMatchesRace = (matcher: Record<string, unknown>, race: RaceEntry): 
  * @returns Epithet entries whose matchers reference `race`.
  */
 export const epithetsForRace = (race: RaceEntry): EpithetEntry[] => {
-    const all = epithetsData as unknown as Record<string, EpithetEntry>
+    const all = EPITHETS_BY_NAME
     const out: EpithetEntry[] = []
     for (const ep of Object.values(all)) {
         const matchers = ep.matchers ?? []
@@ -597,7 +598,7 @@ export const turnsContributingToEpithet = (ep: EpithetEntry, preview: SchedulePr
  * @returns The aggregate {@link PreviewStats}.
  */
 export const computePreviewStats = (preview: SchedulePreview, weights: Pick<WeightsMap, "raceBonusPct">, racesByKey: Record<string, RaceEntry>): PreviewStats => {
-    const epithetsAll = epithetsData as unknown as Record<string, EpithetEntry>
+    const epithetsAll = EPITHETS_BY_NAME
     const rb = Math.max(0, weights.raceBonusPct) / 100
     let races = 0
     let raceStats = 0
@@ -607,7 +608,7 @@ export const computePreviewStats = (preview: SchedulePreview, weights: Pick<Weig
         if (entry.type !== "Race") continue
         races += 1
         const race = entry.raceKey ? racesByKey[entry.raceKey] : undefined
-        const grade = (race?.grade ?? entry.grade ?? "").replace("-", "_")
+        const grade = normalizeGrade(race?.grade ?? entry.grade ?? "")
         raceStats += Math.floor((BASE_STAT_BY_GRADE[grade] ?? 0) * (1 + rb))
         raceSp += Math.floor((BASE_SP_BY_GRADE[grade] ?? 0) * (1 + rb))
         fans += race?.fans ?? 0

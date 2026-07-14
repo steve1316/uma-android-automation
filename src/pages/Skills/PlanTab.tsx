@@ -17,6 +17,7 @@ import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalRadioRow } from "../../components/ui/modal-list"
 import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
 import { ValuePill } from "../../components/ui/value-pill"
+import { CountBadge } from "../../components/ui/count-badge"
 import { ModalHeader } from "../../components/ui/modal-header"
 import CustomButton from "../../components/CustomButton"
 import CustomScrollView from "../../components/CustomScrollView"
@@ -217,13 +218,6 @@ const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
                     borderRadius: RADII.pill,
                 },
                 chipPillText: { ...TYPE.monoValue, color: colors.text, fontSize: 11 },
-                countBadge: {
-                    paddingHorizontal: SPACING.sm,
-                    paddingVertical: 1,
-                    backgroundColor: colors.brand,
-                    borderRadius: RADII.pill,
-                },
-                countBadgeText: { ...TYPE.monoLabel, color: colors.onBrand, fontSize: 9 },
             }),
         [colors]
     )
@@ -252,9 +246,7 @@ const PlanTab: React.FC<PlanTabProps> = ({ planKey }) => {
         const names = idsToNames(ids)
         return (
             <View style={styles.chipList}>
-                <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>{ids.length}</Text>
-                </View>
+                <CountBadge count={ids.length} />
                 {names.map((skillName, i) => (
                     <View key={`${ids[i]}-${i}`} style={styles.chipPill}>
                         <Text style={styles.chipPillText}>{skillName}</Text>

@@ -1,4 +1,4 @@
-import { GRADE_COLORS, TRAIN_LOCK_SENTINEL } from "../../solver/constants"
+import { gradeColor, normalizeGrade, TRAIN_LOCK_SENTINEL } from "../../solver/constants"
 import type { RaceEntry } from "../../solver/constants"
 import type { ScheduleEvent, ScheduleSource, ScheduleSourceContext } from "../types"
 
@@ -57,8 +57,8 @@ export const srsSource: ScheduleSource = {
                     marker: "🔒",
                     label: lock,
                     detail: lock,
-                    badge: grade,
-                    color: grade ? GRADE_COLORS[grade] : undefined,
+                    badge: grade ? normalizeGrade(grade) : undefined,
+                    color: grade ? gradeColor(grade) : undefined,
                     movable: true,
                     variant: lock,
                 })
@@ -70,8 +70,8 @@ export const srsSource: ScheduleSource = {
                     marker: "",
                     label: decision.name,
                     detail: decision.name,
-                    badge: decision.grade,
-                    color: decision.grade ? GRADE_COLORS[decision.grade] : undefined,
+                    badge: decision.grade ? normalizeGrade(decision.grade) : undefined,
+                    color: decision.grade ? gradeColor(decision.grade) : undefined,
                     movable: true,
                     variant: decision.name,
                 })

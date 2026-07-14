@@ -19,12 +19,15 @@ import { useSolverPreview } from "../../hooks/useSolverPreview"
 import { useSolverInputs } from "../../hooks/useSolverInputs"
 import { buildScheduleModel, SCHEDULE_SOURCES, type ScheduleModel } from "../../lib/schedule/registry"
 import { DATING_SCHEDULE_CUSTOM } from "../../lib/datingSchedule"
-import type { RaceEntry } from "../../lib/solver/constants"
+import { EPITHETS_BY_NAME, type RaceEntry } from "../../lib/solver/constants"
+import { turnsContributingToEpithet, computePreviewStats } from "../../lib/solver/scoring"
 import type { CharacterObjectives, ScheduleMutators, ScheduleSourceContext } from "../../lib/schedule/types"
 import { SPACING } from "../../lib/spacing"
 import { TYPE } from "../../lib/type"
 import CalendarTab from "./CalendarTab"
 import CharacterPresetSelector from "./components/CharacterPresetSelector"
+import EpithetRewards from "./components/EpithetRewards"
+import ScheduleStats from "./components/ScheduleStats"
 import RaceSolverTab from "./RaceSolverTab"
 import RecreationTab from "./RecreationTab"
 import TurnDetailSheet from "./TurnDetailSheet"
@@ -44,6 +47,12 @@ const EMPTY_ALLOWED: Set<string> = new Set()
 
 /** Empty merged model, returned while neither the calendar nor the turn-detail sheet is open so the source merge (and its race-catalog scans) is skipped. */
 const EMPTY_MODEL: ScheduleModel = { byTurn: new Map() }
+
+/** Empty contributing-turns set, returned while no epithet is highlighted so the common case allocates nothing. */
+const EMPTY_CONTRIBUTING: Set<number> = new Set()
+
+/** The bundled race catalog, keyed by race name. */
+const RACES = racesData as unknown as Record<string, RaceEntry>
 
 /** Optional route params for deep-linking to a tab (drawer + in-app search). */
 interface ScheduleRouteParams {
@@ -103,7 +112,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
             general: generalSettings,
             racing: racingSettings,
             preview,
-            racesByKey: racesData as unknown as Record<string, RaceEntry>,
+            racesByKey: RACES,
             objectives: characterObjectivesData as unknown as Record<string, CharacterObjectives>,
             character: racingSettings.smartRaceSolverCharacterPreset,
             scenario: general?.scenario ?? "",
@@ -120,6 +129,29 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
     const [selectedTurn, setSelectedTurn] = useState<number | null>(null)
     const [calendarOpen, setCalendarOpen] = useState(false)
     const [traineePickerOpen, setTraineePickerOpen] = useState(false)
+
+    /** Name of the epithet whose contributing races are highlighted on the calendar, or null when none is. */
+    const [highlightedEpithet, setHighlightedEpithet] = useState<string | null>(null)
+
+    /** Toggle the highlight for an epithet - tapping the highlighted one again clears it. */
+    const toggleEpithet = useCallback((name: string) => setHighlightedEpithet((prev) => (prev === name ? null : name)), [])
+
+    /** Close the calendar and drop the highlight, so reopening it starts clean rather than mid-highlight. */
+    const closeCalendar = useCallback(() => {
+        setCalendarOpen(false)
+        setHighlightedEpithet(null)
+    }, [])
+
+    // Turns whose scheduled race actually counts toward completing the highlighted epithet, capped at each matcher's required count.
+    const contributingTurns = useMemo(() => {
+        const ep = highlightedEpithet ? EPITHETS_BY_NAME[highlightedEpithet] : undefined
+        if (!ep || !preview) return EMPTY_CONTRIBUTING
+        return turnsContributingToEpithet(ep, preview, RACES)
+    }, [highlightedEpithet, preview])
+
+    // Aggregate stats for the previewed schedule. Gated on the calendar being open like the scans below - the panel only mounts in that modal, so
+    // computing it while the Race Solver tab is in front would re-walk all 72 decisions on every weight edit for a panel nobody can see.
+    const previewStats = useMemo(() => (calendarOpen && preview ? computePreviewStats(preview, weights, RACES) : null), [calendarOpen, preview, weights])
 
     // Skip the eligible-race and allowed-epithet catalog scans while neither the calendar nor the turn-detail sheet is open - they're
     // only consumed there, and the full-catalog scan is otherwise wasted work on every aptitude/weight/scenario change.
@@ -224,7 +256,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                 <ScrollView ref={scrollViewRef} contentContainerStyle={{ paddingHorizontal: SPACING.md, paddingBottom: 96 }} showsVerticalScrollIndicator={false}>
                     {/* Both tabs stay mounted - toggling display avoids re-mounting the heavy Race Solver tab (its 700ms+ section build) on every switch. */}
                     <View style={{ display: activeKey === "raceSolver" ? "flex" : "none" }}>
-                        <RaceSolverTab preview={preview} previewLoading={previewLoading} />
+                        <RaceSolverTab />
                     </View>
                     <View style={{ display: activeKey === "recreation" ? "flex" : "none" }}>
                         <RecreationTab />
@@ -243,10 +275,10 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
 
                 <SheetModal
                     visible={calendarOpen}
-                    onRequestClose={() => setCalendarOpen(false)}
+                    onRequestClose={closeCalendar}
                     heightFraction={0.9}
                     widthFraction={0.85}
-                    header={<ModalHeader title="CALENDAR" onClose={() => setCalendarOpen(false)} />}
+                    header={<ModalHeader title="CALENDAR" onClose={closeCalendar} />}
                     subHeader={
                         dirty ? (
                             <View style={styles.applyBar}>
@@ -271,7 +303,24 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                         </Pressable>
                     }
                 >
-                    <CalendarTab model={model} legendFlags={legendFlags} onSelectTurn={openTurn} allowSummer={allowSummer} />
+                    <CalendarTab
+                        model={model}
+                        legendFlags={legendFlags}
+                        onSelectTurn={openTurn}
+                        allowSummer={allowSummer}
+                        contributingTurns={contributingTurns}
+                        statsSlot={legendFlags.srs && previewStats ? <ScheduleStats stats={previewStats} totalScore={preview?.totalScore ?? 0} /> : null}
+                    />
+                    {legendFlags.srs && (
+                        <EpithetRewards
+                            targetEpithets={targetEpithets}
+                            forcedEpithets={forcedEpithets}
+                            preview={preview}
+                            previewLoading={previewLoading}
+                            highlightedEpithet={highlightedEpithet}
+                            onToggleEpithet={toggleEpithet}
+                        />
+                    )}
                 </SheetModal>
 
                 <TurnDetailSheet

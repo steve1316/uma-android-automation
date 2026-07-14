@@ -3,6 +3,8 @@
  * Mirrors the shape of the bundled `races.json` / `epithets.json` / `characterPresets.json` data files.
  */
 
+import epithetsData from "../../data/epithets.json"
+
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -152,6 +154,66 @@ export const GRADE_COLORS: Record<string, string> = {
     FINALE: "#7c3aed",
     EX: "#7c3aed",
 }
+
+/** Display labels for each race grade, keyed by the canonical `RaceGrade` enum name from `Types.kt`. */
+export const GRADE_LABELS: Record<string, string> = {
+    G1: "G1",
+    G2: "G2",
+    G3: "G3",
+    OP: "OP",
+    PRE_OP: "Pre-OP",
+    MAIDEN: "Maiden",
+    DEBUT: "Debut",
+    FINALE: "Finale",
+    EX: "EX",
+}
+
+/**
+ * Folds a race grade onto its canonical `RaceGrade` enum key. Grades reach the UI under two spellings: `races.json` stores "Pre-OP" while the Kotlin solver
+ * serialises the enum name "PRE_OP". Normalising both to "PRE_OP" lets the label and color lookups below hit on either.
+ * @param grade The raw grade string from either source.
+ * @returns The canonical enum key, e.g. "PRE_OP".
+ */
+export const normalizeGrade = (grade: string): string => {
+    const key = grade.replace(/[-\s]/g, "_").toUpperCase()
+    return key === "PREOP" ? "PRE_OP" : key
+}
+
+/**
+ * Resolves a race grade to its human-readable display label.
+ * @param grade The raw grade string from either source.
+ * @returns The display label, e.g. "Pre-OP", falling back to the raw grade when it is unrecognized.
+ */
+export const formatGradeLabel = (grade: string): string => GRADE_LABELS[normalizeGrade(grade)] ?? grade
+
+/**
+ * Resolves a race grade to its badge color.
+ * @param grade The raw grade string from either source.
+ * @returns The hex color, or undefined when the grade is unrecognized so the caller can fall back to its own default.
+ */
+export const gradeColor = (grade: string): string | undefined => GRADE_COLORS[normalizeGrade(grade)]
+
+/** Every epithet from the bundled `epithets.json`, keyed by name. The single cast of that data file - import this rather than re-casting it. */
+export const EPITHETS_BY_NAME = epithetsData as unknown as Record<string, EpithetEntry>
+
+/** An epithet's reward line and the conditions that earn it, split out of its `bullet_points`. */
+export interface EpithetBullets {
+    /** The reward text, exactly as authored (the caller strips any leading "Reward:" label if it does not want it). */
+    reward: string | null
+    /** The condition lines that must be met, i.e. every bullet before the reward. */
+    conditions: string[]
+}
+
+/**
+ * Splits an epithet's bullet points into its reward and its conditions. The data file's convention is that the last bullet is the reward
+ * and every earlier bullet is a condition, so this is the one place that convention is encoded.
+ * @param bullets The epithet's raw `bullet_points`.
+ * @returns The reward line (null when there are no bullets) and the condition lines.
+ */
+export const splitEpithetBullets = (bullets: string[]): EpithetBullets => ({
+    reward: bullets.length > 0 ? bullets[bullets.length - 1] : null,
+    conditions: bullets.length > 1 ? bullets.slice(0, -1) : [],
+})
 
 export const DEFAULT_APTITUDES: AptitudeMap = { Sprint: "A", Mile: "A", Medium: "A", Long: "A", Turf: "A", Dirt: "A" }
 

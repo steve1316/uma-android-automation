@@ -1,9 +1,9 @@
-import { memo, useMemo } from "react"
+import { memo, useMemo, type ReactNode } from "react"
 import { View, Text, StyleSheet, Pressable } from "react-native"
 import { useTheme } from "../../context/ThemeContext"
 import { SectionLabel } from "../../components/ui/section-label"
 import SeasonCalendar, { isBlockedTurn, useSeasonCalendarStyles } from "../../components/SeasonCalendar"
-import { shortenRaceName, turnDateLabel } from "../../lib/solver/constants"
+import { formatGradeLabel, shortenRaceName, turnDateLabel } from "../../lib/solver/constants"
 import type { ScheduleEvent } from "../../lib/schedule/types"
 import type { ScheduleModel } from "../../lib/schedule/registry"
 import { SPACING } from "../../lib/spacing"
@@ -52,17 +52,23 @@ interface CalendarTabProps {
     onSelectTurn: (turn: number) => void
     /** Whether Summer turns are tappable. */
     allowSummer: boolean
+    /** Turns whose scheduled race contributes to the currently highlighted epithet; those cells get a gold ring. Empty when no epithet is highlighted. */
+    contributingTurns: Set<number>
+    /** Optional panel rendered between the legend and the grid, used for the schedule stats. */
+    statsSlot?: ReactNode
 }
 
 /**
- * Calendar tab: the unified overlay of every source on one 72-turn grid, plus a gated legend and an overflow list for events on blocked turns.
+ * Calendar tab: the unified overlay of every source on one 72-turn grid, plus a gated legend, an optional stats slot, and an overflow list for events on blocked turns.
  * @param model Merged schedule model.
  * @param legendFlags Enabled-source flags for legend gating.
  * @param onSelectTurn Cell tap handler.
  * @param allowSummer Whether Summer turns are tappable.
+ * @param contributingTurns Turns to ring for the highlighted epithet.
+ * @param statsSlot Panel rendered between the legend and the grid.
  * @returns The calendar tab body.
  */
-function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer }: CalendarTabProps) {
+function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer, contributingTurns, statsSlot }: CalendarTabProps) {
     const { colors } = useTheme()
     const calStyles = useSeasonCalendarStyles()
 
@@ -125,6 +131,7 @@ function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer }: Calendar
             isMandatoryCell && calStyles.calendarCellMandatory,
             stopIsMainGlyph && calStyles.calendarCellStop,
             owner?.ownership === "explicit" && calStyles.calendarCellLocked,
+            contributingTurns.has(turn) && calStyles.calendarCellHighlighted,
         ]
 
         // Shared render for a race owner (a mandatory career race or an SRS lock): grade badge + shortened name.
@@ -132,7 +139,7 @@ function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer }: Calendar
             <View style={styles.cellContent}>
                 {owner.badge ? (
                     <View style={[calStyles.calendarBadge, { backgroundColor: owner.color ?? colors.brand }]}>
-                        <Text style={calStyles.calendarBadgeText}>{owner.badge}</Text>
+                        <Text style={calStyles.calendarBadgeText}>{formatGradeLabel(owner.badge)}</Text>
                     </View>
                 ) : null}
                 <Text style={styles.raceName} numberOfLines={2}>
@@ -154,7 +161,7 @@ function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer }: Calendar
             content = (
                 <View style={styles.cellContent}>
                     <View style={[calStyles.calendarBadge, { backgroundColor: autoRace.color ?? colors.brand }]}>
-                        <Text style={calStyles.calendarBadgeText}>{autoRace.badge}</Text>
+                        <Text style={calStyles.calendarBadgeText}>{formatGradeLabel(autoRace.badge ?? "")}</Text>
                     </View>
                     <Text style={styles.raceName} numberOfLines={2}>
                         {shortenRaceName(autoRace.label)}
@@ -197,7 +204,10 @@ function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer }: Calendar
                 ))}
             </View>
 
-            <SeasonCalendar allowSummer={allowSummer} renderCell={renderCell} deps={[model, colors]} />
+            {statsSlot}
+
+            {/* `contributingTurns` must stay in `deps` - SeasonCalendar memoizes the whole grid on it, so the epithet highlight would not repaint without it. */}
+            <SeasonCalendar allowSummer={allowSummer} renderCell={renderCell} deps={[model, colors, contributingTurns]} />
 
             {overflowEvents.length > 0 && (
                 <View style={styles.overflow}>

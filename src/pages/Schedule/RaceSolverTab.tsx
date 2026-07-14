@@ -2,7 +2,6 @@ import { memo, useMemo, useContext, useState, useEffect, useCallback, ReactNode 
 import { View, Text, StyleSheet, Pressable, InteractionManager } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { Divider } from "react-native-paper"
-import type { SchedulePreview } from "../../lib/solver/preview"
 import { useSolverInputs } from "../../hooks/useSolverInputs"
 import { APTITUDE_RANKS, AptitudeMap, EpithetEntry, OPTIMIZE_MODE_LABELS, OPTIMIZE_MODE_PRESETS, OptimizeModeKey, WeightsMap } from "../../lib/solver/constants"
 import { useTheme } from "../../context/ThemeContext"
@@ -20,6 +19,7 @@ import { Trash2 } from "lucide-react-native"
 import { Section } from "../../components/ui/section"
 import { Row } from "../../components/ui/row"
 import { Switch } from "../../components/ui/switch"
+import { CountBadge } from "../../components/ui/count-badge"
 import InfoCallout from "../../components/ui/info-callout"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
@@ -64,21 +64,11 @@ const SubTopic = ({ title, children }: SubTopicProps) => {
     )
 }
 
-/** Props for `RaceSolverTab`. */
-interface RaceSolverTabProps {
-    /** Solver preview from the shell, or null before the first solve. */
-    preview: SchedulePreview | null
-    /** Whether a solve is in flight. */
-    previewLoading: boolean
-}
-
 /**
- * Race Solver tab. Lets the user configure aptitudes, target/forced epithets, scoring weights, and epithet rewards for the beam-search race scheduler.
- * @param preview Solver preview from the shell, or null before the first solve.
- * @param previewLoading Whether a solve is in flight.
+ * Race Solver tab. Lets the user configure aptitudes, target/forced epithets, and scoring weights for the beam-search race scheduler.
  * @returns The rendered Race Solver tab content.
  */
-function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
+function RaceSolverTab() {
     usePerformanceLogging("RaceSolverTab")
     const { colors } = useTheme()
     // Subscribe to context slices to avoid re-rendering on unrelated settings changes.
@@ -146,8 +136,6 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
 
     const [epithetSearch, setEpithetSearch] = useState("")
     const [forcedEpithetSearch, setForcedEpithetSearch] = useState("")
-    /** Name of the epithet whose card is currently tapped/expanded in the Target / Forced / Projected lists. */
-    const [highlightedEpithet, setHighlightedEpithet] = useState<string | null>(null)
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -259,7 +247,6 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
     const styles = useMemo(
         () =>
             StyleSheet.create({
-                sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 6 },
                 description: { fontSize: 13, color: colors.textMuted, marginBottom: SPACING.md },
                 inputLabel: { fontSize: 14, color: colors.text, marginBottom: 4, marginTop: 6 },
                 input: { backgroundColor: colors.bg, color: colors.text, marginBottom: 4 },
@@ -334,7 +321,7 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
                 aptCellValue: { ...TYPE.monoValue, color: colors.text, fontSize: 14, marginTop: 1 },
                 aptCellHighlighted: { borderColor: colors.brand, backgroundColor: colors.brandSubtle },
                 aptCellHighlightedValue: { color: colors.brand },
-                chipList: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 4, flex: 1 },
+                chipList: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 4, flex: 1, alignItems: "center" as const },
                 chipPill: {
                     paddingHorizontal: SPACING.sm,
                     paddingVertical: 2,
@@ -361,32 +348,6 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
                 },
                 weightKey: { ...TYPE.monoLabel, color: colors.textMuted, fontSize: 9 },
                 weightVal: { ...TYPE.monoValue, color: colors.text, fontSize: 12 },
-                countBadge: {
-                    paddingHorizontal: SPACING.sm,
-                    paddingVertical: 1,
-                    backgroundColor: colors.brand,
-                    borderRadius: RADII.pill,
-                },
-                countBadgeText: { ...TYPE.monoLabel, color: colors.onBrand, fontSize: 9 },
-                epithetCard: {
-                    paddingVertical: 6,
-                    paddingHorizontal: 8,
-                    marginVertical: 3,
-                    borderRadius: 6,
-                    borderWidth: 1,
-                    borderColor: colors.borderHair,
-                    backgroundColor: colors.surface,
-                },
-                epithetCardHighlighted: {
-                    borderColor: colors.brand,
-                    borderWidth: 2,
-                    backgroundColor: colors.surfaceRaised,
-                },
-                epithetCardName: { fontSize: 13, fontWeight: "700", color: colors.text, marginBottom: 2 },
-                epithetCardReward: { fontSize: 11, color: colors.text, marginBottom: 1 },
-                epithetCardCondition: { fontSize: 11, color: colors.textMuted, fontStyle: "italic" },
-                epithetCardConditionItem: { fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginLeft: 8 },
-                previewStatus: { fontSize: 12, color: colors.textMuted, paddingVertical: 4 },
             }),
         [colors]
     )
@@ -872,105 +833,6 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
                         </SearchableItem>
                     </Section>
 
-                    {/* Epithet rewards */}
-                    <Section label="Epithet Rewards">
-                        <SearchableItem
-                            id="smart-solver-epithet-rewards"
-                            condition={enableSmartRaceSolver}
-                            parentId="enable-smart-race-solver"
-                            title="Epithet Rewards"
-                            description="Rewards for each selected and projected epithet."
-                        >
-                            <View style={[sectionsDisabledStyle, { padding: SPACING.md }]}>
-                                <Text style={styles.sectionTitle}>Selected Epithets</Text>
-                                {(() => {
-                                    const selectedNames = Array.from(new Set([...targetEpithets, ...forcedEpithets]))
-                                    if (selectedNames.length === 0) {
-                                        return <Text style={styles.inputDescription}>No epithets selected — pick targets above to see their rewards here.</Text>
-                                    }
-                                    return selectedNames.map((name) => {
-                                        const ep = (epithetsData as unknown as Record<string, EpithetEntry>)[name]
-                                        const isForced = forcedEpithets.includes(name)
-                                        const epBullets = ep?.bullet_points ?? []
-                                        const rawReward = epBullets.length > 0 ? epBullets[epBullets.length - 1] : "(reward unknown)"
-                                        const reward = rawReward.replace(/^\s*reward\s*:\s*/i, "")
-                                        const conditionLines = epBullets.length > 1 ? epBullets.slice(0, -1) : []
-                                        const isHighlighted = highlightedEpithet === name
-                                        return (
-                                            <Pressable
-                                                key={`sel-${name}`}
-                                                style={[styles.epithetCard, isHighlighted && styles.epithetCardHighlighted]}
-                                                onPress={() => setHighlightedEpithet(isHighlighted ? null : name)}
-                                                android_ripple={{ color: colors.ripple, foreground: true }}
-                                            >
-                                                <Text style={styles.epithetCardName}>
-                                                    {name}
-                                                    {isForced ? "  ★" : ""}
-                                                </Text>
-                                                <Text style={styles.epithetCardReward}>Reward: {reward}</Text>
-                                                {conditionLines.length > 0 ? (
-                                                    <>
-                                                        <Text style={styles.epithetCardCondition}>Condition:</Text>
-                                                        {conditionLines.map((line, idx) => (
-                                                            <Text key={`sel-${name}-cond-${idx}`} style={styles.epithetCardConditionItem}>
-                                                                • {line}
-                                                            </Text>
-                                                        ))}
-                                                    </>
-                                                ) : (
-                                                    <Text style={styles.epithetCardCondition}>Condition: (condition unknown)</Text>
-                                                )}
-                                            </Pressable>
-                                        )
-                                    })
-                                })()}
-
-                                <Divider style={{ marginVertical: 8 }} />
-
-                                <Text style={styles.sectionTitle}>Projected Completions</Text>
-                                {previewLoading && <Text style={styles.previewStatus}>Computing preview…</Text>}
-                                {!previewLoading && (preview?.projectedEpithets?.length ?? 0) === 0 && (
-                                    <Text style={styles.inputDescription}>The preview schedule does not project completing any epithets with the current configuration.</Text>
-                                )}
-                                {(preview?.projectedEpithets ?? []).map((name) => {
-                                    const ep = (epithetsData as unknown as Record<string, EpithetEntry>)[name]
-                                    const epBullets = ep?.bullet_points ?? []
-                                    const rawReward = epBullets.length > 0 ? epBullets[epBullets.length - 1] : "(reward unknown)"
-                                    const reward = rawReward.replace(/^\s*reward\s*:\s*/i, "")
-                                    const conditionLines = epBullets.length > 1 ? epBullets.slice(0, -1) : []
-                                    const isSelected = targetEpithets.includes(name) || forcedEpithets.includes(name)
-                                    const isHighlighted = highlightedEpithet === name
-                                    return (
-                                        <Pressable
-                                            key={`proj-${name}`}
-                                            style={[styles.epithetCard, isHighlighted && styles.epithetCardHighlighted]}
-                                            onPress={() => setHighlightedEpithet(isHighlighted ? null : name)}
-                                            android_ripple={{ color: colors.ripple, foreground: true }}
-                                        >
-                                            <Text style={[styles.epithetCardName, { color: isSelected ? colors.brand : colors.text }]}>
-                                                {name}
-                                                {isSelected ? "  ✓" : ""}
-                                            </Text>
-                                            <Text style={styles.epithetCardReward}>Reward: {reward}</Text>
-                                            {conditionLines.length > 0 ? (
-                                                <>
-                                                    <Text style={styles.epithetCardCondition}>Condition:</Text>
-                                                    {conditionLines.map((line, idx) => (
-                                                        <Text key={`proj-${name}-cond-${idx}`} style={styles.epithetCardConditionItem}>
-                                                            • {line}
-                                                        </Text>
-                                                    ))}
-                                                </>
-                                            ) : (
-                                                <Text style={styles.epithetCardCondition}>Condition: (condition unknown)</Text>
-                                            )}
-                                        </Pressable>
-                                    )
-                                })}
-                            </View>
-                        </SearchableItem>
-                    </Section>
-
                     {/* Diagnostic */}
                     <Section label="Configuration Summary">
                         <SearchableItem
@@ -1020,9 +882,7 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
                                             <Text style={styles.specValueMuted}>(none)</Text>
                                         ) : (
                                             <View style={styles.chipList}>
-                                                <View style={styles.countBadge}>
-                                                    <Text style={styles.countBadgeText}>{targetEpithets.length}</Text>
-                                                </View>
+                                                <CountBadge count={targetEpithets.length} />
                                                 {targetEpithets.map((e) => (
                                                     <View key={e} style={styles.chipPill}>
                                                         <Text style={styles.chipPillText}>{e}</Text>
@@ -1037,9 +897,7 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
                                             <Text style={styles.specValueMuted}>(none)</Text>
                                         ) : (
                                             <View style={styles.chipList}>
-                                                <View style={styles.countBadge}>
-                                                    <Text style={styles.countBadgeText}>{forcedEpithets.length}</Text>
-                                                </View>
+                                                <CountBadge count={forcedEpithets.length} />
                                                 {forcedEpithets.map((e) => (
                                                     <View key={e} style={styles.chipPill}>
                                                         <Text style={styles.chipPillText}>{e}</Text>
@@ -1054,9 +912,7 @@ function RaceSolverTab({ preview, previewLoading }: RaceSolverTabProps) {
                                             <Text style={styles.specValueMuted}>(none)</Text>
                                         ) : (
                                             <View style={styles.chipList}>
-                                                <View style={styles.countBadge}>
-                                                    <Text style={styles.countBadgeText}>{Object.keys(manualLocks).length}</Text>
-                                                </View>
+                                                <CountBadge count={Object.keys(manualLocks).length} />
                                                 {Object.entries(manualLocks).map(([t, r]) => (
                                                     <View key={t} style={styles.chipPill}>
                                                         <Text style={styles.chipPillText}>{`T${t} → ${r}`}</Text>

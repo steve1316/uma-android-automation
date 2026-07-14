@@ -1,4 +1,4 @@
-import { GRADE_COLORS } from "../../solver/constants"
+import { gradeColor, normalizeGrade } from "../../solver/constants"
 import type { ScheduleEvent, ScheduleSource } from "../types"
 
 // Trackblazer has its own race structure, so URA-style objective races do not apply (mirrors MandatoryRaces.kt's EXCLUDED_SCENARIO).
@@ -27,8 +27,8 @@ export const mandatorySource: ScheduleSource = {
                 marker: "📌",
                 label: option?.raceName ?? "Mandatory race",
                 detail: option?.raceName,
-                badge: option?.grade,
-                color: option ? GRADE_COLORS[option.grade] : undefined,
+                badge: option ? normalizeGrade(option.grade) : undefined,
+                color: option ? gradeColor(option.grade) : undefined,
                 movable: false,
             }
         })
