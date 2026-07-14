@@ -512,29 +512,32 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
         // Log a summary of all identified available skills.
         MessageLog.i(TAG, "[TEST] Summary of available skills:")
         availableSkills.forEach { (name, entry) ->
-            MessageLog.i(TAG, "\t- $name: ${entry.price} SP")
+            MessageLog.i(TAG, "\t- $name: ${entry.screenPrice} SP")
         }
 
-        // Calculate optimal purchases using a greedy heuristic to minimize remaining points.
-        val sortedSkills: List<SkillListEntry> = availableSkills.values.toList().sortedByDescending { it.price }
-
-        val skillsToBuy = mutableListOf<SkillListEntry>()
-        var remainingPoints = currentPoints
-
-        for (skill in sortedSkills) {
-            if (skill.price <= remainingPoints) {
-                skillsToBuy.add(skill)
-                remainingPoints -= skill.price
-            }
+        // Preview the drain by running the exact code path the career-complete purchase uses. Purchases here are simulated in memory since no button location is passed along, so nothing is bought.
+        val skillPlanSettings: SkillPlanSettings? = skillPlans[PLAN_CAREER_COMPLETE]
+        if (skillPlanSettings == null) {
+            MessageLog.e(TAG, "[ERROR] startSkillListBuyTest:: No CareerComplete skill plan is configured. Ending test.")
+            return
         }
+
+        val skillsToBuy: Map<String, Int> =
+            getLeftoverDrainSkills(
+                skillPlanSettings = skillPlanSettings,
+                skillList = skillList,
+                skillsToBuy = emptyList(),
+                availableSkillPoints = currentPoints,
+            )
+        val remainingPoints: Int = currentPoints - skillsToBuy.values.sum()
 
         // Log a summary of the skills that would be purchased.
         MessageLog.i(TAG, "[TEST] Identified skills that would be bought to bring SP close to zero:")
         if (skillsToBuy.isEmpty()) {
             MessageLog.i(TAG, "\t- No skills can be purchased with current SP.")
         } else {
-            skillsToBuy.forEach { skill ->
-                MessageLog.i(TAG, "\t- ${skill.name}: ${skill.price} SP")
+            skillsToBuy.forEach { (name, price) ->
+                MessageLog.i(TAG, "\t- $name: $price SP")
             }
         }
         MessageLog.i(TAG, "[TEST] Expected remaining Skill Points: $remainingPoints")
