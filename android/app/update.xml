@@ -1,23 +1,48 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.8.1</latestVersion>
+    <latestVersion>5.8.2</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.8.1 - Changelog
-
-> **Note:** No changes have been made to accomodate the patch on 2026-07-01 yet.
+v5.8.2 - Changelog
 
 New
 ---
-- Add a `Support Card Dating Schedule` that runs support-card recreation outings on a calendar of pinned turns, holding the final date for the `Pure Passion` buff and prioritizing outings over scheduled and `Smart Race Solver` races. New options for this have been added to the `Settings` page.
+- Add support for the 2026-07-01 game patch: per-scenario stat caps and a soft cap at 1200, where stat points beyond 1200 are now worth half instead of roughly an eighth.
+- Add a `Read Stat Caps from Screen` option to the `Training` page (on by default) that reads each stat's live cap every turn, so cap increases from sparks and inheritance are respected.
+- Add handling for the URA Finale `Happy Meek's Challenge!` duel, picking the contest with the best odds on a stat you actually want, plus a `Happy Meek Duel Bias` option in `Scenario Overrides` that steers training onto the facility carrying the duel badge.
+- Add the Unity Cup `Extreme Spirit Burst` tier, along with `Burst Failure-Chance Exemption`, `Extreme Burst Minimum Stat Gain`, and `Burst Only Top 3 Stats After Junior` options in `Scenario Overrides`.
+- Add a `Retry Unity Cup Races` option to `Scenario Overrides` that re-runs a lost Unity Cup race until it is won.
+- Add a unified `Schedule` page with `Race Solver` and `Recreation` tabs, replacing the separate `Smart Race Solver` and recreation settings pages.
+- Add an `Estimated Rank` to the redesigned `Remote Log Viewer`, with stat meters and a `Skills` panel that lists the trainee's owned skills.
+- Add a structured decision trace and per-factor score breakdown to the training logs, explaining why each training was picked.
+- Add `Rainbow Detection`, `Spirit Gauge Detection`, `Umamusume Details Read`, and `Scrollbar Detection` debug tests.
+- Add an at-a-glance status zone to the `Home` hero card, with chips for the active race strategy, skill plans, and armed debug test.
 
 Adjustments
 ---
-- Update game data up to `Heirs to the Throne 2026-06-25`.
+- Update game data up to `Bamboo Memory 2026-07-06`.
+- Improve rainbow detection to not rely on orange relationship bars.
+- Read the trainee's conditions and owned skills from the `Details` dialog.
+- Decide whether to train or rest from all five facilities instead of the Speed failure chance alone.
+- Ignore the training blacklist during Pre-Debut and Junior Year so support card bonds still build.
+- Race an active fan or trophy requirement before pre-summer training, and skip the race screen entirely when no G1 is available for a G1-only trophy.
+- Lower the Trackblazer `Maximum Consecutive Races` default from 5 to 3.
+- Skip fan-farming extra races when energy is below a floor.
+- Spend leftover skill points on the final purchase of a career, so points that would otherwise be lost are put to use when the `Career Complete` skill plan is active.
+- Open `Scenario Overrides` on the scenario selected on `Home`, and migrate the settings pickers to a modal selector.
+- Redesign the `Event Log Visualizer` timeline and year cards to align with the current UI design.
+- Improve scroll list detection by finding the scrollbar via brightness and shape.
 
 Fixes
 ---
-- Possible fix to `Database not initialized` crash.
+- Fix phantom training failure-chance reads by using a digit-constrained OCR engine and rejecting impossible values.
+- Fix mandatory races running on a stale turn and cancelling their own retries.
+- Fix aptitudes `E` and `D` being misread as `B`.
+- Fix the `Details` dialog stat read discarding stats above the cap.
+- Fix the `Remote Log Viewer` search filter being lost on refresh.
+- Fix `Open Data Directory` buttons not pointing at the chosen storage folder.
+- Fix the `Victory` event default not matching its dropdown option.
+- Fix circle and cross skills being OCR'd as trailing letters, and the double-circle skill glyph being read as a single circle.
 
     </releaseNotes>
   </update>
