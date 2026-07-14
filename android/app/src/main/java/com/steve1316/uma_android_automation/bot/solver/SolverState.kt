@@ -77,6 +77,8 @@ data class Aptitudes(
  * @property statWeight Coefficient on the stat component of gross race reward and cost baseline.
  * @property spWeight Coefficient on the skill-point component of gross race reward and cost baseline.
  * @property hintWeight Score awarded per completed hint-reward epithet.
+ * @property targetEpithetBonus Score added to any epithet named in [SolverState.targetEpithets], on top of whatever its reward is worth. Most epithets grant no
+ *   listed reward at all, so without this a target is worth exactly 0 and the solver has no reason to pursue it. 0.0 makes target selection purely informational.
  * @property consecutiveRacePenalty Penalty per third+ consecutive race outside Late-Dec windows.
  * @property summerPenalty Penalty for racing on a turn in [SolverState.summerBlockTurns].
  * @property raceBonusPct Percentage uplift applied to base stat/sp rewards before weighting.
@@ -95,6 +97,7 @@ data class Weights(
     val statWeight: Double = 1.0,
     val spWeight: Double = 1.0,
     val hintWeight: Double = 8.0,
+    val targetEpithetBonus: Double = 25.0,
     val consecutiveRacePenalty: Double = 3.0,
     val summerPenalty: Double = 5.0,
     val raceBonusPct: Double = 50.0,

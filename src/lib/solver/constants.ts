@@ -80,6 +80,9 @@ export interface WeightsMap {
     spWeight: number
     /** Score awarded for completing a skill-hint epithet. */
     hintWeight: number
+    /** Score added to any epithet picked as a target, on top of its reward. Most epithets grant no listed reward, so without this a target is
+     *  worth 0 and the solver has no reason to pursue it. 0 makes target selection purely informational. */
+    targetEpithetBonus: number
     /** Penalty per race when racing 3+ turns in a row. */
     consecutiveRacePenalty: number
     /** Penalty for racing during summer training-camp turns. */
@@ -205,6 +208,7 @@ export const DEFAULT_WEIGHTS: WeightsMap = {
     statWeight: 1.0,
     spWeight: 1.0,
     hintWeight: 8.0,
+    targetEpithetBonus: 25.0,
     consecutiveRacePenalty: 3.0,
     summerPenalty: 5.0,
     raceBonusPct: 50.0,

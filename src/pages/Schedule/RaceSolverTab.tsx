@@ -116,6 +116,7 @@ function RaceSolverTab() {
     const [raceValueInput, setRaceValueInput] = useState(weights.raceValue.toString())
     const [epithetValueInput, setEpithetValueInput] = useState(weights.epithetValue.toString())
     const [hintWeightInput, setHintWeightInput] = useState(weights.hintWeight.toString())
+    const [targetBonusInput, setTargetBonusInput] = useState(weights.targetEpithetBonus.toString())
     const [consecPenaltyInput, setConsecPenaltyInput] = useState(weights.consecutiveRacePenalty.toString())
     const [summerPenaltyInput, setSummerPenaltyInput] = useState(weights.summerPenalty.toString())
     const [raceBonusPctInput, setRaceBonusPctInput] = useState(weights.raceBonusPct.toString())
@@ -125,6 +126,7 @@ function RaceSolverTab() {
     useEffect(() => setRaceValueInput(weights.raceValue.toString()), [weights.raceValue])
     useEffect(() => setEpithetValueInput(weights.epithetValue.toString()), [weights.epithetValue])
     useEffect(() => setHintWeightInput(weights.hintWeight.toString()), [weights.hintWeight])
+    useEffect(() => setTargetBonusInput(weights.targetEpithetBonus.toString()), [weights.targetEpithetBonus])
     useEffect(() => setConsecPenaltyInput(weights.consecutiveRacePenalty.toString()), [weights.consecutiveRacePenalty])
     useEffect(() => setSummerPenaltyInput(weights.summerPenalty.toString()), [weights.summerPenalty])
     useEffect(() => setRaceBonusPctInput(weights.raceBonusPct.toString()), [weights.raceBonusPct])
@@ -768,6 +770,23 @@ function RaceSolverTab() {
                                         </Pressable>
 
                                         <Pressable android_ripple={{ color: colors.ripple, foreground: true }}>
+                                            <Text style={styles.inputLabel}>Target Epithet Bonus</Text>
+                                            <Input
+                                                style={styles.input}
+                                                value={targetBonusInput}
+                                                onChangeText={(t) => /^-?\d*\.?\d*$/.test(t) && setTargetBonusInput(t)}
+                                                onBlur={() => updateWeight("targetEpithetBonus", parseFloat(targetBonusInput) || 0)}
+                                                keyboardType="decimal-pad"
+                                                placeholder="25.0"
+                                            />
+                                            <Text style={styles.inputDescription}>
+                                                Score added to an epithet you picked as a Target, on top of whatever its reward is worth. Most epithets grant no listed reward at all, so without this a
+                                                target scores 0 and the solver has no reason to chase it. Default 25.0 makes the solver pursue a target but still drop one that would wreck the rest of
+                                                the schedule. Raise it toward a Forced epithet's behavior, or set 0 to make Target selection purely informational.
+                                            </Text>
+                                        </Pressable>
+
+                                        <Pressable android_ripple={{ color: colors.ripple, foreground: true }}>
                                             <Text style={styles.inputLabel}>Consecutive Race Penalty</Text>
                                             <Input
                                                 style={styles.input}
@@ -932,6 +951,7 @@ function RaceSolverTab() {
                                                     { key: "EPITHET", val: `${weights.epithetValue}` },
                                                     { key: "FANS", val: `${weights.fanWeight}` },
                                                     { key: "HINT", val: `${weights.hintWeight}` },
+                                                    { key: "TARGET", val: `${weights.targetEpithetBonus}` },
                                                     { key: "CONSEC", val: `-${weights.consecutiveRacePenalty}` },
                                                     { key: "SUMMER", val: `-${weights.summerPenalty}` },
                                                     { key: "RACE BONUS", val: `${weights.raceBonusPct}%` },

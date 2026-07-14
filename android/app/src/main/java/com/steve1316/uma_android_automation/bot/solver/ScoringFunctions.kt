@@ -132,15 +132,18 @@ object ScoringFunctions {
     ): Double = 0.0
 
     /**
-     * Reward magnitude of completing [epithet]. Stat rewards return the amount derived from
-     * the reward bullet via [EpithetFilters.rewardFromBullets]. Hint rewards return [Weights.hintWeight].
-     * Unknown rewards return zero. The result is then scaled by [Weights.epithetValue].
+     * Reward magnitude of completing [epithet]. Stat rewards return the amount derived from the reward bullet via [EpithetFilters.rewardFromBullets].
+     * Hint rewards return [Weights.hintWeight]. Unknown rewards return zero. The result is then scaled by [Weights.epithetValue].
+     *
+     * A targeted epithet then gets [Weights.targetEpithetBonus] added on top. That bonus is what makes target selection mean anything: most epithets list no
+     * reward bullet at all, so their reward is worth 0 and, without the bonus, the solver would have no reason to pursue one the user explicitly picked.
      *
      * @param epithet Completed epithet whose reward should be valued.
-     * @param weights Active weights providing [Weights.hintWeight] and [Weights.epithetValue].
+     * @param weights Active weights providing [Weights.hintWeight], [Weights.epithetValue], and [Weights.targetEpithetBonus].
+     * @param isTargeted Whether the user named this epithet in [SolverState.targetEpithets].
      * @return Score contribution if [epithet] is completed.
      */
-    fun epithetContribution(epithet: Epithet, weights: Weights): Double {
+    fun epithetContribution(epithet: Epithet, weights: Weights, isTargeted: Boolean = false): Double {
         val (kind, amount) = EpithetFilters.rewardFromBullets(epithet.bullets)
         val base =
             when (kind) {
@@ -148,7 +151,7 @@ object ScoringFunctions {
                 "hint" -> weights.hintWeight
                 else -> 0.0
             }
-        return base * weights.epithetValue
+        return base * weights.epithetValue + if (isTargeted) weights.targetEpithetBonus else 0.0
     }
 
     /**

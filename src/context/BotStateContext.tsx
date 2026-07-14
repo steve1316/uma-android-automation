@@ -323,6 +323,7 @@ export const defaultSettings: Settings = {
             statWeight: 1.0,
             spWeight: 1.0,
             hintWeight: 8.0,
+            targetEpithetBonus: 25.0,
             consecutiveRacePenalty: 3.0,
             summerPenalty: 5.0,
             raceBonusPct: 50.0,
