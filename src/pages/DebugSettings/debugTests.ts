@@ -69,7 +69,7 @@ export const DEBUG_TESTS: DebugTestDescriptor[] = [
         searchId: "debug-scrollbar-detection-test",
         title: "Start Scrollbar Detection Test",
         description:
-            "Disables normal bot operations and starts the Scrollbar detection test. Detects the list on the current screen, whether it is a full-screen list or one drawn inside a dialog, and reports its scrollbar. It then checks whether that scrollbar can actually be dragged to scroll, since some lists draw one that only reports the position, and finally scrolls the list up and down to verify functionality.",
+            "Disables normal bot operations and starts the Scrollbar detection test. Detects the list on the current screen, whether it is a full-screen list or one drawn inside a dialog, and reports its scrollbar. It then walks the list to the very top, to the very bottom and back to the top, and reports where the scrollbar ends up each time, so you can see whether the list is being scrolled correctly. A full-screen list is scrolled by dragging its scrollbar, while a dialog's is scrolled by swiping, since a dialog's scrollbar scrolls the wrong way when dragged.",
     },
     {
         key: "debugMode_startUmamusumeDetailsReadTest",

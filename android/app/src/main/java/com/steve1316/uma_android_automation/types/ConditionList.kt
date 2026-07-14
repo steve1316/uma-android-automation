@@ -83,9 +83,9 @@ class ConditionList(private val game: Game) {
             return DetailsConditionsResult(emptyList(), emptyList())
         }
         // Null once the sublist is known not to scroll, which is every gate this needs: a trainee carrying only a few conditions has no scrollbar, so it is read in one pass and never swiped.
-        val scrollList: ScrollList? = createDialogScrollList(game)?.takeIf { it.hasScrollBar() }
+        val scrollList: ScrollList? = createDialogScrollList(game)?.takeIf { it.canScroll() }
         MessageLog.d(TAG, "[DEBUG] parseDetailsConditionsTab:: Conditions sublist is scrollable: ${scrollList != null}.")
-        if (bResetToTop) scrollList?.scrollToTopBySwiping()
+        if (bResetToTop) scrollList?.ensureAtTop()
 
         val positives = mutableListOf<String>()
         val negatives = mutableListOf<String>()
