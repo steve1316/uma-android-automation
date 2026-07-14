@@ -224,6 +224,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     companion object {
         private val TAG: String = "[${MainActivity.loggerTag}]CustomImageUtils"
 
+        /** Matches any run of whitespace. Used to collapse the newlines that OCR inserts when it wraps text onto more than one line. */
+        private val WHITESPACE_REGEX = Regex("\\s+")
+
         @Volatile
         private var yoloDetectorInstance: YoloDetector? = null
 
@@ -3091,7 +3094,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
         }
 
-        // Perform OCR using findText() from ImageUtils.
+        // Perform OCR using findText() from ImageUtils. ML Kit joins the lines of a wrapped text block with newlines, so collapse every run of whitespace down to a single space.
+        // Callers tokenize the result on spaces and match multi-word phrases against it, and both of those break on a stray newline.
         return findText(
             cropRegion = intArrayOf(safeX, safeY, safeWidth, safeHeight),
             grayscale = useGrayscale,
@@ -3102,7 +3106,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             sourceBitmap = sourceBitmap,
             detectDigitsOnly = ocrEngine == "tesseract_digits",
             debugName = debugName,
-        )
+        ).trim().replace(WHITESPACE_REGEX, " ")
     }
 
     /**

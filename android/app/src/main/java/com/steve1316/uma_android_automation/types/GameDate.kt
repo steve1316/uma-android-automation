@@ -9,6 +9,9 @@ import com.steve1316.uma_android_automation.types.DatePhase
 import com.steve1316.uma_android_automation.types.DateYear
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 
+/** Matches any run of whitespace. OCR can wrap the date onto more than one line, so date strings are tokenized on this instead of on a single space. */
+private val WHITESPACE_REGEX = Regex("\\s+")
+
 /**
  * Represents the Game's date in the training scenario.
  *
@@ -79,6 +82,15 @@ class GameDate {
 
     companion object {
         const val TAG: String = "[${MainActivity.loggerTag}]GameDate"
+
+        /** Candidate year names that an OCR'd date string is fuzzy matched against. */
+        private val YEAR_NAMES: List<String> = DateYear.entries.map { it.name }
+
+        /** Candidate month short names that an OCR'd date string is fuzzy matched against. */
+        private val MONTH_SHORT_NAMES: List<String> = DateMonth.entries.map { it.shortName }
+
+        /** Candidate phase names that an OCR'd date string is fuzzy matched against. */
+        private val PHASE_NAMES: List<String> = DatePhase.entries.map { it.name }
 
         /**
          * Converts a year/month/phase to a day number (turn number).
@@ -195,62 +207,54 @@ class GameDate {
                 return GameDate(day = finalsDay)
             }
 
-            // Gather possible names for fuzzy matching.
-            val years: List<String> = DateYear.entries.map { it.name }
-            val months: List<String> = DateMonth.entries.map { it.shortName }
-            val phases: List<String> = DatePhase.entries.map { it.name }
+            return parseDateString(dayString)
+        }
 
-            // Split the input string by whitespace (e.g., "Classic Year Early Feb").
-            val parts = dayString.trim().split(" ")
-            if (parts.size < 3) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid date string format: $dayString")
+        /**
+         * Converts a standard date string (e.g. "Senior Year Late Sep") into a [GameDate] object.
+         *
+         * This holds the pure string parsing so it can be tested without any OCR or Android dependencies. Pre-Debut and Finale strings are handled by [fromDateString] before
+         * reaching here.
+         *
+         * @param dayString The date string to parse.
+         * @return The parsed [GameDate] object, or null if the string could not be parsed.
+         */
+        fun parseDateString(dayString: String): GameDate? {
+            // Split on any run of whitespace (e.g., "Classic Year Early Feb"). OCR wraps the date onto two lines when it is too long, so splitting on a single space would fuse
+            // tokens together (e.g. "Year\nEarly") and shift every index after it.
+            val parts = dayString.trim().split(WHITESPACE_REGEX)
+            if (parts.size < 4) {
+                MessageLog.w(TAG, "[WARN] parseDateString:: Invalid date string format: $dayString")
                 return null
             }
 
-            // Extract the parts with safe indexing. Junior/Classic/Senior is usually at index 0.
-            // Month is usually at the end of the common string format.
-            val yearPart: String = parts.getOrNull(0) ?: DateYear.SENIOR.name
-            val phasePart: String = parts.getOrNull(2) ?: DatePhase.EARLY.name
-            val monthPart: String = parts.getOrNull(3) ?: DateMonth.JANUARY.shortName
+            // The expected format is "<Year> Year <Phase> <Month>", so Junior/Classic/Senior is at index 0 and the month is at the end. The candidate lists are uppercase, so
+            // uppercase each token to let the matcher take its exact-match fast path on a clean read.
+            val yearPart: String = parts[0].uppercase()
+            val phasePart: String = parts[2].uppercase()
+            val monthPart: String = parts[3].uppercase()
 
             // Find the best match for the strings using Jaro Winkler fuzzy matching.
-            val yearString: String? = TextUtils.matchStringInList(yearPart, years)
+            val yearString: String? = TextUtils.matchStringInList(yearPart, YEAR_NAMES)
             if (yearString == null) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid date format. Could not detect YEAR from $yearPart.")
+                MessageLog.w(TAG, "[WARN] parseDateString:: Invalid date format. Could not detect YEAR from $yearPart.")
                 return null
             }
 
-            val monthString: String? = TextUtils.matchStringInList(monthPart, months)
+            val monthString: String? = TextUtils.matchStringInList(monthPart, MONTH_SHORT_NAMES)
             if (monthString == null) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid date format. Could not detect MONTH from $monthPart.")
+                MessageLog.w(TAG, "[WARN] parseDateString:: Invalid date format. Could not detect MONTH from $monthPart.")
                 return null
             }
 
-            val phaseString: String? = TextUtils.matchStringInList(phasePart, phases)
+            val phaseString: String? = TextUtils.matchStringInList(phasePart, PHASE_NAMES)
             if (phaseString == null) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid date format. Could not detect PHASE from $phasePart.")
+                MessageLog.w(TAG, "[WARN] parseDateString:: Invalid date format. Could not detect PHASE from $phasePart.")
                 return null
             }
 
-            // Convert the matched strings to their respective enums.
-            val yearEnum: DateYear? = DateYear.fromName(yearString)
-            if (yearEnum == null) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid yearString: $yearString")
-                return null
-            }
-            val monthEnum: DateMonth? = DateMonth.fromShortName(monthString)
-            if (monthEnum == null) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid monthString: $monthString")
-                return null
-            }
-            val phaseEnum: DatePhase? = DatePhase.fromName(phaseString)
-            if (phaseEnum == null) {
-                MessageLog.w(TAG, "[WARN] fromDateString:: Invalid phaseString: $phaseString")
-                return null
-            }
-
-            val result = GameDate(yearEnum, monthEnum, phaseEnum)
-            return result
+            // Fuzzy matching always returns an entry of the list it was given, so none of these lookups can miss.
+            return GameDate(DateYear.fromName(yearString)!!, DateMonth.fromShortName(monthString)!!, DatePhase.fromName(phaseString)!!)
         }
 
         /**

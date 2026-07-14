@@ -435,4 +435,51 @@ class GameDateTest {
             assertTrue(date.bIsPreDebut)
         }
     }
+
+    // =========================================================================
+    // parseDateString()
+    // =========================================================================
+
+    @Nested
+    @DisplayName("parseDateString()")
+    inner class ParseDateStringTests {
+        @Test
+        fun `parses a well-formed date string`() {
+            val date = GameDate.parseDateString("Senior Year Late Sep")
+            assertNotNull(date)
+            assertEquals(DateYear.SENIOR, date!!.year)
+            assertEquals(DateMonth.SEPTEMBER, date.month)
+            assertEquals(DatePhase.LATE, date.phase)
+        }
+
+        @Test
+        fun `parses a date string wrapped onto two lines by OCR`() {
+            // ML Kit returns the date wrapped across lines, which fuses "Year" and "Late" into one token when splitting on a single space.
+            val date = GameDate.parseDateString("Senior Year\nLate Sep")
+            assertNotNull(date)
+            assertEquals(DateYear.SENIOR, date!!.year)
+            assertEquals(DateMonth.SEPTEMBER, date.month)
+            assertEquals(DatePhase.LATE, date.phase)
+        }
+
+        @Test
+        fun `parses a date string with a trailing newline and padded spacing`() {
+            val date = GameDate.parseDateString("  Classic Year  Early\n Feb \n")
+            assertNotNull(date)
+            assertEquals(DateYear.CLASSIC, date!!.year)
+            assertEquals(DateMonth.FEBRUARY, date.month)
+            assertEquals(DatePhase.EARLY, date.phase)
+        }
+
+        @Test
+        fun `returns null when the month token is missing instead of defaulting to January`() {
+            assertNull(GameDate.parseDateString("Senior Year Late"))
+        }
+
+        @Test
+        fun `returns null when the tokens do not fuzzy match a date`() {
+            // Four tokens so it clears the length guard and actually reaches the fuzzy matcher.
+            assertNull(GameDate.parseDateString("hello there my friend"))
+        }
+    }
 }
