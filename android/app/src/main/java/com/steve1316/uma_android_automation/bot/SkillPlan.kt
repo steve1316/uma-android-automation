@@ -94,7 +94,11 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
 
     /** The strategy used for spending skill points. */
     enum class SpendingStrategy {
-        /** Default spending strategy. Currently synonymous with OPTIMIZE_RANK. */
+        /**
+         * Default spending strategy. Buys nothing beyond the common checks, so points left after the user's planned skills are kept.
+         *
+         * This is overridden on the final purchase of a career, where the leftover drain spends the remainder regardless. See [getLeftoverDrainSkills].
+         */
         DEFAULT,
 
         /** Prioritize skills that match the trainee's aptitudes and community-tier rankings. */
@@ -145,6 +149,15 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
 
         /** The double-circle (double-O) marker found in double-circle skill names. */
         private const val DOUBLE_CIRCLE_CHAR: Char = '\u25CE'
+
+        /** The name of the skill plan that runs on the final purchase of a career, once the run is over. */
+        private const val PLAN_CAREER_COMPLETE: String = "careerComplete"
+
+        /** Upper bound on the budget the leftover drain will run its knapsack over. Real skill point totals never come close, so a larger value means OCR returned garbage. */
+        private const val MAX_DRAIN_BUDGET: Int = 10000
+
+        /** How many times the leftover drain re-runs. Buying a skill can lower an upgrade's price or reveal a new row, which frees up budget for another pass. */
+        private const val MAX_DRAIN_ITERATIONS: Int = 5
 
         /**
          * Whether a skill is a recovery skill. Recovery skills describe restoring stamina/endurance, so their description contains "recover". Data-driven off the skill description, not a
@@ -281,6 +294,76 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
             }
 
             return result
+        }
+
+        /**
+         * Pure calculation function that picks the subset of skills that spends as much of the budget as possible.
+         *
+         * This is used to drain skill points that would otherwise be lost at the end of a career. Since leftover points are worth nothing once the run is scored, the objective is to minimize the
+         * remainder rather than to maximize value per point. Ties on the amount spent are broken in favor of the subset worth the most evaluation points.
+         *
+         * Only the user's per-skill blacklist is honored here. Category exclusions and aptitude preferences are deliberately ignored because they exist to steer normal purchasing and would
+         * otherwise strand the very points this is meant to spend.
+         *
+         * @param candidates List of available skills for purchase.
+         * @param budget Available skill points to spend.
+         * @param alreadyPlanned Skills already planned for purchase (to avoid duplicates).
+         * @param blacklist Names of skills the user has explicitly blacklisted.
+         * @return Ordered list of (name, price) pairs representing skills to buy, cheapest first.
+         */
+        fun calculateLeftoverDrainPurchases(
+            candidates: List<SkillCandidate>,
+            budget: Int,
+            alreadyPlanned: List<String> = emptyList(),
+            blacklist: List<String> = emptyList(),
+        ): List<Pair<String, Int>> {
+            if (budget <= 0 || budget > MAX_DRAIN_BUDGET) {
+                return emptyList()
+            }
+
+            val plannedNames: Set<String> = alreadyPlanned.toSet()
+            val blacklistedNames: Set<String> = blacklist.toSet()
+            val affordable: List<SkillCandidate> =
+                candidates.filter { it.name !in plannedNames && it.name !in blacklistedNames && it.price in 1..budget }
+            if (affordable.isEmpty()) {
+                return emptyList()
+            }
+
+            // When everything on offer fits, the best subset is simply all of it, so skip the search.
+            if (affordable.sumOf { it.price } <= budget) {
+                return affordable.map { it.name to it.price }.sortedBy { it.second }
+            }
+
+            // 0/1 knapsack over the budget where a skill's weight and value are both its price, so the best subset is the one that spends the most without going over.
+            val bestSpend = IntArray(budget + 1)
+            val bestEvaluationPoints = IntArray(budget + 1)
+            val keep: Array<BooleanArray> = Array(affordable.size) { BooleanArray(budget + 1) }
+
+            for ((index, skill) in affordable.withIndex()) {
+                for (remaining in budget downTo skill.price) {
+                    val spend: Int = bestSpend[remaining - skill.price] + skill.price
+                    val evaluationPoints: Int = bestEvaluationPoints[remaining - skill.price] + skill.evaluationPoints
+                    if (spend > bestSpend[remaining] || (spend == bestSpend[remaining] && evaluationPoints > bestEvaluationPoints[remaining])) {
+                        bestSpend[remaining] = spend
+                        bestEvaluationPoints[remaining] = evaluationPoints
+                        keep[index][remaining] = true
+                    }
+                }
+            }
+
+            // Walk the keep table backwards to recover which skills made up the winning subset.
+            val result = mutableListOf<Pair<String, Int>>()
+            var remaining: Int = budget
+            for (index in affordable.indices.reversed()) {
+                if (!keep[index][remaining]) {
+                    continue
+                }
+                val skill: SkillCandidate = affordable[index]
+                result.add(skill.name to skill.price)
+                remaining -= skill.price
+            }
+
+            return result.sortedBy { it.second }
         }
 
         /**
@@ -854,14 +937,83 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Retrieve additional skills to buy purely to spend skill points that would otherwise go to waste.
+     *
+     * This runs as the final pass of the career-complete purchase. Leftover points are lost once the run is scored, so anything bought here is free rank, even skills the bot would never pick
+     * during the career. Only the user's per-skill blacklist still applies. See [calculateLeftoverDrainPurchases] for the selection itself.
+     *
+     * @param skillPlanSettings The [SkillPlanSettings] to follow.
+     * @param skillList The [SkillList] to analyze.
+     * @param skillsToBuy The list of skills already planned for purchase.
+     * @param availableSkillPoints The current amount of available skill points.
+     * @return A map of skill names to their prices for the identified leftover skills.
+     */
+    private fun getLeftoverDrainSkills(skillPlanSettings: SkillPlanSettings, skillList: SkillList, skillsToBuy: List<String>, availableSkillPoints: Int): Map<String, Int> {
+        val result: MutableMap<String, Int> = mutableMapOf()
+        val plannedNames: MutableSet<String> = skillsToBuy.toMutableSet()
+        var remainingSkillPoints: Int = availableSkillPoints
+
+        // A skill that belongs to an upgrade chain drops the price of its upgrade when bought, which frees up budget the previous pass could not see. Re-run only when that actually happened.
+        for (iteration in 0 until MAX_DRAIN_ITERATIONS) {
+            val entries: Map<String, SkillListEntry> = skillList.getAvailableSkills()
+            val candidates: List<SkillCandidate> =
+                entries.values.map { entry -> SkillCandidate(name = entry.name, price = entry.screenPrice, evaluationPoints = entry.evaluationPoints) }
+
+            val picks: List<Pair<String, Int>> =
+                calculateLeftoverDrainPurchases(
+                    candidates = candidates,
+                    budget = remainingSkillPoints,
+                    alreadyPlanned = plannedNames.toList(),
+                    blacklist = skillPlanSettings.skillBlacklist,
+                )
+            if (picks.isEmpty()) {
+                break
+            }
+
+            var bPricesMayHaveShifted = false
+            for ((name, _) in picks) {
+                // Re-read the price off the entry since an earlier pick in this same batch may have shifted it.
+                val entry: SkillListEntry = entries[name] ?: continue
+                if (!entry.bIsAvailable || entry.screenPrice > remainingSkillPoints) {
+                    continue
+                }
+
+                result[name] = entry.screenPrice
+                plannedNames.add(name)
+                remainingSkillPoints -= entry.screenPrice
+                if (entry.next != null) {
+                    bPricesMayHaveShifted = true
+                }
+                entry.buy()
+            }
+
+            // Nothing bought in this pass can have shifted another skill's price, so another pass would just recompute the same empty answer.
+            if (!bPricesMayHaveShifted) {
+                break
+            }
+        }
+
+        if (result.isNotEmpty()) {
+            MessageLog.i(TAG, "[SKILLS] Spending ${availableSkillPoints - remainingSkillPoints} leftover skill points that would be lost at career end.")
+            for ((name, price) in result) {
+                MessageLog.i(TAG, "\t- $name: $price pts")
+            }
+        }
+
+        return result.toMap()
+    }
+
+    /**
      * Retrieve all available skills to purchase based on the specified spending strategy.
      *
      * @param skillPlanSettings The [SkillPlanSettings] to follow.
      * @param skillList The [SkillList] to analyze.
      * @param availableSkillPoints The current amount of available skill points.
+     * @param bSpendLeftoverPoints Whether to spend any remaining points on extra skills afterwards. Set from the career-complete screen check, since that is the final purchase of the career and
+     *   any points left behind are lost.
      * @return A map of skill names to their prices for all skills to be purchased.
      */
-    fun getSkillsToBuy(skillPlanSettings: SkillPlanSettings, skillList: SkillList, availableSkillPoints: Int): Map<String, Int> {
+    fun getSkillsToBuy(skillPlanSettings: SkillPlanSettings, skillList: SkillList, availableSkillPoints: Int, bSpendLeftoverPoints: Boolean = false): Map<String, Int> {
         MessageLog.i(TAG, "[SKILLS] Beginning process of calculating skills to purchase...")
 
         if (!skillPlanSettings.bIsEnabled) {
@@ -910,6 +1062,17 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
                     )
                 }
             }
+
+        // Drain whatever is left so the career does not end with unspent points.
+        if (bSpendLeftoverPoints) {
+            result +=
+                getLeftoverDrainSkills(
+                    skillPlanSettings = skillPlanSettings,
+                    skillList = skillList,
+                    skillsToBuy = result.keys.toList(),
+                    availableSkillPoints = availableSkillPoints - result.values.sum(),
+                )
+        }
 
         MessageLog.v(TAG, "================ Skills To Buy =================")
         for ((name, price) in result) {
@@ -1006,7 +1169,7 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
         val skillPlanSettings: SkillPlanSettings =
             if (skillPlanName == null) {
                 if (bIsCareerComplete) {
-                    skillPlans["careerComplete"]!!
+                    skillPlans[PLAN_CAREER_COMPLETE]!!
                 } else {
                     skillPlans["preFinals"]!!
                 }
@@ -1019,8 +1182,9 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
                 tmpPlan
             }
 
-        // If no purchasing options are enabled, exit early to avoid unnecessary scanning.
+        // If no purchasing options are enabled, exit early to avoid unnecessary scanning. The career-complete purchase always has work to do as it spends the leftover points regardless.
         if (
+            !bIsCareerComplete &&
             skillPlanSettings.skillNames.isEmpty() &&
             skillPlanSettings.strategy == SpendingStrategy.DEFAULT &&
             !skillPlanSettings.bEnableBuyNegativeSkills
@@ -1065,6 +1229,7 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
                 skillPlanSettings = skillPlanSettings,
                 skillList = skillList,
                 availableSkillPoints = skillPoints,
+                bSpendLeftoverPoints = bIsCareerComplete,
             )
 
         // Exit if no skills were identified for purchase.
