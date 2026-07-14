@@ -22,6 +22,15 @@ GAMETORA_DATA_URL = "https://gametora.com/data"
 GAMETORA_MANIFESTS_URL = f"{GAMETORA_DATA_URL}/manifests/umamusume.json"
 GAMETORA_MANIFEST_DATA_BASE_URL = f"{GAMETORA_DATA_URL}/umamusume"
 
+# GameTora places every server on a shared timeline of JP content updates. An entry carries a `did_not_exist` codename naming
+# the last update it was absent for, so the entry exists on a server once that server has moved past that point. The timeline
+# and the per-server position are only published as literals inside GameTora's JS bundle, so fetch_gametora_periods() reads
+# them from there at run time. The patterns below locate them: an ordered array of codenames ending in "present", and a map of
+# server code to its current codename. Nothing here needs to know what an individual codename means.
+GAMETORA_PERIOD_LIST_PATTERN = re.compile(r'\[(?:"pre_[a-z0-9_]+",)+"present"\]')
+GAMETORA_SERVER_MAP_PATTERN = re.compile(r'\{(?:[a-z_]+:"(?:pre_[a-z0-9_]+|present)",?)+\}')
+GAMETORA_SERVER_PAIR_PATTERN = re.compile(r'([a-z_]+):"(pre_[a-z0-9_]+|present)"')
+
 # Browser-like User-Agent for the plain-HTTP scrapes (some sites reject the default requests UA).
 HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
 
@@ -32,6 +41,7 @@ _manifest_data_cache = {}
 # GameTora serves each card's training events as pre-rendered JSON under its Next.js page-data endpoint. These cache the
 # build id (addresses that endpoint) and the id -> name lookups, fetched once per run.
 _gametora_build_id = None
+_gametora_periods = None
 _event_skill_names = None
 _event_char_names = None
 _event_status_names = None
@@ -132,6 +142,38 @@ def download_image(url: str, out_fp: str):
         print(f"An error occurred when downloading image: {exc}")
 
 
+def exists_on_global(entry: Dict[str, Any]) -> bool:
+    """Reports whether a GameTora entry has been released on the Global server.
+
+    GameTora gates content two ways: `unreleased_servers` lists servers that don't have the entry yet, and `did_not_exist`
+    names the last update the entry was *absent* for, so the entry exists once a server is past that update. An unknown
+    codename means GameTora's data disagrees with its own timeline, so the entry is treated as unreleased rather than
+    silently shipped. Both the timeline and Global's position on it come from fetch_gametora_periods().
+
+    Only the `race_instances` dataset is gated this way today. Do not point this at the `races` dataset: it holds per-period
+    duplicates of races that Global does have, so gating it would drop live races.
+
+    Args:
+        entry (Dict[str, Any]): A GameTora entry, e.g. a race's `details` blob.
+
+    Returns:
+        True when Global already has the entry.
+    """
+    if "en" in (entry.get("unreleased_servers") or []):
+        return False
+
+    did_not_exist = entry.get("did_not_exist")
+    if did_not_exist is None:
+        return True
+
+    periods, global_period = fetch_gametora_periods()
+    if did_not_exist not in periods:
+        logging.warning(f"Unknown GameTora period {did_not_exist!r}; treating the entry as not yet on Global.")
+        return False
+
+    return periods.index(global_period) > periods.index(did_not_exist)
+
+
 def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     """Fetches a dataset from GameTora's JSON manifest. The index and each dataset are cached per run, so repeat calls don't re-download.
 
@@ -188,6 +230,44 @@ def fetch_gametora_build_id() -> str:
             raise RuntimeError("Could not find GameTora buildId in page HTML.")
         _gametora_build_id = match.group(1)
     return _gametora_build_id
+
+
+def fetch_gametora_periods() -> Tuple[List[str], str]:
+    """Fetches GameTora's content-update timeline and the point on it that the Global server has reached.
+
+    GameTora ships both as literals in a minified JS chunk rather than as JSON, so this walks the chunks the site loads and
+    pulls them out of the first one that defines them. Reading them per run keeps the Global cutoff correct on its own. Pinning
+    a copy instead would go stale every time Global takes a content update, silently dropping races that Global already has.
+
+    Returns:
+        A tuple of the ordered timeline (oldest update first, ending in `present`) and the codename Global currently sits at.
+
+    Raises:
+        RuntimeError: If the timeline or Global's position on it cannot be found in any chunk.
+    """
+    global _gametora_periods
+    if _gametora_periods is not None:
+        return _gametora_periods
+
+    html = requests.get("https://gametora.com/umamusume/races", headers=HTTP_HEADERS, timeout=30).text
+    for chunk in dict.fromkeys(re.findall(r"/_next/static/chunks/[^\"']+?\.js", html)):
+        chunk_js = requests.get(f"https://gametora.com{chunk}", headers=HTTP_HEADERS, timeout=30).text
+        period_match = GAMETORA_PERIOD_LIST_PATTERN.search(chunk_js)
+        if not period_match:
+            continue
+
+        periods = re.findall(r'"([a-z0-9_]+)"', period_match.group())
+
+        # The server map sits beside the timeline in the same chunk. Global is the `en` server, and its period has to be a
+        # point on the timeline we just read, which rules out any similarly shaped object that happens to live nearby.
+        for server_map in GAMETORA_SERVER_MAP_PATTERN.findall(chunk_js):
+            global_period = dict(GAMETORA_SERVER_PAIR_PATTERN.findall(server_map)).get("en")
+            if global_period in periods:
+                logging.info(f"GameTora timeline has {len(periods)} periods; Global sits at {global_period}.")
+                _gametora_periods = (periods, global_period)
+                return _gametora_periods
+
+    raise RuntimeError("Could not find GameTora's update timeline or the Global server's position on it in its JS bundle.")
 
 
 def fetch_gametora_event_data(section: str, url_name: str) -> Dict[str, Any]:
@@ -973,16 +1053,18 @@ class RaceScraper(BaseScraper):
 
     Each entry in `race_instances` is one scheduled occurrence of a race on the career calendar: it carries the
     year/month/half placement plus the full race `details` and a `fans_gain` id into the `race-fans` reward tables.
-    We keep only EN-released, non-special races - the same set the old page scrape produced. Full rebuild so races
-    that leave the EN calendar do not linger.
+    We keep only non-special races that Global already has (see `exists_on_global`). Full rebuild so races that leave
+    the Global calendar do not linger.
     """
 
-    # GameTora numeric codes -> the labels the Smart Race Solver expects, derived from the live race datasets.
+    # GameTora numeric codes -> the labels the Smart Race Solver expects, mirroring the track table in GameTora's site bundle.
+    # Santa Anita is carried for the update that brings it, since an unmapped code would otherwise KeyError mid-scrape.
     COURSE_CODES = {1: None, 2: "Inner", 3: "Outer"}
     TERRAIN_CODES = {1: "Turf", 2: "Dirt"}
     TRACK_CODES = {
         10001: "Sapporo", 10002: "Hakodate", 10003: "Niigata", 10004: "Fukushima", 10005: "Nakayama",
         10006: "Tokyo", 10007: "Chukyo", 10008: "Kyoto", 10009: "Hanshin", 10010: "Kokura", 10101: "Ooi",
+        10103: "Kawasaki", 10104: "Funabashi", 10105: "Morioka", 10201: "Longchamp", 10202: "Santa Anita",
     }
     # Career-calendar pieces used to build the date string and turn number.
     MONTH_NAMES = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
@@ -1018,11 +1100,11 @@ class RaceScraper(BaseScraper):
         first_place_fans = {entry["id"]: next((f["fans"] for f in entry["fans"] if f["order"] == 1), 0) for entry in race_fans}
 
         for instance in instances:
-            # Skip the fixed special races (Make Debut, Maiden, URA Finals, etc.) and any race not yet on the EN server.
+            # Skip the fixed special races (Make Debut, Maiden, URA Finals, etc.) and any race not yet on the Global server.
             if instance.get("special_race"):
                 continue
             details = instance["details"]
-            if details.get("did_not_exist") is not None:
+            if not exists_on_global(details):
                 continue
 
             date = f"{EVENT_CLASS_NAMES[instance['year']]} {self.MONTH_NAMES[instance['month']]}, {self.HALF_NAMES[instance['half']]}"
@@ -2033,7 +2115,7 @@ if __name__ == "__main__":
 
     run_scraper_with_retry(SupportCardScraper())
 
-    # Races are static so no need to re-scrape every time.
+    # Races change whenever Global takes a content update (one such update added Japan's local dirt racecourses).
     # run_scraper_with_retry(RaceScraper())
 
     run_scraper_with_retry(EpithetScraper())
