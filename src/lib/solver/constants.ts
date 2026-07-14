@@ -33,8 +33,8 @@ export interface RaceEntry {
 export interface EpithetEntry {
     /** Display name and unique key. */
     name: string
-    /** Free-text bullets in gametora's visible row order: scenario / character restriction (when present) first, then condition / qualifier
-     *  bullets, then the reward bullet last. The reward bullet is parsed by `epithetReward`. */
+    /** Free-text bullets in gametora's visible row order: scenario / character restriction (when present) first, then the win conditions.
+     *  Most epithets list NO reward bullet at all - when one exists it is identified by its wording, not its position (see `splitEpithetBullets`). */
     bullet_points: string[]
     /** Scenario gate, e.g. `["Trackblazer"]`. Empty means universal. Derived by the scraper from `<X> scenario only` bullets.
      *  Consumers may also fall back to parsing `bullet_points` directly via `scenariosForEpithet` when this field is absent on legacy snapshots. */
@@ -196,24 +196,6 @@ export const gradeColor = (grade: string): string | undefined => GRADE_COLORS[no
 /** Every epithet from the bundled `epithets.json`, keyed by name. The single cast of that data file - import this rather than re-casting it. */
 export const EPITHETS_BY_NAME = epithetsData as unknown as Record<string, EpithetEntry>
 
-/** An epithet's reward line and the conditions that earn it, split out of its `bullet_points`. */
-export interface EpithetBullets {
-    /** The reward text, exactly as authored (the caller strips any leading "Reward:" label if it does not want it). */
-    reward: string | null
-    /** The condition lines that must be met, i.e. every bullet before the reward. */
-    conditions: string[]
-}
-
-/**
- * Splits an epithet's bullet points into its reward and its conditions. The data file's convention is that the last bullet is the reward
- * and every earlier bullet is a condition, so this is the one place that convention is encoded.
- * @param bullets The epithet's raw `bullet_points`.
- * @returns The reward line (null when there are no bullets) and the condition lines.
- */
-export const splitEpithetBullets = (bullets: string[]): EpithetBullets => ({
-    reward: bullets.length > 0 ? bullets[bullets.length - 1] : null,
-    conditions: bullets.length > 1 ? bullets.slice(0, -1) : [],
-})
 
 export const DEFAULT_APTITUDES: AptitudeMap = { Sprint: "A", Mile: "A", Medium: "A", Long: "A", Turf: "A", Dirt: "A" }
 

@@ -3,19 +3,20 @@ import { View, Text, StyleSheet, Pressable } from "react-native"
 import { Divider } from "react-native-paper"
 import { useTheme } from "../../../context/ThemeContext"
 import { SectionLabel } from "../../../components/ui/section-label"
-import { EPITHETS_BY_NAME, splitEpithetBullets } from "../../../lib/solver/constants"
+import { EPITHETS_BY_NAME } from "../../../lib/solver/constants"
+import { splitEpithetBullets } from "../../../lib/solver/scoring"
 import type { SchedulePreview } from "../../../lib/solver/preview"
 import { SPACING } from "../../../lib/spacing"
 import { TYPE } from "../../../lib/type"
 
 /**
- * Looks up an epithet's reward and conditions for display. The stored reward carries a "Reward:" label that the card renders itself, so it is stripped here.
+ * Looks up an epithet's reward and conditions for display. A reward bullet may carry a redundant "Reward:" label, which the card renders itself, so it is stripped here.
  * @param name The epithet name to look up.
- * @returns The reward text and condition lines, with a placeholder when the epithet is missing from the data.
+ * @returns The reward text (null when the epithet lists no reward) and its condition lines.
  */
-function epithetCopy(name: string): { reward: string; conditions: string[] } {
+function epithetCopy(name: string): { reward: string | null; conditions: string[] } {
     const { reward, conditions } = splitEpithetBullets(EPITHETS_BY_NAME[name]?.bullet_points ?? [])
-    return { reward: reward?.replace(/^\s*reward\s*:\s*/i, "") ?? "(reward unknown)", conditions }
+    return { reward: reward ? reward.replace(/^\s*reward\s*:\s*/i, "") : null, conditions }
 }
 
 /**
@@ -68,7 +69,7 @@ function EpithetCard({ name, suffix, nameColor, highlighted, onPress, styles }: 
                 {name}
                 {suffix ?? ""}
             </Text>
-            <Text style={styles.epithetCardReward}>Reward: {reward}</Text>
+            {reward ? <Text style={styles.epithetCardReward}>Reward: {reward}</Text> : null}
             {conditions.length > 0 ? (
                 <>
                     <Text style={styles.epithetCardCondition}>Condition:</Text>

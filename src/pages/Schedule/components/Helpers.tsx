@@ -1,7 +1,8 @@
 import { memo } from "react"
 import { View, Text, Pressable } from "react-native"
 import { useTheme } from "../../../context/ThemeContext"
-import { APTITUDE_RANKS, AptitudeMap, splitEpithetBullets } from "../../../lib/solver/constants"
+import { APTITUDE_RANKS, AptitudeMap } from "../../../lib/solver/constants"
+import { splitEpithetBullets } from "../../../lib/solver/scoring"
 
 interface AptitudeRowProps {
     /** The aptitude slot this row controls (e.g. "Sprint", "Mile"). */
