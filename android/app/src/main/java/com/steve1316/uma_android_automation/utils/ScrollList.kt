@@ -13,7 +13,6 @@ import com.steve1316.uma_android_automation.components.IconScrollListBottomRight
 import com.steve1316.uma_android_automation.components.IconScrollListTopLeft
 import com.steve1316.uma_android_automation.types.BoundingBox
 import org.opencv.core.Point
-import kotlin.math.abs
 
 /** Default maximum processing time in milliseconds. */
 const val MAX_PROCESS_TIME_DEFAULT_MS = 60000
@@ -23,6 +22,17 @@ private const val MAX_SCROLL_TO_TOP_SWIPES = 8
 
 /** How far the scrollbar thumb may sit below the top of its track and still count as being at the top. */
 private const val SCROLL_TOP_TOLERANCE = 4
+
+/**
+ * The smallest share of the screen height a detected list may cover before it is rejected as a false positive.
+ *
+ * The corner markers are 11x11 and 16x16 near-featureless arcs, so they match rounded edges all over the UI - measured against one screen, the full-screen top-left marker scored above 0.80 in
+ * 76 different places. On a screen that really does hold a list the true corner still wins the argmax, but on a screen that does NOT, two unrelated edges win it between them and the result is a
+ * confidently wrong box rather than no box: run against the Umamusume Details dialog, the full-screen markers returned a 585x68 sliver of the stats panel as "the list".
+ *
+ * Height separates the two by a wide margin: that sliver is 4% of the screen height, while the shallowest real list measured is the Details skill grid at 34% (the skill shop is 44%).
+ */
+private const val MIN_LIST_HEIGHT_FRACTION = 0.12
 
 /**
  * Creates a [ScrollList] for a list that lives inside a dialog. A dialog draws its own rounded corner markers rather than the full-screen ones, so it needs its own pair of corner templates.
@@ -295,12 +305,18 @@ class ScrollList private constructor(
             val x1 = (listBottomRight.x + (listBottomRightBitmap.width / 2)).toInt()
             val y1 = (listBottomRight.y + (listBottomRightBitmap.height / 2)).toInt()
 
+            // The corners must be found in the right order. Normalizing an inverted pair with abs() only turns two false-positive matches into a plausible-looking box and hands it downstream.
+            if (y1 < y0 || x1 < x0) {
+                MessageLog.e(TAG, "[ERROR] getListBoundingRegion:: The scroll list corner markers were found out of order (top-left at ($x0, $y0), bottom-right at ($x1, $y1)), so they are not a list.")
+                return null
+            }
+
             val bbox =
                 BoundingBox(
                     x = x0,
                     y = y0,
-                    w = abs(x1 - x0),
-                    h = abs(y1 - y0),
+                    w = x1 - x0,
+                    h = y1 - y0,
                 )
 
             if (bbox.w <= 0 || bbox.h <= 0) {
@@ -308,8 +324,14 @@ class ScrollList private constructor(
                 return null
             }
 
-            if (y1 < y0 || x1 < x0) {
-                MessageLog.w(TAG, "[WARN] getListBoundingRegion:: Scroll list icons were detected out of order. Normalized bounding box: $bbox")
+            // Reject a box too short to be a list. See MIN_LIST_HEIGHT_FRACTION - the markers happily match unrelated rounded edges, so a "found" box is not proof a list is there.
+            val minHeight: Int = (SharedData.displayHeight * MIN_LIST_HEIGHT_FRACTION).toInt()
+            if (bbox.h < minHeight) {
+                MessageLog.w(
+                    TAG,
+                    "[WARN] getListBoundingRegion:: The detected box $bbox is too short to be a list (needs at least $minHeight tall), so the corner markers matched something else.",
+                )
+                return null
             }
 
             if (game.debugMode) {
