@@ -330,12 +330,44 @@ object MilpSolver {
                     decisions[t] = Decision.Train
                 }
             }
-            val projected =
-                epithetVars
-                    .filter { (_, v) -> (v.value?.toDouble() ?: 0.0) > 0.5 }
-                    .keys
-                    .toSet() + state.completedEpithets
-            return Schedule(decisions, projected, objectiveValue)
+            return Schedule(decisions, projectedEpithets(decisions), objectiveValue)
+        }
+
+        /**
+         * Evaluates which epithets the schedule actually completes, against the realized win history rather than the solved `y` variables.
+         *
+         * The `y` variables cannot be trusted for this. [wireEpithetMatchers] only emits `required * y <= progress`, which *permits* `y = 1` once the
+         * matchers are satisfied but never *forces* it, so `y` rises only when the objective pays for it. [ScoringFunctions.epithetContribution] pays
+         * nothing for an epithet with no reward bullet, and 200 of the 236 entries in `epithets.json` have none - every reward-bearing epithet happens
+         * to be Trackblazer-only. So on any other scenario every `y` carried zero weight and stayed at 0, and the solver reported zero completions even
+         * when it had scheduled and won every required race.
+         *
+         * @param decisions The realized per-turn decisions just read out of the model.
+         * @return Names of every epithet the schedule completes, including the pre-existing [SolverState.completedEpithets].
+         */
+        private fun projectedEpithets(decisions: Map<TurnNumber, Decision>): Set<String> {
+            val wins =
+                state.raceHistory +
+                    decisions.entries.mapNotNull { (turn, decision) ->
+                        val raceKey = (decision as? Decision.RaceDecision)?.raceKey ?: return@mapNotNull null
+                        state.racesByTurn[turn]
+                            ?.firstOrNull { it.key == raceKey }
+                            ?.let { RaceWin(it.key, it.name, it.classYear, turn) }
+                    }
+
+            // Iterate to a fixed point: the epithetAll / epithetAnyOf matchers gate on other epithets being complete, so
+            // completing one epithet can unlock another that depends on it.
+            var projected = state.completedEpithets
+            while (true) {
+                val evaluated = state.copy(raceHistory = wins, completedEpithets = projected)
+                val next =
+                    projected +
+                        state.epithets
+                            .filter { it.name !in state.deadEpithets && EpithetTracker.isCompleted(it, evaluated) }
+                            .map { it.name }
+                if (next == projected) return projected
+                projected = next
+            }
         }
 
         // //////////////////////////////////////////////////////////////////////////////////////////////////
