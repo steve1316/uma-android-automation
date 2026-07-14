@@ -453,6 +453,15 @@
         "characters": [],
         "matchers": []
     },
+    "Darling of the Sand": {
+        "name": "Darling of the Sand",
+        "bullet_points": [
+            "Win 7 dirt G1s"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "December Domination": {
         "name": "December Domination",
         "bullet_points": [
@@ -550,6 +559,24 @@
                     "terrain": "Dirt"
                 },
                 "displayLabel": "Win 1 Medium Dirt race"
+            }
+        ]
+    },
+    "Dirt Demon": {
+        "name": "Dirt Demon",
+        "bullet_points": [
+            "Win 15 dirt races"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": [
+            {
+                "type": "winCount",
+                "count": 15,
+                "filter": {
+                    "terrain": "Dirt"
+                },
+                "displayLabel": "Win 15 Dirt races"
             }
         ]
     },
@@ -662,6 +689,42 @@
                 "displayLabel": "Win 4 G1 Dirt races"
             }
         ]
+    },
+    "Dirt Mile Hero": {
+        "name": "Dirt Mile Hero",
+        "bullet_points": [
+            "Win the Zen-Nippon Junior Yushun",
+            "Win the M.C. Nambu Hai",
+            "Win the February Stakes"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Zen-Nippon Junior Yushun",
+                "displayLabel": "Win the Zen-Nippon Junior Yushun"
+            },
+            {
+                "type": "winRace",
+                "name": "M.C. Nambu Hai",
+                "displayLabel": "Win the M.C. Nambu Hai"
+            },
+            {
+                "type": "winRace",
+                "name": "February Stakes",
+                "displayLabel": "Win the February Stakes"
+            }
+        ]
+    },
+    "Dirt Specialist": {
+        "name": "Dirt Specialist",
+        "bullet_points": [
+            "Learn at least 5 skills that will only activate on dirt tracks"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
     },
     "Dirt Sprinter": {
         "name": "Dirt Sprinter",
@@ -788,6 +851,27 @@
         ],
         "characters": [],
         "matchers": []
+    },
+    "Dual Track Queen": {
+        "name": "Dual Track Queen",
+        "bullet_points": [
+            "Win the Japanese Oaks",
+            "Win the Kanto Oaks"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Japanese Oaks",
+                "displayLabel": "Win the Japanese Oaks"
+            },
+            {
+                "type": "winRace",
+                "name": "Kanto Oaks",
+                "displayLabel": "Win the Kanto Oaks"
+            }
+        ]
     },
     "Eat My Dust": {
         "name": "Eat My Dust",
@@ -1660,6 +1744,15 @@
             }
         ]
     },
+    "Kawasaki's Iron Foot": {
+        "name": "Kawasaki's Iron Foot",
+        "bullet_points": [
+            "Win 5 graded races in Kawasaki"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Kicking Up Dust": {
         "name": "Kicking Up Dust",
         "bullet_points": [
@@ -1798,6 +1891,15 @@
         "characters": [],
         "matchers": []
     },
+    "Late Show": {
+        "name": "Late Show",
+        "bullet_points": [
+            "Participate in at least 4 races at night and win 3 of them"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Leading the Charge": {
         "name": "Leading the Charge",
         "bullet_points": [
@@ -1879,6 +1981,15 @@
         ],
         "matchers": []
     },
+    "Local Sightseer": {
+        "name": "Local Sightseer",
+        "bullet_points": [
+            "Win 3 races at local racegrounds"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Long Shot": {
         "name": "Long Shot",
         "bullet_points": [
@@ -1923,6 +2034,57 @@
         "scenarios": [],
         "characters": [],
         "matchers": []
+    },
+    "Master of Many Locales": {
+        "name": "Master of Many Locales",
+        "bullet_points": [
+            "Win the Marine Cup",
+            "Win the Kanto Oaks",
+            "Win the Sparking Lady Cup",
+            "Win the Ladies' Prelude",
+            "Win the JBC Ladies’ Classic",
+            "Win the TCK Jo-o Hai",
+            "Win the Empress Hai"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Marine Cup",
+                "displayLabel": "Win the Marine Cup"
+            },
+            {
+                "type": "winRace",
+                "name": "Kanto Oaks",
+                "displayLabel": "Win the Kanto Oaks"
+            },
+            {
+                "type": "winRace",
+                "name": "Sparking Lady Cup",
+                "displayLabel": "Win the Sparking Lady Cup"
+            },
+            {
+                "type": "winRace",
+                "name": "Ladies' Prelude",
+                "displayLabel": "Win the Ladies' Prelude"
+            },
+            {
+                "type": "winRace",
+                "name": "JBC Ladies’ Classic",
+                "displayLabel": "Win the JBC Ladies’ Classic"
+            },
+            {
+                "type": "winRace",
+                "name": "TCK Jo-o Hai",
+                "displayLabel": "Win the TCK Jo-o Hai"
+            },
+            {
+                "type": "winRace",
+                "name": "Empress Hai",
+                "displayLabel": "Win the Empress Hai"
+            }
+        ]
     },
     "Mesmerizing Muscle": {
         "name": "Mesmerizing Muscle",
@@ -2251,6 +2413,15 @@
                 "displayLabel": "Win the Takarazuka Kinen"
             }
         ]
+    },
+    "Nighttime Parade": {
+        "name": "Nighttime Parade",
+        "bullet_points": [
+            "Win 5 races carried out at night"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
     },
     "Non-Standard Distance Leader": {
         "name": "Non-Standard Distance Leader",
@@ -2623,6 +2794,15 @@
         "characters": [],
         "matchers": []
     },
+    "Regional Roundabout": {
+        "name": "Regional Roundabout",
+        "bullet_points": [
+            "Win at least one graded race at 4 or more local racegrounds each"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Rising Star": {
         "name": "Rising Star",
         "bullet_points": [
@@ -2713,6 +2893,15 @@
         ],
         "matchers": []
     },
+    "Sand Transcender": {
+        "name": "Sand Transcender",
+        "bullet_points": [
+            "Win 12 dirt G1s"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Satsuki Spirit": {
         "name": "Satsuki Spirit",
         "bullet_points": [
@@ -2726,6 +2915,39 @@
                 "type": "winRace",
                 "name": "Satsuki Sho",
                 "displayLabel": "Win the Satsuki Sho"
+            }
+        ]
+    },
+    "Seeking Fame Afar": {
+        "name": "Seeking Fame Afar",
+        "bullet_points": [
+            "Win the Diolite Kinen",
+            "Win the Empress Hai",
+            "Win the Sparking Lady Cup",
+            "Win the Mercury Cup"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Diolite Kinen",
+                "displayLabel": "Win the Diolite Kinen"
+            },
+            {
+                "type": "winRace",
+                "name": "Empress Hai",
+                "displayLabel": "Win the Empress Hai"
+            },
+            {
+                "type": "winRace",
+                "name": "Sparking Lady Cup",
+                "displayLabel": "Win the Sparking Lady Cup"
+            },
+            {
+                "type": "winRace",
+                "name": "Mercury Cup",
+                "displayLabel": "Win the Mercury Cup"
             }
         ]
     },
@@ -2923,6 +3145,39 @@
                 "type": "winRace",
                 "name": "Mile Championship",
                 "displayLabel": "Win the Mile Championship"
+            }
+        ]
+    },
+    "Speedster of the Sands": {
+        "name": "Speedster of the Sands",
+        "bullet_points": [
+            "Win the Procyon Stakes",
+            "Win the Cluster Cup",
+            "Win the Capella Stakes",
+            "Win the JBC Sprint"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Procyon Stakes",
+                "displayLabel": "Win the Procyon Stakes"
+            },
+            {
+                "type": "winRace",
+                "name": "Cluster Cup",
+                "displayLabel": "Win the Cluster Cup"
+            },
+            {
+                "type": "winRace",
+                "name": "Capella Stakes",
+                "displayLabel": "Win the Capella Stakes"
+            },
+            {
+                "type": "winRace",
+                "name": "JBC Sprint",
+                "displayLabel": "Win the JBC Sprint"
             }
         ]
     },
@@ -3224,6 +3479,15 @@
             }
         ]
     },
+    "Sunset Seeker": {
+        "name": "Sunset Seeker",
+        "bullet_points": [
+            "Participate in at least 4 races in the evening and win 3 of them"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Super Sprinter": {
         "name": "Super Sprinter",
         "bullet_points": [
@@ -3280,6 +3544,20 @@
         "scenarios": [],
         "characters": [
             "Matikanetannhauser"
+        ],
+        "matchers": []
+    },
+    "Talisman of Victory": {
+        "name": "Talisman of Victory",
+        "bullet_points": [
+            "Copano Rickey only",
+            "Win 11 or more dirt G1s",
+            "Have a Mood level of Perfect in all races",
+            "Complete the Career"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Copano Rickey"
         ],
         "matchers": []
     },
@@ -3573,6 +3851,15 @@
                 "displayLabel": "Win 1 Long Turf race"
             }
         ]
+    },
+    "Twilighter": {
+        "name": "Twilighter",
+        "bullet_points": [
+            "Win 5 races carried out in the evening"
+        ],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
     },
     "Two-Way Runner": {
         "name": "Two-Way Runner",

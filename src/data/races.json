@@ -825,6 +825,34 @@
         "turnNumber": 16,
         "nameFormatted": "Sapporo Turf 1500m (Mile) Right"
     },
+    "Cluster Cup (Classic Class August, Second Half)": {
+        "name": "Cluster Cup",
+        "date": "Classic Class August, Second Half",
+        "raceTrack": "Morioka",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Sprint",
+        "distanceMeters": 1200,
+        "fans": 2300,
+        "turnNumber": 40,
+        "nameFormatted": "Morioka Dirt 1200m (Sprint) Left"
+    },
+    "Cluster Cup (Senior Class August, Second Half)": {
+        "name": "Cluster Cup",
+        "date": "Senior Class August, Second Half",
+        "raceTrack": "Morioka",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Sprint",
+        "distanceMeters": 1200,
+        "fans": 2300,
+        "turnNumber": 64,
+        "nameFormatted": "Morioka Dirt 1200m (Sprint) Left"
+    },
     "Copa Republica Argentina (Classic Class November, First Half)": {
         "name": "Copa Republica Argentina",
         "date": "Classic Class November, First Half",
@@ -965,6 +993,20 @@
         "turnNumber": 52,
         "nameFormatted": "Tokyo Turf 3400m (Long) Left"
     },
+    "Diolite Kinen (Senior Class March, Second Half)": {
+        "name": "Diolite Kinen",
+        "date": "Senior Class March, Second Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Medium",
+        "distanceMeters": 2400,
+        "fans": 3200,
+        "turnNumber": 54,
+        "nameFormatted": "Funabashi Dirt 2400m (Med) Left"
+    },
     "Elfin Stakes (Classic Class February, First Half)": {
         "name": "Elfin Stakes",
         "date": "Classic Class February, First Half",
@@ -1006,6 +1048,20 @@
         "fans": 3600,
         "turnNumber": 63,
         "nameFormatted": "Sapporo Dirt 1700m (Mile) Right"
+    },
+    "Empress Hai (Senior Class March, First Half)": {
+        "name": "Empress Hai",
+        "date": "Senior Class March, First Half",
+        "raceTrack": "Kawasaki",
+        "course": null,
+        "direction": "Left",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Medium",
+        "distanceMeters": 2100,
+        "fans": 3500,
+        "turnNumber": 53,
+        "nameFormatted": "Kawasaki Dirt 2100m (Med) Left"
     },
     "Enif Stakes (Classic Class September, First Half)": {
         "name": "Enif Stakes",
@@ -1959,6 +2015,20 @@
         "turnNumber": 63,
         "nameFormatted": "Niigata Turf 1800m (Mile) Left / Outer"
     },
+    "Kanto Oaks (Classic Class June, First Half)": {
+        "name": "Kanto Oaks",
+        "date": "Classic Class June, First Half",
+        "raceTrack": "Kawasaki",
+        "course": null,
+        "direction": "Left",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Medium",
+        "distanceMeters": 2100,
+        "fans": 3500,
+        "turnNumber": 35,
+        "nameFormatted": "Kawasaki Dirt 2100m (Med) Left"
+    },
     "Kantsubaki Sho (Junior Class December, First Half)": {
         "name": "Kantsubaki Sho",
         "date": "Junior Class December, First Half",
@@ -1972,6 +2042,34 @@
         "fans": 1000,
         "turnNumber": 23,
         "nameFormatted": "Chukyo Dirt 1400m (Sprint) Left"
+    },
+    "Kashiwa Kinen (Senior Class May, First Half)": {
+        "name": "Kashiwa Kinen",
+        "date": "Senior Class May, First Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G1",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 8000,
+        "turnNumber": 57,
+        "nameFormatted": "Funabashi Dirt 1600m (Mile) Left"
+    },
+    "Kawasaki Kinen (Senior Class February, First Half)": {
+        "name": "Kawasaki Kinen",
+        "date": "Senior Class February, First Half",
+        "raceTrack": "Kawasaki",
+        "course": null,
+        "direction": "Left",
+        "grade": "G1",
+        "terrain": "Dirt",
+        "distanceType": "Medium",
+        "distanceMeters": 2100,
+        "fans": 6000,
+        "turnNumber": 51,
+        "nameFormatted": "Kawasaki Dirt 2100m (Med) Left"
     },
     "Keeneland Cup (Classic Class August, Second Half)": {
         "name": "Keeneland Cup",
@@ -2533,6 +2631,34 @@
         "turnNumber": 52,
         "nameFormatted": "Kyoto Turf 1400m (Sprint) Right / Outer"
     },
+    "Ladies' Prelude (Classic Class October, First Half)": {
+        "name": "Ladies' Prelude",
+        "date": "Classic Class October, First Half",
+        "raceTrack": "Ooi",
+        "course": null,
+        "direction": "Right",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 3100,
+        "turnNumber": 43,
+        "nameFormatted": "Ooi Dirt 1800m (Mile) Right"
+    },
+    "Ladies' Prelude (Senior Class October, First Half)": {
+        "name": "Ladies' Prelude",
+        "date": "Senior Class October, First Half",
+        "raceTrack": "Ooi",
+        "course": null,
+        "direction": "Right",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 3100,
+        "turnNumber": 67,
+        "nameFormatted": "Ooi Dirt 1800m (Mile) Right"
+    },
     "Lapis Lazuli Stakes (Classic Class December, First Half)": {
         "name": "Lapis Lazuli Stakes",
         "date": "Classic Class December, First Half",
@@ -2616,6 +2742,34 @@
         "fans": 2500,
         "turnNumber": 68,
         "nameFormatted": "Niigata Turf 1000m (Sprint) Left"
+    },
+    "M.C. Nambu Hai (Classic Class October, First Half)": {
+        "name": "M.C. Nambu Hai",
+        "date": "Classic Class October, First Half",
+        "raceTrack": "Morioka",
+        "course": null,
+        "direction": "Left",
+        "grade": "G1",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 6000,
+        "turnNumber": 43,
+        "nameFormatted": "Morioka Dirt 1600m (Mile) Left"
+    },
+    "M.C. Nambu Hai (Senior Class October, First Half)": {
+        "name": "M.C. Nambu Hai",
+        "date": "Senior Class October, First Half",
+        "raceTrack": "Morioka",
+        "course": null,
+        "direction": "Left",
+        "grade": "G1",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 6000,
+        "turnNumber": 67,
+        "nameFormatted": "Morioka Dirt 1600m (Mile) Left"
     },
     "Mainichi Hai (Classic Class March, Second Half)": {
         "name": "Mainichi Hai",
@@ -2715,6 +2869,34 @@
         "turnNumber": 28,
         "nameFormatted": "Hanshin Turf 1200m (Sprint) Right / Inner"
     },
+    "Marine Cup (Classic Class April, First Half)": {
+        "name": "Marine Cup",
+        "date": "Classic Class April, First Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 2500,
+        "turnNumber": 31,
+        "nameFormatted": "Funabashi Dirt 1600m (Mile) Left"
+    },
+    "Marine Cup (Senior Class April, First Half)": {
+        "name": "Marine Cup",
+        "date": "Senior Class April, First Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 2500,
+        "turnNumber": 55,
+        "nameFormatted": "Funabashi Dirt 1600m (Mile) Left"
+    },
     "Marine Stakes (Classic Class July, First Half)": {
         "name": "Marine Stakes",
         "date": "Classic Class July, First Half",
@@ -2798,6 +2980,34 @@
         "fans": 2300,
         "turnNumber": 61,
         "nameFormatted": "Chukyo Dirt 1800m (Mile) Left"
+    },
+    "Mercury Cup (Classic Class July, Second Half)": {
+        "name": "Mercury Cup",
+        "date": "Classic Class July, Second Half",
+        "raceTrack": "Morioka",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Medium",
+        "distanceMeters": 2000,
+        "fans": 2300,
+        "turnNumber": 38,
+        "nameFormatted": "Morioka Dirt 2000m (Med) Left"
+    },
+    "Mercury Cup (Senior Class July, Second Half)": {
+        "name": "Mercury Cup",
+        "date": "Senior Class July, Second Half",
+        "raceTrack": "Morioka",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Medium",
+        "distanceMeters": 2000,
+        "fans": 2300,
+        "turnNumber": 62,
+        "nameFormatted": "Morioka Dirt 2000m (Med) Left"
     },
     "Mermaid Stakes (Classic Class June, First Half)": {
         "name": "Mermaid Stakes",
@@ -3709,6 +3919,34 @@
         "turnNumber": 69,
         "nameFormatted": "Kyoto Turf 2200m (Med) Right / Outer"
     },
+    "Queen Sho (Classic Class December, First Half)": {
+        "name": "Queen Sho",
+        "date": "Classic Class December, First Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 2100,
+        "turnNumber": 47,
+        "nameFormatted": "Funabashi Dirt 1800m (Mile) Left"
+    },
+    "Queen Sho (Senior Class December, First Half)": {
+        "name": "Queen Sho",
+        "date": "Senior Class December, First Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 2100,
+        "turnNumber": 71,
+        "nameFormatted": "Funabashi Dirt 1800m (Mile) Left"
+    },
     "Queen Stakes (Classic Class July, Second Half)": {
         "name": "Queen Stakes",
         "date": "Classic Class July, Second Half",
@@ -4030,6 +4268,34 @@
         "fans": 1000,
         "turnNumber": 23,
         "nameFormatted": "Hanshin Turf 1200m (Sprint) Right / Inner"
+    },
+    "Sazanka TV Hai (Classic Class September, Second Half)": {
+        "name": "Sazanka TV Hai",
+        "date": "Classic Class September, Second Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 3200,
+        "turnNumber": 42,
+        "nameFormatted": "Funabashi Dirt 1800m (Mile) Left"
+    },
+    "Sazanka TV Hai (Senior Class September, Second Half)": {
+        "name": "Sazanka TV Hai",
+        "date": "Senior Class September, Second Half",
+        "raceTrack": "Funabashi",
+        "course": null,
+        "direction": "Left",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 3200,
+        "turnNumber": 66,
+        "nameFormatted": "Funabashi Dirt 1800m (Mile) Left"
     },
     "Seiryu Stakes (Classic Class May, First Half)": {
         "name": "Seiryu Stakes",
@@ -4395,6 +4661,34 @@
         "turnNumber": 52,
         "nameFormatted": "Nakayama Dirt 1800m (Mile) Right"
     },
+    "Sparking Lady Cup (Classic Class July, First Half)": {
+        "name": "Sparking Lady Cup",
+        "date": "Classic Class July, First Half",
+        "raceTrack": "Kawasaki",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 2500,
+        "turnNumber": 37,
+        "nameFormatted": "Kawasaki Dirt 1600m (Mile) Left"
+    },
+    "Sparking Lady Cup (Senior Class July, First Half)": {
+        "name": "Sparking Lady Cup",
+        "date": "Senior Class July, First Half",
+        "raceTrack": "Kawasaki",
+        "course": null,
+        "direction": "Left",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 2500,
+        "turnNumber": 61,
+        "nameFormatted": "Kawasaki Dirt 1600m (Mile) Left"
+    },
     "Spring Stakes (Classic Class March, Second Half)": {
         "name": "Spring Stakes",
         "date": "Classic Class March, Second Half",
@@ -4562,6 +4856,20 @@
         "fans": 2000,
         "turnNumber": 32,
         "nameFormatted": "Tokyo Turf 1800m (Mile) Left"
+    },
+    "TCK Jo-o Hai (Senior Class January, Second Half)": {
+        "name": "TCK Jo-o Hai",
+        "date": "Senior Class January, Second Half",
+        "raceTrack": "Ooi",
+        "course": null,
+        "direction": "Right",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1800,
+        "fans": 2200,
+        "turnNumber": 50,
+        "nameFormatted": "Ooi Dirt 1800m (Mile) Right"
     },
     "Tachibana Stakes (Classic Class April, Second Half)": {
         "name": "Tachibana Stakes",
@@ -4899,6 +5207,34 @@
         "turnNumber": 72,
         "nameFormatted": "Ooi Dirt 2000m (Med) Right"
     },
+    "Tokyo Hai (Classic Class October, First Half)": {
+        "name": "Tokyo Hai",
+        "date": "Classic Class October, First Half",
+        "raceTrack": "Ooi",
+        "course": null,
+        "direction": "Right",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Sprint",
+        "distanceMeters": 1200,
+        "fans": 3500,
+        "turnNumber": 43,
+        "nameFormatted": "Ooi Dirt 1200m (Sprint) Right"
+    },
+    "Tokyo Hai (Senior Class October, First Half)": {
+        "name": "Tokyo Hai",
+        "date": "Senior Class October, First Half",
+        "raceTrack": "Ooi",
+        "course": null,
+        "direction": "Right",
+        "grade": "G2",
+        "terrain": "Dirt",
+        "distanceType": "Sprint",
+        "distanceMeters": 1200,
+        "fans": 3500,
+        "turnNumber": 67,
+        "nameFormatted": "Ooi Dirt 1200m (Sprint) Right"
+    },
     "Tokyo Shimbun Hai (Senior Class February, First Half)": {
         "name": "Tokyo Shimbun Hai",
         "date": "Senior Class February, First Half",
@@ -4926,6 +5262,20 @@
         "fans": 3300,
         "turnNumber": 22,
         "nameFormatted": "Tokyo Turf 1800m (Mile) Left"
+    },
+    "Tokyo Sprint (Senior Class April, Second Half)": {
+        "name": "Tokyo Sprint",
+        "date": "Senior Class April, Second Half",
+        "raceTrack": "Ooi",
+        "course": null,
+        "direction": "Right",
+        "grade": "G3",
+        "terrain": "Dirt",
+        "distanceType": "Sprint",
+        "distanceMeters": 1200,
+        "fans": 2700,
+        "turnNumber": 56,
+        "nameFormatted": "Ooi Dirt 1200m (Sprint) Right"
     },
     "Tokyo Yushun (Japanese Derby) (Classic Class May, Second Half)": {
         "name": "Tokyo Yushun (Japanese Derby)",
@@ -5262,5 +5612,19 @@
         "fans": 2500,
         "turnNumber": 60,
         "nameFormatted": "Hanshin Turf 1600m (Mile) Right / Outer"
+    },
+    "Zen-Nippon Junior Yushun (Junior Class December, Second Half)": {
+        "name": "Zen-Nippon Junior Yushun",
+        "date": "Junior Class December, Second Half",
+        "raceTrack": "Kawasaki",
+        "course": null,
+        "direction": "Left",
+        "grade": "G1",
+        "terrain": "Dirt",
+        "distanceType": "Mile",
+        "distanceMeters": 1600,
+        "fans": 4200,
+        "turnNumber": 24,
+        "nameFormatted": "Kawasaki Dirt 1600m (Mile) Left"
     }
 }
