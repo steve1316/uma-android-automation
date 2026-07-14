@@ -1,6 +1,6 @@
 # How It Works
 
-*Last updated: 2026-06-27*
+*Last updated: 2026-07-13*
 
 A comprehensive guide to the inner workings of the app. This document explains what the bot does at each step of a campaign, how it makes decisions, and how each scenario differs.
 
@@ -177,7 +177,7 @@ sequenceDiagram
 
     Note over Bot: Date changed → reset daily flags
 
-    par 9 parallel OCR threads (10s timeout)
+    par Up to 10 parallel OCR threads (10s timeout)
         Bot->>OCR: Read Speed stat
         Bot->>OCR: Read Stamina stat
         Bot->>OCR: Read Power stat
@@ -187,6 +187,7 @@ sequenceDiagram
         Bot->>OCR: Read Mood
         Bot->>OCR: Read Energy
         Bot->>OCR: Check racing requirements
+        Bot->>OCR: Read per-stat caps
     end
 
     Bot->>Bot: Update aptitudes (first time only)
@@ -200,7 +201,7 @@ sequenceDiagram
 
 ### 4.1 Parallel Turn-Start Updates
 
-Every time the date changes, the bot reads the trainee's current state using **9 parallel OCR threads** coordinated by a `CountDownLatch` with a **10-second timeout**:
+Every time the date changes, the bot reads the trainee's current state using up to **10 parallel OCR threads** coordinated by a `CountDownLatch` with a **10-second timeout**:
 
 | Thread | Reads | Method |
 |--------|-------|--------|
@@ -209,8 +210,9 @@ Every time the date changes, the bot reads the trainee's current state using **9
 | 7 | Mood (icon-based detection) | `trainee.updateMood()` |
 | 8 | Racing requirements (fans/trophies) | `racing.checkRacingRequirements()` |
 | 9 | Energy (bar position) | `trainee.updateEnergy()` |
+| 10 | Per-stat caps (the `/NNNN` denominators) | `trainee.updateStatCaps()` |
 
-Thread 8 (racing requirements) is **skipped during summer** since no races are available. Logging output is temporarily disabled during parallel reads to avoid garbled messages, then re-enabled after all threads complete.
+Threads 8 and 10 are conditional. Racing requirements are **skipped during summer** since no races are available, and the stat-cap thread is only spawned when **Read Stat Caps from Screen** is enabled — with the setting off those five extra OCR reads never run at all. Logging output is temporarily disabled during parallel reads to avoid garbled messages, then re-enabled after all threads complete.
 
 > [!WARNING]
 > If any thread fails to complete within the 10-second timeout, the bot logs an error and continues with whatever data it managed to read. Stat values that timed out retain their previous values.
@@ -226,6 +228,22 @@ After stat updates, the bot performs several global checks that can stop or paus
 
 > [!NOTE]
 > **Skill-plan auto-purchase.** The skill plans referenced above (the skill-point-threshold plan, the pre-Finals plan, and the career-complete plan) auto-buy skills filtered two ways. The **Style** preferences — Running Style, Track Distance, and Track Surface "for Skills" — now strictly restrict which skills the auto-strategy considers, applied consistently across every spending strategy. Separate category-exclusion toggles drop whole groups from the plan: negative, green, red, unique, and the new **Skip Double-O (Circle) Skills** (`excludeDoubleCircleSkills`, default off), which buys only the single-circle version of an upgrade and skips the double-circle one. Skills the user adds to the plan by hand are always bought regardless of these exclusions.
+
+#### Spending leftover points on the last purchase of a career
+
+The career-complete purchase is the **last** time skill points can ever be spent, so anything still on the balance when it ends is lost outright. When the **Enable Career Complete Plan (Beta)** toggle is on (default off), the bot follows its normal plan first and then makes a final pass that tries to drain whatever is left over.
+
+The drain treats the leftover balance as a **0/1 knapsack**: each candidate skill's price is used as both its weight and its value, so the subset it picks is the one that **spends the most points without going over**. Ties on amount spent are broken toward the higher-evaluation-point skills. Because buying a skill in an upgrade chain lowers the price of its upgrade (or reveals a new row), the pass re-runs up to **5 times** — but only when a pick actually had an upgrade, so it exits early in the common case.
+
+Two deliberate asymmetries with normal purchasing are worth knowing:
+
+- The per-skill **blacklist is honored** — a skill the user explicitly banned is never bought to burn points.
+- The **category exclusions are ignored** (green, red/debuff, unique, double-circle), as are the aptitude preferences and the spending strategy. Those filters exist to steer *normal* purchasing toward useful skills, and applying them here would strand the very points the drain exists to spend.
+
+> [!IMPORTANT]
+> The balance is **not** guaranteed to reach zero, and a remainder is normal. The drain spends as much as it can, but it can only combine the prices actually on offer — if nothing sums exactly to the balance (the usual case, since prices are coarse), or every remaining skill costs more than what is left, the leftovers stay put. Expect the remainder to land below the cheapest affordable skill rather than at exactly 0.
+
+The **Start Skill List Buy Test** debug test previews this: it runs the real drain code path against the live skill list, logs the skills it *would* buy and the skill points it expects to have left, and taps nothing.
 
 ### 4.3 Scenario Hooks
 
@@ -261,7 +279,9 @@ flowchart TD
     C -->|No| D{"Maiden race\nnot completed?"}
     D -->|Yes| RACE
     D -->|No| F{"Fan or Trophy\nrequirement active?"}
-    F -->|Yes| RACE
+    F -->|Yes| FS{"Satisfiable\nthis turn?"}
+    FS -->|Yes| RACE
+    FS -->|No| E
     F -->|No| E{"Pre-Summer prep?\n(June Late, Classic/Senior)"}
     E -->|Yes| PreSummer{"Energy < 70%?"}
     PreSummer -->|Yes| REST["→ REST"]
@@ -285,7 +305,7 @@ flowchart TD
 4. **Scheduled Race:** If the game shows a scheduled (in-game agenda) race label, the bot races.
 5. **Force Racing:** User setting that bypasses all other logic and forces racing every turn.
 6. **Maiden Race:** The first race of the campaign must be completed before regular training resumes.
-7. **Fan/Trophy Requirements:** If the game requires a minimum fan count, trophy count, or goal race points, the bot prioritizes racing to meet it. This **outranks** pre-summer prep so a mandatory career goal (e.g. a "win a G1" trophy) is never skipped in favor of a summer-prep training.
+7. **Fan/Trophy Requirements:** If the game requires a minimum fan count, trophy count, or goal race points, the bot prioritizes racing to meet it. This **outranks** pre-summer prep so a mandatory career goal is never skipped in favor of a summer-prep training. The requirement must be **satisfiable this turn**, though: a trophy goal that only a **G1 win** can satisfy is checked against the races database first, and on a turn with no G1 available the bot does not open the race screen at all (it would only have to cancel back out of it) and falls through to the rest of the waterfall instead. Every other requirement — a fan count, goal race points, or a trophy that any Pre-OP-or-above / G3-or-above race can satisfy — always forces the race.
 8. **Pre-Summer Prep (June Late):** On the last turn before Summer training, the bot ensures energy is high (≥70%) and mood is Great. If energy is low, it rests. If mood is low, it recovers mood. If both are fine, it trains Wit (which recovers some energy in preparation for Summer Training).[^1]
 
 [^1]: Wit is chosen as the "throwaway" training because it recovers some energy, helping the trainee enter Summer Training in better condition.
@@ -314,11 +334,20 @@ When `analyzeTrainings()` is called:
    - Relationship bar colors (blue, green, orange) for support card characters present
    - Rainbow count (number of rainbow indicators)
    - Skill hints available
-3. **Results are cached** for the current turn in `cachedAnalysisResults` to avoid re-reading if the training screen is visited multiple times.
+3. **Results are cached** for the current turn, **keyed by the turn number** (`cachedAnalysisTurn == campaign.date.day`), so the training screen can be visited several times in one turn without re-reading it. The turn key is what makes the cache safe: a previous turn's analysis — including any bad failure-chance read baked into it — can never be reused on a later turn. The cache is also cleared outright at the end of each training attempt.
 4. **Filtering:** Trainings exceeding the maximum failure chance threshold (default 20%) are excluded, unless risky training mode or Good-Luck Charm overrides are active.
+5. **Train or rest:** The bot rests only when **every** facility was filtered out. If the five facilities are empty because they were all blacklisted or restricted rather than too risky, that is not an energy problem and resting cannot fix it, so the bot does not rest.
 
 > [!NOTE]
-> **First-failure-chance OCR retry.** If the very first failure-chance read on a Training screen entry comes back unparseable, `recoverAndRetryFailureChance()` clicks back out and re-enters the Training screen once before giving up. This catches the common case where the failure-chance number hasn't fully rendered yet on the first frame the bot captures.
+> **Reading the failure chance.** The percentage is OCR'd with the **digit-constrained** engine rather than the general text recognizer, which used to misread a 0% bubble as a letter and throw the read away. The parser then takes only the digit run immediately before the `%` sign instead of concatenating every digit it can see in the crop — the old behavior fused stray digits out of a low-contrast bubble into phantom values like 10% or 12%. Any value above 100 is rejected outright rather than "repaired", and each read gets three attempts against a fresh screen capture, accepting only a result in 0–100.
+>
+> As a second line of defense, a facility whose reported failure chance overshoots what its energy level can plausibly produce (by more than 30 points) is **clamped down** to the energy-based estimate, so a spurious 99% read at full energy cannot strand the bot in an endless rest loop. Facilities with a Unity Cup burst ready are exempt, since their genuine 0% is real and must not be "corrected" upward.
+
+> [!NOTE]
+> **First-failure-chance OCR retry.** If the failure-chance read on a Training screen entry still comes back unparseable after its three internal attempts, `recoverAndRetryFailureChance()` clicks back out and re-enters the Training screen once before giving up. This catches the case where the number hasn't fully rendered yet on the first frames the bot captures.
+
+> [!IMPORTANT]
+> **The Speed facility no longer decides the turn.** The bot used to read the Speed facility's failure chance first and rest immediately if it looked too risky, without ever checking the other four — which was systematically wrong, since Wit is the safest facility and was never consulted. All five facilities are now always analyzed, and the Speed read is only used for logging and as a fallback seed for a misread.
 
 **YOLO Stat Detection:** When `enableYoloStatDetection` is enabled, stat gain digits are detected using a **YOLOv8 nano** model (`best.onnx`) instead of template matching. The model is trained to detect 11 classes (digits 0–9 and the '+' symbol) in small 130x50 pixel crop regions for each stat. It runs via ONNX Runtime with a confidence threshold of 0.8 and IoU threshold of 0.45 for NMS. The `YoloDetector` is loaded once as a singleton and kept in memory. Both detection methods coexist — the setting controls which one is used at runtime. The YOLO training pipeline and model export tools live in the [yolo/](yolo/) directory.
 
@@ -346,9 +375,33 @@ Rainbow training is heavily favored because it improves overall stat ratio balan
 **Training Level Weighting (`enableTrainingLevelWeighting`, default on):** When enabled, each option's main-stat score is amplified by a multiplier derived from the **OCR-detected training facility level** (1–5). Only the user's **top three priority stats** receive any boost, and only training levels ≥ 2 matter. At Lvl 5 the multipliers are roughly rank 1 = 1.75x, rank 2 = 1.25x, rank 3 = 1.10x. The fade keeps the boost concentrated on the trainee's top priority while still rewarding investment in their secondary. Training levels are OCR'd from each facility tab, anchored against the Energy label location which is cached on first use.
 
 > [!IMPORTANT]
-> **Stat Cap Awareness:** If a stat is at or above the effective cap (absolute cap - 100 buffer), training for that stat scores **0** and is skipped. The one exception is a **one-time rainbow allowance** — a stat can be trained past the buffer if it's a rainbow training and that stat hasn't used this allowance yet.
+> **Stat Cap Awareness:** If a stat is at or above its cap, training for that stat scores **0** and is skipped. Below that there is a buffer (cap - 100, relaxed by 15 per remaining finale race), above which a stat gets a **one-time rainbow allowance** — it can be trained past the buffer once if the training is a rainbow and that stat hasn't used its allowance yet.
 
-### 6.3 Special Training Modes
+### 6.3 Stat Caps and the Beyond-1200 Zone
+
+The July 2026 rebalance changed what a stat cap *is*, and the bot now models it in two parts.
+
+**Caps are per scenario, and no longer 1200 across the board.** The base (spark-free) caps the bot assumes are:
+
+| Scenario | Cap |
+|----------|-----|
+| **URA Finale** | 1400 for all five stats |
+| **Unity Cup** | 1800 Wit, 1300 everything else |
+| **Trackblazer** | 1900 Stamina, 1500 Wit, 1200 everything else |
+| Anything else | 1200 |
+
+**1200 is now a soft threshold, not a wall.** Stats keep climbing past it toward the real cap, just at reduced value — and the headline change is *how much* reduced. A point landing above 1200 used to be worth roughly an eighth of a normal point; it is now worth exactly **half**. The bot splits any proposed gain into the portion below 1200 (counted in full), the portion between 1200 and the stat's real cap (counted at 0.5), and any overflow past the cap (counted at zero, since it is simply wasted), and scales that stat's score by the resulting fraction. A +30 Speed training on a 1190 Speed with a 1400 cap therefore counts as `(10 x 1.0 + 20 x 0.5) / 30 = 0.667` of its face value.
+
+The practical effect is that the bot no longer treats a stat as "done" at 1200, but it also stops dumping everything into one stat once it crosses — the halved value naturally makes the other four more attractive.
+
+**Caps are read off the screen, not assumed.** Sparks, inheritance, URA duel wins, and Unity Cup extreme bursts all raise a stat's real cap above the base, so the table above is only a fallback. With **Read Stat Caps from Screen** enabled (default on), the bot OCRs the `/NNNN` denominator under each stat every turn as part of the parallel turn-start reads. A read is only accepted if it lands in a plausible 1000–2000 range **and** is at least the scenario's base cap, since sparks only ever raise a cap — a lower number is a misread. A stat whose read fails silently keeps its previous cap rather than dropping to a bad value. Turning the setting off skips those reads entirely and falls back to the static table.
+
+Once caps are known they show up in the trainee stats log line as `Spd=252/1480, Sta=104/1400, ...`.
+
+> [!NOTE]
+> At the end of a run the bot re-reads the caps from the in-game **Umamusume Details** dialog, which prints them far more legibly than the cramped main-screen crop, so the final stats line and the dashboard show the caps the trainee actually finished with. This read is independent of the per-turn setting above.
+
+### 6.4 Special Training Modes
 
 <details>
 <summary><strong>Risky Training</strong></summary>
@@ -392,7 +445,15 @@ The bot supports configurable per-year stat targets (End of Junior / End of Clas
 <details>
 <summary><strong>Disable Per-Distance Stat Targets</strong></summary>
 
-When `disableStatTargets` is enabled, the per-distance stat targets that normally drive the Stat Efficiency component are ignored — every stat is treated as if its target equals the scenario stat cap. This keeps every stat's ratio multiplier in the "encourage training" band rather than letting it taper off once the per-distance target is reached, which is useful for runs where the user wants to push every stat as high as possible regardless of the trainee's distance preference.
+When `disableStatTargets` is enabled, the per-distance stat targets that normally drive the Stat Efficiency component are ignored — every stat is treated as if its target equals **that stat's own cap**. Since caps are now read live ([Section 6.3](#63-stat-caps-and-the-beyond-1200-zone)), a trainee who sparked Speed up to 1480 in URA Finale gets a Speed target of 1480 rather than a flat scenario number. This keeps every stat's ratio multiplier in the "encourage training" band rather than letting it taper off once the per-distance target is reached, which is useful for runs where the user wants to push every stat as high as possible regardless of the trainee's distance preference.
+</details>
+
+<details>
+<summary><strong>Training Blacklist (and the Junior-year exception)</strong></summary>
+
+Stats on the training blacklist are never selected — **except during Pre-Debut and Junior Year (turns 1–24)**, where the blacklist is ignored entirely.
+
+That window is exactly when the bot scores trainings by **friendship** rather than stat efficiency: it is not chasing stats at all, it is ranking facilities purely by support-card relationship bars to build bonds as fast as possible. A user who blacklists Guts to avoid Guts *stats* would otherwise also block the bot from ever visiting the Guts facility to bond with the support cards sitting there, permanently crippling those cards' rainbow potential for the rest of the run. Normal blacklist enforcement resumes at turn 25.
 </details>
 
 <details>
@@ -413,12 +474,12 @@ The Training Settings page exposes three stat-priority lists instead of one:
 This lets the user, for example, push Speed during the year but lean into Stamina or Wit during Summer Training without having to flip the global priority.
 </details>
 
-### 6.4 Training Configuration Summary
+### 6.5 Training Configuration Summary
 
 | Setting | Default | Effect |
 |---------|---------|--------|
 | Stat Prioritization | Speed, Stamina, Power, Guts, Wit | Order determines scoring weight for stat gains |
-| Training Blacklist | (empty) | Stats in this list are never selected |
+| Training Blacklist | (empty) | Stats in this list are never selected, except during Pre-Debut / Junior Year |
 | Max Failure Chance | 20% | Trainings above this are filtered out |
 | Disable on Maxed Stat | true | Skip training for stats at/above buffer |
 | Rainbow Training Bonus | false | 2.0x multiplier for rainbow trainings |
@@ -426,7 +487,8 @@ This lets the user, for example, push Speed during the year but lean into Stamin
 | Train Wit During Finale | false | Wit training instead of resting during finale |
 | Risky Training | false | Accept higher failure for larger gains |
 | Training Level Weighting | true | Amplify top-3 priority stats by OCR-detected facility level (1-5) |
-| Disable Per-Distance Stat Targets | false | Treat every stat's target as the scenario stat cap |
+| Disable Per-Distance Stat Targets | false | Treat every stat's target as that stat's own cap |
+| Read Stat Caps from Screen | true | OCR each stat's live cap every turn so spark / inheritance / duel cap gains are respected |
 
 ---
 
@@ -448,12 +510,14 @@ The racing system handles race detection, selection, execution, and result proce
 The bot determines if extra races should be run via `checkEligibilityToStartExtraRacingProcess()`:
 
 - **Force Racing:** Always race if the setting is enabled.
-- **Fan/Trophy Requirements:** Race to meet minimum thresholds shown on screen.
 - **Racing Plan:** User-defined schedule of specific races to enter on specific turns.
 - **In-Game Race Agenda:** Follows the agenda set within the game itself.
 - **Fan Farming:** Enters races based on a configurable interval (`daysToRunExtraRaces`).
 - **Smart Racing / Look-Ahead:** Checks upcoming turns for higher-quality races and may defer racing to a better opportunity.
 - **Smart Race Solver:** From Classic year onward, the optional [Smart Race Solver](#13-smart-race-solver) can take over extra-race scheduling — see Section 13. When it's enabled with `enableFarmingFans` on and `enableForceRacing` off, the solver decides which turns are race turns and which races are picked, and the legacy fan-farming and look-ahead heuristics step aside. When the solver picks `Train` for a turn, the **legacy extra-race fallback is suppressed entirely** — the bot will not enter a race that the solver did not plan, even if the older fan-farming heuristic would have triggered.
+
+> [!NOTE]
+> **Fan and trophy requirements are handled upstream**, in the decision waterfall ([Section 5](#5-decision-engine)), not here. By the time the eligibility check runs, any requirement still outstanding is by construction one that *cannot* be satisfied this turn — a G1-only trophy goal on a turn with no G1 race — so the check suppresses extra racing rather than triggering it.
 
 > [!IMPORTANT]
 > **Trackblazer** bypasses smart racing logic entirely and races as aggressively as possible, only stopping for summer, finals, or when the consecutive race limit is reached.
@@ -463,7 +527,7 @@ The bot determines if extra races should be run via `checkEligibilityToStartExtr
 When the bot decides to race:
 
 1. **Open the race list** and scan available races.
-2. **Database lookup:** Each detected race name is matched against an internal race database keyed by turn number. The database contains grade, fan reward, surface, and distance information.
+2. **Database lookup:** Each detected race name is matched against an internal race database keyed by turn number. The database contains grade, fan reward, surface, and distance information. Before matching, the OCR'd name is repaired for the classic letter-for-digit confusion (`300Om` becomes `3000m`), and any fuzzy candidate whose database distance contradicts the `(Long)` / `(Mile)` / `(Med)` / `(Sprint)` category spelled out in the detected name is thrown away — without that gate, fuzzy matching happily scores a 3000m Long race at ~0.9 against an 1800m Mile race on the same track.
 3. **Grade priority:** G1 > G2 > G3 > OP > Pre-OP. Higher-grade races are always preferred.
 4. **Filtering:** Races can be filtered by minimum fan threshold, preferred terrain, preferred grades, and preferred distances.
 5. **Selection:** The highest-priority race that passes all filters is selected.
@@ -474,8 +538,17 @@ Once a race is selected:
 
 1. **Strategy Selection:** The bot selects a running strategy (Front Runner, Stalker, Betweener, or Chaser) based on the trainee's aptitudes. If **per-distance strategies** are enabled in Racing Settings, the bot resolves the strategy separately per distance bucket (Sprint, Mile, Medium, Long) against the currently detected `lastRaceDistance`, overriding the global strategy for that race. For **mandatory races** (which skip the normal race-list selection flow), the bot reads the race distance directly off the Race Prep screen so per-distance strategies still apply on Debut, goal, and Finale turns.
 2. **Skip or Manual:** If the "skip" button is available, the bot skips the race animation. Otherwise, it watches and fast-forwards.
-3. **Retries:** If a race is lost and retries are enabled, the bot can retry the race (free retry available once per campaign if enabled). **Mandatory races** (Debut, goal, and Finale races) additionally retry until the trainee places 1st whenever the in-game "Try Again" button is available, so a forced race is re-run for the win rather than accepted at a lower placement.
+3. **Retries:** If a race is lost and retries are enabled, the bot can retry it. Retries are governed by **two budgets**, and a single check applies both wherever a retry is attempted:
+   - A **run-wide pool** (default 3, Trackblazer 5) shared across the whole career. Nothing is exempt from it — when the pool is empty, retrying stops.
+   - A **per-race cap** (default 1) limiting how many times any single race is re-run.
+
+   The per-race cap is **waived for races that retry until 1st** — mandatory races (Debut, goal, and Finale) and, when **Retry Unity Cup Races** is on, Unity Cup races. Those keep retrying for the win as long as the run-wide pool holds out, rather than settling for a lower placement. This is what made a mandatory race stop retrying after a single attempt even with retries left in the pool.
 4. **Complete Career on Failure:** If a mandatory race is lost and this setting is enabled, the bot continues the campaign anyway rather than stopping.
+
+> [!NOTE]
+> **Two fixes worth knowing about, both on the mandatory-race path.** A training or rest action can drop the game straight onto a mandatory race screen without passing through the Main screen, where the turn's date is normally read. The bot used to look the race up against the **previous** turn's number, match the wrong race, and pick the wrong running style for it — so it now re-reads the date when it lands on a mandatory race prep screen having not yet read it this turn. (The Unity Cup opponent-selection screen is the one exception: it carries neither OCR anchor the date read needs, and Unity Cup never looks a race up by turn anyway.)
+>
+> Separately, a retry used to **cancel itself**. The in-game "Try Again" dialog does not vanish the instant it is tapped, so the next pass of the loop would find the same dialog still on screen and close it — killing the retry that had just been started. The bot now waits for the dialog to actually go away before continuing.
 
 > [!CAUTION]
 > Losing a mandatory race without `enableCompleteCareerOnFailure` will **stop the bot entirely**. If you want fully unattended runs, make sure this setting is enabled.
@@ -537,14 +610,35 @@ The option with the **highest total weight** is selected.
 
 ## 9. Scenario: URA Finale
 
-URA Finale is the **simplest scenario** — it uses almost entirely the base `Campaign` logic with only one minor override:
-
-- **`openFansDialog()`:** Uses a different button location (`ButtonHomeFansInfo` in the top half of the screen) to open the fans information panel. This is the only code difference from the base campaign.
-
-Everything else — decision logic, training, racing, events, and finale handling — uses the standard base implementation described in sections 3–8.
+URA Finale is the **simplest scenario** — decision logic, training, racing, events, and finale handling all use the standard base implementation described in sections 3–8. It adds only two things of its own: a different fans-panel button location (`openFansDialog()` uses `ButtonHomeFansInfo` in the top half of the screen), and the **Happy Meek duel** introduced by the July 2026 rebalance.
 
 > [!TIP]
-> If you're new to the bot, URA Finale is the best scenario to start with since its behavior is entirely described by the shared systems in sections 3–8 with no scenario-specific complexity.
+> If you're new to the bot, URA Finale is still the best scenario to start with — the duel below is the only scenario-specific behavior, and it is off the critical path.
+
+### 9.1 The Happy Meek Duel
+
+On some turns the game offers **"Happy Meek's Challenge!"** — a duel that, if won, **raises the cap on a stat and boosts it**. It surfaces in two places:
+
+- On the **training screen**, a duel badge sits on exactly one of the five facilities that turn.
+- If the bot trains that facility, the **duel event** fires, offering a row per stat ("Contest of Speed!", and so on) with a **win-prediction icon** beside each.
+
+**Detecting the event.** The duel is not in the event database, so the normal fuzzy title match would confidently resolve it to some unrelated event and pick that event's options. The bot instead dispatches on the **raw OCR'd title** — if it reads "Happy Meek" and "Challenge", the duel handler takes the event regardless of what the fuzzy matcher thinks it is.
+
+**Picking a contest.** Each row's prediction is read from its icon and graded Great > Good > Bad > Worst (a row matching none of the three icon templates is the untemplated "X" tier, and grades as Worst). The bot prefers a contest that is both **on a stat it actually wants** (from the Event Choice stat priority) **and** has **Good-or-better odds**. If no row satisfies both, it falls back to simply taking the best odds on offer. Ties break toward the higher-priority stat, then the earlier row. The "Contest of energy" row is recognized as not-a-stat and never counts as a preferred pick.
+
+**Biasing training toward the duel.** Winning the duel is only possible if the bot trains the badged facility in the first place, so **Happy Meek Duel Bias** (Scenario Overrides → URA Finale) multiplies that facility's score:
+
+| Setting | Multiplier | Behavior |
+|---------|-----------|----------|
+| `Off` | 1.0x | Never steer toward the duel facility |
+| `Moderate` *(default)* | 1.25x | Wins when the duel facility is within ~20% of the best pick |
+| `Aggressive` | 1.6x | Strongly prefers the duel facility |
+
+The bias is deliberately conservative about safety: it is **not** applied if the facility's failure chance is unreadable or above the user's maximum, and it never boosts a facility already scoring zero. A risky duel is left alone rather than forced. The badge is located once per turn and its screen position mapped to a facility column, so the five per-facility analyses just read the answer instead of re-matching the badge five times.
+
+The duel prints its own summary (the contests, their predictions, and which one was taken) and suppresses the generic event summary, which would otherwise report the rewards of whatever unrelated event the fuzzy matcher had landed on.
+
+### 9.2 Finale Behavior
 
 **Finale behavior (turns 73–75):**
 - All 3 finale races (Qualifier, Semi-Final, Finals) are **mandatory**.
@@ -604,21 +698,49 @@ stateDiagram-v2
 After selecting an opponent:
 
 - The bot checks if the "See All Race Results" button is **locked** (via `checkDisabled()`).
-  - **Locked:** The bot clicks "Watch Main Race" and runs the race manually with retries.
+  - **Locked:** The bot clicks "Watch Main Race" and runs the race manually with retries. When **Retry Unity Cup Races** is on (default), a lost race is re-run until it is won or the run-wide retry pool is exhausted, ignoring the per-race cap — see [Section 7.4](#74-race-execution).
   - **Unlocked:** The bot clicks the skip button to instantly see results.
 - The race sequence ends when `IconUnityCupRaceEndLogo` is detected, at which point the bot clicks "Next" to return to the main screen.
 - **Finals race** (`ButtonUnityCupRaceFinal`): When racing Team Zenith in the finals, the bot sets `bIsFinals = true` which auto-confirms the opponent dialog without prediction analysis.
 
 ### 10.4 Training Scoring
 
-Unity Cup uses a modified training scoring mode during Junior and Classic years that factors in the **Spirit Gauge** mechanic:
+Unity Cup uses a modified training scoring mode during Junior and Classic years that factors in the **Spirit Gauge** mechanic. The July 2026 rebalance added a second, stronger burst on top of the existing Spirit Explosion, so the bot now recognizes three gauge states per facility and scores them in the order **Stats > Extreme Burst > Spirit Explosion > Gauge Filling**.
 
-- **Spirit Burst Bonus:** +800 base + 400 per additional gauge ready to burst
-- **Facility Preference:** +200 for Speed/Wit facilities; conditional for Stamina/Power/Guts
-- **Gauge Fill Bonus:** +300 base + 100 per fillable gauge, with +200 bonus in the early game
-- **Relationship:** 1.5x scaled relationship score
+The **Extreme Spirit Burst** (purple flames, as against the normal burst's teal) is a one-time, cap-raising, 0%-fail burst — by far the most valuable thing on the screen. Its bonus is sized to always outrank a normal burst, and unlike the normal burst it carries no facility preference: if an extreme burst is available, the bot goes and takes it.
 
-From Senior Year onward, Unity Cup switches to the standard stat efficiency scoring described in [Section 6.2](#62-scoring-algorithm).
+| Bonus | Default | Formula |
+|-------|---------|---------|
+| **Extreme Spirit Burst** | 2000 base + 1000 per ready support | `base + count x perGauge` |
+| **Spirit Explosion (normal burst)** | 800 base + 400 per gauge | `base + count x perGauge`, then facility preference |
+| **Gauge Fill** | 60 base + 40 per fillable gauge | `base + count x perGauge`, +100 flat during Junior Year |
+| **Relationship** | 1.5x | Scaled relationship score |
+
+Facility preference applies only to the **normal** burst: +200 for Speed and Wit, +150 for Stamina/Power when that stat is still under 80% of its target, and Guts gets +100 only if it can fill 2 or more gauges (otherwise -50, since Guts is a poor burst target on its own). Every bonus above is a tunable slider under the scoring constants.
+
+**From Senior Year onward** the scenario reverts to standard stat-efficiency scoring ([Section 6.2](#62-scoring-algorithm)) — with one carve-out. An extreme burst is near-mandatory whenever it shows up, so its bonus is still added on top of the base score in Senior year. Normal bursts and gauge-filling stay Junior/Classic-only.
+
+**Gating the bursts.** Three optional overrides (Scenario Overrides → Unity Cup) let the user stop the bot from chasing a burst onto a stat it does not want. All three default to off / unrestricted:
+
+| Setting | Default | Effect |
+|---------|---------|--------|
+| **Burst Failure-Chance Exemption** | 0 (disabled) | Lets a training with a normal burst ready run up to this failure chance before being skipped. 0 keeps the normal failure limit. |
+| **Extreme Burst Minimum Stat Gain** | 0 (always burst) | Only prioritize an extreme burst when the facility's projected main-stat gain is at least this value, so a weak stat turn doesn't waste the one-time burst. |
+| **Burst Only Top 3 Stats After Junior** | false | After Junior Year, only prioritize bursts (normal *and* extreme) on facilities whose stat is in the top 3 priorities. Junior Year stays unrestricted. |
+
+A burst blocked by any of these gates is treated as if it were not there at all. An **extreme** burst bypasses the failure-chance ceiling entirely (it cannot fail in-game), whereas a **normal** burst only earns its raised ceiling if it also clears the Risky Training minimum main-stat-gain threshold (default 20) — a training too weak to earn the risky ceiling is too weak to earn the burst ceiling. That last gate is inert unless Risky Training is on.
+
+### 10.5 Spirit Gauge Detection
+
+The gauge is a droplet sitting at a fixed slot to the left of each support's training icon, and detecting it reliably took two fixes worth knowing about.
+
+**Fillable gauges are found by their outline, not their fill.** A gauge that can still be filled is identified by its bright-blue **outline ring** in HSV, which survives the wildly different backgrounds behind it (pale sky, grayish classroom) far better than counting fill pixels does.
+
+**Facility buttons are excluded.** The same chevron shape that marks a burst also badges the level-up indicators on the bottom facility buttons, and it matches the burst templates at high confidence. Detection is therefore restricted to the upper support column — without that filter, every single training screen reads a phantom extreme burst off the Guts button's badge.
+
+Templates are matched at **0.80 confidence** rather than 0.90: real matches score in the 0.82–0.98 band, so a 0.90 threshold made them a coin flip and silently undercounted gauges. A support that is ready to burst shows only the flame and no fill anchor, so detection never requires both.
+
+The **Start Spirit Gauge Detection Test** debug test walks all five facilities from the Training screen and prints the fillable / ready-to-burst / ready-to-extreme-burst counts for each, so gauge detection can be verified without playing a career. With Debug Mode on it also dumps the per-gauge crops and logs why each gauge was or wasn't counted.
 
 ---
 
@@ -1205,9 +1327,16 @@ Two follow-up behaviors keep the schedule robust when reality drifts from the pl
 - **Catch-up** (`isBehindSchedule()`, gated by `enableRecreationCatchUp`) — if fewer outings have started than the number of pinned turns already due, the bot does an outing on the next available turn to get back on track.
 - **Abandon** (`isScheduleAbandoned()`) — once the current turn passes `purePassionTurn` with the chain still unfinished, the schedule is dropped and recreation falls back to the opportunistic path. `isScheduleActive()` is the single gate that couples "enabled" with "not abandoned", and every scheduling call site checks it.
 
-### 12.5 Group Event Progress OCR
+### 12.5 Reading the Chain's Progress
 
-The per-run counter (`recreationOutingsStarted`) drifts if the user plays a few turns manually or restarts the bot mid-run, so it is not trusted on its own. `getGroupEventProgress()` OCRs the "X/Y" text to the right of the **Group Event Progress** pill on the open partner dialog and re-syncs both the completed count and the chain total — the authoritative position that survives a restart or manual play. The crop is anchored to the pill's right edge rather than a fixed pixel offset, so it holds up across scrolling and resolution changes, but it may still need on-device calibration — the `GroupEventProgress` debug crop dumps the region for tuning.
+Knowing how far along the date chain is matters because the bot must not finish it early ([Section 12.3](#123-holding-the-final-outing)). The per-run counter (`recreationOutingsStarted`) drifts whenever the user plays a few turns manually or restarts the bot mid-run, so it is never trusted on its own. The bot reads the true position off the screen instead, in three tiers:
+
+1. **The Event Progress chevrons (primary).** The recreation popup draws a row of chevrons next to the **Event Progress** pill — filled/blue for a completed step, hollow/gray for a pending one. The bot counts them and takes the rightmost filled chevron as the completed count and the total number of chevrons as the chain length. This works even for chevron-only dates that display no "X/Y" text at all, which is why it is now the primary signal.
+2. **The "X/Y" text (fallback).** If the chevrons don't resolve, the bot falls back to OCR'ing the "X/Y" progress text on the open partner dialog, anchored to the pill's right edge.
+3. **The per-run counter (last resort).** Only used if neither read lands.
+
+> [!NOTE]
+> The chevrons are counted by **color segmentation and column projection**, not template matching. Template matching blanks out each hit with a rectangle that bleeds about 10px past it, but the chevrons sit only ~13px apart, so each match was erasing its neighbors — a 5-chevron row read as 3. Splitting the row into runs of non-background columns counts them all. This same undercounting trap applies to any tightly packed row of identical shapes.
 
 ### 12.6 Partner-dialog safety
 
