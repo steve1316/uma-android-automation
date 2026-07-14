@@ -2,6 +2,7 @@ package com.steve1316.uma_android_automation.bot
 
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.SkillCandidate
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateCommonPurchases
+import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateLeftoverDrainPurchases
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateOptimizeRankPurchases
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.calculateSkillPurchases
 import com.steve1316.uma_android_automation.bot.SkillPlan.Companion.isRecoverySkill
@@ -26,6 +27,7 @@ import kotlin.random.Random
  * - [SkillPlan.calculateOptimizeRankPurchases]: greedy rank-maximizing strategy.
  * - [SkillPlan.calculateCommonPurchases]: phased buying (negative, inherited unique, user-planned).
  * - [SkillPlan.calculateSkillPurchases]: full orchestrator combining common + strategy-specific logic.
+ * - [SkillPlan.calculateLeftoverDrainPurchases]: exact subset-sum that spends the points left over at career end.
  *
  * Includes randomized stress tests that generate dummy skill lists (10-100 skills) with
  * random prices, eval points, and flags, verifying budget and uniqueness invariants
@@ -702,6 +704,123 @@ class SkillPlanPurchasingTest {
             assertEquals(3.0, recoveryBoostedRatio(baseRatio = 2.0, isRecovery = true, staminaHeavy = true, boost = 1.5), 0.001, "Recovery skill on a stamina build is boosted")
             assertEquals(2.0, recoveryBoostedRatio(baseRatio = 2.0, isRecovery = false, staminaHeavy = true, boost = 1.5), 0.001, "A non-recovery skill is never boosted")
             assertEquals(2.0, recoveryBoostedRatio(baseRatio = 2.0, isRecovery = true, staminaHeavy = false, boost = 1.5), 0.001, "Recovery skill on a non-stamina build is not boosted")
+        }
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Leftover point drain
+
+    @Nested
+    @DisplayName("calculateLeftoverDrainPurchases()")
+    inner class LeftoverDrainTests {
+        /** The total price of a set of picks. */
+        private fun spend(picks: List<Pair<String, Int>>): Int = picks.sumOf { it.second }
+
+        @Test
+        fun `spends leftover points that the normal strategies would have stranded`() {
+            // The reported case: a career ended with 67 points unspent while a 66-point skill sat available in the list.
+            val candidates =
+                listOf(
+                    SkillCandidate(name = "Dodging Danger", price = 66, evaluationPoints = 103),
+                    SkillCandidate(name = "Long Corners", price = 70, evaluationPoints = 195),
+                    SkillCandidate(name = "Competitive Spirit", price = 72, evaluationPoints = 129),
+                )
+
+            val picks = calculateLeftoverDrainPurchases(candidates, budget = 67)
+
+            assertEquals(listOf("Dodging Danger" to 66), picks, "The only affordable skill is bought, leaving 1 point behind instead of 67")
+        }
+
+        @Test
+        fun `finds an exact-spend combination that a greedy pass would miss`() {
+            // A greedy "buy the biggest that fits" pass would take 99 and strand 1 point. The exact search takes 60 + 40 and strands nothing.
+            val candidates =
+                listOf(
+                    SkillCandidate(name = "Expensive", price = 99, evaluationPoints = 300),
+                    SkillCandidate(name = "Medium", price = 60, evaluationPoints = 100),
+                    SkillCandidate(name = "Cheap", price = 40, evaluationPoints = 80),
+                )
+
+            val picks = calculateLeftoverDrainPurchases(candidates, budget = 100)
+
+            assertEquals(100, spend(picks), "The budget is spent down to exactly zero")
+            assertEquals(listOf("Cheap", "Medium"), picks.map { it.first }, "The two cheaper skills are bought instead of the single expensive one")
+        }
+
+        @Test
+        fun `breaks ties on total evaluation points`() {
+            // Both "Rich" alone and "PoorA" + "PoorB" spend the full 100, so the more valuable subset wins.
+            val candidates =
+                listOf(
+                    SkillCandidate(name = "PoorA", price = 50, evaluationPoints = 10),
+                    SkillCandidate(name = "PoorB", price = 50, evaluationPoints = 10),
+                    SkillCandidate(name = "Rich", price = 100, evaluationPoints = 500),
+                )
+
+            val picks = calculateLeftoverDrainPurchases(candidates, budget = 100)
+
+            assertEquals(100, spend(picks), "Both subsets spend the whole budget")
+            assertEquals(listOf("Rich" to 100), picks, "The subset worth more evaluation points wins the tie")
+        }
+
+        @Test
+        fun `never buys a blacklisted skill even when it fits perfectly`() {
+            val candidates =
+                listOf(
+                    SkillCandidate(name = "Banned", price = 100, evaluationPoints = 500),
+                    SkillCandidate(name = "Allowed", price = 90, evaluationPoints = 50),
+                )
+
+            val picks = calculateLeftoverDrainPurchases(candidates, budget = 100, blacklist = listOf("Banned"))
+
+            assertEquals(listOf("Allowed" to 90), picks, "The blacklisted skill is skipped even though it would spend the budget exactly")
+        }
+
+        @Test
+        fun `does not re-buy a skill the plan already covers`() {
+            val candidates =
+                listOf(
+                    SkillCandidate(name = "Planned", price = 100, evaluationPoints = 500),
+                    SkillCandidate(name = "Extra", price = 90, evaluationPoints = 50),
+                )
+
+            val picks = calculateLeftoverDrainPurchases(candidates, budget = 100, alreadyPlanned = listOf("Planned"))
+
+            assertEquals(listOf("Extra" to 90), picks, "An already-planned skill is not bought a second time")
+        }
+
+        @Test
+        fun `never exceeds the budget`() {
+            val random = Random(1316)
+            repeat(200) {
+                val budget = random.nextInt(0, 2000)
+                val candidates =
+                    List(random.nextInt(1, 40)) { index ->
+                        SkillCandidate(name = "Skill$index", price = random.nextInt(1, 500), evaluationPoints = random.nextInt(0, 900))
+                    }
+
+                val picks = calculateLeftoverDrainPurchases(candidates, budget)
+
+                assertTrue(spend(picks) <= budget, "Spend stays within the budget")
+                assertEquals(picks.size, picks.map { it.first }.distinct().size, "No skill is bought twice")
+
+                // Nothing affordable may be left behind, otherwise the drain failed at its one job.
+                val remaining = budget - spend(picks)
+                val bought = picks.map { it.first }.toSet()
+                assertTrue(candidates.none { it.name !in bought && it.price <= remaining }, "No affordable skill is left unbought")
+            }
+        }
+
+        @Test
+        fun `returns nothing for degenerate inputs`() {
+            val candidates = listOf(SkillCandidate(name = "Skill", price = 100, evaluationPoints = 50))
+
+            assertTrue(calculateLeftoverDrainPurchases(candidates, budget = 0).isEmpty(), "A zero budget buys nothing")
+            assertTrue(calculateLeftoverDrainPurchases(candidates, budget = -50).isEmpty(), "A negative budget buys nothing")
+            assertTrue(calculateLeftoverDrainPurchases(emptyList(), budget = 500).isEmpty(), "An empty skill list buys nothing")
+            assertTrue(calculateLeftoverDrainPurchases(candidates, budget = 99).isEmpty(), "Nothing is bought when everything is too expensive")
+            assertTrue(calculateLeftoverDrainPurchases(candidates, budget = 999999).isEmpty(), "An implausible budget from a bad OCR read is rejected")
         }
     }
 }
