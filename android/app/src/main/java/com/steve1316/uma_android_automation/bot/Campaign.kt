@@ -114,6 +114,10 @@ enum class MainScreenAction {
 private const val GROUP_PROGRESS_GAP_X = 15
 private const val GROUP_PROGRESS_WIDTH = 120
 
+// Number of half-second polls to wait for the Try Again dialog to leave the screen after clicking it.
+// It normally goes within a poll or two, so this is just headroom for a slow tap or a laggy transition.
+private const val TRY_AGAIN_DIALOG_CLOSE_ATTEMPTS = 20
+
 /**
  * Whether mood recovery should be skipped because the finale is underway. Recovering mood with at most three turns left wastes one of them, so from the first finale turn (day 73, the
  * same boundary as GameDate.bIsFinaleSeason's day > 72) the bot should train or race instead. Pure so it is unit-testable without a live Campaign.
@@ -880,15 +884,30 @@ abstract class Campaign(game: Game) : Task(game) {
      * @return True if the retry was initiated (button clicked), false to close the dialog without retrying.
      */
     open fun shouldRetryRace(dialog: DialogInterface, args: Map<String, Any>): Boolean {
-        if (racing.raceRetries > 0 && racing.retriesThisRace < racing.maxRetriesPerRace) {
+        if (Racing.canRetryRace(racing.raceRetries, racing.retriesThisRace, racing.maxRetriesPerRace, racing.bRetryUntilFirst)) {
             MessageLog.i(TAG, "[RACE] Retrying the race. Retries remaining: ${racing.raceRetries}")
             racing.raceRetries--
             racing.retriesThisRace++
             game.wait(0.5)
             ButtonTryAgain.click(game.imageUtils)
+            waitForTryAgainDialogToClose()
             return true
         }
         return false
+    }
+
+    /**
+     * Waits for the Try Again dialog to leave the screen after its button was clicked.
+     *
+     * The [Racing.runRaceWithRetries] loop handles dialogs at the start of every iteration, and the dialog does not vanish the instant it is tapped.
+     * Returning while it is still up lets the same dialog get handled a second time, which closes it and cancels the retry that was just started.
+     */
+    private fun waitForTryAgainDialogToClose() {
+        repeat(TRY_AGAIN_DIALOG_CLOSE_ATTEMPTS) {
+            game.wait(0.5)
+            if (!ButtonTryAgain.check(game.imageUtils)) return
+        }
+        MessageLog.w(TAG, "[WARN] waitForTryAgainDialogToClose:: The Try Again dialog is still on screen after clicking it.")
     }
 
     /**
@@ -979,7 +998,10 @@ abstract class Campaign(game: Game) : Task(game) {
         if (shouldRetryRace(dialog, args)) {
             // Retry was initiated by the hook.
         } else {
-            MessageLog.w(TAG, "[WARN] handleDialogs:: No retries remaining but Try Again dialog detected. Closing dialog...")
+            MessageLog.w(
+                TAG,
+                "[WARN] handleDialogs:: Out of retries for this race (pool: ${racing.raceRetries}, used on this race: ${racing.retriesThisRace}/${racing.maxRetriesPerRace}). Closing dialog...",
+            )
             dialog.close(game.imageUtils)
         }
 
@@ -1145,6 +1167,7 @@ abstract class Campaign(game: Game) : Task(game) {
         return if (IconRaceDayRibbon.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.v(TAG, "[INFO] Bot is at the preparation screen with a mandatory race ready to be completed.")
             if (game.scenario == "Unity Cup") game.wait(1.0)
+            refreshDateForMandatoryRace()
             true
         } else if (IconGoalRibbon.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             // Most likely the user started the bot here so a delay will need to be placed to allow the start banner of the Service to disappear.
@@ -1153,8 +1176,11 @@ abstract class Campaign(game: Game) : Task(game) {
             // Walk back to the preparation screen.
             ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
             game.wait(1.0)
+            refreshDateForMandatoryRace()
             true
         } else if (game.scenario == "Unity Cup" && ButtonUnityCupRace.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+            // The date is deliberately not refreshed here. The opponent-selection screen carries neither the Main screen nor the Race List anchor that the
+            // date OCR needs, and the Unity Cup race handling does not look a race up by turn anyway.
             MessageLog.v(TAG, "[INFO] Bot is awaiting opponent selection for a Unity Cup race.")
             true
         } else {
@@ -1360,6 +1386,23 @@ abstract class Campaign(game: Game) : Task(game) {
             MessageLog.v(TAG, "[DATE] New date: $date")
             return true
         }
+    }
+
+    /**
+     * Refreshes the date before a mandatory race when the Main screen was skipped on the way in.
+     *
+     * A training or rest action advances the game into the mandatory race screens, bypassing the Main screen where [updateDate] normally runs.
+     * Without this, the race name is looked up against the previous turn, which matches the wrong race and gets the wrong per-distance running style.
+     *
+     * Only call this from a screen the date OCR can actually read, which means one that carries the Main screen or the Race List anchor.
+     * The Unity Cup opponent-selection screen carries neither, so [checkMandatoryRacePrepScreen] skips it.
+     */
+    private fun refreshDateForMandatoryRace() {
+        if (bHasCheckedDateThisTurn) return
+
+        // Only the date is refreshed, so bHasCheckedDateThisTurn is left alone and the remaining turn-start updates still run at the Main screen.
+        // Passing isOnMainScreen = false makes the OCR try the Race List anchor before falling back to the Main screen one.
+        updateDate(isOnMainScreen = false)
     }
 
     /**
