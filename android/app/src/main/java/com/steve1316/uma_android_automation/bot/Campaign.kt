@@ -477,22 +477,26 @@ abstract class Campaign(game: Game) : Task(game) {
         }
         MessageLog.i(TAG, "[TEST] Scrollbar detected at $bboxBar with its thumb at $bboxThumb.")
 
-        // Is this scrollbar a control or only an indicator? It matters: the Umamusume Details lists draw one that reports the position but moves nothing when dragged, and a caller that trusts
-        // it silently leaves the list wherever it already was.
-        if (scrollList.isScrollBarDraggable()) {
-            MessageLog.i(TAG, "[TEST] Dragging the thumb moved it, so this scrollbar can be dragged to scroll the list.")
-        } else {
-            MessageLog.i(TAG, "[TEST] Dragging the thumb did not move it, so this scrollbar only reports the position. This list can only be scrolled by swiping its content.")
-        }
+        // How a list is scrolled follows from its kind, and is not probed for: a full-screen list's thumb is a real handle that follows the finger, while a dialog draws a rail over its own
+        // content, so dragging that scrolls the list the OPPOSITE way and it has to be swiped instead. Walking the list end to end is what checks that assumption - get it wrong and the list will
+        // not reach the ends, which the thumb positions below make obvious.
+        val mechanism: String = if (bIsDialogOpen) "swiping its content (a dialog's rail is painted over the content, so it cannot be dragged)" else "dragging the thumb (a real handle)"
+        MessageLog.i(TAG, "[TEST] Walking the list from end to end by $mechanism.")
 
-        // Now swipe the content, which moves every list.
-        MessageLog.i(TAG, "[TEST] Attempting to scroll DOWN by swiping the content...")
-        scrollList.scrollDown()
-        MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}. Attempting to scroll UP again...")
-        scrollList.scrollUp()
-        MessageLog.i(TAG, "[TEST] Thumb is now at y=${scrollList.getListScrollBarBoundingRegion().second?.y}.")
+        val topY: Int = bboxBar.y
+        val bottomY: Int = bboxBar.y + bboxBar.h
+        scrollList.ensureAtTop()
+        val atTop: Int? = scrollList.getListScrollBarBoundingRegion().second?.y
+        MessageLog.i(TAG, "[TEST] Sent to the top: thumb at y=$atTop (the top of the track is y=$topY). Now sending it to the bottom...")
+        scrollList.ensureAtBottom()
+        val bboxThumbAtBottom: BoundingBox? = scrollList.getListScrollBarBoundingRegion().second
+        val atBottom: Int? = bboxThumbAtBottom?.let { it.y + it.h }
+        MessageLog.i(TAG, "[TEST] Sent to the bottom: thumb ends at y=$atBottom (the bottom of the track is y=$bottomY). Now sending it back to the top...")
+        scrollList.ensureAtTop()
+        val backAtTop: Int? = scrollList.getListScrollBarBoundingRegion().second?.y
+        MessageLog.i(TAG, "[TEST] Sent back to the top: thumb at y=$backAtTop.")
 
-        MessageLog.i(TAG, "[TEST] Scrollbar detection test complete.")
+        MessageLog.i(TAG, "[TEST] Scrollbar detection test complete. The list reached both ends if the thumb landed on the track's ends above, and the mechanism for this list is wrong if it did not.")
     }
 
     /**

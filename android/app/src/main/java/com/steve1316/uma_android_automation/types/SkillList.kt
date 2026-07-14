@@ -505,9 +505,9 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         switchToSkillsTab()
 
         // Null once the panel is known not to scroll, which is every gate this needs: a trainee whose skills fit on one page has no scrollbar, so the grid is read in one pass and never swiped.
-        val scrollList: ScrollList? = createDialogScrollList(game)?.takeIf { it.hasScrollBar() }
+        val scrollList: ScrollList? = createDialogScrollList(game)?.takeIf { it.canScroll() }
         MessageLog.d(TAG, "[DEBUG] parseDetailsSkillsTab:: Skills panel is scrollable: ${scrollList != null}.")
-        if (bResetToTop) scrollList?.scrollToTopBySwiping()
+        if (bResetToTop) scrollList?.ensureAtTop()
 
         // Keyed by the glyph-stripped base name plus its polarity, not by the full name. Every pass re-reads the cells the previous pass overlapped, and a skill whose glyph is legible on one
         // pass but not the next would otherwise land twice under two variants ("Mile Straightaways ◎" and "Mile Straightaways ○") and count as two skills. Collapsing the two circles is the
