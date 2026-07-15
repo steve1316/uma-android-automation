@@ -350,6 +350,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         val mainStatGain: Int
             get() = statGains[name] ?: 0
 
+        /** Whether this training has a Unity Cup Spirit Explosion gauge ready to burst (normal or extreme), mirroring the same flag on the analysis result it was built from. */
+        val isBurstReady: Boolean
+            get() = (extras["spiritGaugesReadyToBurst"] as? Int ?: 0) > 0 || (extras["spiritGaugesReadyToExtremeBurst"] as? Int ?: 0) > 0
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -2494,7 +2498,19 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
 
             if (selected.failureChance > maximumFailureChance) {
-                keyFactors.add("Selected despite ${selected.failureChance}% failure chance (Risky Training enabled or Finals).")
+                // Name the exemption that actually raised the ceiling for this training. Order follows how the gate resolves it: a ready burst raises it most, then Riskier Training, then
+                // the Wit exemption (which the gate checks after risky), then a Finals force-pick. The generic tail covers any remaining bypass such as an active Good-Luck Charm.
+                val riskyApplied = riskyExemptFromFailureChance(selected.mainStatGain, enableRiskyTraining, riskyTrainingMinStatGain)
+                val witApplied = witExemptFromFailureChance(selected.name, selected.mainStatGain, enableWitOverRest, witOverRestMinStatGain)
+                val reason =
+                    when {
+                        selected.isBurstReady -> "a ready Spirit Explosion gauge raised its failure-chance limit"
+                        riskyApplied -> "Riskier Training raised its limit to $riskyTrainingMaxFailureChance% for its main stat gain of ${selected.mainStatGain}"
+                        witApplied -> "the Wit exemption raised its limit to ${maxOf(maximumFailureChance, witOverRestMaxFailureChance)}%"
+                        campaign.checkFinals() -> "the Finals bypasses the failure-chance limit"
+                        else -> "an exemption raised the failure-chance limit"
+                    }
+                keyFactors.add("Selected despite ${selected.failureChance}% failure chance ($reason).")
             }
 
             // Output ranking reasoning if a runner-up exists.
