@@ -168,6 +168,18 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The maximum failure chance allowed for risky training. */
     private val riskyTrainingMaxFailureChance: Int = SettingsHelper.getIntSetting("training", "riskyTrainingMaxFailureChance")
 
+    /**
+     * Whether Wit gets its own, more lenient failure ceiling so a good Wit turn survives the gate instead of being rejected alongside the other stats. Wit's failure chance decays far
+     * more slowly with energy than the other four (see `estimateFailureChanceFromEnergy`), so the shared ceiling rejects Wit turns that are still worth taking over a rest.
+     */
+    private val enableWitOverRest: Boolean = SettingsHelper.getBooleanSetting("training", "enableWitOverRest", false)
+
+    /** The failure ceiling applied to Wit when [enableWitOverRest] is on. Kept separate from [maximumFailureChance] because Wit tolerates low energy far better. */
+    private val witOverRestMaxFailureChance: Int = SettingsHelper.getIntSetting("training", "witOverRestMaxFailureChance", 35)
+
+    /** The main-stat gain Wit must reach before its raised ceiling applies, so only a genuinely high-value Wit turn survives a failure chance the other stats could not. */
+    private val witOverRestMinStatGain: Int = SettingsHelper.getIntSetting("training", "witOverRestMinStatGain", 25)
+
     /** Whether the expected-value failure gate is active. When on, trainings whose total stat gain is poor value for their failure chance are skipped. */
     private val enableExpectedValueGate: Boolean = SettingsHelper.getBooleanSetting("training", "enableExpectedValueGate", true)
 
@@ -831,6 +843,51 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             } else {
                 baseFailureChance
             }
+
+        /**
+         * The failure-chance ceiling a single training must clear, before any Unity Cup burst exemption raises it further. Risky training raises the ceiling for any high-gain training.
+         * The Wit exemption raises it for Wit alone, because Wit's failure chance decays far more slowly with energy than the other four (see `estimateFailureChanceFromEnergy`), so the
+         * shared ceiling otherwise rejects Wit turns that are still worth taking over a rest. Risky training is checked first, so it wins when a Wit training qualifies for both. The Wit
+         * branch takes the larger of the two ceilings so enabling it can never lower a ceiling the user already raised. Pure and unit-testable.
+         *
+         * @param maximumFailureChance The shared failure-chance ceiling from settings.
+         * @param riskyExempt Whether risky training opted into this training.
+         * @param riskyTrainingMaxFailureChance The risky-training ceiling from settings.
+         * @param witExempt Whether the Wit exemption opted into this training.
+         * @param witOverRestMaxFailureChance The Wit ceiling from settings.
+         * @return The failure-chance ceiling to apply to this training.
+         */
+        fun baseFailureChanceFor(maximumFailureChance: Int, riskyExempt: Boolean, riskyTrainingMaxFailureChance: Int, witExempt: Boolean, witOverRestMaxFailureChance: Int): Int =
+            when {
+                riskyExempt -> riskyTrainingMaxFailureChance
+                witExempt -> maxOf(maximumFailureChance, witOverRestMaxFailureChance)
+                else -> maximumFailureChance
+            }
+
+        /**
+         * Whether Riskier Training opts into this training, raising its failure ceiling for a high enough main stat gain. Pure so both the analysis gate and the selection log share one
+         * definition instead of respelling the predicate.
+         *
+         * @param mainStatGain The training's projected gain for its own stat.
+         * @param enableRiskyTraining Whether the user turned Riskier Training on.
+         * @param riskyTrainingMinStatGain The main stat gain the training must reach to qualify.
+         * @return True when this training gets the Riskier Training failure ceiling.
+         */
+        fun riskyExemptFromFailureChance(mainStatGain: Int, enableRiskyTraining: Boolean, riskyTrainingMinStatGain: Int): Boolean =
+            enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
+
+        /**
+         * Whether the Wit failure-ceiling exemption opts into this training. Wit only, and only when its own gain clears the minimum, so a low-value Wit turn is never worth the extra
+         * risk the raised ceiling accepts. Pure and unit-testable.
+         *
+         * @param stat The training being gated.
+         * @param mainStatGain The training's projected gain for its own stat.
+         * @param enableWitOverRest Whether the user turned the exemption on.
+         * @param witOverRestMinStatGain The main stat gain the Wit training must reach to qualify.
+         * @return True when this training gets Wit's raised failure ceiling.
+         */
+        fun witExemptFromFailureChance(stat: StatName, mainStatGain: Int, enableWitOverRest: Boolean, witOverRestMinStatGain: Int): Boolean =
+            enableWitOverRest && stat == StatName.WIT && mainStatGain >= witOverRestMinStatGain
 
         /**
          * The additive Unity Cup Extreme Spirit Burst score bonus for `count` supports ready to extreme-burst. Shared by the Junior/Classic Unity scorer and the Senior-year path so the
@@ -1811,8 +1868,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Whether risky training opted into this training. This one rule decides the raised failure ceiling, the burst exemption below, and the expected-value exemption further
             // down, so it is named once here rather than respelled at each use.
             val mainStatGain: Int = result.mainStatGain
-            val riskyExempt = enableRiskyTraining && mainStatGain >= riskyTrainingMinStatGain
-            val baseFailureChance = if (riskyExempt) riskyTrainingMaxFailureChance else maximumFailureChance
+            val riskyExempt = riskyExemptFromFailureChance(mainStatGain, enableRiskyTraining, riskyTrainingMinStatGain)
+            // Wit exemption: Wit's failure chance decays far more slowly with energy than the other four stats, so the shared ceiling rejects Wit turns that are still better than a rest.
+            // Giving Wit its own ceiling is what lets a low-energy Wit turn survive instead of emptying the map and forcing a recovery.
+            val witExempt = witExemptFromFailureChance(result.name, mainStatGain, enableWitOverRest, witOverRestMinStatGain)
+            val baseFailureChance = baseFailureChanceFor(maximumFailureChance, riskyExempt, riskyTrainingMaxFailureChance, witExempt, witOverRestMaxFailureChance)
 
             // Unity Cup burst exemption: a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than usual (tunable ceiling, no-op at the default 0). An
             // Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless of the setting.
@@ -1834,6 +1894,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                             "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%) despite high main stat gain of $mainStatGain.",
                         )
                         "high failure chance (risky)"
+                    } else if (witExempt) {
+                        MessageLog.i(
+                            TAG,
+                            "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding even the raised Wit threshold ($effectiveFailureChance%).",
+                        )
+                        "high failure chance (wit)"
                     } else {
                         MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%).")
                         "high failure chance"
@@ -1857,11 +1923,13 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 continue
             }
 
-            // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when a Unity Cup
-            // burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance). Unlike the failure-chance exemption above, this one reads
-            // isBurstReady directly and is deliberately not gated on the minimum main stat gain: it waives a value heuristic rather than a user-set risk ceiling.
+            // Expected-value gate: skip trainings whose total stat gain is poor value for their failure chance. Exempt when risky training opted into this training, when the Wit
+            // exemption opted into it, when a Unity Cup burst is ready (burst value is not captured by statGains), or for Good-Luck Charm flows (ignoreFailureChance). Unlike the
+            // failure-chance exemption above, the burst one reads isBurstReady directly and is deliberately not gated on the minimum main stat gain: it waives a value heuristic rather
+            // than a user-set risk ceiling. Wit is exempt here for the same reason it gets its own ceiling - this gate scales the required gain by the failure chance, which double-counts
+            // the very risk the Wit ceiling already accepted, and would otherwise re-reject every Wit turn the ceiling just let through.
             val burstExempt = result.isBurstReady
-            if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !burstExempt) {
+            if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !witExempt && !burstExempt) {
                 val totalStatGain = result.statGains.values.sum()
                 if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {
                     MessageLog.i(

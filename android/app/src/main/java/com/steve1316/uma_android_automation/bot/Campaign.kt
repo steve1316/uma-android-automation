@@ -158,6 +158,20 @@ internal fun resolvePreSummerAction(energy: Int, mood: Mood, firstTrainingCheck:
     }
 
 /**
+ * Whether the trainee is below the user's minimum-energy-to-train floor and should rest. Without this, energy only ever forces a rest indirectly: a low-energy turn raises every failure
+ * chance until the whole training map is filtered out. The floor makes that an explicit choice. Summer camp and the finale are exempt because those turns are worth more than the energy
+ * they cost - the finale especially, where energy does not affect race performance and resting simply throws the turn away. Pure so the floor is unit-testable without a live Campaign.
+ *
+ * @param energy The trainee's current energy percentage.
+ * @param minEnergyToTrain The floor below which the bot rests. 0 disables the floor entirely.
+ * @param isSummer Whether it is currently a summer turn.
+ * @param isFinals Whether the finale is underway.
+ * @return True when the bot should rest purely because energy is too low.
+ */
+internal fun shouldRestForLowEnergy(energy: Int, minEnergyToTrain: Int, isSummer: Boolean, isFinals: Boolean): Boolean =
+    minEnergyToTrain > 0 && !isSummer && !isFinals && energy < minEnergyToTrain
+
+/**
  * Whether the G1-day preference should peek at the training screen this turn. On a G1 race day the bot would normally take the free race, so this runs only when the feature is enabled,
  * the trainee is past Junior year, it is not summer or the finale, energy clears the extra-racing floor, and a G1 race is actually available. Pure so the gate is unit-testable.
  *
@@ -231,6 +245,9 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Whether the bot must rest before Summer. */
     protected val mustRestBeforeSummer: Boolean = SettingsHelper.getBooleanSetting("training", "mustRestBeforeSummer")
+
+    /** The energy percentage below which the bot rests instead of training, even when the failure chances are low enough to train. 0 (default) disables the floor. */
+    protected val minEnergyToTrain: Int = SettingsHelper.getIntSetting("training", "minEnergyToTrain", 0)
 
     /** The number of skill points required to trigger a check. */
     protected val skillPointsRequired: Int = SettingsHelper.getIntSetting("skills", "skillPointCheck")
@@ -2455,6 +2472,14 @@ abstract class Campaign(game: Game) : Task(game) {
             MessageLog.i(TAG, "[INFO] Bot has no injuries, mood is sufficient and extra races can be run today. Setting the action to RACE.")
             decisionTracer.recordActionChoice(MainScreenAction.RACE, "Extra-race eligible (no injury, sufficient mood, eligible day)")
             return MainScreenAction.RACE
+        }
+
+        // Checked last so it only ever replaces a training turn. Racing keeps its own energy floor (minEnergyForExtraRacing), and a mandatory race, an injury, or a bad mood all still
+        // take precedence above.
+        if (shouldRestForLowEnergy(trainee.energy, minEnergyToTrain, date.isSummer(), isFinals)) {
+            MessageLog.i(TAG, "[INFO] Energy (${trainee.energy}%) is below the minimum of $minEnergyToTrain% required to train. Resting instead.")
+            decisionTracer.recordActionChoice(MainScreenAction.REST, "Energy ${trainee.energy}% is below the $minEnergyToTrain% minimum-energy-to-train floor")
+            return MainScreenAction.REST
         }
 
         decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Default fallback after racing/mood/injury checks did not trigger")
