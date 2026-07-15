@@ -131,6 +131,12 @@ export function buildSettingsBanner(settings: Settings): string {
             ? `\n   📊 Minimum Main Stat Gain Threshold: ${settings.training.riskyTrainingMinStatGain}\n   🎯 Risky Training Maximum Failure Chance: ${settings.training.riskyTrainingMaxFailureChance}%`
             : ""
     }
+🔋 Minimum Energy to Train: ${settings.training.minEnergyToTrain === 0 ? "❌" : `${settings.training.minEnergyToTrain}%`}
+🧠 Train Wit Instead of Resting: ${settings.training.enableWitOverRest ? "✅" : "❌"}${
+        settings.training.enableWitOverRest
+            ? `\n   🎯 Wit Maximum Failure Chance: ${settings.training.witOverRestMaxFailureChance}%\n   📊 Minimum Wit Main Stat Gain Threshold: ${settings.training.witOverRestMinStatGain}`
+            : ""
+    }
 🔄 Disable Training on Maxed Stat: ${settings.training.disableTrainingOnMaxedStat ? "✅" : "❌"}
 📏 Preferred Distance Override: ${settings.training.preferredDistanceOverride === "Default" ? "Default" : settings.training.preferredDistanceOverride}
 🌈 Enable Rainbow Training Bonus: ${settings.training.enableRainbowTrainingBonus ? "✅" : "❌"}

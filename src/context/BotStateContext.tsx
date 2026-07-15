@@ -138,6 +138,10 @@ export interface Settings {
         enableRiskyTraining: boolean
         riskyTrainingMinStatGain: number
         riskyTrainingMaxFailureChance: number
+        minEnergyToTrain: number
+        enableWitOverRest: boolean
+        witOverRestMaxFailureChance: number
+        witOverRestMinStatGain: number
         trainWitDuringFinale: boolean
         enablePrioritizeSkillHints: boolean
         enableTrainingLevelWeighting: boolean
@@ -432,6 +436,10 @@ export const defaultSettings: Settings = {
         enableRiskyTraining: false,
         riskyTrainingMinStatGain: 20,
         riskyTrainingMaxFailureChance: 30,
+        minEnergyToTrain: 0,
+        enableWitOverRest: false,
+        witOverRestMaxFailureChance: 35,
+        witOverRestMinStatGain: 25,
         trainWitDuringFinale: false,
         enablePrioritizeSkillHints: false,
         enableTrainingLevelWeighting: true,
