@@ -16,6 +16,7 @@ import com.steve1316.uma_android_automation.components.ButtonTrainingPower
 import com.steve1316.uma_android_automation.components.ButtonTrainingSpeed
 import com.steve1316.uma_android_automation.components.ButtonTrainingStamina
 import com.steve1316.uma_android_automation.components.ButtonTrainingWit
+import com.steve1316.uma_android_automation.components.ButtonTryAgainAlt
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRace
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRaceFinal
 import com.steve1316.uma_android_automation.components.ButtonUnityCupSeeAllRaceResults
@@ -31,6 +32,7 @@ import com.steve1316.uma_android_automation.components.IconTrainingHeaderStamina
 import com.steve1316.uma_android_automation.components.IconTrainingHeaderWit
 import com.steve1316.uma_android_automation.components.IconUnityCupRaceEndLogo
 import com.steve1316.uma_android_automation.components.IconUnityCupTutorialHeader
+import com.steve1316.uma_android_automation.components.LabelCongratulations
 import com.steve1316.uma_android_automation.components.LabelUnityCupOpponentSelectionLaurel
 import com.steve1316.uma_android_automation.types.StatName
 import org.opencv.core.Point
@@ -166,7 +168,10 @@ class UnityCup(game: Game) : Campaign(game) {
 
         // We use this as a means of exiting the loop if it runs too long.
         val executionTimeThresholdMs = 30000 // 30 seconds.
-        val startTime = System.currentTimeMillis()
+        var startTime = System.currentTimeMillis()
+
+        // Tracks how many times a lost, skipped race was retried so the outcome can be logged.
+        var raceRetryCount = 0
 
         while (true) {
             val sourceBitmap: Bitmap = game.imageUtils.getSourceBitmap()
@@ -240,9 +245,25 @@ class UnityCup(game: Game) : Campaign(game) {
                     }
                 }
 
+                // On the skip-results screen, retry a lost race while the game still offers the Try Again button and it was not a 1st-place finish.
+                retryRaces &&
+                    ButtonTryAgainAlt.checkDisabled(game.imageUtils, sourceBitmap = sourceBitmap) == false &&
+                    !LabelCongratulations.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+                    raceRetryCount++
+                    MessageLog.i(TAG, "[UNITY_CUP] Skipped race finished below 1st place. Retrying for the win (attempt #$raceRetryCount)...")
+                    if (ButtonTryAgainAlt.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+                        // Reset the abort timer so re-running the race does not trip the execution-time threshold mid-retry.
+                        startTime = System.currentTimeMillis()
+                        game.wait(3.0)
+                    } else {
+                        MessageLog.w(TAG, "[WARN] handleRaceEventsUnityCup:: Detected the Try Again button but failed to click it. Cannot retry the lost race.")
+                    }
+                }
+
                 // This is our only natural exit point from this function.
                 IconUnityCupRaceEndLogo.check(game.imageUtils, sourceBitmap = sourceBitmap) && ButtonNext.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                    MessageLog.i(TAG, "[INFO] Race event completed.")
+                    val retrySuffix = if (raceRetryCount > 0) " after $raceRetryCount retry attempt(s)" else ""
+                    MessageLog.i(TAG, "[UNITY_CUP] Race event completed$retrySuffix.")
                     return true
                 }
 
