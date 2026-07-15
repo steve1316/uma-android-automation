@@ -181,6 +181,32 @@ const searchConfig: SearchOption[] = [
         parentId: "enable-riskier-training",
     },
     {
+        id: "minimum-energy-to-train",
+        title: "Minimum Energy to Train",
+        description: "Rest instead of training when energy falls below this, even if the failure chances are low enough to train. 0 disables it. Summer Training and the Finale always ignore this.",
+        page: "TrainingSettings",
+    },
+    {
+        id: "enable-wit-over-rest",
+        title: "Train Wit Instead of Resting",
+        description: "When enabled, Wit gets its own custom failure chance threshold.",
+        page: "TrainingSettings",
+    },
+    {
+        id: "wit-over-rest-max-failure-chance",
+        title: "Wit Maximum Failure Chance",
+        description: "The maximum acceptable failure chance for Wit training before doing something else.",
+        page: "TrainingSettings",
+        parentId: "enable-wit-over-rest",
+    },
+    {
+        id: "wit-over-rest-min-stat-gain",
+        title: "Minimum Wit Main Stat Gain Threshold",
+        description: "When the Wit training's main stat gain meets or exceeds this value, Wit uses its higher maximum failure chance.",
+        page: "TrainingSettings",
+        parentId: "enable-wit-over-rest",
+    },
+    {
         id: "enable-prioritize-skill-hints",
         title: "Prioritize Skill Hints",
         description: "When enabled, the bot will prioritize acquiring skill hints, bypassing stat prioritization and blacklist, while still being constrained by the failure chance thresholds.",

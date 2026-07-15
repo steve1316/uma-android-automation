@@ -164,6 +164,10 @@ const TrainingSettings = () => {
         enableRiskyTraining,
         riskyTrainingMinStatGain,
         riskyTrainingMaxFailureChance,
+        minEnergyToTrain,
+        enableWitOverRest,
+        witOverRestMaxFailureChance,
+        witOverRestMinStatGain,
         trainWitDuringFinale,
         enablePrioritizeSkillHints,
         enableTrainingLevelWeighting,
@@ -710,6 +714,71 @@ const TrainingSettings = () => {
                                                 description="Set the maximum acceptable failure chance for risky training sessions with high main stat gains."
                                                 searchId="risky-training-max-failure-chance"
                                                 parentId="enable-riskier-training"
+                                            />
+                                        </View>
+                                    )}
+
+                                    <View style={styles.sliderShell}>
+                                        <CustomSlider
+                                            // No `|| defaultSettings...` fallback here on purpose: 0 means "floor disabled" and is a real value,
+                                            // so the usual fallback would snap it back to the default.
+                                            value={minEnergyToTrain}
+                                            placeholder={defaultSettings.training.minEnergyToTrain}
+                                            onValueChange={(value) => updateTrainingSetting("minEnergyToTrain", value)}
+                                            min={0}
+                                            max={95}
+                                            step={5}
+                                            label="Minimum Energy to Train"
+                                            labelUnit="%"
+                                            showValue={true}
+                                            showLabels={true}
+                                            description="Rest instead of training when energy falls below this, even if the failure chances are low enough to train. 0 disables it. Summer Training and the Finale always ignore this."
+                                            searchId="minimum-energy-to-train"
+                                        />
+                                    </View>
+
+                                    <ToggleSetting
+                                        id="enable-wit-over-rest"
+                                        title="Train Wit Instead of Resting"
+                                        description="When enabled, Wit gets its own custom failure chance threshold."
+                                        checked={enableWitOverRest}
+                                        onCheckedChange={(checked) => updateTrainingSetting("enableWitOverRest", checked)}
+                                    />
+                                    {enableWitOverRest && (
+                                        <View style={styles.sliderShell}>
+                                            <CustomSlider
+                                                value={witOverRestMaxFailureChance || defaultSettings.training.witOverRestMaxFailureChance}
+                                                placeholder={defaultSettings.training.witOverRestMaxFailureChance}
+                                                onValueChange={(value) => updateTrainingSetting("witOverRestMaxFailureChance", value)}
+                                                min={5}
+                                                max={95}
+                                                step={5}
+                                                label="Wit Maximum Failure Chance"
+                                                labelUnit="%"
+                                                showValue={true}
+                                                showLabels={true}
+                                                description="The maximum acceptable failure chance for Wit training before doing something else."
+                                                searchId="wit-over-rest-max-failure-chance"
+                                                parentId="enable-wit-over-rest"
+                                            />
+                                        </View>
+                                    )}
+                                    {enableWitOverRest && (
+                                        <View style={styles.sliderShell}>
+                                            <CustomSlider
+                                                value={witOverRestMinStatGain || defaultSettings.training.witOverRestMinStatGain}
+                                                placeholder={defaultSettings.training.witOverRestMinStatGain}
+                                                onValueChange={(value) => updateTrainingSetting("witOverRestMinStatGain", value)}
+                                                min={5}
+                                                max={100}
+                                                step={5}
+                                                label="Minimum Wit Main Stat Gain Threshold"
+                                                labelUnit=""
+                                                showValue={true}
+                                                showLabels={true}
+                                                description="When the Wit training's main stat gain meets or exceeds this value, Wit uses its higher maximum failure chance."
+                                                searchId="wit-over-rest-min-stat-gain"
+                                                parentId="enable-wit-over-rest"
                                             />
                                         </View>
                                     )}
