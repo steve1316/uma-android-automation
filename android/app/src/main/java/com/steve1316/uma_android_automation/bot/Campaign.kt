@@ -1913,6 +1913,7 @@ abstract class Campaign(game: Game) : Task(game) {
      */
     fun broadcastOwnedSkills() {
         val skills = org.json.JSONArray()
+        var bAssignedUniqueLevel = false
         for (name in trainee.ownedSkillNames) {
             val data = game.skillDatabase.getSkillData(name)
             val obj = org.json.JSONObject()
@@ -1926,7 +1927,12 @@ abstract class Campaign(game: Game) : Task(game) {
             // Description and icon id feed the frontend hover tooltip (name + desc_en + GameTora-hosted icon).
             obj.put("desc", data?.description ?: "")
             obj.put("iconId", data?.iconId ?: 0)
-            if (data?.bIsUnique == true && trainee.uniqueSkillLevel > 0) obj.put("level", trainee.uniqueSkillLevel)
+            // Only the first unique skill (the trainee's own, read from the first Skills-tab cell) carries a level.
+            // Unique skills bought from other trainees never have one, so only the first unique gets it.
+            if (data?.bIsUnique == true && !bAssignedUniqueLevel && trainee.uniqueSkillLevel > 0) {
+                obj.put("level", trainee.uniqueSkillLevel)
+                bAssignedUniqueLevel = true
+            }
             skills.put(obj)
         }
         val json = org.json.JSONObject()
