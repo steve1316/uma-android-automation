@@ -9,7 +9,7 @@ import { Switch } from "../../components/ui/switch"
 import CustomButton from "../../components/CustomButton"
 import { SCHEDULE_SOURCES, planClaim, type ScheduleModel } from "../../lib/schedule/registry"
 import type { ScheduleMutators, ScheduleSourceContext, ScheduleSourceId } from "../../lib/schedule/types"
-import { formatCareerTurn, shortenRaceName, GRADE_COLORS, TRAIN_LOCK_SENTINEL, type RaceEntry } from "../../lib/solver/constants"
+import { formatCareerTurn, shortenRaceName, formatGradeLabel, gradeColor, TRAIN_LOCK_SENTINEL, type RaceEntry } from "../../lib/solver/constants"
 import { raceProgressionLines } from "./raceEditing"
 import { SPACING } from "../../lib/spacing"
 import { TYPE } from "../../lib/type"
@@ -63,16 +63,6 @@ function modalTitle(turn: number, recreationTurns: number[], purePassionTurn: nu
     return { title, isRecreation: true }
 }
 
-/**
- * Normalizes a race grade to its display label. Pre-OP races are stored under two different grade spellings ("PRE_OP" and "PRE-OP"),
- * both of which should read as "Pre" in the UI.
- * @param grade The raw grade string, e.g. "G1", "PRE_OP", "PRE-OP".
- * @returns The display label for the grade.
- */
-function formatGradeLabel(grade: string): string {
-    return grade.replace("PRE_OP", "Pre").replace("PRE-OP", "Pre")
-}
-
 /** Props for `RaceLine`. */
 interface RaceLineProps {
     /** Race grade shown in the badge, e.g. "G1", "PRE_OP". */
@@ -99,7 +89,7 @@ function RaceLine({ grade, name, race, nameStyle, metaStyle, styles }: RaceLineP
     const { colors } = useTheme()
     return (
         <>
-            <View style={[styles.gradeBadge, { backgroundColor: GRADE_COLORS[grade] ?? colors.brand }]}>
+            <View style={[styles.gradeBadge, { backgroundColor: gradeColor(grade) ?? colors.brand }]}>
                 <Text style={styles.gradeBadgeText}>{formatGradeLabel(grade)}</Text>
             </View>
             <View style={{ flex: 1 }}>

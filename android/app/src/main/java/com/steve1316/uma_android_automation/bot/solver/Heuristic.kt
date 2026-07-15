@@ -199,10 +199,9 @@ object Heuristic {
         // Mirror the reference Trackblazer solver: every epithet completion contributes its
         // reward to the objective. This is what makes G2/G3 races (which net zero on grade-
         // and-cost alone) competitive - a free epithet reward tips the balance over Train.
-        // Forced epithets are still surfaced via the feasibility check in [keepTopK]. Targeted
-        // epithets get an additional weight boost via [Weights.epithetValue].
+        // Forced epithets are still surfaced via the feasibility check in [keepTopK]. Targeted epithets get [Weights.targetEpithetBonus] on top of their reward.
         val epithetGain =
-            newlyCompleted.sumOf { ScoringFunctions.epithetContribution(it, state.weights) }
+            newlyCompleted.sumOf { ScoringFunctions.epithetContribution(it, state.weights, it.name in state.targetEpithets) }
         val summer = ScoringFunctions.summerBlockPenalty(turn, state)
         val consec = ScoringFunctions.consecutiveRacePenalty(newConsec, turn, state.weights)
 

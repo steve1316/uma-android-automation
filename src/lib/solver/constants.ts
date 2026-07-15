@@ -3,6 +3,8 @@
  * Mirrors the shape of the bundled `races.json` / `epithets.json` / `characterPresets.json` data files.
  */
 
+import epithetsData from "../../data/epithets.json"
+
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -31,8 +33,8 @@ export interface RaceEntry {
 export interface EpithetEntry {
     /** Display name and unique key. */
     name: string
-    /** Free-text bullets in gametora's visible row order: scenario / character restriction (when present) first, then condition / qualifier
-     *  bullets, then the reward bullet last. The reward bullet is parsed by `epithetReward`. */
+    /** Free-text bullets in gametora's visible row order: scenario / character restriction (when present) first, then the win conditions.
+     *  Most epithets list NO reward bullet at all - when one exists it is identified by its wording, not its position (see `splitEpithetBullets`). */
     bullet_points: string[]
     /** Scenario gate, e.g. `["Trackblazer"]`. Empty means universal. Derived by the scraper from `<X> scenario only` bullets.
      *  Consumers may also fall back to parsing `bullet_points` directly via `scenariosForEpithet` when this field is absent on legacy snapshots. */
@@ -78,6 +80,9 @@ export interface WeightsMap {
     spWeight: number
     /** Score awarded for completing a skill-hint epithet. */
     hintWeight: number
+    /** Score added to any epithet picked as a target, on top of its reward. Most epithets grant no listed reward, so without this a target is
+     *  worth 0 and the solver has no reason to pursue it. 0 makes target selection purely informational. */
+    targetEpithetBonus: number
     /** Penalty per race when racing 3+ turns in a row. */
     consecutiveRacePenalty: number
     /** Penalty for racing during summer training-camp turns. */
@@ -153,6 +158,48 @@ export const GRADE_COLORS: Record<string, string> = {
     EX: "#7c3aed",
 }
 
+/** Display labels for each race grade, keyed by the canonical `RaceGrade` enum name from `Types.kt`. */
+export const GRADE_LABELS: Record<string, string> = {
+    G1: "G1",
+    G2: "G2",
+    G3: "G3",
+    OP: "OP",
+    PRE_OP: "Pre-OP",
+    MAIDEN: "Maiden",
+    DEBUT: "Debut",
+    FINALE: "Finale",
+    EX: "EX",
+}
+
+/**
+ * Folds a race grade onto its canonical `RaceGrade` enum key. Grades reach the UI under two spellings: `races.json` stores "Pre-OP" while the Kotlin solver
+ * serialises the enum name "PRE_OP". Normalising both to "PRE_OP" lets the label and color lookups below hit on either.
+ * @param grade The raw grade string from either source.
+ * @returns The canonical enum key, e.g. "PRE_OP".
+ */
+export const normalizeGrade = (grade: string): string => {
+    const key = grade.replace(/[-\s]/g, "_").toUpperCase()
+    return key === "PREOP" ? "PRE_OP" : key
+}
+
+/**
+ * Resolves a race grade to its human-readable display label.
+ * @param grade The raw grade string from either source.
+ * @returns The display label, e.g. "Pre-OP", falling back to the raw grade when it is unrecognized.
+ */
+export const formatGradeLabel = (grade: string): string => GRADE_LABELS[normalizeGrade(grade)] ?? grade
+
+/**
+ * Resolves a race grade to its badge color.
+ * @param grade The raw grade string from either source.
+ * @returns The hex color, or undefined when the grade is unrecognized so the caller can fall back to its own default.
+ */
+export const gradeColor = (grade: string): string | undefined => GRADE_COLORS[normalizeGrade(grade)]
+
+/** Every epithet from the bundled `epithets.json`, keyed by name. The single cast of that data file - import this rather than re-casting it. */
+export const EPITHETS_BY_NAME = epithetsData as unknown as Record<string, EpithetEntry>
+
+
 export const DEFAULT_APTITUDES: AptitudeMap = { Sprint: "A", Mile: "A", Medium: "A", Long: "A", Turf: "A", Dirt: "A" }
 
 export const DEFAULT_WEIGHTS: WeightsMap = {
@@ -161,6 +208,7 @@ export const DEFAULT_WEIGHTS: WeightsMap = {
     statWeight: 1.0,
     spWeight: 1.0,
     hintWeight: 8.0,
+    targetEpithetBonus: 25.0,
     consecutiveRacePenalty: 3.0,
     summerPenalty: 5.0,
     raceBonusPct: 50.0,

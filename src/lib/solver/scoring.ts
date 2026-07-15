@@ -1,12 +1,13 @@
-import epithetsData from "../../data/epithets.json"
 import {
     APT_ORDER,
     AptitudeMap,
     BASE_SP_BY_GRADE,
     BASE_STAT_BY_GRADE,
     COUNTRY_NAMES,
+    EPITHETS_BY_NAME,
     EpithetEntry,
     MatcherProgress,
+    normalizeGrade,
     OP_GRADES,
     PreviewStats,
     RaceEntry,
@@ -72,9 +73,37 @@ export const charactersForEpithet = (e: EpithetEntry): string[] => {
     return out
 }
 
+/** An epithet's reward bullet and the condition bullets that earn it. */
+export interface EpithetBullets {
+    /** The reward text, or null when the epithet lists no reward at all (the common case - most epithets are pure win-condition lists). */
+    reward: string | null
+    /** Every bullet that is not the reward: scenario / character restrictions and the win conditions. */
+    conditions: string[]
+}
+
 /**
- * Parses an epithet's reward bullet (last by convention) into kind + total magnitude.
- * Falls back to scanning every bullet so a row whose reward isn't last still works.
+ * True when a bullet reads as a reward rather than a condition. Rewards are stat grants ("2 random stats +10"), hint grants ("Top Pick hint +1"),
+ * or an explicitly labelled "Reward: ..." line. Everything else is a condition.
+ * @param bullet The bullet text to classify.
+ * @returns True when the bullet is a reward line.
+ */
+export const isRewardBullet = (bullet: string): boolean => STAT_REWARD_REGEX.test(bullet) || HINT_REWARD_REGEX.test(bullet) || /^\s*reward\s*:/i.test(bullet)
+
+/**
+ * Splits an epithet's bullets into its reward and its conditions. The reward is found by what it looks like, not by its position: most epithets
+ * (200 of the 236 in `epithets.json`) list no reward at all and are pure win-condition lists, so assuming the last bullet is the reward
+ * mislabels a condition as one - e.g. "Tenno Sweep" would read "Reward: Win the Tenno Sho (Autumn)".
+ * @param bullets The epithet's raw `bullet_points`.
+ * @returns The reward line (null when the epithet lists none) and every remaining bullet as a condition.
+ */
+export const splitEpithetBullets = (bullets: string[]): EpithetBullets => {
+    const rewardIndex = bullets.findIndex(isRewardBullet)
+    if (rewardIndex === -1) return { reward: null, conditions: bullets }
+    return { reward: bullets[rewardIndex], conditions: bullets.filter((_, i) => i !== rewardIndex) }
+}
+
+/**
+ * Parses an epithet's reward bullet into kind + total magnitude.
  * Mirrors `EpithetFilters.rewardFromBullets` in Kotlin.
  *
  * @param e Epithet entry to inspect.
@@ -194,7 +223,7 @@ const matcherMatchesRace = (matcher: Record<string, unknown>, race: RaceEntry): 
  * @returns Epithet entries whose matchers reference `race`.
  */
 export const epithetsForRace = (race: RaceEntry): EpithetEntry[] => {
-    const all = epithetsData as unknown as Record<string, EpithetEntry>
+    const all = EPITHETS_BY_NAME
     const out: EpithetEntry[] = []
     for (const ep of Object.values(all)) {
         const matchers = ep.matchers ?? []
@@ -597,7 +626,7 @@ export const turnsContributingToEpithet = (ep: EpithetEntry, preview: SchedulePr
  * @returns The aggregate {@link PreviewStats}.
  */
 export const computePreviewStats = (preview: SchedulePreview, weights: Pick<WeightsMap, "raceBonusPct">, racesByKey: Record<string, RaceEntry>): PreviewStats => {
-    const epithetsAll = epithetsData as unknown as Record<string, EpithetEntry>
+    const epithetsAll = EPITHETS_BY_NAME
     const rb = Math.max(0, weights.raceBonusPct) / 100
     let races = 0
     let raceStats = 0
@@ -607,7 +636,7 @@ export const computePreviewStats = (preview: SchedulePreview, weights: Pick<Weig
         if (entry.type !== "Race") continue
         races += 1
         const race = entry.raceKey ? racesByKey[entry.raceKey] : undefined
-        const grade = (race?.grade ?? entry.grade ?? "").replace("-", "_")
+        const grade = normalizeGrade(race?.grade ?? entry.grade ?? "")
         raceStats += Math.floor((BASE_STAT_BY_GRADE[grade] ?? 0) * (1 + rb))
         raceSp += Math.floor((BASE_SP_BY_GRADE[grade] ?? 0) * (1 + rb))
         fans += race?.fans ?? 0

@@ -39,7 +39,7 @@ export interface ScheduleEvent {
     detail?: string
     /** Optional accent color (a theme token value or a grade color). */
     color?: string
-    /** Grade text ("G1", "OP") when this event is a race. */
+    /** Canonical race-grade key ("G1", "OP", "PRE_OP") when this event is a race. A data value, not a display string - render it through `formatGradeLabel`. */
     badge?: string
     /** False only for mandatory races. */
     movable: boolean

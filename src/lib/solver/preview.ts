@@ -30,6 +30,8 @@ export interface SolverConfigSnapshot {
         spWeight: number
         /** Score awarded for completing a skill-hint epithet. */
         hintWeight: number
+        /** Score added to any epithet picked as a target, on top of its reward. */
+        targetEpithetBonus: number
         /** Penalty per race when racing 3+ turns in a row. */
         consecutiveRacePenalty: number
         /** Penalty for racing during summer training-camp turns. */

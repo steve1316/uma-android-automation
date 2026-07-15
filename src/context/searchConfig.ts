@@ -694,14 +694,6 @@ const searchConfig: SearchOption[] = [
         parentId: "enable-smart-race-solver",
     },
     {
-        id: "smart-solver-epithet-rewards",
-        title: "Epithet Rewards",
-        description: "Rewards for each selected and projected epithet.",
-        page: "ScheduleScreen",
-        tab: "raceSolver",
-        parentId: "enable-smart-race-solver",
-    },
-    {
         id: "smart-solver-diagnostic",
         title: "Configuration Summary",
         description: "Read-only summary of the current solver configuration.",

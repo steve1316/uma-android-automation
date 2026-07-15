@@ -83,10 +83,12 @@ export const useSeasonCalendarStyles = () => {
                     borderColor: "#ef4444",
                     backgroundColor: "rgba(239, 68, 68, 0.12)",
                 },
+                // Violet deliberately: amber is the mandatory cell, brand/cyan is an SRS lock, and red is a stop, so the epithet highlight needs a hue none of them
+                // already own. Only the border is set - a mandatory race that also contributes keeps its amber background tint and its pin marker underneath the ring.
                 calendarCellHighlighted: {
-                    borderColor: "#ca8a04",
+                    borderColor: "#a855f7",
                     borderWidth: 3,
-                    shadowColor: "#facc15",
+                    shadowColor: "#c084fc",
                     shadowOpacity: 0.9,
                     shadowRadius: 6,
                     shadowOffset: { width: 0, height: 0 },

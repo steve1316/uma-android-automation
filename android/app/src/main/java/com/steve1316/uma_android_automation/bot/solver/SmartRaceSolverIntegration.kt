@@ -942,6 +942,7 @@ object SmartRaceSolverIntegration {
             statWeight = obj.optDouble("statWeight", 1.0),
             spWeight = obj.optDouble("spWeight", 1.0),
             hintWeight = obj.optDouble("hintWeight", 8.0),
+            targetEpithetBonus = obj.optDouble("targetEpithetBonus", 25.0),
             consecutiveRacePenalty = obj.optDouble("consecutiveRacePenalty", 3.0),
             summerPenalty = obj.optDouble("summerPenalty", 5.0),
             raceBonusPct = obj.optDouble("raceBonusPct", 50.0),

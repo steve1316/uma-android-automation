@@ -144,7 +144,12 @@ object MilpSolver {
         private fun wireSummerHardBlock() {
             if (state.weights.allowSummerRacing) return
             for (t in CLASSIC_SENIOR_SUMMER_TURNS) {
-                if (t in turns) xVars[t]!!.upper(0.0)
+                if (t !in turns) continue
+                // A mandatory career race can fall on a summer turn (e.g. Elm Stakes on turn 63). It is immovable and must run, so it overrides the
+                // summer block. Blocking it here would force x[t] = 0 while wireManualLocks forces x[t] = 1, making the ENTIRE model infeasible -
+                // which silently dropped every such preview from MILP to the greedy heuristic.
+                if (state.lockedDecisions[t] is Decision.RaceDecision) continue
+                xVars[t]!!.upper(0.0)
             }
         }
 
@@ -221,7 +226,15 @@ object MilpSolver {
             for (epithet in state.epithets) {
                 val y = epithetVars[epithet.name] ?: continue
                 for ((idx, matcher) in epithet.matchers.withIndex()) {
-                    val (required, terms, constant) = linearise(matcher) ?: continue
+                    val linearised = linearise(matcher)
+                    if (linearised == null) {
+                        // The matcher can never be satisfied (a prerequisite epithet was filtered out of the active pool), so the epithet can never
+                        // complete - matchers are AND-ed. Force y = 0 and stop. The old code emitted a `y <= -1` bound here, which is infeasible for a
+                        // binary variable and made the WHOLE model INFEASIBLE, silently dropping every preview from MILP to the greedy heuristic.
+                        y.upper(0.0)
+                        break
+                    }
+                    val (required, terms, constant) = linearised
                     val expr = model.newExpression("ep_${sanitize(epithet.name)}_$idx")
                     // required * y - sum(terms) <= constant
                     expr.set(y, required.toDouble())
@@ -298,7 +311,7 @@ object MilpSolver {
             }
             for ((name, v) in epithetVars) {
                 val epithet = state.epithetsByName[name] ?: continue
-                v.weight(ScoringFunctions.epithetContribution(epithet, state.weights))
+                v.weight(ScoringFunctions.epithetContribution(epithet, state.weights, name in state.targetEpithets))
             }
             for ((t, v) in zVars) {
                 if (t in ScoringFunctions.LATE_DEC_FREE_TURNS) continue
@@ -330,12 +343,44 @@ object MilpSolver {
                     decisions[t] = Decision.Train
                 }
             }
-            val projected =
-                epithetVars
-                    .filter { (_, v) -> (v.value?.toDouble() ?: 0.0) > 0.5 }
-                    .keys
-                    .toSet() + state.completedEpithets
-            return Schedule(decisions, projected, objectiveValue)
+            return Schedule(decisions, projectedEpithets(decisions), objectiveValue)
+        }
+
+        /**
+         * Evaluates which epithets the schedule actually completes, against the realized win history rather than the solved `y` variables.
+         *
+         * The `y` variables cannot be trusted for this. [wireEpithetMatchers] only emits `required * y <= progress`, which *permits* `y = 1` once the
+         * matchers are satisfied but never *forces* it, so `y` rises only when the objective pays for it. [ScoringFunctions.epithetContribution] pays
+         * nothing for an epithet with no reward bullet, and 200 of the 236 entries in `epithets.json` have none - every reward-bearing epithet happens
+         * to be Trackblazer-only. So on any other scenario every `y` carried zero weight and stayed at 0, and the solver reported zero completions even
+         * when it had scheduled and won every required race.
+         *
+         * @param decisions The realized per-turn decisions just read out of the model.
+         * @return Names of every epithet the schedule completes, including the pre-existing [SolverState.completedEpithets].
+         */
+        private fun projectedEpithets(decisions: Map<TurnNumber, Decision>): Set<String> {
+            val wins =
+                state.raceHistory +
+                    decisions.entries.mapNotNull { (turn, decision) ->
+                        val raceKey = (decision as? Decision.RaceDecision)?.raceKey ?: return@mapNotNull null
+                        state.racesByTurn[turn]
+                            ?.firstOrNull { it.key == raceKey }
+                            ?.let { RaceWin(it.key, it.name, it.classYear, turn) }
+                    }
+
+            // Iterate to a fixed point: the epithetAll / epithetAnyOf matchers gate on other epithets being complete, so
+            // completing one epithet can unlock another that depends on it.
+            var projected = state.completedEpithets
+            while (true) {
+                val evaluated = state.copy(raceHistory = wins, completedEpithets = projected)
+                val next =
+                    projected +
+                        state.epithets
+                            .filter { it.name !in state.deadEpithets && EpithetTracker.isCompleted(it, evaluated) }
+                            .map { it.name }
+                if (next == projected) return projected
+                projected = next
+            }
         }
 
         // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,12 +393,12 @@ object MilpSolver {
          * `required * y <= sum(coeff*var) + constantBound`. The constant absorbs the contribution
          * of pre-existing race history so the inequality only constrains future picks.
          *
-         * For dependency matchers (`epithetAnyOf`, `epithetAll`) referencing dead/missing
-         * epithets we emit an unreachable bound (`required=1, terms={}, constantBound=-1`) so `y` is forced to 0.
+         * Returns null when the matcher can never be satisfied - a dependency matcher (`epithetAnyOf`, `epithetAll`) whose prerequisite epithets are
+         * all absent from the active pool. The caller forces `y = 0` for that epithet. (Do NOT encode this as a `y <= -1` bound: that is infeasible
+         * for a binary variable and makes the entire model infeasible.)
          *
          * @param matcher Matcher to linearise.
-         * @return Triple `(required, terms, constantBound)`, or null when the matcher type has
-         *   no linearisation (currently always non-null for the supported types).
+         * @return Triple `(required, terms, constantBound)`, or null when the matcher is structurally unsatisfiable (see above).
          */
         private fun linearise(matcher: EpithetMatcher): Triple<Int, Map<Variable, Double>, Double>? {
             return when (matcher) {
@@ -402,15 +447,14 @@ object MilpSolver {
                 is EpithetMatcher.EpithetAnyOf -> {
                     // 1*y[e] <= sum(y[name]) - at least one of the named epithets must be completed.
                     val others = matcher.names.mapNotNull { epithetVars[it] }
-                    if (others.isEmpty()) return Triple(1, emptyMap(), -1.0) // unreachable
+                    if (others.isEmpty()) return null // no prerequisite is in the pool, so the epithet is unreachable - caller forces y = 0
                     val terms = others.associateWith { 1.0 }
                     Triple(1, terms, 0.0)
                 }
                 is EpithetMatcher.EpithetAll -> {
-                    // N*y[e] <= sum(y[name]) - every prereq must be completed. Any dead prereq
-                    // makes the AND unsatisfiable, so emit an unreachable bound.
+                    // N*y[e] <= sum(y[name]) - every prereq must be completed. A missing prereq makes the AND unsatisfiable.
                     val others = matcher.names.mapNotNull { epithetVars[it] }
-                    if (others.size != matcher.names.size) return Triple(1, emptyMap(), -1.0)
+                    if (others.size != matcher.names.size) return null // a prerequisite was filtered out of the pool, so the epithet is unreachable - caller forces y = 0
                     val terms = others.associateWith { 1.0 }
                     Triple(matcher.names.size, terms, 0.0)
                 }

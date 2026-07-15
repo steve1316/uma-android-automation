@@ -12,7 +12,6 @@ import PageHeader from "../../components/PageHeader"
 import { Row } from "../../components/ui/row"
 import { Switch } from "../../components/ui/switch"
 import { Section } from "../../components/ui/section"
-import WarningContainer from "../../components/WarningContainer"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../components/ui/alert-dialog"
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
@@ -119,6 +118,7 @@ const Settings = () => {
                     <Row title="Training" description="Stat priorities, training behavior, and customization." right={chevron} onPress={() => navigation.navigate("TrainingSettings" as never)} />
                     <Row title="Training Events" description="Training event preferences and event selection." right={chevron} onPress={() => navigation.navigate("TrainingEventSettings" as never)} />
                     <Row title="Racing" description="Racing behavior, retries, and mandatory race handling." right={chevron} onPress={() => navigation.navigate("RacingSettings" as never)} />
+                    <Row title="Schedule" description="Race solver, recreation, and the unified career calendar." right={chevron} onPress={() => navigation.navigate("ScheduleScreen" as never)} />
                     <Row title="Skills" description="Skill purchasing behavior." right={chevron} onPress={() => navigation.navigate("Skills" as never)} />
                 </Section>
 
@@ -264,15 +264,6 @@ const Settings = () => {
                         </View>
                     </SearchableItem>
                 </Section>
-
-                <WarningContainer style={{ marginTop: 0, marginBottom: SPACING.md }}>
-                    <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                        <Text style={{ fontWeight: "bold", color: colors.warningText }}>⚠️ File Explorer Note:</Text>
-                        <Text style={{ fontSize: 14, color: colors.warningText, lineHeight: 20 }}>
-                            To manually access files, you need a file explorer app that can access the /Android/data folder (like CX File Explorer). Standard file managers will not work.
-                        </Text>
-                    </View>
-                </WarningContainer>
             </View>
         )
     }
