@@ -931,7 +931,7 @@ const TrainingSettings = () => {
                                                         placeholder={defaultSettings.trainingStatTarget.trainingSprintStatTarget_speedStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingSprintStatTarget_speedStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Sprint Speed Target"
                                                         labelUnit=""
@@ -943,7 +943,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingSprintStatTarget_staminaStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingSprintStatTarget_staminaStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Sprint Stamina Target"
                                                         labelUnit=""
@@ -955,7 +955,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingSprintStatTarget_powerStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingSprintStatTarget_powerStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Sprint Power Target"
                                                         labelUnit=""
@@ -967,7 +967,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingSprintStatTarget_gutsStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingSprintStatTarget_gutsStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Sprint Guts Target"
                                                         labelUnit=""
@@ -979,7 +979,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingSprintStatTarget_witStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingSprintStatTarget_witStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Sprint Wit Target"
                                                         labelUnit=""
@@ -1008,7 +1008,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMileStatTarget_speedStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMileStatTarget_speedStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Mile Speed Target"
                                                         labelUnit=""
@@ -1020,7 +1020,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMileStatTarget_staminaStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMileStatTarget_staminaStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Mile Stamina Target"
                                                         labelUnit=""
@@ -1032,7 +1032,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMileStatTarget_powerStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMileStatTarget_powerStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Mile Power Target"
                                                         labelUnit=""
@@ -1044,7 +1044,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMileStatTarget_gutsStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMileStatTarget_gutsStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Mile Guts Target"
                                                         labelUnit=""
@@ -1056,7 +1056,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMileStatTarget_witStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMileStatTarget_witStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Mile Wit Target"
                                                         labelUnit=""
@@ -1085,7 +1085,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMediumStatTarget_speedStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMediumStatTarget_speedStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Medium Speed Target"
                                                         labelUnit=""
@@ -1097,7 +1097,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMediumStatTarget_staminaStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMediumStatTarget_staminaStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Medium Stamina Target"
                                                         labelUnit=""
@@ -1109,7 +1109,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMediumStatTarget_powerStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMediumStatTarget_powerStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Medium Power Target"
                                                         labelUnit=""
@@ -1121,7 +1121,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMediumStatTarget_gutsStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMediumStatTarget_gutsStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Medium Guts Target"
                                                         labelUnit=""
@@ -1133,7 +1133,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingMediumStatTarget_witStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingMediumStatTarget_witStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Medium Wit Target"
                                                         labelUnit=""
@@ -1162,7 +1162,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingLongStatTarget_speedStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingLongStatTarget_speedStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Long Speed Target"
                                                         labelUnit=""
@@ -1174,7 +1174,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingLongStatTarget_staminaStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingLongStatTarget_staminaStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Long Stamina Target"
                                                         labelUnit=""
@@ -1186,7 +1186,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingLongStatTarget_powerStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingLongStatTarget_powerStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Long Power Target"
                                                         labelUnit=""
@@ -1198,7 +1198,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingLongStatTarget_gutsStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingLongStatTarget_gutsStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Long Guts Target"
                                                         labelUnit=""
@@ -1210,7 +1210,7 @@ const TrainingSettings = () => {
                                                         value={trainingStatTargetSettings.trainingLongStatTarget_witStatTarget}
                                                         onValueChange={(value) => updateTrainingStatTarget("trainingLongStatTarget_witStatTarget", value)}
                                                         min={100}
-                                                        max={1200}
+                                                        max={2000}
                                                         step={10}
                                                         label="Long Wit Target"
                                                         labelUnit=""
