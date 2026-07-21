@@ -850,6 +850,14 @@ abstract class Campaign(game: Game) : Task(game) {
     open fun getRetryEligibleGrades(): List<RaceGrade> = emptyList()
 
     /**
+     * Returns whether losing a race can end the career, which decides if the mandatory-race-failure path in the Try Again dialog applies.
+     * Scenarios whose losses never end the career (e.g. Unity Cup, whose dialog states the career continues) should override this to false.
+     *
+     * @return True if a loss can end the career.
+     */
+    open fun isRaceLossCareerEnding(): Boolean = true
+
+    /**
      * Executes logic at the very beginning of [handleMainScreen].
      */
     open fun onBeforeMainScreenUpdate() {
@@ -977,7 +985,7 @@ abstract class Campaign(game: Game) : Task(game) {
     /**
      * Handles the Try Again dialog using a hook method for the retry decision.
      *
-     * The mandatory-race-failure path (disableRaceRetries == true) is handled here as shared logic.
+     * The mandatory-race-failure path (disableRaceRetries == true) is handled here as shared logic, but only for scenarios where a loss can end the career (see [isRaceLossCareerEnding]).
      * The non-mandatory retry decision is delegated to [shouldRetryRace].
      *
      * @param dialog The Try Again dialog.
@@ -987,7 +995,7 @@ abstract class Campaign(game: Game) : Task(game) {
     private fun handleTryAgainDialog(dialog: DialogInterface, args: Map<String, Any>): DialogHandlerResult {
         // All branches need a slight delay to allow the dialog to close since the runRaceWithRetries() loop handles dialogs at the start of each iteration.
         // Can cause problem where we handle one branch then immediately handle dialogs again and handle a second branch for the same dialog instance.
-        if (racing.disableRaceRetries) {
+        if (racing.disableRaceRetries && isRaceLossCareerEnding()) {
             if (racing.enableFreeRaceRetry && IconOneFreePerDayTooltip.check(game.imageUtils)) {
                 MessageLog.i(TAG, "[RACE] Failed mandatory race. Using daily free race retry...")
                 racing.raceRetries--

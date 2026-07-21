@@ -32,7 +32,6 @@ import com.steve1316.uma_android_automation.components.IconTrainingHeaderStamina
 import com.steve1316.uma_android_automation.components.IconTrainingHeaderWit
 import com.steve1316.uma_android_automation.components.IconUnityCupRaceEndLogo
 import com.steve1316.uma_android_automation.components.IconUnityCupTutorialHeader
-import com.steve1316.uma_android_automation.components.LabelCongratulations
 import com.steve1316.uma_android_automation.components.LabelUnityCupOpponentSelectionLaurel
 import com.steve1316.uma_android_automation.types.StatName
 import org.opencv.core.Point
@@ -57,8 +56,14 @@ class UnityCup(game: Game) : Campaign(game) {
     /** Flag indicating if the opponent selection should be overridden. */
     private var bOverrideOpponentSelection: Boolean = false
 
-    /** Whether to retry a lost manually-run Unity Cup race. Read once per bot-run from the Scenario Overrides settings. */
+    /** Whether to retry a lost Unity Cup race. Read once per bot-run from the Scenario Overrides settings. */
     private val retryRaces: Boolean = SettingsHelper.getBooleanSetting("scenarioOverrides", "unityCupRetryRaces", true)
+
+    /**
+     * Flag indicating that the Try Again button was just clicked on the skip-results screen, so the confirmation dialog that follows belongs to a Unity Cup race rather than a
+     * mandatory one. Scopes the retry overrides to that dialog only, leaving mandatory races on this scenario with the shared retry semantics.
+     */
+    private var bAwaitingSkipRetryConfirm: Boolean = false
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +143,37 @@ class UnityCup(game: Game) : Campaign(game) {
     }
 
     /**
+     * Losing a Unity Cup race never ends the career - its Try Again dialog states the career continues - so the mandatory-race-failure path must not apply to that dialog.
+     * Mandatory races run on this scenario still fall through to the shared handling, hence the check on [bAwaitingSkipRetryConfirm] rather than a blanket false.
+     *
+     * @return False only while confirming a Unity Cup skip-path retry.
+     */
+    override fun isRaceLossCareerEnding(): Boolean = !bAwaitingSkipRetryConfirm
+
+    /**
+     * Confirms the Try Again dialog that opens after clicking Try Again on a lost, skipped Unity Cup race.
+     *
+     * The game caps how many times such a race can be retried and greys out its own Try Again button once exhausted, so the shared mandatory-race retry pool is deliberately
+     * left untouched here. Any other Try Again dialog on this scenario (i.e. a mandatory race) is delegated to the base implementation so it keeps the shared budget semantics.
+     *
+     * @param dialog The Try Again dialog.
+     * @param args Additional arguments from dialog handling.
+     * @return True if the retry was confirmed, false to close the dialog without retrying.
+     */
+    override fun shouldRetryRace(dialog: DialogInterface, args: Map<String, Any>): Boolean {
+        if (!bAwaitingSkipRetryConfirm) {
+            return super.shouldRetryRace(dialog, args)
+        }
+        bAwaitingSkipRetryConfirm = false
+
+        MessageLog.i(TAG, "[UNITY_CUP] Confirming the Try Again dialog to retry the lost race...")
+        if (dialog.ok(game.imageUtils)) {
+            game.wait(1.0)
+        }
+        return true
+    }
+
+    /**
      * Analyzes the opponent race prediction images to determine if they are favorable.
      *
      * @return True if there are sufficient double circle predictions, false otherwise.
@@ -172,6 +208,9 @@ class UnityCup(game: Game) : Campaign(game) {
 
         // Tracks how many times a lost, skipped race was retried so the outcome can be logged.
         var raceRetryCount = 0
+
+        // Clear any flag left over from a retry whose confirmation dialog never appeared, so it cannot leak into a later mandatory race.
+        bAwaitingSkipRetryConfirm = false
 
         while (true) {
             val sourceBitmap: Bitmap = game.imageUtils.getSourceBitmap()
@@ -245,13 +284,13 @@ class UnityCup(game: Game) : Campaign(game) {
                     }
                 }
 
-                // On the skip-results screen, retry a lost race while the game still offers the Try Again button and it was not a 1st-place finish.
-                retryRaces &&
-                    ButtonTryAgainAlt.checkDisabled(game.imageUtils, sourceBitmap = sourceBitmap) == false &&
-                    !LabelCongratulations.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                    raceRetryCount++
-                    MessageLog.i(TAG, "[UNITY_CUP] Skipped race finished below 1st place. Retrying for the win (attempt #$raceRetryCount)...")
+                // On the skip-results screen the Try Again button is only enabled after a loss (it greys out on a win), so its enabled state alone gates the retry.
+                retryRaces && ButtonTryAgainAlt.checkDisabled(game.imageUtils, sourceBitmap = sourceBitmap) == false -> {
                     if (ButtonTryAgainAlt.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+                        raceRetryCount++
+                        // Mark the confirmation dialog that follows as this scenario's so the retry overrides only apply to it.
+                        bAwaitingSkipRetryConfirm = true
+                        MessageLog.i(TAG, "[UNITY_CUP] Lost the skipped race. Opening the Try Again dialog to retry (attempt #$raceRetryCount)...")
                         // Reset the abort timer so re-running the race does not trip the execution-time threshold mid-retry.
                         startTime = System.currentTimeMillis()
                         game.wait(3.0)
