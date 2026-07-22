@@ -90,6 +90,19 @@
             "Dirt": "F"
         }
     },
+    "Copano Rickey": {
+        "name": "Copano Rickey",
+        "distanceAptitudes": {
+            "Sprint": "C",
+            "Mile": "A",
+            "Medium": "A",
+            "Long": "G"
+        },
+        "surfaceAptitudes": {
+            "Turf": "F",
+            "Dirt": "A"
+        }
+    },
     "Curren Chan": {
         "name": "Curren Chan",
         "distanceAptitudes": {

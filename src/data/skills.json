@@ -737,7 +737,7 @@
         "condition": "phase_random==1&running_style==4&order_rate>=75",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 202381,
         "downgrade": null
     },
@@ -989,7 +989,7 @@
         "condition": "ground_type==2&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202262
     },
@@ -1787,7 +1787,7 @@
         "condition": "ground_type==2&accumulatetime>=10&phase==0&order<=1&bashin_diff_behind<=1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 202351,
         "downgrade": null
     },
@@ -2851,7 +2851,7 @@
         "condition": "ground_type==2&phase_random==3&order_rate<=50&is_lastspurt==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 202281,
         "downgrade": null
     },
@@ -3117,7 +3117,7 @@
         "condition": "ground_type==2&phase_random==2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202311,
         "downgrade": null
     },
@@ -4699,7 +4699,7 @@
         "condition": "phase_laterhalf_random==1",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -7471,7 +7471,7 @@
         "condition": "ground_type==2&base_power>=1200@ground_type==2&base_power>=1000&base_power<1200",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202331,
         "downgrade": null
     },
@@ -7933,7 +7933,7 @@
         "condition": "ground_type==2&base_power>=1200@ground_type==2&base_power>=1000&base_power<1200",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202332
     },
@@ -8171,7 +8171,7 @@
         "condition": "ground_type==2&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202261,
         "downgrade": null
     },

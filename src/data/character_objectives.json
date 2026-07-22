@@ -710,6 +710,122 @@
             }
         ]
     },
+    "Copano Rickey": {
+        "name": "Copano Rickey",
+        "mandatoryRaces": [
+            {
+                "turn": 31,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Fukuryu Stakes",
+                        "grade": "OP",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 1800
+                    }
+                ]
+            },
+            {
+                "turn": 47,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Champions Cup",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 52,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "February Stakes",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 57,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Kashiwa Kinen",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 60,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Teio Sho",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 67,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "M.C. Nambu Hai",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 69,
+                "isChoice": true,
+                "options": [
+                    {
+                        "raceName": "JBC Classic",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
+                    },
+                    {
+                        "raceName": "JBC Classic",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 72,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tokyo Daishoten",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
+                    }
+                ]
+            }
+        ]
+    },
     "Curren Chan": {
         "name": "Curren Chan",
         "mandatoryRaces": [

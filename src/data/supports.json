@@ -807,6 +807,15 @@
         ],
         "(❯❯)\nInvitation on a Stormy Day": [
             "Stamina +15\nStudious hint +1\nManhattan Cafe bond +5"
+        ],
+        "(❯)\nNot All Phenomena Must Be Seen": [
+            "Energy +20\nMood +1\nStamina +5\nManhattan Cafe bond +5"
+        ],
+        "(❯❯)\nThe Big Picture Isn't So Big": [
+            "Energy +25\nStamina +5\nManhattan Cafe bond +5"
+        ],
+        "(❯❯❯)\nNot All Mysteries Must Be Solved": [
+            "Energy +30\nStamina +5\nOf Calm Mind hint +1\nManhattan Cafe bond +5"
         ]
     },
     "Maruzensky": {
@@ -1638,6 +1647,13 @@
         ],
         "(❯❯❯)\nIt's All to Win": [
             "Randomly either\n----------\nEnergy +10\nSpeed +5\nStamina +5\nWit +5\nSkill points +5\nMood +1\nFast-Paced hint +1\n----------\n\n----------\nEnergy +10\nSpeed +10\nStamina +10\nWit +10\nSkill points +30\nMood +1\nEscape Artist hint +3"
+        ],
+        "(❯)\nAfter the Fishing Trip...": [
+            "Stamina +10\nHesitant Late Surgers hint +1\nSeiun Sky bond +5"
+        ],
+        "(❯❯)\nLet's Go Fishing Again": [
+            "Speed +15\nStamina +15\nSeiun Sky bond +5",
+            "Mood +1\nSecond Wind hint +1\nSeiun Sky bond +15"
         ]
     },
     "Shinko Windy": {
