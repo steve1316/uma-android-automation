@@ -22,7 +22,6 @@ import com.steve1316.uma_android_automation.components.ButtonRaceAgendaLoadList
 import com.steve1316.uma_android_automation.components.ButtonRaceExclamation
 import com.steve1316.uma_android_automation.components.ButtonRaceListFullStats
 import com.steve1316.uma_android_automation.components.ButtonRaceManual
-import com.steve1316.uma_android_automation.components.ButtonRaces
 import com.steve1316.uma_android_automation.components.ButtonSkip
 import com.steve1316.uma_android_automation.components.ButtonTryAgainAlt
 import com.steve1316.uma_android_automation.components.ButtonViewResults
@@ -563,14 +562,14 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         // Navigate to the race selection screen.
         // We only proceed if the button is enabled AND we successfully click it.
         // Everything else returns from this function.
-        when (ButtonRaces.checkDisabled(game.imageUtils)) {
+        when (campaign.racesButton.checkDisabled(game.imageUtils)) {
             true -> {
                 MessageLog.i(TAG, "[RACE] Races button is disabled. Skipping loading the race agenda.")
                 return
             }
 
             false -> {
-                if (ButtonRaces.click(game.imageUtils)) {
+                if (campaign.racesButton.click(game.imageUtils)) {
                     MessageLog.i(TAG, "[RACE] Clicked the Races button. Proceeding to load the race agenda...")
                 } else {
                     MessageLog.w(TAG, "[WARN] loadUserRaceAgenda:: Detected the Races button but failed to click it. Skipping loading the race agenda.")
@@ -924,7 +923,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 MessageLog.i(TAG, "[RACE] It is currently Summer right now. Stopping extra race check.")
                 campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "Summer - no extra races (skipSummerTrainingForAgenda not active)")
                 return false
-            } else if (ButtonRaces.checkDisabled(game.imageUtils) == true) {
+            } else if (campaign.racesButton.checkDisabled(game.imageUtils) == true) {
                 MessageLog.i(TAG, "[RACE] Extra Races button is currently locked. Stopping extra race check.")
                 campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "Extra Races button is currently locked / disabled")
                 return false
@@ -1637,7 +1636,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         MessageLog.v(TAG, "[RACE] Starting Racing process on ${campaign.date}.")
 
         // If the races button exists AND is disabled, we can exit early since we know that we're at the home screen and the bot cannot race.
-        if (ButtonRaces.checkDisabled(game.imageUtils) == true) {
+        if (campaign.racesButton.checkDisabled(game.imageUtils) == true) {
             MessageLog.v(TAG, "[RACE] Races are locked. Canceling the racing process and doing something else.")
             clearRacingRequirementFlags()
             MessageLog.v(TAG, "********************")
@@ -1664,12 +1663,12 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             // Check for the consecutive race dialog before proceeding.
             campaign.handleDialogs(args = mapOf("overrideIgnoreConsecutiveRaceWarning" to true))
             return handleMandatoryRace()
-        } else if (!campaign.trainee.bHasCompletedMaidenRace && !isScheduledRace && ButtonRaces.click(game.imageUtils)) {
+        } else if (!campaign.trainee.bHasCompletedMaidenRace && !isScheduledRace && campaign.racesButton.click(game.imageUtils)) {
             game.wait(1.0, skipWaitingForLoading = true)
             // Check for the consecutive race dialog before proceeding.
             campaign.handleDialogs(args = mapOf("overrideIgnoreConsecutiveRaceWarning" to true))
             return handleMaidenRace()
-        } else if ((!campaign.date.bIsPreDebut && ButtonRaces.click(game.imageUtils)) || isScheduledRace) {
+        } else if ((!campaign.date.bIsPreDebut && campaign.racesButton.click(game.imageUtils)) || isScheduledRace) {
             // SRS-planned races bypass the consecutive-race limit. SRS owns the schedule, so its picks must not be gated by the local limit.
             val isSrsScheduledRace =
                 enableSmartRaceSolver &&

@@ -21,6 +21,7 @@ import com.steve1316.uma_android_automation.components.ButtonEventProgressChevro
 import com.steve1316.uma_android_automation.components.ButtonHomeFansInfo
 import com.steve1316.uma_android_automation.components.ButtonHomeFullStats
 import com.steve1316.uma_android_automation.components.ButtonInfirmary
+import com.steve1316.uma_android_automation.components.ButtonRaces
 import com.steve1316.uma_android_automation.components.ButtonInheritance
 import com.steve1316.uma_android_automation.components.ButtonNext
 import com.steve1316.uma_android_automation.components.ButtonNextRaceEnd
@@ -31,6 +32,7 @@ import com.steve1316.uma_android_automation.components.ButtonRaceStrategyLate
 import com.steve1316.uma_android_automation.components.ButtonRaceStrategyPace
 import com.steve1316.uma_android_automation.components.ButtonRecreation
 import com.steve1316.uma_android_automation.components.ButtonRest
+import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.ButtonRestAndRecreation
 import com.steve1316.uma_android_automation.components.ButtonSkills
 import com.steve1316.uma_android_automation.components.ButtonSkip
@@ -215,6 +217,18 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Required instance of the Training class. Override to provide a scenario-specific Training subclass. */
     open val training: Training = Training(game, this)
+
+    /** The main-screen Infirmary button. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's squished bottom row). */
+    open val infirmaryButton: ComponentInterface = ButtonInfirmary
+
+    /** The main-screen Recreation button. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's squished bottom row). */
+    open val recreationButton: ComponentInterface = ButtonRecreation
+
+    /** The main-screen Races button. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's squished bottom row). */
+    open val racesButton: ComponentInterface = ButtonRaces
+
+    /** The career-end Skills button. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's three-button end-screen row). */
+    open val careerEndSkillsButton: ComponentInterface = ButtonCareerEndSkills
 
     /** Required instance of the TrainingEvent class. */
     protected val trainingEvent: TrainingEvent = TrainingEvent(game, this)
@@ -1049,6 +1063,14 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
+     * Executes logic when the career-end screen is first reached, before the skill-plan / completion handling. Default no-op; scenarios
+     * override to perform an end-of-career action (e.g. Grand Live spending its remaining Performance Points in Lessons).
+     */
+    open fun onEndScreenEntry() {
+        return
+    }
+
+    /**
      * Decision-relevant inventory snapshot for the current turn, grouped by category label (e.g. `Megaphones`, `Race Items`) then mapped to item-name -> count. Subclasses with inventory tracking
      * (e.g. Trackblazer) should override to return the items that drive their decisions. Use `LinkedHashMap` so the category order is preserved when rendered. Empty map by default for campaigns
      * without inventory.
@@ -1349,7 +1371,7 @@ abstract class Campaign(game: Game) : Task(game) {
         MessageLog.i(TAG, "\n[INJURY] Checking if there is an injury that needs healing on $date.")
         val sourceBitmap = sourceBitmap ?: game.imageUtils.getSourceBitmap()
 
-        return when (ButtonInfirmary.checkDisabled(game.imageUtils, sourceBitmap)) {
+        return when (infirmaryButton.checkDisabled(game.imageUtils, sourceBitmap)) {
             true -> {
                 MessageLog.i(TAG, "[INJURY] No injury detected.")
                 false
@@ -1357,7 +1379,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
             false -> {
                 MessageLog.v(TAG, "[INJURY] Injury detected. Attempting to heal...")
-                if (ButtonInfirmary.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+                if (infirmaryButton.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
                     game.wait(game.dialogWaitDelay)
                     ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
                     game.wait(game.dialogWaitDelay)
@@ -1529,7 +1551,7 @@ abstract class Campaign(game: Game) : Task(game) {
             false
         } else if ((trainee.mood < targetMood) &&
             (
-                ButtonRecreation.check(game.imageUtils, sourceBitmap = sourceBitmap) ||
+                recreationButton.check(game.imageUtils, sourceBitmap = sourceBitmap) ||
                     ButtonRestAndRecreation.check(
                         game.imageUtils,
                         sourceBitmap = sourceBitmap,
@@ -1547,7 +1569,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 // Otherwise, recover mood as normal. Do NOT mark the date completed here: an absent date icon can simply mean the date has not unlocked yet
                 // (it unlocks randomly), not that the chain is finished. Completion is set only by the authoritative LabelRecreationDateComplete check.
                 // If a date really was already completed, the Recreation popup still shows, so recovering mood needs the extra step below.
-                if (!ButtonRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+                if (!recreationButton.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
                     ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap)
                 }
 
@@ -1691,7 +1713,7 @@ abstract class Campaign(game: Game) : Task(game) {
      * @return True if the Recreation date event was successfully completed, false otherwise.
      */
     open fun handleRecreationDate(recoverMoodIfCompleted: Boolean = false, allowFinalOuting: Boolean = true, doDateRecreation: Boolean = true): Boolean {
-        return if (ButtonRecreation.click(game.imageUtils)) {
+        return if (recreationButton.click(game.imageUtils)) {
             // Tap OK for the possibility of a scheduled race warning popup.
             game.wait(game.dialogWaitDelay)
             ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
@@ -2630,9 +2652,12 @@ abstract class Campaign(game: Game) : Task(game) {
                 racing.handleStandaloneRace()
             } else if (checkEndScreen()) {
                 // Stop when the bot has reached the screen where it details the overall result of the run.
+                // Scenario end-of-career hook (e.g. Grand Live spends its leftover Performance Points in Lessons before completing).
+                onEndScreenEntry()
+
                 if (skillPlan.skillPlans["careerComplete"]?.bIsEnabled ?: false) {
                     game.wait(0.5)
-                    ButtonCareerEndSkills.click(game.imageUtils)
+                    careerEndSkillsButton.click(game.imageUtils)
                     game.wait(1.0)
                     if (!handleSkillListScreen()) {
                         MessageLog.w(TAG, "[WARN] process:: handleSkillList() failed.")
