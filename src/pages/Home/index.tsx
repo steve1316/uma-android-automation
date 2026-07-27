@@ -79,6 +79,11 @@ const scenarios = [
         label: "Trackblazer",
         disabled: false,
     },
+    {
+        value: "Grand Live",
+        label: "Grand Live",
+        disabled: false,
+    },
 ]
 
 /**
