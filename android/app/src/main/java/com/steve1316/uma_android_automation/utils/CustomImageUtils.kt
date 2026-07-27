@@ -1614,6 +1614,66 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Read an integer from a screen region using the YOLO digit detector - the same model that reads training stat gains - with
+     * an OCR fallback when YOLO stat detection is disabled or finds nothing. The "+" class is dropped, so a "+30" gain reads as 30.
+     * The crop rectangle is clamped to the bitmap bounds so out-of-range offsets never crash.
+     *
+     * When [requirePlus] is set, the region must contain a "+" glyph to count as a number. This gates gain overlays (always shown
+     * as "+N") so an empty slot with a stray misread digit reads as 0 instead of a phantom gain.
+     *
+     * @param sourceBitmap The full screenshot to crop from.
+     * @param x Left edge of the crop in screen pixels.
+     * @param y Top edge of the crop in screen pixels.
+     * @param width Crop width in screen pixels.
+     * @param height Crop height in screen pixels.
+     * @param requirePlus When true, return 0 unless a "+" glyph is present in the region (for gain overlays).
+     * @param debugName Label used for OCR debug output on the fallback path.
+     * @return The parsed integer, 0 when [requirePlus] is set but no "+" is present, or null when nothing readable was found.
+     */
+    fun readNumberFromRegion(sourceBitmap: Bitmap, x: Int, y: Int, width: Int, height: Int, requirePlus: Boolean = false, debugName: String = ""): Int? {
+        if (useYolo) {
+            val crop = createSafeBitmap(sourceBitmap, x, y, width, height, "readNumberFromRegion") ?: return null
+            try {
+                val detections = getYoloDetector(context).detect(crop)
+                if (requirePlus && detections.none { it.label == "+" }) return 0
+                val digits = detections.sortedBy { it.x }.map { it.label }.filter { it != "+" }.joinToString("")
+                digits.toIntOrNull()?.let { return it }
+            } finally {
+                crop.recycle()
+            }
+        }
+
+        // performOCROnRegion clamps its crop internally.
+        val text = performOCROnRegion(sourceBitmap, x, y, width, height, scale = 2.0, debugName = debugName)
+        if (requirePlus && !text.contains("+")) return 0
+        return text.filter { it.isDigit() }.toIntOrNull()
+    }
+
+    /**
+     * Whether a screen region holds a vivid-green mark. Used to read checkbox state by colour: a ticked checkbox's checkmark is green
+     * while an un-ticked one is grey, and grayscale template matching cannot tell them apart.
+     *
+     * @param sourceBitmap The full screenshot.
+     * @param x Left edge of the region in screen pixels.
+     * @param y Top edge of the region in screen pixels.
+     * @param width Region width in screen pixels.
+     * @param height Region height in screen pixels.
+     * @param minPixels Minimum vivid-green pixels for the region to count as green.
+     * @return True when the region contains at least [minPixels] green pixels.
+     */
+    fun isRegionGreen(sourceBitmap: Bitmap, x: Int, y: Int, width: Int, height: Int, minPixels: Int = 20): Boolean {
+        val crop = createSafeBitmap(sourceBitmap, x, y, width, height, "isRegionGreen") ?: return false
+        val hsv = crop.toHsvMat()
+        val mask = Mat()
+        Core.inRange(hsv, Scalar(40.0, 150.0, 150.0), Scalar(80.0, 255.0, 255.0), mask)
+        val greenPixels = Core.countNonZero(mask)
+        hsv.release()
+        mask.release()
+        crop.recycle()
+        return greenPixels >= minPixels
+    }
+
+    /**
      * Determines the stat gain values from a training session.
      *
      * Uses template matching to identify individual digits and the "+" sign in the stat gain area. Supports multi-row detection for specialized scenarios.
