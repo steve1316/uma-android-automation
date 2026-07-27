@@ -117,6 +117,26 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The turn (`campaign.date.day`) the cached analysis was computed for. The cache is reused only when this matches the current turn, so a prior turn's analysis never leaks. */
     private var cachedAnalysisTurn: Int? = null
 
+    /** The training selection button for each stat's facility. */
+    internal val trainingButtons: Map<StatName, ComponentInterface> =
+        mapOf(
+            StatName.SPEED to ButtonTrainingSpeed,
+            StatName.STAMINA to ButtonTrainingStamina,
+            StatName.POWER to ButtonTrainingPower,
+            StatName.GUTS to ButtonTrainingGuts,
+            StatName.WIT to ButtonTrainingWit,
+        )
+
+    /** The header icon confirming each stat's facility is the selected one on the Training screen. */
+    internal val iconTrainingHeaders: Map<StatName, ComponentInterface> =
+        mapOf(
+            StatName.SPEED to IconTrainingHeaderSpeed,
+            StatName.STAMINA to IconTrainingHeaderStamina,
+            StatName.POWER to IconTrainingHeaderPower,
+            StatName.GUTS to IconTrainingHeaderGuts,
+            StatName.WIT to IconTrainingHeaderWit,
+        )
+
     /** The current training scenario name. */
     private val scenario = game.scenario
 
@@ -1244,24 +1264,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         } else {
             MessageLog.v(TAG, "\n[TRAINING] Now starting process to analyze all 5 Trainings.")
         }
-
-        val trainingButtons: Map<StatName, ComponentInterface> =
-            mapOf(
-                StatName.SPEED to ButtonTrainingSpeed,
-                StatName.STAMINA to ButtonTrainingStamina,
-                StatName.POWER to ButtonTrainingPower,
-                StatName.GUTS to ButtonTrainingGuts,
-                StatName.WIT to ButtonTrainingWit,
-            )
-
-        val iconTrainingHeaders: Map<StatName, ComponentInterface> =
-            mapOf(
-                StatName.SPEED to IconTrainingHeaderSpeed,
-                StatName.STAMINA to IconTrainingHeaderStamina,
-                StatName.POWER to IconTrainingHeaderPower,
-                StatName.GUTS to IconTrainingHeaderGuts,
-                StatName.WIT to IconTrainingHeaderWit,
-            )
 
         /**
          * Detects the current active (selected) stat in the training screen.
@@ -2869,15 +2871,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     statsTrainedOverBuffer.add(trainingSelected)
                 }
             }
-
-            val trainingButtons: Map<StatName, ComponentInterface> =
-                mapOf(
-                    StatName.SPEED to ButtonTrainingSpeed,
-                    StatName.STAMINA to ButtonTrainingStamina,
-                    StatName.POWER to ButtonTrainingPower,
-                    StatName.GUTS to ButtonTrainingGuts,
-                    StatName.WIT to ButtonTrainingWit,
-                )
 
             // These values are hardcoded and exhaustive. A KeyError would be a programmer error.
             val trainingButton: ComponentInterface = trainingButtons[trainingSelected]!!
