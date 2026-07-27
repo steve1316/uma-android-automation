@@ -30,6 +30,7 @@ import com.steve1316.uma_android_automation.components.IconStatBlockStamina
 import com.steve1316.uma_android_automation.components.IconStatBlockTrainer
 import com.steve1316.uma_android_automation.components.IconStatBlockWit
 import com.steve1316.uma_android_automation.components.IconStatSupportEtsukoOtonashi
+import com.steve1316.uma_android_automation.components.IconStatSupportLightHello
 import com.steve1316.uma_android_automation.components.IconStatSupportRikoKashimoto
 import com.steve1316.uma_android_automation.components.IconStatSupportYayoiAkikawa
 import com.steve1316.uma_android_automation.components.IconUnityCupExtremeSpiritExplosion
@@ -613,6 +614,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val statSupportComponentMap: Map<String, ComponentInterface> =
             mapOf(
                 "stat_support_etsuko_otonashi" to IconStatSupportEtsukoOtonashi,
+                "stat_support_light_hello" to IconStatSupportLightHello,
                 "stat_support_riko_kashimoto" to IconStatSupportRikoKashimoto,
                 "stat_support_yayoi_akikawa" to IconStatSupportYayoiAkikawa,
             )
@@ -675,6 +677,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
                     "Trackblazer" -> {
                         listOf(
+                            Triple("stat_support_etsuko_otonashi", "Etsuko Otonashi", false),
+                            Triple("stat_support_yayoi_akikawa", "Yayoi Akikawa", false),
+                        )
+                    }
+
+                    "Grand Live" -> {
+                        listOf(
+                            Triple("stat_support_light_hello", "Light Hello", false),
                             Triple("stat_support_etsuko_otonashi", "Etsuko Otonashi", false),
                             Triple("stat_support_yayoi_akikawa", "Yayoi Akikawa", false),
                         )
