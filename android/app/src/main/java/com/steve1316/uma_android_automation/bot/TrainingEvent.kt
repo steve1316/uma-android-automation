@@ -576,7 +576,8 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
                 } else if (line.lowercase().contains("hint")) {
                     selectionWeight[rewardIndex] += 25
                 } else if (PositiveStatus.names.any { status -> line.contains(status) }) {
-                    selectionWeight[rewardIndex] += 25
+                    // Positive conditions (e.g. Practice Perfect) are valued highly - preferred over a flat-stat option on the same event.
+                    selectionWeight[rewardIndex] += 100
                 } else if (NegativeStatus.names.any { status -> line.contains(status) }) {
                     selectionWeight[rewardIndex] += -25
                 } else if (line.lowercase().contains("skill")) {
