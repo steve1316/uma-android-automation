@@ -21,6 +21,7 @@ import com.steve1316.uma_android_automation.components.ButtonEventProgressChevro
 import com.steve1316.uma_android_automation.components.ButtonHomeFansInfo
 import com.steve1316.uma_android_automation.components.ButtonHomeFullStats
 import com.steve1316.uma_android_automation.components.ButtonInfirmary
+import com.steve1316.uma_android_automation.components.ButtonRace
 import com.steve1316.uma_android_automation.components.ButtonRaces
 import com.steve1316.uma_android_automation.components.ButtonInheritance
 import com.steve1316.uma_android_automation.components.ButtonNext
@@ -226,6 +227,9 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** The main-screen Races button. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's squished bottom row). */
     open val racesButton: ComponentInterface = ButtonRaces
+
+    /** The race-day main-screen Race button used to enter a mandatory race. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's three-button race-day row). */
+    open val raceDayButton: ComponentInterface = ButtonRace
 
     /** The career-end Skills button. Overridden per scenario when the button renders at a non-standard size (e.g. Grand Live's three-button end-screen row). */
     open val careerEndSkillsButton: ComponentInterface = ButtonCareerEndSkills

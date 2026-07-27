@@ -1802,7 +1802,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         }
 
         MessageLog.v(TAG, "[RACE] Confirming the mandatory race selection.")
-        ButtonRace.click(game.imageUtils, tries = 3)
+        if (!campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
+            MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the race-day Race button on the main screen.")
+        }
         game.wait(1.0)
         MessageLog.i(TAG, "[RACE] Confirming any popup from the mandatory race selection.")
         ButtonRace.click(game.imageUtils, tries = 3)
