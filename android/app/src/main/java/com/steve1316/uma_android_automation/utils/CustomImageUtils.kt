@@ -137,6 +137,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     /** Whether to use YOLOv8 for stat detection. */
     private val useYolo: Boolean = SettingsHelper.getBooleanSetting("training", "enableYoloStatDetection")
 
+    /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios. */
+    private val scenarioHasCompactTopLeftBox: Boolean = game.scenario == "Unity Cup" || game.scenario == "Grand Live"
+
     /**
      * Defines the details of a race.
      *
@@ -2287,9 +2290,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val (energyTextLocation, sourceBitmap) = LabelEnergy.find(this)
 
         if (energyTextLocation != null) {
-            // Determine crop region based on the current scenario.
+            // Scenarios with the extra top-left box use a higher, narrower crop that targets the turns box above it.
             val (offsetX, offsetY, width, height) =
-                if (game.scenario == "Unity Cup") {
+                if (scenarioHasCompactTopLeftBox) {
                     listOf(-260, -137, relWidth(100), relHeight(80))
                 } else {
                     listOf(-246, -100, relWidth(140), relHeight(95))
@@ -2377,12 +2380,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         // Main screen detection path.
         val (energyLocation, sourceBitmap) = LabelEnergy.find(this)
-        val offsetX =
-            if (game.scenario == "Unity Cup") {
-                -40
-            } else {
-                -268
-            }
+        // Scenarios with the extra top-left box place the date banner closer to the Energy label (the box occupies the usual far-left date spot), so they use a smaller left offset.
+        val offsetX = if (scenarioHasCompactTopLeftBox) -40 else -268
 
         if (energyLocation != null) {
             // Perform OCR with no thresholding (date text is on moving background).
