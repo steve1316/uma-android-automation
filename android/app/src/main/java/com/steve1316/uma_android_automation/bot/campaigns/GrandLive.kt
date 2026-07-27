@@ -366,7 +366,11 @@ class GrandLive(game: Game) : Campaign(game) {
     private fun backOutUntil(screenName: String, isAtTarget: (Bitmap) -> Boolean) {
         for (attempt in 0 until 5) {
             val sourceBitmap = game.imageUtils.getSourceBitmap()
-            if (isAtTarget(sourceBitmap)) return
+            if (isAtTarget(sourceBitmap)) {
+                // The marker can match while the screen is still sliding in, so let the transition settle before the caller taps anything on it.
+                game.wait(2.0)
+                return
+            }
             ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
             game.waitForLoading()
             game.wait(game.waitDelay)
