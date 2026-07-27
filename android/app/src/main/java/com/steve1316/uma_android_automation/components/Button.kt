@@ -68,6 +68,8 @@ val ButtonLearn = button("learn")
 val ButtonReset = button("reset", Region.bottomHalf)
 val ButtonRace = button("race", Region.bottomHalf)
 val ButtonRaceDayRace = button("race_day_race", Region.bottomHalf)
+// Grand Live's race-day bottom row is Skills / Race / Lessons, so its Race button renders smaller than the standard race-day template.
+val ButtonRaceDayMini = button("race_day_race_mini", Region.bottomHalf)
 val ButtonRaceAgain = button("race_again", Region.bottomHalf)
 val ButtonRaceDetails = button("race_details", Region.bottomHalf)
 val ButtonRaceEvents = button("race_events")
