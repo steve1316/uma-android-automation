@@ -137,8 +137,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     /** Whether to use YOLOv8 for stat detection. */
     private val useYolo: Boolean = SettingsHelper.getBooleanSetting("training", "enableYoloStatDetection")
 
-    /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios. */
-    private val scenarioHasCompactTopLeftBox: Boolean = game.scenario == "Unity Cup" || game.scenario == "Grand Live"
+    /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios.
+     * Lazy because this class is constructed before `game.scenario` is initialized, so an eager read would cache an empty scenario. */
+    private val scenarioHasCompactTopLeftBox: Boolean by lazy { game.scenario == "Unity Cup" || game.scenario == "Grand Live" }
 
     /**
      * Defines the details of a race.
