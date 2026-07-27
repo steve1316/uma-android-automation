@@ -1202,13 +1202,56 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-        analyzeTrainings(mapOf("singleTraining" to true))
+        // Pass "test" so the analyzer does not skip the training on failure-chance / minimum-gain thresholds - this is a debug read.
+        analyzeTrainings(mapOf("singleTraining" to true, "test" to true))
         val result = trainingMap[trainingName]
         if (result != null) {
-            MessageLog.v(TAG, "[TEST] OCR Results for $trainingName: $result")
+            MessageLog.i(TAG, "[TEST] Single Training OCR Result:\n${formatTrainingMatrix(listOf(trainingName to result))}")
         } else {
             MessageLog.e(TAG, "[ERROR] startSingleTrainingOCRTest:: OCR failed for $trainingName.")
         }
+    }
+
+    /**
+     * Three-letter column heading for a stat in the training OCR matrix.
+     *
+     * @param stat The stat.
+     * @return The stat's short heading.
+     */
+    private fun statAbbrev(stat: StatName): String =
+        when (stat) {
+            StatName.SPEED -> "Spd"
+            StatName.STAMINA -> "Sta"
+            StatName.POWER -> "Pow"
+            StatName.GUTS -> "Gut"
+            StatName.WIT -> "Wit"
+        }
+
+    /**
+     * Render analyzed trainings as a fixed-width matrix for the OCR debug tests: one row per facility, one right-aligned column
+     * per stat gain, then the failure chance, skill-hint, and rainbow counts. A null option prints "-" across its row.
+     *
+     * @param options The analyzed trainings keyed by facility, in print order.
+     * @return The header row followed by one indented row per facility, newline-separated.
+     */
+    private fun formatTrainingMatrix(options: List<Pair<StatName, TrainingOption?>>): String {
+        val header =
+            buildString {
+                append("  ").append("Facility".padEnd(9))
+                StatName.entries.forEach { append(statAbbrev(it).padStart(6)) }
+                append("Fail".padStart(7)).append("Hints".padStart(7)).append("Rainbow".padStart(9))
+            }
+        val rows =
+            options.map { (stat, option) ->
+                buildString {
+                    append("  ").append(stat.name.padEnd(9))
+                    StatName.entries.forEach { s -> append((option?.let { (it.statGains[s] ?: 0).toString() } ?: "-").padStart(6)) }
+                    append((option?.let { "${it.failureChance}%" } ?: "-").padStart(7))
+                    append((option?.numSkillHints?.toString() ?: "-").padStart(7))
+                    append((option?.numRainbow?.toString() ?: "-").padStart(9))
+                }
+            }
+        return (listOf(header) + rows).joinToString("\n")
     }
 
     /**
@@ -1219,9 +1262,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     fun startComprehensiveTrainingOCRTest() {
         MessageLog.v(TAG, "[TEST] Starting Comprehensive Training OCR Test.")
 
-        analyzeTrainings()
-        val result = trainingMap
-        MessageLog.v(TAG, "[TEST] Comprehensive OCR Results: $result")
+        // Pass "test" so the analyzer keeps every training in the map regardless of skip thresholds - this is a debug read.
+        analyzeTrainings(mapOf("test" to true))
+        val matrix = formatTrainingMatrix(StatName.entries.map { it to trainingMap[it] })
+        MessageLog.i(TAG, "[TEST] Comprehensive Training OCR Results:\n$matrix")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
