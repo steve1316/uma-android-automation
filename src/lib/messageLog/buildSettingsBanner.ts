@@ -248,6 +248,8 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🎯 Unity Cup Burst Only Top 3 Stats After Junior: ${settings.scenarioOverrides?.unityCupBurstTopStatsOnlyAfterJunior ? "✅" : "❌"}
 🔄 Unity Cup Retry Races: ${settings.scenarioOverrides?.unityCupRetryRaces ? "✅" : "❌"}
 ⚔️ URA Happy Meek Duel Bias: ${settings.scenarioOverrides?.uraHappyMeekDuelBias ?? "Moderate"}
+🎤 Grand Live Lesson Effect Priority: ${(settings.scenarioOverrides?.grandLiveLessonEffectPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveLessonEffectPriority ?? []).join(" > ")}
+🎶 Grand Live Lessons Re-check Interval: Every ${settings.scenarioOverrides?.grandLiveLessonRescanInterval ?? 2} turn(s)
 
 ---------- Misc Options ----------
 🔍 Enable Claw Machine Attempt: ${settings.general.enableClawMachineAttempt ? "✅" : "❌"}

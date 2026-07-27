@@ -259,6 +259,8 @@ export interface Settings {
         unityCupBurstTopStatsOnlyAfterJunior: boolean
         unityCupRetryRaces: boolean
         uraHappyMeekDuelBias: string
+        grandLiveLessonEffectPriority: string[]
+        grandLiveLessonRescanInterval: number
     }
 }
 
@@ -542,6 +544,8 @@ export const defaultSettings: Settings = {
         unityCupBurstTopStatsOnlyAfterJunior: false,
         unityCupRetryRaces: true,
         uraHappyMeekDuelBias: "Moderate",
+        grandLiveLessonEffectPriority: ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints"],
+        grandLiveLessonRescanInterval: 2,
     },
 }
 

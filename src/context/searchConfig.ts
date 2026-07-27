@@ -1070,6 +1070,18 @@ const searchConfig: SearchOption[] = [
         description: "Minimum projected fan gain on a race before the bot uses a Glow Stick on it. Applies on standard and finale days.",
         page: "ScenarioOverridesSettings",
     },
+    {
+        id: "grand-live-lesson-effect-priority",
+        title: "Grand Live Lesson Effect Priority",
+        description: "Rank which effect categories the bot buys first in Lessons. Deselected categories are only bought when nothing ranked is learnable.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "grand-live-lesson-rescan-interval",
+        title: "Grand Live Lessons Re-check Interval",
+        description: "How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time.",
+        page: "ScenarioOverridesSettings",
+    },
 
     // ============================================================
     // Discord Settings
