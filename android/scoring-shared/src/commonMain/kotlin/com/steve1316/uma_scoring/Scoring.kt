@@ -40,6 +40,12 @@ fun getScenarioStatCap(scenario: String, statName: StatName): Int =
                 StatName.WIT -> 1500
                 else -> DEFAULT_STAT_CAP
             }
+        "Grand Live" ->
+            when (statName) {
+                StatName.SPEED -> 1600
+                StatName.GUTS -> 1500
+                else -> 1300
+            }
         else -> DEFAULT_STAT_CAP
     }
 
