@@ -1254,6 +1254,13 @@ const searchConfig: SearchOption[] = [
         page: "DebugSettings",
     },
     {
+        id: "debug-grand-live-token-gain-test",
+        title: "Start Grand Live Token Gain Test",
+        description:
+            "Disables normal bot operations and starts the Grand Live token gain test. Run this on the Training screen: it reads the five Performance-Point token totals once, then selects each of the five facilities in turn and logs their per-token gains (using the same digit detector as training stat gains).",
+        page: "DebugSettings",
+    },
+    {
         id: "dump-logcat",
         title: "Dump logcat (last 6h)",
         description: "Saves this app's recent logcat output to a timestamped .txt file at the root of your storage folder.",

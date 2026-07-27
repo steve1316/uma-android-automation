@@ -280,6 +280,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🔍 Start Trackblazer Race Selection Test: ${settings.debug.debugMode_startTrackblazerRaceSelectionTest ? "✅" : "❌"}
 🔍 Start Trackblazer Inventory Sync Test: ${settings.debug.debugMode_startTrackblazerInventorySyncTest ? "✅" : "❌"}
 🔍 Start Trackblazer Buy Items Test: ${settings.debug.debugMode_startTrackblazerBuyItemsTest ? "✅" : "❌"}
+🔍 Start Grand Live Token Gain Test: ${settings.debug.debugMode_startGrandLiveTokenGainTest ? "✅" : "❌"}
 
 ---------- Discord Options ----------
 🔔 Discord Notifications: ${settings.discord?.enableDiscordNotifications ? "✅" : "❌"}
