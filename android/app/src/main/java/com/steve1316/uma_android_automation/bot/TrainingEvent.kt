@@ -746,9 +746,9 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             val (selectedOptionIndex, _) = specialEventResult
             optionSelected = selectedOptionIndex
 
-            // Ensure the selected option is within bounds.
+            // Clamp to the last option. Common events (e.g. race results) have a single option, so a setting of "Option 2" naturally lands here - a benign fallback, not an error.
             if (eventRewards.isNotEmpty() && optionSelected >= eventRewards.size) {
-                MessageLog.w(TAG, "[WARN] handleTrainingEvent:: Selected special event option $optionSelected is out of bounds. Using last option.")
+                MessageLog.v(TAG, "[TRAINING_EVENT] Option ${optionSelected + 1} exceeds this event's ${eventRewards.size} option(s); using the last option.")
                 optionSelected = eventRewards.size - 1
             }
 

@@ -251,7 +251,8 @@ class TrainingEventRecognizer(private val game: Game, private val imageUtils: Cu
                     eventTitle = eventName
                     eventOptionRewards = eventOptions
                     category = "character"
-                    character = characterKey
+                    // Common events (Victory!, Solid Showing, Defeat, ...) are stored as a single catch-all copy under one arbitrary character key, so we do not attribute them to an owner.
+                    character = if (isSpecialEvent) "" else characterKey
 
                     // Return early if we find a match that meets the minimum confidence criteria.
                     if (score >= minimumConfidence) {
