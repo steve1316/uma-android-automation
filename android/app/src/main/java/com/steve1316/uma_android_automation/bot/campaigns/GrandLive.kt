@@ -18,6 +18,7 @@ import com.steve1316.uma_android_automation.components.ButtonGrandLiveLessonsBig
 import com.steve1316.uma_android_automation.components.ButtonGrandLiveStart
 import com.steve1316.uma_android_automation.components.ButtonInfirmaryMini
 import com.steve1316.uma_android_automation.components.ButtonGrandLiveLessons
+import com.steve1316.uma_android_automation.components.ButtonRaceDayMini
 import com.steve1316.uma_android_automation.components.ButtonRacesMini
 import com.steve1316.uma_android_automation.components.ButtonRecreationMini
 import com.steve1316.uma_android_automation.components.ButtonNext
@@ -61,6 +62,9 @@ class GrandLive(game: Game) : Campaign(game) {
 
     // The career-end screen's bottom row is Skills / Complete Career / Lessons, so the Skills button is smaller than the standard template.
     override val careerEndSkillsButton: ComponentInterface = ButtonCareerEndSkillsMini
+
+    // The race-day bottom row is Skills / Race / Lessons, so the Race button is smaller than the standard race-day template.
+    override val raceDayButton: ComponentInterface = ButtonRaceDayMini
 
     /** Career day of the last Lessons scan, or -1 if never scanned. Paces how often Lessons is re-opened to poll for newly-learnable cards. */
     private var lastLessonScanDay: Int = -1
