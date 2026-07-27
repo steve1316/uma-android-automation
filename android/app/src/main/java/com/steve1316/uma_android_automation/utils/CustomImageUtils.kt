@@ -2313,21 +2313,16 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     debugName = "DayForExtraRace",
                 )
 
-            // Parse the result.
+            // Parse the result. A non-numeric readout means the box shows a label instead of a countdown - "Race Day", or "GOAL" on a
+            // mandatory-race turn (Turn 12 etc.) - both meaning the race is this turn (0 turns remaining). This avoids erroring on those days.
+            val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
             val result =
-                try {
-                    if (detectedText.lowercase().contains("ace") || detectedText.lowercase().contains("da")) {
-                        // This is "Race Day", so there are 0 turns left before the mandatory race.
-                        MessageLog.i(TAG, "[INFO] Detected Race Day for extra racing: $detectedText")
-                        0
-                    } else {
-                        val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
-                        MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
-                        cleanedResult.toInt()
-                    }
-                } catch (_: NumberFormatException) {
-                    MessageLog.e(TAG, "[ERROR] determineTurnsRemainingBeforeNextGoal:: Could not convert \"$detectedText\" to integer for the turns remaining.")
-                    -1
+                if (cleanedResult.isEmpty()) {
+                    MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText (mandatory race / goal turn - 0 remaining).")
+                    0
+                } else {
+                    MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
+                    cleanedResult.toInt()
                 }
 
             return result
