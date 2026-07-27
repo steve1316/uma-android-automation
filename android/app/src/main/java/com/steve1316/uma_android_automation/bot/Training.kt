@@ -1827,8 +1827,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // Cross-validate failure chances across trainings to correct OCR misreads.
-            normalizeFailureChances(analysisResults)
+            // Cross-validate failure chances across trainings to correct OCR misreads. Skipped for debug reads (test): the trainee's
+            // energy is not the live value there, so the energy-based estimate would wrongly clamp genuinely-high reads down to 0%.
+            if (!test) normalizeFailureChances(analysisResults)
 
             // Process results and populate training maps.
             processAnalysisResults(analysisResults, ignoreFailureChance, test, args)
