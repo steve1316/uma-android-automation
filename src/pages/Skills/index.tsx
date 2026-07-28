@@ -10,6 +10,7 @@ import SearchableItem from "../../components/SearchableItem"
 import CustomSlider from "../../components/CustomSlider"
 import { SkillsContext, defaultSettings } from "../../context/BotStateContext"
 import { useTheme } from "../../context/ThemeContext"
+import { useTranslation } from "../../lib/translations"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
 import { skillPlanSettingsPages } from "../SkillPlanSettings/config"
@@ -38,6 +39,7 @@ interface SkillsRouteParams {
  */
 const Skills: React.FC<{ route?: { params?: SkillsRouteParams } }> = ({ route }) => {
     const { colors } = useTheme()
+    const t = useTranslation()
     const initialTab = route?.params?.tab && TAB_ITEMS.some((t) => t.key === route.params!.tab) ? route.params!.tab! : "skillPointCheck"
     const [activeKey, setActiveKey] = useState<string>(initialTab)
     const onChange = useCallback((key: string) => setActiveKey(key), [])
@@ -84,31 +86,34 @@ const Skills: React.FC<{ route?: { params?: SkillsRouteParams } }> = ({ route })
         [colors]
     )
 
+    const translatedTabItems = useMemo(() => TAB_ITEMS.map((item) => ({ ...item, label: t(item.label) })), [t])
+
     return (
         <View style={styles.container}>
-            <PageHeader title="Skills" />
+            <PageHeader title={t("Skills")} />
             <ScrollView contentContainerStyle={styles.scroll}>
-                <InfoCallout title="How skill spending works">
-                    <Text style={styles.intro}>Allows configuration of automated skill point spending.</Text>
+                <InfoCallout title={t("How skill spending works")}>
+                    <Text style={styles.intro}>{t("Allows configuration of automated skill point spending.")}</Text>
                     <Text style={[styles.intro, { marginBottom: 0 }]}>
-                        This feature is not made of magic. If you wish to train an uma up for TT or CM, then you should buy your skills manually. The main purpose of this feature is to make the
-                        process of farming rank in events less of a hassle.
+                        {t(
+                            "This feature is not made of magic. If you wish to train an uma up for TT or CM, then you should buy your skills manually. The main purpose of this feature is to make the process of farming rank in events less of a hassle."
+                        )}
                     </Text>
                 </InfoCallout>
                 <StyleSection />
-                <Section label="Skill Plans" firstDivider={false}>
+                <Section label={t("Skill Plans")} firstDivider={false}>
                     <View style={styles.tabHost}>
-                        <TabStrip items={TAB_ITEMS} activeKey={activeKey} onChange={onChange} />
+                        <TabStrip items={translatedTabItems} activeKey={activeKey} onChange={onChange} />
                     </View>
                     <View style={styles.planHead}>
-                        <Text style={styles.planTitle}>{activeConfig.title}</Text>
-                        <Text style={styles.planDescription}>{activeConfig.description}</Text>
+                        <Text style={styles.planTitle}>{t(activeConfig.title)}</Text>
+                        <Text style={styles.planDescription}>{t(activeConfig.description)}</Text>
                     </View>
                     {isSkillPointCheck && (
-                        <SearchableItem id="enable-skill-point-check" title="Enable Skill Point Check" description="Stop the bot when the skill point threshold is reached">
+                        <SearchableItem id="enable-skill-point-check" title={t("Enable Skill Point Check")} description={t("Stop the bot when the skill point threshold is reached")}>
                             <Row
-                                title="Enable Skill Point Check"
-                                description="Stop the bot when the skill point threshold is reached"
+                                title={t("Enable Skill Point Check")}
+                                description={t("Stop the bot when the skill point threshold is reached")}
                                 right={
                                     <Switch
                                         checked={skills.enableSkillPointCheck}
@@ -142,8 +147,8 @@ const Skills: React.FC<{ route?: { params?: SkillsRouteParams } }> = ({ route })
                                 min={100}
                                 max={2000}
                                 step={10}
-                                label="Skill Point Threshold"
-                                description="The number of skill points to accumulate before stopping the bot."
+                                label={t("Skill Point Threshold")}
+                                description={t("The number of skill points to accumulate before stopping the bot.")}
                                 labelUnit=""
                                 showValue={true}
                                 showLabels={true}
@@ -152,24 +157,24 @@ const Skills: React.FC<{ route?: { params?: SkillsRouteParams } }> = ({ route })
                     )}
                     <SearchableItem
                         id={isSkillPointCheck ? "skill-point-check-plan" : `enable-skill-plan-${activeKey}`}
-                        title={`Enable ${activeConfig.title} Plan`}
-                        description="Purchase skills based on this plan's configuration"
+                        title={t(`Enable ${activeConfig.title} Plan`)}
+                        description={t("Purchase skills based on this plan's configuration")}
                     >
                         <Row
-                            title={`Enable ${activeConfig.title} Plan (Beta)`}
-                            description="Purchase skills based on this plan's configuration"
+                            title={t(`Enable ${activeConfig.title} Plan (Beta)`)}
+                            description={t("Purchase skills based on this plan's configuration")}
                             right={<Switch checked={enabled} onCheckedChange={(checked) => updatePlanSetting("enabled", checked)} />}
                         />
                     </SearchableItem>
                     {enabled && (
                         <SearchableItem
                             id={`enable-buy-negative-skills-${activeConfig.name}`}
-                            title="Purchase All Negative Skills"
-                            description="Attempt to buy all negative skills (e.g. Firm Conditions x)"
+                            title={t("Purchase All Negative Skills")}
+                            description={t("Attempt to buy all negative skills (e.g. Firm Conditions x)")}
                         >
                             <Row
-                                title="Purchase All Negative Skills"
-                                description="Attempt to buy all negative skills (e.g. Firm Conditions x)"
+                                title={t("Purchase All Negative Skills")}
+                                description={t("Attempt to buy all negative skills (e.g. Firm Conditions x)")}
                                 right={<Switch checked={enableBuyNegativeSkills} onCheckedChange={(checked) => updatePlanSetting("enableBuyNegativeSkills", checked)} />}
                             />
                         </SearchableItem>
