@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
 import { useSettings } from "../../context/SettingsContext"
+import { useTranslation } from "../../lib/translations"
 import { useSettingsFileManager } from "../../hooks/useSettingsFileManager"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import { TYPE } from "../../lib/type"
@@ -30,6 +31,7 @@ import { RADII } from "../../lib/radii"
 const Settings = () => {
     usePerformanceLogging("Settings")
     const scrollViewRef = useRef<ScrollView>(null)
+    const t = useTranslation()
 
     const { defaultSettings } = useContext(BotMetaContext)
     const { general, misc, updateGeneral, updateMisc } = useContext(GeneralMiscContext)
@@ -114,37 +116,52 @@ const Settings = () => {
     const renderNavigationSections = () => {
         return (
             <>
-                <Section label="GAMEPLAY">
-                    <Row title="Training" description="Stat priorities, training behavior, and customization." right={chevron} onPress={() => navigation.navigate("TrainingSettings" as never)} />
-                    <Row title="Training Events" description="Training event preferences and event selection." right={chevron} onPress={() => navigation.navigate("TrainingEventSettings" as never)} />
-                    <Row title="Racing" description="Racing behavior, retries, and mandatory race handling." right={chevron} onPress={() => navigation.navigate("RacingSettings" as never)} />
-                    <Row title="Schedule" description="Race solver, recreation, and the unified career calendar." right={chevron} onPress={() => navigation.navigate("ScheduleScreen" as never)} />
-                    <Row title="Skills" description="Skill purchasing behavior." right={chevron} onPress={() => navigation.navigate("Skills" as never)} />
+                <Section label={t("GAMEPLAY")}>
+                    <Row
+                        title={t("Training")}
+                        description={t("Stat priorities, training behavior, and customization.")}
+                        right={chevron}
+                        onPress={() => navigation.navigate("TrainingSettings" as never)}
+                    />
+                    <Row
+                        title={t("Training Events")}
+                        description={t("Training event preferences and event selection.")}
+                        right={chevron}
+                        onPress={() => navigation.navigate("TrainingEventSettings" as never)}
+                    />
+                    <Row title={t("Racing")} description={t("Racing behavior, retries, and mandatory race handling.")} right={chevron} onPress={() => navigation.navigate("RacingSettings" as never)} />
+                    <Row
+                        title={t("Schedule")}
+                        description={t("Race solver, recreation, and the unified career calendar.")}
+                        right={chevron}
+                        onPress={() => navigation.navigate("ScheduleScreen" as never)}
+                    />
+                    <Row title={t("Skills")} description={t("Skill purchasing behavior.")} right={chevron} onPress={() => navigation.navigate("Skills" as never)} />
                 </Section>
 
-                <Section label="SCENARIO">
+                <Section label={t("SCENARIO")}>
                     <Row
-                        title="Scenario Overrides"
-                        description="Behavior overrides specific to each scenario."
+                        title={t("Scenario Overrides")}
+                        description={t("Behavior overrides specific to each scenario.")}
                         right={chevron}
                         onPress={() => navigation.navigate("ScenarioOverridesSettings" as never)}
                     />
                 </Section>
 
-                <Section label="INTEGRATIONS">
-                    <Row title="Discord" description="Discord notifications when the bot stops." right={chevron} onPress={() => navigation.navigate("DiscordSettings" as never)} />
-                    <Row title="LLM" description="On-device docs search and chat model downloads." right={chevron} onPress={() => navigation.navigate("LLMSettings" as never)} />
+                <Section label={t("INTEGRATIONS")}>
+                    <Row title={t("Discord")} description={t("Discord notifications when the bot stops.")} right={chevron} onPress={() => navigation.navigate("DiscordSettings" as never)} />
+                    <Row title={t("LLM")} description={t("On-device docs search and chat model downloads.")} right={chevron} onPress={() => navigation.navigate("LLMSettings" as never)} />
                 </Section>
 
-                <Section label="TOOLS">
-                    <Row title="Ask the Docs" description="On-device docs chat powered by the LLM engine." right={chevron} onPress={() => navigation.navigate("Chat" as never)} />
+                <Section label={t("TOOLS")}>
+                    <Row title={t("Ask the Docs")} description={t("On-device docs chat powered by the LLM engine.")} right={chevron} onPress={() => navigation.navigate("Chat" as never)} />
                     <Row
-                        title="Event Log Visualizer (Beta)"
-                        description="Import logs and view a day-by-day timeline of actions."
+                        title={t("Event Log Visualizer (Beta)")}
+                        description={t("Import logs and view a day-by-day timeline of actions.")}
                         right={chevron}
                         onPress={() => navigation.navigate("EventLogVisualizer" as never)}
                     />
-                    <Row title="Debug" description="Debug mode, template matching, and diagnostic tests." right={chevron} onPress={() => navigation.navigate("DebugSettings" as never)} />
+                    <Row title={t("Debug")} description={t("Debug mode, template matching, and diagnostic tests.")} right={chevron} onPress={() => navigation.navigate("DebugSettings" as never)} />
                 </Section>
             </>
         )
@@ -153,41 +170,43 @@ const Settings = () => {
     const renderMiscSettings = () => {
         return (
             <View>
-                <Section label="MISC">
+                <Section label={t("MISC")}>
                     <ToggleSetting
                         id="settings-stop-before-finals"
-                        title="Stop before Finals"
-                        description="Pause to buy skills before the final races"
+                        title={t("Stop before Finals")}
+                        description={t("Pause to buy skills before the final races")}
                         checked={general.enableStopBeforeFinals}
                         onCheckedChange={(checked) => updateGeneral({ enableStopBeforeFinals: checked })}
                     />
 
                     <ToggleSetting
                         id="settings-claw-machine-attempt"
-                        title="Enable Claw Machine Attempt"
-                        description="Attempt to complete the claw machine instead of stopping"
+                        title={t("Enable Claw Machine Attempt")}
+                        description={t("Attempt to complete the claw machine instead of stopping")}
                         checked={general.enableClawMachineAttempt}
                         onCheckedChange={(checked) => updateGeneral({ enableClawMachineAttempt: checked })}
                     />
 
                     <ToggleSetting
                         id="settings-enable-swipe-based-scrolling"
-                        title="Enable Swipe-Based Scrolling"
-                        description="Scroll lists by swiping instead of detecting the in-game scrollbar. Enable this if the bot cannot scroll lists normally. This may or may not work depending on the device."
+                        title={t("Enable Swipe-Based Scrolling")}
+                        description={t(
+                            "Scroll lists by swiping instead of detecting the in-game scrollbar. Enable this if the bot cannot scroll lists normally. This may or may not work depending on the device."
+                        )}
                         checked={general.enableSwipeBasedScrolling}
                         onCheckedChange={(checked) => updateGeneral({ enableSwipeBasedScrolling: checked })}
                     />
 
                     <ToggleSetting
                         id="settings-enable-settings-display"
-                        title="Enable Settings Display in Message Log"
-                        description="Show current bot configuration in the message log"
+                        title={t("Enable Settings Display in Message Log")}
+                        description={t("Show current bot configuration in the message log")}
                         checked={misc.enableSettingsDisplay}
                         onCheckedChange={(checked) => updateMisc({ enableSettingsDisplay: checked })}
                     />
                 </Section>
 
-                <Section label="WAIT DELAY">
+                <Section label={t("WAIT DELAY")}>
                     <View style={{ padding: SPACING.md }}>
                         <CustomSlider
                             searchId="settings-wait-delay"
@@ -202,11 +221,13 @@ const Settings = () => {
                             min={0.0}
                             max={1.0}
                             step={0.1}
-                            label="Wait Delay"
+                            label={t("Wait Delay")}
                             labelUnit="s"
                             showValue={true}
                             showLabels={true}
-                            description="Sets the delay between actions and imaging operations. Lowering this will make the bot run much faster at the risk of the bot losing track of its location after loading/connecting screens."
+                            description={t(
+                                "Sets the delay between actions and imaging operations. Lowering this will make the bot run much faster at the risk of the bot losing track of its location after loading/connecting screens."
+                            )}
                         />
                     </View>
                     <View style={{ padding: SPACING.md }}>
@@ -223,33 +244,35 @@ const Settings = () => {
                             min={0.0}
                             max={1.0}
                             step={0.1}
-                            label="Dialog Wait Delay"
+                            label={t("Dialog Wait Delay")}
                             labelUnit="s"
                             showValue={true}
                             showLabels={true}
-                            description="Sets the delay between clicking a button that opens dialog and actually handling the dialog. Lowering this will make the bot run faster at an increased risk of the bot incorrectly handling dialogs that pop up."
+                            description={t(
+                                "Sets the delay between clicking a button that opens dialog and actually handling the dialog. Lowering this will make the bot run faster at an increased risk of the bot incorrectly handling dialogs that pop up."
+                            )}
                         />
                     </View>
                 </Section>
 
-                <Section label="DATA MANAGEMENT">
-                    <SearchableItem id="settings-management-title" title="Settings Management" description="Import and export settings from JSON file or access the app's data directory.">
+                <Section label={t("DATA MANAGEMENT")}>
+                    <SearchableItem id="settings-management-title" title={t("Settings Management")} description={t("Import and export settings from JSON file or access the app's data directory.")}>
                         <View style={{ padding: SPACING.md }}>
                             <View style={styles.managementGrid}>
                                 <Pressable style={styles.managementTile} android_ripple={{ color: colors.ripple, foreground: true }} onPress={handleImportSettings}>
                                     <Ionicons name="download-outline" size={24} color={colors.brand} />
-                                    <Text style={styles.managementTileLabel}>Import</Text>
-                                    <Text style={styles.managementTileCaption}>Load settings from JSON</Text>
+                                    <Text style={styles.managementTileLabel}>{t("Import")}</Text>
+                                    <Text style={styles.managementTileCaption}>{t("Load settings from JSON")}</Text>
                                 </Pressable>
                                 <Pressable style={styles.managementTile} android_ripple={{ color: colors.ripple, foreground: true }} onPress={handleExportSettings}>
                                     <Ionicons name="share-outline" size={24} color={colors.brand} />
-                                    <Text style={styles.managementTileLabel}>Export</Text>
-                                    <Text style={styles.managementTileCaption}>Save settings to JSON</Text>
+                                    <Text style={styles.managementTileLabel}>{t("Export")}</Text>
+                                    <Text style={styles.managementTileCaption}>{t("Save settings to JSON")}</Text>
                                 </Pressable>
                                 <Pressable style={styles.managementTile} android_ripple={{ color: colors.ripple, foreground: true }} onPress={openDataDirectory}>
                                     <Ionicons name="folder-outline" size={24} color={colors.brand} />
-                                    <Text style={styles.managementTileLabel}>Data</Text>
-                                    <Text style={styles.managementTileCaption}>Open folder</Text>
+                                    <Text style={styles.managementTileLabel}>{t("Data")}</Text>
+                                    <Text style={styles.managementTileCaption}>{t("Open folder")}</Text>
                                 </Pressable>
                                 <Pressable
                                     style={[styles.managementTile, styles.managementTileDanger]}
@@ -257,8 +280,8 @@ const Settings = () => {
                                     onPress={() => setShowResetDialog(true)}
                                 >
                                     <Ionicons name="refresh-outline" size={24} color={colors.destructive} />
-                                    <Text style={[styles.managementTileLabel, { color: colors.destructive }]}>Reset</Text>
-                                    <Text style={styles.managementTileCaption}>Restore defaults</Text>
+                                    <Text style={[styles.managementTileLabel, { color: colors.destructive }]}>{t("Reset")}</Text>
+                                    <Text style={styles.managementTileCaption}>{t("Restore defaults")}</Text>
                                 </Pressable>
                             </View>
                         </View>
@@ -274,7 +297,7 @@ const Settings = () => {
     return (
         <View style={styles.root}>
             <SearchPageProvider page="SettingsMain" scrollViewRef={scrollViewRef}>
-                <PageHeader title="Settings" searchOnRight rightComponent={<ThemeToggle />} />
+                <PageHeader title={t("Settings")} searchOnRight rightComponent={<ThemeToggle />} />
                 <ScrollView ref={scrollViewRef} nestedScrollEnabled={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
                     <View className="m-1">
                         {renderNavigationSections()}
@@ -288,15 +311,15 @@ const Settings = () => {
                 <AlertDialogContent style={{ backgroundColor: "black" }}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            <Text style={{ color: "white" }}>Settings Imported</Text>
+                            <Text style={{ color: "white" }}>{t("Settings Imported")}</Text>
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            <Text style={{ color: "white" }}>Settings have been imported successfully.</Text>
+                            <Text style={{ color: "white" }}>{t("Settings have been imported successfully.")}</Text>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogAction style={{ backgroundColor: "white" }}>
-                            <Text style={{ color: "black" }}>OK</Text>
+                            <Text style={{ color: "black" }}>{t("OK")}</Text>
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -307,20 +330,20 @@ const Settings = () => {
                 <AlertDialogContent style={{ backgroundColor: "black" }}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            <Text style={{ color: "white" }}>Reset Settings to Default</Text>
+                            <Text style={{ color: "white" }}>{t("Reset Settings to Default")}</Text>
                         </AlertDialogTitle>
                         <AlertDialogDescription style={{ height: 50 }}>
                             <Text style={{ color: "white" }}>
-                                Are you sure you want to reset all settings to their default values? This action cannot be undone and will overwrite your current configuration.
+                                {t("Are you sure you want to reset all settings to their default values? This action cannot be undone and will overwrite your current configuration.")}
                             </Text>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel onPress={() => setShowResetDialog(false)} style={{ backgroundColor: "black" }}>
-                            <Text style={{ color: "white" }}>Cancel</Text>
+                            <Text style={{ color: "white" }}>{t("Cancel")}</Text>
                         </AlertDialogCancel>
                         <AlertDialogAction onPress={handleResetSettings} style={{ backgroundColor: "white" }}>
-                            <Text style={{ color: "black" }}>Reset</Text>
+                            <Text style={{ color: "black" }}>{t("Reset")}</Text>
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -8,6 +8,7 @@ import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
 import { Snackbar } from "react-native-paper"
 import { useTheme } from "../../context/ThemeContext"
 import { TrainingContext, GeneralMiscContext, BotMetaContext, defaultSettings, Settings } from "../../context/BotStateContext"
+import { useTranslation } from "../../lib/translations"
 import CustomSlider from "../../components/CustomSlider"
 import DraggablePriorityList from "../../components/DraggablePriorityList"
 import ProfileSelector from "../../components/ProfileSelector"
@@ -52,6 +53,7 @@ const PREFERRED_DISTANCE_DESCRIPTIONS: Partial<Record<(typeof PREFERRED_DISTANCE
 const TrainingSettings = () => {
     usePerformanceLogging("TrainingSettings")
     const { colors } = useTheme()
+    const t = useTranslation()
     const modalShellStyles = useModalShellStyles()
     const { training, trainingStatTarget, updateTraining, updateTrainingStatTarget: updateStatTargetSlice } = useContext(TrainingContext)
     const { misc, updateMisc } = useContext(GeneralMiscContext)
@@ -562,13 +564,13 @@ const TrainingSettings = () => {
     return (
         <View style={styles.root}>
             <SearchPageProvider page="TrainingSettings" scrollViewRef={scrollViewRef}>
-                <PageHeader title="Training Settings" />
+                <PageHeader title={t("Training Settings")} />
                 <ScrollView ref={scrollViewRef} nestedScrollEnabled={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
                     <View className="m-1">
                         <SearchableItem
                             id="training-settings-profile-selector"
-                            title="Profile Selector"
-                            description="Profiles constitute only the Training settings and stat targets."
+                            title={t("Profile Selector")}
+                            description={t("Profiles constitute only the Training settings and stat targets.")}
                             style={{ marginBottom: 16 }}
                         >
                             <ProfileSelector
@@ -587,66 +589,72 @@ const TrainingSettings = () => {
                         {showHeavySections && (
                             <>
                                 <Section
-                                    label="Priorities"
+                                    label={t("Priorities")}
                                     labelRight={
                                         <Pressable
                                             style={styles.syncPill}
                                             onPress={handleSyncPriorities}
                                             android_ripple={{ color: colors.ripple, foreground: true }}
                                             accessibilityRole="button"
-                                            accessibilityLabel="Sync Priorities"
+                                            accessibilityLabel={t("Sync Priorities")}
                                         >
                                             <Ionicons name="sync" size={13} color={colors.brand} />
-                                            <Text style={styles.syncPillText}>Sync Priorities</Text>
+                                            <Text style={styles.syncPillText}>{t("Sync Priorities")}</Text>
                                         </Pressable>
                                     }
                                 >
                                     {renderStatSelector(
-                                        "Blacklist",
+                                        t("Blacklist"),
                                         blacklistItems,
                                         (value) => setBlacklistItems(value),
                                         blacklistModalVisible,
                                         setBlacklistModalVisible,
-                                        "Select which stats to exclude from training. These stats will be skipped during training sessions.",
+                                        t("Select which stats to exclude from training. These stats will be skipped during training sessions."),
                                         "checkbox",
                                         "training-blacklist"
                                     )}
 
                                     {renderStatSelector(
-                                        "Prioritization",
+                                        t("Prioritization"),
                                         statPrioritizationItems,
                                         (value) => setStatPrioritizationItems(value),
                                         prioritizationModalVisible,
                                         setPrioritizationModalVisible,
-                                        "Select the priority order of the stats. The stats will be trained in the order they are selected. If none are selected, then the default order will be used.",
+                                        t(
+                                            "Select the priority order of the stats. The stats will be trained in the order they are selected. If none are selected, then the default order will be used."
+                                        ),
                                         "priority",
                                         "training-prioritization"
                                     )}
 
                                     {renderStatSelector(
-                                        "Event Choice Prioritization",
+                                        t("Event Choice Prioritization"),
                                         eventChoiceStatPriorityItems,
                                         (value) => setEventChoiceStatPriorityItems(value),
                                         eventChoicePrioritizationModalVisible,
                                         setEventChoicePrioritizationModalVisible,
-                                        "Select the priority order of stats used when scoring in-game event choices. Events typically grant flat stat gains, so a different ordering than regular training may be optimal.",
+                                        t(
+                                            "Select the priority order of stats used when scoring in-game event choices. Events typically grant flat stat gains, so a different ordering than regular training may be optimal."
+                                        ),
                                         "priority",
                                         "event-choice-stat-priority"
                                     )}
 
                                     {renderStatSelector(
-                                        "Summer Training Prioritization",
+                                        t("Summer Training Prioritization"),
                                         summerTrainingStatPriorityItems,
                                         (value) => setSummerTrainingStatPriorityItems(value),
                                         summerTrainingPrioritizationModalVisible,
                                         setSummerTrainingPrioritizationModalVisible,
-                                        "Select the priority order of stats used during Summer Training. Facility levels are maxed during summer, so a different ordering than regular training may be optimal.",
+                                        t(
+                                            "Select the priority order of stats used during Summer Training. Facility levels are maxed during summer, so a different ordering than regular training may be optimal."
+                                        ),
                                         "priority",
                                         "summer-training-stat-priority"
                                     )}
                                 </Section>
 
-                                <Section label="Behavior">
+                                <Section label={t("Behavior")}>
                                     <View style={styles.sliderShell}>
                                         <CustomSlider
                                             value={maximumFailureChance}
@@ -655,27 +663,27 @@ const TrainingSettings = () => {
                                             min={5}
                                             max={95}
                                             step={5}
-                                            label="Set Maximum Failure Chance"
+                                            label={t("Set Maximum Failure Chance")}
                                             labelUnit="%"
                                             showValue={true}
                                             showLabels={true}
-                                            description="Set the maximum acceptable failure chance for training sessions. Training with higher failure rates will be avoided."
+                                            description={t("Set the maximum acceptable failure chance for training sessions. Training with higher failure rates will be avoided.")}
                                             searchId="maximum-failure-chance"
                                         />
                                     </View>
 
                                     <ToggleSetting
                                         id="disable-training-on-maxed-stats"
-                                        title="Disable Training on Maxed Stats"
-                                        description="When enabled, training will be skipped for stats that have reached their maximum value."
+                                        title={t("Disable Training on Maxed Stats")}
+                                        description={t("When enabled, training will be skipped for stats that have reached their maximum value.")}
                                         checked={disableTrainingOnMaxedStat}
                                         onCheckedChange={(checked) => updateTrainingSetting("disableTrainingOnMaxedStat", checked)}
                                     />
 
                                     <ToggleSetting
                                         id="enable-riskier-training"
-                                        title="Enable Riskier Training"
-                                        description="When enabled, trainings with high main stat gains will use a separate, higher maximum failure chance threshold."
+                                        title={t("Enable Riskier Training")}
+                                        description={t("When enabled, trainings with high main stat gains will use a separate, higher maximum failure chance threshold.")}
                                         checked={enableRiskyTraining}
                                         onCheckedChange={(checked) => updateTrainingSetting("enableRiskyTraining", checked)}
                                     />
@@ -688,11 +696,11 @@ const TrainingSettings = () => {
                                                 min={20}
                                                 max={100}
                                                 step={5}
-                                                label="Minimum Main Stat Gain Threshold"
+                                                label={t("Minimum Main Stat Gain Threshold")}
                                                 labelUnit=""
                                                 showValue={true}
                                                 showLabels={true}
-                                                description="When a training's main stat gain meets or exceeds this value, it will be considered for risky training."
+                                                description={t("When a training's main stat gain meets or exceeds this value, it will be considered for risky training.")}
                                                 searchId="risky-training-min-stat-gain"
                                                 parentId="enable-riskier-training"
                                             />
@@ -707,11 +715,11 @@ const TrainingSettings = () => {
                                                 min={5}
                                                 max={95}
                                                 step={5}
-                                                label="Risky Training Maximum Failure Chance"
+                                                label={t("Risky Training Maximum Failure Chance")}
                                                 labelUnit="%"
                                                 showValue={true}
                                                 showLabels={true}
-                                                description="Set the maximum acceptable failure chance for risky training sessions with high main stat gains."
+                                                description={t("Set the maximum acceptable failure chance for risky training sessions with high main stat gains.")}
                                                 searchId="risky-training-max-failure-chance"
                                                 parentId="enable-riskier-training"
                                             />
@@ -728,19 +736,21 @@ const TrainingSettings = () => {
                                             min={0}
                                             max={95}
                                             step={5}
-                                            label="Minimum Energy to Train"
+                                            label={t("Minimum Energy to Train")}
                                             labelUnit="%"
                                             showValue={true}
                                             showLabels={true}
-                                            description="Rest instead of training when energy falls below this, even if the failure chances are low enough to train. 0 disables it. Summer Training and the Finale always ignore this."
+                                            description={t(
+                                                "Rest instead of training when energy falls below this, even if the failure chances are low enough to train. 0 disables it. Summer Training and the Finale always ignore this."
+                                            )}
                                             searchId="minimum-energy-to-train"
                                         />
                                     </View>
 
                                     <ToggleSetting
                                         id="enable-wit-over-rest"
-                                        title="Train Wit Instead of Resting"
-                                        description="When enabled, Wit gets its own custom failure chance threshold."
+                                        title={t("Train Wit Instead of Resting")}
+                                        description={t("When enabled, Wit gets its own custom failure chance threshold.")}
                                         checked={enableWitOverRest}
                                         onCheckedChange={(checked) => updateTrainingSetting("enableWitOverRest", checked)}
                                     />
@@ -753,11 +763,11 @@ const TrainingSettings = () => {
                                                 min={5}
                                                 max={95}
                                                 step={5}
-                                                label="Wit Maximum Failure Chance"
+                                                label={t("Wit Maximum Failure Chance")}
                                                 labelUnit="%"
                                                 showValue={true}
                                                 showLabels={true}
-                                                description="The maximum acceptable failure chance for Wit training before doing something else."
+                                                description={t("The maximum acceptable failure chance for Wit training before doing something else.")}
                                                 searchId="wit-over-rest-max-failure-chance"
                                                 parentId="enable-wit-over-rest"
                                             />
@@ -772,11 +782,11 @@ const TrainingSettings = () => {
                                                 min={5}
                                                 max={100}
                                                 step={5}
-                                                label="Minimum Wit Main Stat Gain Threshold"
+                                                label={t("Minimum Wit Main Stat Gain Threshold")}
                                                 labelUnit=""
                                                 showValue={true}
                                                 showLabels={true}
-                                                description="When the Wit training's main stat gain meets or exceeds this value, Wit uses its higher maximum failure chance."
+                                                description={t("When the Wit training's main stat gain meets or exceeds this value, Wit uses its higher maximum failure chance.")}
                                                 searchId="wit-over-rest-min-stat-gain"
                                                 parentId="enable-wit-over-rest"
                                             />
@@ -785,54 +795,70 @@ const TrainingSettings = () => {
 
                                     <ToggleSetting
                                         id="enable-prioritize-skill-hints"
-                                        title="Prioritize Skill Hints"
-                                        description="When enabled, the bot will prioritize acquiring skill hints, bypassing stat prioritization and blacklist, while still being constrained by the failure chance thresholds."
+                                        title={t("Prioritize Skill Hints")}
+                                        description={t(
+                                            "When enabled, the bot will prioritize acquiring skill hints, bypassing stat prioritization and blacklist, while still being constrained by the failure chance thresholds."
+                                        )}
                                         checked={enablePrioritizeSkillHints}
                                         onCheckedChange={(checked) => updateTrainingSetting("enablePrioritizeSkillHints", checked)}
                                     />
                                     <ToggleSetting
                                         id="must-rest-before-summer"
-                                        title="Must Rest before Summer"
-                                        description="Optimizes June Late Phase in Classic and Senior Years for Summer Training. If Energy < 70%, it will Rest. If Energy >= 70% and Mood < Great, it will recover Mood. If Energy >= 70% and Mood is Great, it will train Wit."
+                                        title={t("Must Rest before Summer")}
+                                        description={t(
+                                            "Optimizes June Late Phase in Classic and Senior Years for Summer Training. If Energy < 70%, it will Rest. If Energy >= 70% and Mood < Great, it will recover Mood. If Energy >= 70% and Mood is Great, it will train Wit."
+                                        )}
                                         checked={mustRestBeforeSummer}
                                         onCheckedChange={(checked) => updateTrainingSetting("mustRestBeforeSummer", checked)}
                                     />
                                     <ToggleSetting
                                         id="train-wit-during-finale"
-                                        title="Train Wit During Finale"
-                                        description="When enabled, the bot will train Wit during URA finale turns (73, 74, 75) instead of recovering energy or mood, even if the failure chance is high."
+                                        title={t("Train Wit During Finale")}
+                                        description={t(
+                                            "When enabled, the bot will train Wit during URA finale turns (73, 74, 75) instead of recovering energy or mood, even if the failure chance is high."
+                                        )}
                                         checked={trainWitDuringFinale}
                                         onCheckedChange={(checked) => updateTrainingSetting("trainWitDuringFinale", checked)}
                                     />
                                 </Section>
 
-                                <Section label="Scoring">
+                                <Section label={t("Scoring")}>
                                     <ToggleSetting
                                         id="enable-training-level-weighting"
-                                        title="Weight Score by Training Level"
-                                        description="When enabled (Year 2+), the bot reads each training's level (1-5) via OCR and boosts the score for trainings whose stat sits in the top 3 of your Stat Prioritization list. Helps the bot stick with stats you've invested in. OCR is skipped during Pre-Debut, Junior, and Summer."
+                                        title={t("Weight Score by Training Level")}
+                                        description={t(
+                                            "When enabled (Year 2+), the bot reads each training's level (1-5) via OCR and boosts the score for trainings whose stat sits in the top 3 of your Stat Prioritization list. Helps the bot stick with stats you've invested in. OCR is skipped during Pre-Debut, Junior, and Summer."
+                                        )}
                                         checked={enableTrainingLevelWeighting}
                                         onCheckedChange={(checked) => updateTrainingSetting("enableTrainingLevelWeighting", checked)}
                                     />
                                     <SearchableItem
                                         id="enable-rainbow-training-bonus"
-                                        title="Enable Rainbow Training Bonus"
-                                        description="When enabled (Year 2+), rainbow trainings receive a significant bonus to their score, making them more likely to be selected. This is highly dependent on device configuration and may result in false positives."
+                                        title={t("Enable Rainbow Training Bonus")}
+                                        description={t(
+                                            "When enabled (Year 2+), rainbow trainings receive a significant bonus to their score, making them more likely to be selected. This is highly dependent on device configuration and may result in false positives."
+                                        )}
                                     >
                                         <Row
-                                            title="Rainbow Training Bonus"
-                                            description="When enabled (Year 2+), rainbow trainings receive a significant bonus to their score, making them more likely to be selected. This is highly dependent on device configuration and may result in false positives."
+                                            title={t("Rainbow Training Bonus")}
+                                            description={t(
+                                                "When enabled (Year 2+), rainbow trainings receive a significant bonus to their score, making them more likely to be selected. This is highly dependent on device configuration and may result in false positives."
+                                            )}
                                             right={<Switch checked={enableRainbowTrainingBonus} onCheckedChange={(checked) => updateTrainingSetting("enableRainbowTrainingBonus", checked)} />}
                                         />
                                     </SearchableItem>
                                     <SearchableItem
                                         id="enable-prioritize-near-max-friendship"
-                                        title="Prioritize Near-Max Friendship Bars"
-                                        description="When enabled (Year 2+), trainings with multiple green/blue friendship bars close to maxing receive an anticipatory rainbow multiplier, helping the bot favor them so the bars cross into orange and unlock rainbow training on later turns. Does not stack with the actual rainbow bonus."
+                                        title={t("Prioritize Near-Max Friendship Bars")}
+                                        description={t(
+                                            "When enabled (Year 2+), trainings with multiple green/blue friendship bars close to maxing receive an anticipatory rainbow multiplier, helping the bot favor them so the bars cross into orange and unlock rainbow training on later turns. Does not stack with the actual rainbow bonus."
+                                        )}
                                     >
                                         <Row
-                                            title="Near-Max Friendship Boost"
-                                            description="When enabled (Year 2+), trainings with multiple green/blue friendship bars close to maxing receive an anticipatory rainbow multiplier, helping the bot favor them so the bars cross into orange and unlock rainbow training on later turns. Does not stack with the actual rainbow bonus."
+                                            title={t("Near-Max Friendship Boost")}
+                                            description={t(
+                                                "When enabled (Year 2+), trainings with multiple green/blue friendship bars close to maxing receive an anticipatory rainbow multiplier, helping the bot favor them so the bars cross into orange and unlock rainbow training on later turns. Does not stack with the actual rainbow bonus."
+                                            )}
                                             right={
                                                 <Switch
                                                     checked={enablePrioritizeNearMaxFriendship}
@@ -843,15 +869,19 @@ const TrainingSettings = () => {
                                     </SearchableItem>
                                 </Section>
 
-                                <Section label="Detection">
+                                <Section label={t("Detection")}>
                                     <SearchableItem
                                         id="enable-training-analysis-validation"
-                                        title="Enable Training Analysis Validation"
-                                        description="When enabled, the bot will validate the current selected stat during training analysis. This helps prevent the bot from accidentally training a stat during analysis at the cost of a significant increase in scenario completion time."
+                                        title={t("Enable Training Analysis Validation")}
+                                        description={t(
+                                            "When enabled, the bot will validate the current selected stat during training analysis. This helps prevent the bot from accidentally training a stat during analysis at the cost of a significant increase in scenario completion time."
+                                        )}
                                     >
                                         <Row
-                                            title="Training Analysis Validation"
-                                            description="When enabled, the bot will validate the current selected stat during training analysis. This helps prevent the bot from accidentally training a stat during analysis at the cost of a significant increase in scenario completion time."
+                                            title={t("Training Analysis Validation")}
+                                            description={t(
+                                                "When enabled, the bot will validate the current selected stat during training analysis. This helps prevent the bot from accidentally training a stat during analysis at the cost of a significant increase in scenario completion time."
+                                            )}
                                             right={
                                                 <Switch checked={enableTrainingAnalysisValidation} onCheckedChange={(checked) => updateTrainingSetting("enableTrainingAnalysisValidation", checked)} />
                                             }
@@ -859,12 +889,16 @@ const TrainingSettings = () => {
                                     </SearchableItem>
                                     <SearchableItem
                                         id="enable-yolo-stat-detection"
-                                        title="Enable YOLO Stat Detection"
-                                        description="When enabled, the bot will use a custom YOLOv8 model for high-precision stat gain detection. This replaces the standard OCR/Template matching for stat gains."
+                                        title={t("Enable YOLO Stat Detection")}
+                                        description={t(
+                                            "When enabled, the bot will use a custom YOLOv8 model for high-precision stat gain detection. This replaces the standard OCR/Template matching for stat gains."
+                                        )}
                                     >
                                         <Row
-                                            title="YOLO Stat Detection"
-                                            description="When enabled, the bot will use a custom YOLOv8 model for high-precision stat gain detection. This replaces the standard OCR/Template matching for stat gains."
+                                            title={t("YOLO Stat Detection")}
+                                            description={t(
+                                                "When enabled, the bot will use a custom YOLOv8 model for high-precision stat gain detection. This replaces the standard OCR/Template matching for stat gains."
+                                            )}
                                             right={<Switch checked={enableYoloStatDetection} onCheckedChange={(checked) => updateTrainingSetting("enableYoloStatDetection", checked)} />}
                                         />
                                     </SearchableItem>
@@ -875,40 +909,44 @@ const TrainingSettings = () => {
                                     </WarningContainer>
                                 )}
 
-                                <Section label="Distance">
+                                <Section label={t("Distance")}>
                                     <SearchableItem
                                         id="preferred-distance-override"
-                                        title="Preferred Distance Override"
-                                        description="Set the preferred race distance for training targets. Auto picks based on character aptitudes."
+                                        title={t("Preferred Distance Override")}
+                                        description={t("Set the preferred race distance for training targets. Auto picks based on character aptitudes.")}
                                     >
                                         <Row
-                                            title="Preferred Distance"
-                                            description="Set the preferred race distance for training targets. Auto picks based on character aptitudes."
+                                            title={t("Preferred Distance")}
+                                            description={t("Set the preferred race distance for training targets. Auto picks based on character aptitudes.")}
                                             onPress={() => setDistancePickerOpen(true)}
                                             right={<ValuePill label={preferredDistanceOverride} />}
                                         />
                                     </SearchableItem>
                                     <ToggleSetting
                                         id="disable-stat-targets"
-                                        title="Disable Stat Targets"
-                                        description="When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to its in-game stat cap, so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list."
+                                        title={t("Disable Stat Targets")}
+                                        description={t(
+                                            "When enabled, all per-distance stat targets below are ignored. Every stat is treated as having a target equal to its in-game stat cap, so the bot will keep pushing your top priority stats even after they would normally be considered 'done.' Useful when you want strict adherence to your Stat Prioritization list."
+                                        )}
                                         checked={disableStatTargets}
                                         onCheckedChange={(checked) => updateTrainingSetting("disableStatTargets", checked)}
                                     />
                                     <ToggleSetting
                                         id="use-dynamic-stat-caps"
-                                        title="Read Stat Caps from Screen"
-                                        description="When enabled, the bot reads each stat's live cap every turn, so cap increases from sparks, inheritance, etc. are respected. Disable to always use the fixed per-scenario caps if the reading ever misbehaves."
+                                        title={t("Read Stat Caps from Screen")}
+                                        description={t(
+                                            "When enabled, the bot reads each stat's live cap every turn, so cap increases from sparks, inheritance, etc. are respected. Disable to always use the fixed per-scenario caps if the reading ever misbehaves."
+                                        )}
                                         checked={useDynamicStatCaps}
                                         onCheckedChange={(checked) => updateTrainingSetting("useDynamicStatCaps", checked)}
                                     />
 
                                     {/* Per-distance stat targets stay nested inside the Distance section so the whole distance domain reads as one block. */}
                                     <View style={disableStatTargets ? { opacity: 0.5 } : undefined} pointerEvents={disableStatTargets ? "none" : "auto"}>
-                                        <SearchableItem id="stat-targets-by-distance" title="Stat Targets by Distance" description="Set target values for each stat based on race distance.">
+                                        <SearchableItem id="stat-targets-by-distance" title={t("Stat Targets by Distance")} description={t("Set target values for each stat based on race distance.")}>
                                             <View style={{ padding: SPACING.md, paddingBottom: 0 }}>
-                                                <Text style={[TYPE.body, { color: colors.text, fontWeight: "600" as const }]}>Stat Targets by Distance</Text>
-                                                <Text style={[TYPE.caption, { color: colors.textMuted, marginTop: 2 }]}>Set target values for each stat based on race distance.</Text>
+                                                <Text style={[TYPE.body, { color: colors.text, fontWeight: "600" as const }]}>{t("Stat Targets by Distance")}</Text>
+                                                <Text style={[TYPE.caption, { color: colors.textMuted, marginTop: 2 }]}>{t("Set target values for each stat based on race distance.")}</Text>
                                             </View>
                                         </SearchableItem>
 
@@ -921,7 +959,7 @@ const TrainingSettings = () => {
                                                 accessibilityRole="button"
                                                 accessibilityState={{ expanded: distanceOpen.sprint }}
                                             >
-                                                <Text style={styles.distanceRowTitle}>Sprint Distance</Text>
+                                                <Text style={styles.distanceRowTitle}>{t("Sprint Distance")}</Text>
                                                 <Ionicons name={distanceOpen.sprint ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
                                             </Pressable>
                                             {distanceOpen.sprint && (
@@ -998,7 +1036,7 @@ const TrainingSettings = () => {
                                                 accessibilityRole="button"
                                                 accessibilityState={{ expanded: distanceOpen.mile }}
                                             >
-                                                <Text style={styles.distanceRowTitle}>Mile Distance</Text>
+                                                <Text style={styles.distanceRowTitle}>{t("Mile Distance")}</Text>
                                                 <Ionicons name={distanceOpen.mile ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
                                             </Pressable>
                                             {distanceOpen.mile && (
@@ -1075,7 +1113,7 @@ const TrainingSettings = () => {
                                                 accessibilityRole="button"
                                                 accessibilityState={{ expanded: distanceOpen.medium }}
                                             >
-                                                <Text style={styles.distanceRowTitle}>Medium Distance</Text>
+                                                <Text style={styles.distanceRowTitle}>{t("Medium Distance")}</Text>
                                                 <Ionicons name={distanceOpen.medium ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
                                             </Pressable>
                                             {distanceOpen.medium && (
@@ -1152,7 +1190,7 @@ const TrainingSettings = () => {
                                                 accessibilityRole="button"
                                                 accessibilityState={{ expanded: distanceOpen.long }}
                                             >
-                                                <Text style={styles.distanceRowTitle}>Long Distance</Text>
+                                                <Text style={styles.distanceRowTitle}>{t("Long Distance")}</Text>
                                                 <Ionicons name={distanceOpen.long ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
                                             </Pressable>
                                             {distanceOpen.long && (
@@ -1224,23 +1262,25 @@ const TrainingSettings = () => {
                                 </Section>
 
                                 {/* Training Year Milestone Targets - intro + first slider live in one child wrapper so no divider/gap sits between them. */}
-                                <Section label="Year Milestones">
+                                <Section label={t("Year Milestones")}>
                                     <View>
                                         <SearchableItem
                                             id="training-year-milestone-targets"
-                                            title="Training Year Milestone Targets"
-                                            description="Controls how aggressively the bot paces stat training during the Pre-Debut, Junior and Classic Years."
+                                            title={t("Training Year Milestone Targets")}
+                                            description={t("Controls how aggressively the bot paces stat training during the Pre-Debut, Junior and Classic Years.")}
                                         >
                                             <View style={styles.groupHeader}>
-                                                <Text style={styles.groupHeaderTitle}>Year Milestone Pacing</Text>
-                                                <Text style={styles.groupHeaderDescription}>Controls how aggressively the bot paces stat training during the Pre-Debut, Junior and Classic Years.</Text>
+                                                <Text style={styles.groupHeaderTitle}>{t("Year Milestone Pacing")}</Text>
+                                                <Text style={styles.groupHeaderDescription}>
+                                                    {t("Controls how aggressively the bot paces stat training during the Pre-Debut, Junior and Classic Years.")}
+                                                </Text>
                                             </View>
                                         </SearchableItem>
                                         <View style={[styles.sliderShell, { paddingTop: 0 }]}>
                                             <SearchableItem
                                                 id="junior-milestone-percent"
-                                                title="End of Junior Year Milestone"
-                                                description="Percentage of the primary stat targets to aim for by the end of Junior Year."
+                                                title={t("End of Junior Year Milestone")}
+                                                description={t("Percentage of the primary stat targets to aim for by the end of Junior Year.")}
                                             >
                                                 <CustomSlider
                                                     value={trainingSettings.classicMilestonePercent}
@@ -1249,11 +1289,11 @@ const TrainingSettings = () => {
                                                     min={0}
                                                     max={100}
                                                     step={1}
-                                                    label="End of Junior Year Milestone"
+                                                    label={t("End of Junior Year Milestone")}
                                                     labelUnit="%"
                                                     showValue={true}
                                                     showLabels={true}
-                                                    description="Percentage of the primary stat targets to aim for by the end of Junior Year."
+                                                    description={t("Percentage of the primary stat targets to aim for by the end of Junior Year.")}
                                                 />
                                             </SearchableItem>
                                         </View>
@@ -1261,8 +1301,8 @@ const TrainingSettings = () => {
                                     <View style={styles.sliderShell}>
                                         <SearchableItem
                                             id="classic-milestone-percent"
-                                            title="End of Classic Year Milestone"
-                                            description="Percentage of the primary stat targets to aim for by the end of Classic Year."
+                                            title={t("End of Classic Year Milestone")}
+                                            description={t("Percentage of the primary stat targets to aim for by the end of Classic Year.")}
                                         >
                                             <CustomSlider
                                                 value={trainingSettings.seniorMilestonePercent}
@@ -1271,11 +1311,11 @@ const TrainingSettings = () => {
                                                 min={0}
                                                 max={100}
                                                 step={1}
-                                                label="End of Classic Year Milestone"
+                                                label={t("End of Classic Year Milestone")}
                                                 labelUnit="%"
                                                 showValue={true}
                                                 showLabels={true}
-                                                description="Percentage of the primary stat targets to aim for by the end of Classic Year."
+                                                description={t("Percentage of the primary stat targets to aim for by the end of Classic Year.")}
                                             />
                                         </SearchableItem>
                                     </View>

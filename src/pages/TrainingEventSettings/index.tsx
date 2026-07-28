@@ -7,6 +7,7 @@ import { GlassSurface } from "../../components/ui/glass-surface"
 import { FlashList } from "@shopify/flash-list"
 import { useTheme } from "../../context/ThemeContext"
 import { TrainingEventContext, defaultSettings } from "../../context/BotStateContext"
+import { useTranslation } from "../../lib/translations"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import CustomSelect from "../../components/CustomSelect"
 import SearchableItem from "../../components/SearchableItem"
@@ -58,6 +59,7 @@ const excludedEventNames = new Set([
 const TrainingEventSettings = () => {
     usePerformanceLogging("TrainingEventSettings")
     const { colors } = useTheme()
+    const t = useTranslation()
     const modalShellStyles = useModalShellStyles()
     const { trainingEvent, updateTrainingEvent } = useContext(TrainingEventContext)
     const scrollViewRef = useRef<ScrollView>(null)
@@ -585,36 +587,42 @@ const TrainingEventSettings = () => {
     return (
         <View style={styles.root}>
             <SearchPageProvider page="TrainingEventSettings" scrollViewRef={scrollViewRef}>
-                <PageHeader title="Training Event Settings" />
+                <PageHeader title={t("Training Event Settings")} />
                 <ScrollView ref={scrollViewRef} nestedScrollEnabled={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
                     <View className="m-1">
-                        <Section label="General">
+                        <Section label={t("General")}>
                             <ToggleSetting
                                 id="prioritize-energy-options"
-                                title="Prioritize Energy Options"
-                                description="When enabled, the bot will prioritize training event choices that provide energy recovery or avoid energy consumption, helping to maintain optimal energy levels for training sessions."
+                                title={t("Prioritize Energy Options")}
+                                description={t(
+                                    "When enabled, the bot will prioritize training event choices that provide energy recovery or avoid energy consumption, helping to maintain optimal energy levels for training sessions."
+                                )}
                                 checked={enablePrioritizeEnergyOptions}
                                 onCheckedChange={(checked) => updateTrainingEventSetting("enablePrioritizeEnergyOptions", checked)}
                             />
                         </Section>
 
-                        <Section label="OCR Recognition Settings">
+                        <Section label={t("OCR Recognition Settings")}>
                             <View style={{ padding: SPACING.md, paddingBottom: 0 }}>
                                 <SearchableItem
                                     id="ocr-recognition-settings"
-                                    title="OCR Recognition Settings"
-                                    description="Configure settings for detecting and recognizing Training Event titles using OCR. These settings only affect the Training Event recognition process."
+                                    title={t("OCR Recognition Settings")}
+                                    description={t(
+                                        "Configure settings for detecting and recognizing Training Event titles using OCR. These settings only affect the Training Event recognition process."
+                                    )}
                                 >
                                     <Text style={[TYPE.caption, { color: colors.textMuted, marginBottom: SPACING.md }]}>
-                                        Configure settings for detecting and recognizing Training Event titles using OCR. These settings only affect the Training Event recognition process.
+                                        {t("Configure settings for detecting and recognizing Training Event titles using OCR. These settings only affect the Training Event recognition process.")}
                                     </Text>
                                 </SearchableItem>
                             </View>
 
                             <ToggleSetting
                                 id="automatic-ocr-retry-training"
-                                title="Enable Automatic OCR Retry for Training Events"
-                                description="When enabled, the bot will automatically retry OCR detection with adjusted settings if the initial attempt for a training event title fails or has low confidence."
+                                title={t("Enable Automatic OCR Retry for Training Events")}
+                                description={t(
+                                    "When enabled, the bot will automatically retry OCR detection with adjusted settings if the initial attempt for a training event title fails or has low confidence."
+                                )}
                                 checked={enableAutomaticOCRRetry}
                                 onCheckedChange={(checked) => updateTrainingEventSetting("enableAutomaticOCRRetry", checked)}
                             />
@@ -622,8 +630,10 @@ const TrainingEventSettings = () => {
                             <View style={{ padding: SPACING.md }}>
                                 <CustomSlider
                                     searchId="ocr-confidence-training"
-                                    label="OCR Confidence for Training Events"
-                                    description="The minimum confidence level required for a Training Event title to be considered a match. Higher values ensure more accurate recognition but may lead to more missed events."
+                                    label={t("OCR Confidence for Training Events")}
+                                    description={t(
+                                        "The minimum confidence level required for a Training Event title to be considered a match. Higher values ensure more accurate recognition but may lead to more missed events."
+                                    )}
                                     min={50}
                                     max={100}
                                     step={1}
@@ -636,23 +646,26 @@ const TrainingEventSettings = () => {
 
                             <ToggleSetting
                                 id="hide-ocr-comparison-results-training"
-                                title="Hide OCR String Comparison Results"
-                                description="If enabled, the bot will suppress detailed logging of individual string similarity scores during training event detection to keep the logs cleaner."
+                                title={t("Hide OCR String Comparison Results")}
+                                description={t("If enabled, the bot will suppress detailed logging of individual string similarity scores during training event detection to keep the logs cleaner.")}
                                 checked={enableHideOCRComparisonResults}
                                 onCheckedChange={(checked) => updateTrainingEventSetting("enableHideOCRComparisonResults", checked)}
                             />
                         </Section>
 
-                        <Section label="Training Event Option Overrides">
+                        <Section label={t("Training Event Option Overrides")}>
                             <View style={{ padding: SPACING.md }}>
                                 <SearchableItem
                                     id="training-event-option-overrides"
-                                    title="Training Event Option Overrides"
-                                    description="Force the bot to select a specific option for character or support training events. Search through all available events and select which option to use. This overrides the normal stat prioritization logic."
+                                    title={t("Training Event Option Overrides")}
+                                    description={t(
+                                        "Force the bot to select a specific option for character or support training events. Search through all available events and select which option to use. This overrides the normal stat prioritization logic."
+                                    )}
                                 >
                                     <Text style={[TYPE.caption, { color: colors.textMuted, marginBottom: SPACING.md }]}>
-                                        Force the bot to select a specific option for character or support training events. Search through all available events and select which option to use. This
-                                        overrides the normal stat prioritization logic.
+                                        {t(
+                                            "Force the bot to select a specific option for character or support training events. Search through all available events and select which option to use. This overrides the normal stat prioritization logic."
+                                        )}
                                     </Text>
                                 </SearchableItem>
 
@@ -663,7 +676,7 @@ const TrainingEventSettings = () => {
                                                 <Plus size={18} color={colors.onBrand} />
                                             </View>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={styles.ctaCardTitle}>Add event override</Text>
+                                                <Text style={styles.ctaCardTitle}>{t("Add event override")}</Text>
                                                 <Text style={styles.ctaCardCaption}>
                                                     <Text style={[TYPE.monoValue, { color: colors.textMuted }]}>{totalOverrideCount}</Text>
                                                     {" overrides active · tap to search events"}
@@ -722,15 +735,15 @@ const TrainingEventSettings = () => {
                             </View>
                         )}
 
-                        <Section label="Special Event Overrides">
+                        <Section label={t("Special Event Overrides")}>
                             <SearchableItem
                                 id="special-event-overrides"
-                                title="Special Event Overrides"
-                                description="Override the bot's normal stat prioritization for specific training events. These settings bypass the standard weight calculation system."
+                                title={t("Special Event Overrides")}
+                                description={t("Override the bot's normal stat prioritization for specific training events. These settings bypass the standard weight calculation system.")}
                             >
                                 <View style={{ padding: SPACING.md }}>
                                     <Text style={[TYPE.caption, { color: colors.textMuted }]}>
-                                        Override the bot's normal stat prioritization for specific training events. These settings bypass the standard weight calculation system.
+                                        {t("Override the bot's normal stat prioritization for specific training events. These settings bypass the standard weight calculation system.")}
                                     </Text>
                                 </View>
                             </SearchableItem>
@@ -744,7 +757,7 @@ const TrainingEventSettings = () => {
                                     accessibilityRole="button"
                                     accessibilityState={{ expanded: specialOverrideOpen.holiday }}
                                 >
-                                    <Text style={styles.subSectionRowTitle}>Holiday Events</Text>
+                                    <Text style={styles.subSectionRowTitle}>{t("Holiday Events")}</Text>
                                     <Text style={styles.countPill}>{holidayCount}</Text>
                                     {specialOverrideOpen.holiday ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
                                 </Pressable>
@@ -784,7 +797,7 @@ const TrainingEventSettings = () => {
                                     accessibilityRole="button"
                                     accessibilityState={{ expanded: specialOverrideOpen.raceResult }}
                                 >
-                                    <Text style={styles.subSectionRowTitle}>Race Result Events</Text>
+                                    <Text style={styles.subSectionRowTitle}>{t("Race Result Events")}</Text>
                                     <Text style={styles.countPill}>{raceResultCount}</Text>
                                     {specialOverrideOpen.raceResult ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
                                 </Pressable>
@@ -865,7 +878,7 @@ const TrainingEventSettings = () => {
                                     accessibilityRole="button"
                                     accessibilityState={{ expanded: specialOverrideOpen.trainingFailure }}
                                 >
-                                    <Text style={styles.subSectionRowTitle}>Training Failure Events</Text>
+                                    <Text style={styles.subSectionRowTitle}>{t("Training Failure Events")}</Text>
                                     <Text style={styles.countPill}>{trainingFailureCount}</Text>
                                     {specialOverrideOpen.trainingFailure ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
                                 </Pressable>
@@ -905,7 +918,7 @@ const TrainingEventSettings = () => {
                                     accessibilityRole="button"
                                     accessibilityState={{ expanded: specialOverrideOpen.misc }}
                                 >
-                                    <Text style={styles.subSectionRowTitle}>Miscellaneous Events</Text>
+                                    <Text style={styles.subSectionRowTitle}>{t("Miscellaneous Events")}</Text>
                                     <Text style={styles.countPill}>{miscCount}</Text>
                                     {specialOverrideOpen.misc ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
                                 </Pressable>

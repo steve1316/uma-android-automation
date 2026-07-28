@@ -121,6 +121,7 @@ export interface Settings {
         formattedSettingsString: string
         currentProfileName: string
         messageLogFontSize: number
+        language: "en" | "id"
     }
 
     // Training settings
@@ -422,6 +423,7 @@ export const defaultSettings: Settings = {
         formattedSettingsString: "",
         currentProfileName: "",
         messageLogFontSize: 8,
+        language: "en",
     },
     training: {
         trainingBlacklist: [],

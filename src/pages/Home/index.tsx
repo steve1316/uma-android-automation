@@ -22,6 +22,7 @@ import HeroStatusCard, { HeroStatus } from "../../components/HeroStatusCard"
 import HeroGlance, { HeroGlanceTarget } from "../../components/HeroStatusCard/HeroGlance"
 import HeroChips from "../../components/HeroStatusCard/HeroChips"
 import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, raceStrategyLabel, raceStrategyTargetId } from "../../components/HeroStatusCard/heroGlanceData"
+import { useTranslation } from "../../lib/translations"
 import { useProfileContext, DEFAULT_PROFILE_NAME } from "../../context/ProfileContext"
 import { SPACING } from "../../lib/spacing"
 
@@ -90,6 +91,7 @@ const Home = () => {
     const { StartModule } = NativeModules
 
     const { colors } = useTheme()
+    const t = useTranslation()
     const [isRunning, setIsRunning] = useState<boolean>(false)
     const [showNotReadyDialog, setShowNotReadyDialog] = useState<boolean>(false)
     const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false)
@@ -339,7 +341,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                         <Ionicons name="information-circle-outline" size={24} color={colors.info} />
                     </TooltipTrigger>
                     <TooltipContent sideOffset={12} side="bottom" style={{ width: 200 }}>
-                        <Text>Select a Scenario to start from the selector button dropdown.</Text>
+                        <Text>{t("Select a Scenario to start from the selector button dropdown.")}</Text>
                     </TooltipContent>
                 </Tooltip>
             )
@@ -352,7 +354,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                         <Ionicons name="checkmark-circle-outline" size={24} color={colors.success} />
                     </TooltipTrigger>
                     <TooltipContent sideOffset={12} side="bottom">
-                        <Text>Everything looks good and ready to go!</Text>
+                        <Text>{t("Everything looks good and ready to go!")}</Text>
                     </TooltipContent>
                 </Tooltip>
             )
@@ -389,7 +391,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
     return (
         <View style={styles.root}>
             {/* MessageLog uses FlashList, which doesn't support sticky headers the same way as ScrollView, so PageHeader stays a sibling above (non-sticky). */}
-            <PageHeader title="Home" showHomeButton={false} style={{ width: "100%" }} rightComponent={renderStatus()} />
+            <PageHeader title={t("Home")} showHomeButton={false} style={{ width: "100%" }} rightComponent={renderStatus()} />
 
             <View style={styles.hero}>
                 <HeroStatusCard
@@ -404,7 +406,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                             variant={getSelectButtonVariant()}
                             iconName={getSelectButtonIconName()}
                             options={scenarios}
-                            placeholder={deviceMetrics ? "Select a Scenario" : "Not Ready"}
+                            placeholder={deviceMetrics ? t("Select a Scenario") : t("Not Ready")}
                             value={general.scenario}
                             onValueChange={(value) => {
                                 const newScenario = value || ""
@@ -426,12 +428,12 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
             <AlertDialog open={showNotReadyDialog} onOpenChange={setShowNotReadyDialog}>
                 <AlertDialogContent onDismiss={() => setShowNotReadyDialog(false)}>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Not Ready</AlertDialogTitle>
-                        <AlertDialogDescription>A scenario must be selected before starting the bot. Tap the dropdown on this Start button to pick one.</AlertDialogDescription>
+                        <AlertDialogTitle>{t("Not Ready")}</AlertDialogTitle>
+                        <AlertDialogDescription>{t("A scenario must be selected before starting the bot. Tap the dropdown on this Start button to pick one.")}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogAction onPress={() => setShowNotReadyDialog(false)}>
-                            <Text>OK</Text>
+                            <Text>{t("OK")}</Text>
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -7,7 +7,8 @@ import { Avatar, AvatarImage } from "../ui/avatar"
 import { SectionLabel } from "../ui/section-label"
 import { markNavigationStart, markNavigationPhase } from "../../lib/performanceLogger"
 import { useTheme } from "../../context/ThemeContext"
-import { BotMetaContext } from "../../context/BotStateContext"
+import { BotMetaContext, GeneralMiscContext } from "../../context/BotStateContext"
+import { useTranslation } from "../../lib/translations"
 import { circularPress } from "../../lib/pressSurface"
 import { SPACING } from "../../lib/spacing"
 import { TYPE } from "../../lib/type"
@@ -128,6 +129,9 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
     const { colors } = useTheme()
     const { state, navigation } = props
     const { appVersion } = useContext(BotMetaContext)
+    const { misc, updateMisc } = useContext(GeneralMiscContext)
+    const t = useTranslation()
+    const lang = misc?.language || "en"
     const drawerStatus = useDrawerStatus()
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
     const [recentRoutes, setRecentRoutes] = useState<string[]>([])
@@ -473,7 +477,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                         {visibleRecent.map((route) => (
                             <Pressable key={route} style={styles.recentChip} android_ripple={{ color: colors.ripple, foreground: true }} onPress={() => handleNavigation(route)}>
                                 <Text style={styles.recentChipText} numberOfLines={1} ellipsizeMode="tail">
-                                    {ROUTE_LABELS[route]}
+                                    {t(ROUTE_LABELS[route])}
                                 </Text>
                             </Pressable>
                         ))}
@@ -482,10 +486,33 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
 
                 {SECTIONS.map((section) => (
                     <View key={section.label} style={styles.section}>
-                        <SectionLabel label={section.label} />
-                        {section.items.map(renderItem)}
+                        <SectionLabel label={t(section.label)} />
+                        {section.items.map((item) => {
+                            const translatedItem = {
+                                ...item,
+                                label: t(item.label),
+                            }
+                            return renderItem(translatedItem)
+                        })}
                     </View>
                 ))}
+
+                {/* Language Switcher Section */}
+                <View style={styles.section}>
+                    <SectionLabel label={t("Language")} />
+                    <View style={[{ flexDirection: "row", alignItems: "center", borderRadius: 10, overflow: "hidden" }]}>
+                        <Pressable
+                            style={[styles.menuItem, { flex: 1 }]}
+                            android_ripple={{ color: colors.ripple, foreground: true }}
+                            onPress={() => updateMisc({ language: lang === "en" ? "id" : "en" })}
+                        >
+                            <View style={styles.menuItemIcon}>
+                                <Ionicons name="globe-outline" size={22} color={colors.brand} />
+                            </View>
+                            <Text style={[styles.menuItemText, { fontWeight: "600" }]}>{lang === "en" ? "Language: English" : "Bahasa: Indonesia"}</Text>
+                        </Pressable>
+                    </View>
+                </View>
             </DrawerContentScrollView>
             <View style={styles.footer}>
                 <Pressable style={styles.footerIconButton} android_ripple={{ color: colors.ripple, foreground: true }} onPress={() => Linking.openURL(GITHUB_URL)}>
