@@ -10,6 +10,7 @@ import PageHeader from "../../components/PageHeader"
 import SearchableItem from "../../components/SearchableItem"
 import TabStrip, { TabStripItem } from "../../components/ui/tab-strip"
 import { GlassFab } from "../../components/ui/glass-fab"
+import { useTranslation } from "../../lib/translations"
 import { SheetModal } from "../../components/ui/sheet-modal"
 import { ModalHeader } from "../../components/ui/modal-header"
 import { Row } from "../../components/ui/row"
@@ -70,6 +71,7 @@ interface ScheduleRouteParams {
  */
 function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
     const { colors } = useTheme()
+    const t = useTranslation()
     const { racing, updateRacing } = useContext(RacingContext)
     const { general, updateGeneral } = useContext(GeneralMiscContext)
 
@@ -226,11 +228,17 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
         [colors]
     )
 
+    const translatedTabItems = useMemo(() => TAB_ITEMS.map((item) => ({ ...item, label: t(item.label) })), [t])
+
     return (
         <SearchPageProvider page="ScheduleScreen" scrollViewRef={scrollViewRef}>
             <View style={{ flex: 1, backgroundColor: colors.bg }}>
-                <PageHeader title="Schedule" />
-                <SearchableItem id="smart-solver-character-preset" title="Character Preset" description="Pick the trainee. Sets the calendar's mandatory races and seeds the Race Solver aptitudes.">
+                <PageHeader title={t("Schedule")} />
+                <SearchableItem
+                    id="smart-solver-character-preset"
+                    title={t("Character Preset")}
+                    description={t("Pick the trainee. Sets the calendar's mandatory races and seeds the Race Solver aptitudes.")}
+                >
                     <View
                         style={{
                             marginHorizontal: SPACING.md,
@@ -243,15 +251,15 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                         }}
                     >
                         <Row
-                            title="Trainee"
-                            description="Sets the calendar's mandatory races"
+                            title={t("Trainee")}
+                            description={t("Sets the calendar's mandatory races")}
                             onPress={() => setTraineePickerOpen(true)}
                             right={<ValuePill label={racingSettings.smartRaceSolverCharacterPreset || "(none)"} />}
                         />
                     </View>
                 </SearchableItem>
                 <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.sm }}>
-                    <TabStrip items={TAB_ITEMS} activeKey={activeKey} onChange={onChangeTab} style={{ marginBottom: SPACING.sm }} />
+                    <TabStrip items={translatedTabItems} activeKey={activeKey} onChange={onChangeTab} style={{ marginBottom: SPACING.sm }} />
                 </View>
                 <ScrollView ref={scrollViewRef} nestedScrollEnabled contentContainerStyle={{ paddingHorizontal: SPACING.md, paddingBottom: 96 }} showsVerticalScrollIndicator={false}>
                     {/* Both tabs stay mounted - toggling display avoids re-mounting the heavy Race Solver tab (its 700ms+ section build) on every switch. */}
@@ -278,14 +286,14 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                     onRequestClose={closeCalendar}
                     heightFraction={0.9}
                     widthFraction={0.85}
-                    header={<ModalHeader title="CALENDAR" onClose={closeCalendar} />}
+                    header={<ModalHeader title={t("CALENDAR")} onClose={closeCalendar} />}
                     subHeader={
                         dirty ? (
                             <View style={styles.applyBar}>
-                                <Text style={styles.applyBarText}>Settings changed - recompute the schedule.</Text>
+                                <Text style={styles.applyBarText}>{t("Settings changed - recompute the schedule.")}</Text>
                                 <Pressable onPress={() => runPreview()} disabled={previewLoading} style={[styles.applyButton, { opacity: previewLoading ? 0.6 : 1 }]}>
                                     <RefreshCw size={14} color={colors.warningContent} />
-                                    <Text style={styles.applyButtonText}>Apply</Text>
+                                    <Text style={styles.applyButtonText}>{t("Apply")}</Text>
                                 </Pressable>
                             </View>
                         ) : null
@@ -299,7 +307,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                             accessibilityLabel="Reset schedule to default"
                         >
                             <RotateCcw size={16} color={colors.text} />
-                            <Text style={styles.resetButtonText}>Reset to default</Text>
+                            <Text style={styles.resetButtonText}>{t("Reset to default")}</Text>
                         </Pressable>
                     }
                 >
@@ -337,7 +345,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                 <SheetModal
                     visible={traineePickerOpen}
                     onRequestClose={() => setTraineePickerOpen(false)}
-                    header={<ModalHeader title="TRAINEE" onClose={() => setTraineePickerOpen(false)} />}
+                    header={<ModalHeader title={t("TRAINEE")} onClose={() => setTraineePickerOpen(false)} />}
                     footer={null}
                     scrollableBody={false}
                 >

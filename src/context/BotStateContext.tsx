@@ -423,7 +423,7 @@ export const defaultSettings: Settings = {
         formattedSettingsString: "",
         currentProfileName: "",
         messageLogFontSize: 8,
-        language: "en",
+        language: "id",
     },
     training: {
         trainingBlacklist: [],
