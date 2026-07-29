@@ -257,6 +257,19 @@
             }
         ]
     },
+    "Born to Perform": {
+        "name": "Born to Perform",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Gather a total of 1500 or more Performance tokens",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
+    },
     "Breakneck Miler": {
         "name": "Breakneck Miler",
         "bullet_points": [
@@ -416,6 +429,19 @@
             "Have a win rate of 80%"
         ],
         "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
+    "Cool and Composed": {
+        "name": "Cool and Composed",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Gather a total of 300 or more Mental tokens",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
         "characters": [],
         "matchers": []
     },
@@ -788,6 +814,19 @@
                 "displayLabel": "Win the Tokyo Yushun (Japanese Derby)"
             }
         ]
+    },
+    "Divine Songster": {
+        "name": "Divine Songster",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Gather a total of 300 or more Vocal tokens",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
     },
     "Divine Speed": {
         "name": "Divine Speed",
@@ -1655,6 +1694,13 @@
             }
         ]
     },
+    "Independent Learner": {
+        "name": "Independent Learner",
+        "bullet_points": [],
+        "scenarios": [],
+        "characters": [],
+        "matchers": []
+    },
     "Inspired Intellect": {
         "name": "Inspired Intellect",
         "bullet_points": [
@@ -1966,6 +2012,18 @@
                 "displayLabel": "Win the URA Finals"
             }
         ]
+    },
+    "Legendary Reprise": {
+        "name": "Legendary Reprise",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Hold a special Grand Live"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
     },
     "Little Miss Prodigy": {
         "name": "Little Miss Prodigy",
@@ -2644,6 +2702,19 @@
             }
         ]
     },
+    "Popping with Passion": {
+        "name": "Popping with Passion",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Gather a total of 300 or more Passion tokens",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
+    },
     "Pouty Witch": {
         "name": "Pouty Witch",
         "bullet_points": [
@@ -2731,6 +2802,19 @@
         ],
         "scenarios": [
             "Trackblazer"
+        ],
+        "characters": [],
+        "matchers": []
+    },
+    "Queen of Dance": {
+        "name": "Queen of Dance",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Gather a total of 300 or more Dance tokens",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -3641,6 +3725,18 @@
             }
         ]
     },
+    "The Key to Success": {
+        "name": "The Key to Success",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Lead the Grand Live to great success"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
+    },
     "Tohoku Top Dog": {
         "name": "Tohoku Top Dog",
         "bullet_points": [
@@ -4052,6 +4148,19 @@
             }
         ]
     },
+    "Virtuoso Vocalist": {
+        "name": "Virtuoso Vocalist",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Practice 10 or more different songs",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
+    },
     "Visiting the Greats": {
         "name": "Visiting the Greats",
         "bullet_points": [
@@ -4084,6 +4193,19 @@
                 "displayLabel": "Win the St. Lite Kinen"
             }
         ]
+    },
+    "Visual Kei": {
+        "name": "Visual Kei",
+        "bullet_points": [
+            "Brighter Together Our Grand Concert scenario only",
+            "Gather a total of 300 or more Visual tokens",
+            "Complete the Career"
+        ],
+        "scenarios": [
+            "Brighter Together Our Grand Concert"
+        ],
+        "characters": [],
+        "matchers": []
     },
     "Warlord from Oi": {
         "name": "Warlord from Oi",

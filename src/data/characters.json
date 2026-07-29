@@ -6751,6 +6751,17 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Quest: Help Dismantle the Set!": [
+            "Stamina +10\n(random) Get Hot Topic status\n※ Will affect the outcome of the 3rd event",
+            "Speed +10\n(random) Get Hot Topic status\n※ Will affect the outcome of the 3rd event"
+        ],
+        "Quest: Help the Theater Club!": [
+            "Guts +20\n※ Will affect the outcome of the 3rd event",
+            "Power +10\nWit +10\n※ Will affect the outcome of the 3rd event"
+        ],
+        "Quest: Help the Boy!": [
+            "※ If you chose the 1st option during both previous two chain events\nLong Corners ○ hint +2\nPressure hint +2\n\n※ If you chose the 2nd option during both previous two chain events\nMedium Corners ○ hint +2\nEager hint +2\n\n※ In other cases\nAll stats +3\nSkill points +25"
         ]
     },
     "Nice Nature": {
@@ -8415,6 +8426,17 @@
         ],
         "After the Kawasaki Kinen: Hearts Aflutter!": [
             "Energy -15\nPower +20\n1 random stat +10\nSkill points +45\nKawasaki Racecourse ○ hint +1\nSunny Sign hint +1"
+        ],
+        "My First Concert": [
+            "Randomly either\n----------\nSpeed +10\nWit +10\nFull Tilt hint +3\n----------\n\n----------\nSpeed +5\nFull Tilt hint +1"
+        ],
+        "One Hot Stage, Coming Right Up!": [
+            "Energy +20\nMood +1",
+            "Skill points +30"
+        ],
+        "The Umadol Road, Far, Far Away": [
+            "Stamina +20\n(random) Get Hot Topic status",
+            "Prudent Positioning hint +2\n(random) Get Hot Topic status"
         ]
     },
     "Special Week": {
@@ -10296,6 +10318,17 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Tickezo's Delivery Service: The Outset": [
+            "Guts +10\n(random) Get Charming ○ status\n※ Will affect the outcome of the 3rd event",
+            "Power +10\n(random) Get Charming ○ status\n※ Will affect the outcome of the 3rd event"
+        ],
+        "Tickezo's Delivery Service: Academy Antics": [
+            "Wit +20\n※ Will affect the outcome of the 3rd event",
+            "Stamina +20\n※ Will affect the outcome of the 3rd event"
+        ],
+        "Tickezo's Delivery Service: From the Heart": [
+            "※ If you chose the 1st option during both previous two chain events\nMedium Corners ○ hint +2\nTake the Chance hint +2\n\n※ If you chose the 2nd option during both previous two chain events\nLong Straightaways ○ hint +2\nPassing Pro hint +2\n\n※ In other cases\nSpeed +30\nGuts +10"
         ]
     },
     "Yaeno Muteki": {
