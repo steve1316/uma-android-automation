@@ -1401,7 +1401,7 @@ abstract class Campaign(game: Game) : Task(game) {
             }
 
             null -> {
-                MessageLog.w(TAG, "[WARN] checkInjury:: Failed to detect the Infirmary button.")
+                MessageLog.i(TAG, "[INJURY] Could not find the Infirmary button so it must be grayed out.")
                 false
             }
         }
