@@ -11,25 +11,14 @@ import com.steve1316.uma_android_automation.components.ButtonNext
 import com.steve1316.uma_android_automation.components.ButtonNextRaceEnd
 import com.steve1316.uma_android_automation.components.ButtonSelectOpponent
 import com.steve1316.uma_android_automation.components.ButtonSkip
-import com.steve1316.uma_android_automation.components.ButtonTrainingGuts
-import com.steve1316.uma_android_automation.components.ButtonTrainingPower
-import com.steve1316.uma_android_automation.components.ButtonTrainingSpeed
-import com.steve1316.uma_android_automation.components.ButtonTrainingStamina
-import com.steve1316.uma_android_automation.components.ButtonTrainingWit
 import com.steve1316.uma_android_automation.components.ButtonTryAgainAlt
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRace
 import com.steve1316.uma_android_automation.components.ButtonUnityCupRaceFinal
 import com.steve1316.uma_android_automation.components.ButtonUnityCupSeeAllRaceResults
 import com.steve1316.uma_android_automation.components.ButtonUnityCupWatchMainRace
-import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.DialogInterface
 import com.steve1316.uma_android_automation.components.IconDoubleCircle
 import com.steve1316.uma_android_automation.components.IconTrainingEventHorseshoe
-import com.steve1316.uma_android_automation.components.IconTrainingHeaderGuts
-import com.steve1316.uma_android_automation.components.IconTrainingHeaderPower
-import com.steve1316.uma_android_automation.components.IconTrainingHeaderSpeed
-import com.steve1316.uma_android_automation.components.IconTrainingHeaderStamina
-import com.steve1316.uma_android_automation.components.IconTrainingHeaderWit
 import com.steve1316.uma_android_automation.components.IconUnityCupRaceEndLogo
 import com.steve1316.uma_android_automation.components.IconUnityCupTutorialHeader
 import com.steve1316.uma_android_automation.components.LabelUnityCupOpponentSelectionLaurel
@@ -360,31 +349,14 @@ class UnityCup(game: Game) : Campaign(game) {
     fun startSpiritGaugeDetectionTest() {
         MessageLog.i(TAG, "\n[TEST] Now beginning the Unity Cup Spirit Gauge Detection test. Open the Training screen so the support gauges are visible.")
 
-        if (!ButtonTrainingSpeed.check(game.imageUtils)) {
+        if (!training.trainingButtons.getValue(StatName.SPEED).check(game.imageUtils)) {
             MessageLog.w(TAG, "[TEST] Not on the Training screen (Speed training button not found). Open the Training screen and retry.")
             return
         }
 
-        val trainingButtons: Map<StatName, ComponentInterface> =
-            mapOf(
-                StatName.SPEED to ButtonTrainingSpeed,
-                StatName.STAMINA to ButtonTrainingStamina,
-                StatName.POWER to ButtonTrainingPower,
-                StatName.GUTS to ButtonTrainingGuts,
-                StatName.WIT to ButtonTrainingWit,
-            )
-        val iconTrainingHeaders: Map<StatName, ComponentInterface> =
-            mapOf(
-                StatName.SPEED to IconTrainingHeaderSpeed,
-                StatName.STAMINA to IconTrainingHeaderStamina,
-                StatName.POWER to IconTrainingHeaderPower,
-                StatName.GUTS to IconTrainingHeaderGuts,
-                StatName.WIT to IconTrainingHeaderWit,
-            )
-
         for (statName in StatName.entries) {
-            val header = iconTrainingHeaders.getValue(statName)
-            val button = trainingButtons.getValue(statName)
+            val header = training.iconTrainingHeaders.getValue(statName)
+            val button = training.trainingButtons.getValue(statName)
 
             // Select the facility if it is not already the active one.
             if (!header.check(game.imageUtils)) {
