@@ -5,6 +5,12 @@ import android.util.Log
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.Training
+import com.steve1316.uma_android_automation.components.ButtonTrainingGutsAlt
+import com.steve1316.uma_android_automation.components.ButtonTrainingPowerAlt
+import com.steve1316.uma_android_automation.components.ButtonTrainingSpeedAlt
+import com.steve1316.uma_android_automation.components.ButtonTrainingStaminaAlt
+import com.steve1316.uma_android_automation.components.ButtonTrainingWitAlt
+import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.LabelGrandLivePerformancePoints
 import com.steve1316.uma_android_automation.types.StatName
 
@@ -16,6 +22,16 @@ import com.steve1316.uma_android_automation.types.StatName
  * @property campaign The [Campaign] instance for accessing campaign state.
  */
 class GrandLiveTraining(game: Game, campaign: Campaign) : Training(game, campaign) {
+    /** Grand Live's facility buttons do not match the standard templates, so the wider-crop alternate set is used instead. */
+    override val trainingButtons: Map<StatName, ComponentInterface> =
+        mapOf(
+            StatName.SPEED to ButtonTrainingSpeedAlt,
+            StatName.STAMINA to ButtonTrainingStaminaAlt,
+            StatName.POWER to ButtonTrainingPowerAlt,
+            StatName.GUTS to ButtonTrainingGutsAlt,
+            StatName.WIT to ButtonTrainingWitAlt,
+        )
+
     override fun runExtraTrainingAnalysis(result: TrainingAnalysisResult, sourceBitmap: Bitmap, singleTraining: Boolean) {
         // Always read on a thread: the token read (a template match + five YOLO inferences) is too slow for the pre-thread critical
         // path in comprehensive mode, and latch slot 5 is reserved for this analysis in both modes.

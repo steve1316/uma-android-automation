@@ -23,6 +23,8 @@ The only exception is if you want to add a dialog, in which case there is one ex
 
 For `ComplexComponentInterface` and `MultiStateButtonInterface`, the only difference is that you need to add a list of `Template`. See `Button.kt::ButtonMenuBarHome` for an example of a `MultiStateButtonInterface`.
 
+Templates under `assets/images/components/` are shared by all four scenarios. When one scenario renders a shared element differently, add a new suffixed template (e.g. `_mini`, `_alt`) alongside the original and point that scenario at it by overriding the corresponding `open val` on `Campaign` or `Training`. Never replace a shared template in place with a scenario-specific crop, since that silently breaks the other three scenarios without changing a single line of code.
+
 ## Button.kt
 
 Clickable button elements.
