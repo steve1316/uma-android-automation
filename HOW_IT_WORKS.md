@@ -1,6 +1,6 @@
 # How It Works
 
-*Last updated: 2026-07-13*
+*Last updated: 2026-07-29*
 
 A comprehensive guide to the inner workings of the app. This document explains what the bot does at each step of a campaign, how it makes decisions, and how each scenario differs.
 
@@ -17,11 +17,12 @@ A comprehensive guide to the inner workings of the app. This document explains w
 - [9. Scenario: URA Finale](#9-scenario-ura-finale)
 - [10. Scenario: Unity Cup](#10-scenario-unity-cup)
 - [11. Scenario: Trackblazer](#11-scenario-trackblazer)
-- [12. Support-Card Dating Schedule](#12-support-card-dating-schedule)
-- [13. Smart Race Solver](#13-smart-race-solver)
-- [14. Ask the Docs Chatbot](#14-ask-the-docs-chatbot)
-- [15. Decision Tracer](#15-decision-tracer)
-- [16. Remote Log Viewer & Run Analytics](#16-remote-log-viewer--run-analytics)
+- [12. Scenario: Grand Live](#12-scenario-grand-live)
+- [13. Support-Card Dating Schedule](#13-support-card-dating-schedule)
+- [14. Smart Race Solver](#14-smart-race-solver)
+- [15. Ask the Docs Chatbot](#15-ask-the-docs-chatbot)
+- [16. Decision Tracer](#16-decision-tracer)
+- [17. Remote Log Viewer & Run Analytics](#17-remote-log-viewer--run-analytics)
 
 ---
 
@@ -50,6 +51,7 @@ classDiagram
     Campaign <|-- UraFinale
     Campaign <|-- UnityCup
     Campaign <|-- Trackblazer
+    Campaign <|-- GrandLive
     Campaign *-- Racing
     Campaign *-- Training
     Campaign *-- TrainingEvent
@@ -57,7 +59,7 @@ classDiagram
     Campaign *-- Trainee
 ```
 
-The `Game` class instantiates the correct scenario subclass (`UraFinale`, `UnityCup`, or `Trackblazer`) based on the user's selection, then calls `process()` in a loop until the campaign ends or the bot is stopped.
+The `Game` class instantiates the correct scenario subclass (`UraFinale`, `UnityCup`, `Trackblazer`, or `GrandLive`) based on the user's selection, then calls `process()` in a loop until the campaign ends or the bot is stopped.
 
 ---
 
@@ -253,7 +255,8 @@ Each scenario can override these hooks to inject custom logic at specific points
 |------|-----------|---------------|
 | `onBeforeMainScreenUpdate()` | Before date detection | Trackblazer: check if shop visit is needed |
 | `onAfterTurnStartUpdates()` | After parallel OCR reads | Additional post-update logic |
-| `onMainScreenEntry()` | Before decision-making | Trackblazer: use training items |
+| `onMainScreenEntry()` | Before decision-making | Trackblazer: use training items. Grand Live: log token totals, run the Lessons side-action |
+| `onEndScreenEntry()` | On the career-end screen, before skills are bought | Grand Live: spend leftover Performance Points in Lessons |
 | `onScheduledRacePrepScreen()` | On the Race Prep screen before a scheduled or mandatory race | Trackblazer: use race items (hammers, glow sticks) |
 | `handleRaceEventFallback()` | When a race attempt fails (e.g. consecutive race limit) | Trackblazer: back out and train instead (non-mandatory races only) |
 | `resetDailyFlags()` | When date changes | Reset scenario-specific per-turn flags |
@@ -301,7 +304,7 @@ flowchart TD
 
 1. **Mandatory Race:** If the game shows a mandatory race ribbon (career-goal or race-day), the bot must race. No choice here.
 2. **Racing popup:** If a previous race selection triggered a popup that wasn't fully resolved, continue with racing.
-3. **Dating/Recreation outing (`DATE`):** If the dating schedule is active and today is a pinned (or catch-up) recreation turn with no mandatory race, the bot spends the turn on the outing. This **outranks** scheduled agenda races and Smart Race Solver races. See [Section 12](#12-support-card-dating-schedule).
+3. **Dating/Recreation outing (`DATE`):** If the dating schedule is active and today is a pinned (or catch-up) recreation turn with no mandatory race, the bot spends the turn on the outing. This **outranks** scheduled agenda races and Smart Race Solver races. See [Section 13](#13-support-card-dating-schedule).
 4. **Scheduled Race:** If the game shows a scheduled (in-game agenda) race label, the bot races.
 5. **Force Racing:** User setting that bypasses all other logic and forces racing every turn.
 6. **Maiden Race:** The first race of the campaign must be completed before regular training resumes.
@@ -311,8 +314,10 @@ flowchart TD
 [^1]: Wit is chosen as the "throwaway" training because it recovers some energy, helping the trainee enter Summer Training in better condition.
 9. **Injury Check:** If an injury is detected, the bot handles it (usually by resting). This check is **skipped during Finale turns** since those races are mandatory.
 10. **Mood Recovery:** If mood has dropped to Normal or below, the bot recovers before training (bad mood penalizes training gains).
-11. **Extra Racing:** If the bot is eligible for extra races (based on farming fans, racing plan, or smart racing logic), it races.
-12. **Default: Train.** If nothing else applies, the bot trains.
+11. **G1-Day Pre-Screen:** If `enableG1DayPreference` is on and a G1 race is available this turn (Classic / Senior, outside summer and finals, energy at or above the `Minimum Energy for G1 Pre-Screen` floor), the bot peeks at the training screen first and stays to train when the best training carries at least `g1DayMinRainbowCount` rainbow supports. This runs **before** the extra-race check, so it can pass on a G1 the Smart Race Solver had scheduled.
+12. **Extra Racing:** If the bot is eligible for extra races (the Smart Race Solver planned one for this turn, or the scenario bypasses smart racing), it races.
+13. **Low-Energy Rest:** If energy is below `minEnergyToTrain` (and it is not summer or the finals), the bot rests. Checked this late so it only ever replaces a training turn — every racing path above has already returned by now.
+14. **Default: Train.** If nothing else applies, the bot trains.
 
 > [!NOTE]
 > **Trackblazer override:** Before calling the base decision logic, Trackblazer's `decideNextAction()` first checks for **Irregular Training** — evaluating whether a high-value training opportunity exists that's worth skipping a race for. See [Section 11.6](#116-irregular-training) for details.
@@ -388,6 +393,7 @@ The July 2026 rebalance changed what a stat cap *is*, and the bot now models it 
 | **URA Finale** | 1400 for all five stats |
 | **Unity Cup** | 1800 Wit, 1300 everything else |
 | **Trackblazer** | 1900 Stamina, 1500 Wit, 1200 everything else |
+| **Grand Live** | 1600 Speed, 1500 Guts, 1300 everything else |
 | Anything else | 1200 |
 
 **1200 is now a soft threshold, not a wall.** Stats keep climbing past it toward the real cap, just at reduced value — and the headline change is *how much* reduced. A point landing above 1200 used to be worth roughly an eighth of a normal point; it is now worth exactly **half**. The bot splits any proposed gain into the portion below 1200 (counted in full), the portion between 1200 and the stat's real cap (counted at 0.5), and any overflow past the cap (counted at zero, since it is simply wasted), and scales that stat's score by the resulting fraction. A +30 Speed training on a 1190 Speed with a 1400 cap therefore counts as `(10 x 1.0 + 20 x 0.5) / 30 = 0.667` of its face value.
@@ -502,19 +508,21 @@ The racing system handles race detection, selection, execution, and result proce
 |------|-----------|------|
 | **Mandatory** | `IconRaceDayRibbon` or `IconGoalRibbon` | Game-forced races (Debut, Finale, goal races) |
 | **Scheduled** | `LabelScheduledRace` | Races from the user's in-game agenda |
-| **Extra** | Eligibility check | Fan farming, racing plan, or smart racing |
+| **Extra** | Eligibility check | The Smart Race Solver's schedule, force racing, or a scenario bypass |
 | **Maiden** | First race flag | Must be completed once before regular training |
 
 ### 7.2 Extra Race Eligibility
 
-The bot determines if extra races should be run via `checkEligibilityToStartExtraRacingProcess()`:
+The bot determines if extra races should be run via `checkEligibilityToStartExtraRacingProcess()`. The guards are checked in order and the first one that matches wins:
 
+- **Junior Year Early July (Turn 13):** No extra races exist yet, so the check bails immediately.
+- **Limit Extra Races to Agenda:** With the in-game race agenda active and `limitRacesToInGameAgenda` on, only agenda races run, so the check bails.
 - **Force Racing:** Always race if the setting is enabled.
-- **Racing Plan:** User-defined schedule of specific races to enter on specific turns.
-- **In-Game Race Agenda:** Follows the agenda set within the game itself.
-- **Fan Farming:** Enters races based on a configurable interval (`daysToRunExtraRaces`).
-- **Smart Racing / Look-Ahead:** Checks upcoming turns for higher-quality races and may defer racing to a better opportunity.
-- **Smart Race Solver:** From Classic year onward, the optional [Smart Race Solver](#13-smart-race-solver) can take over extra-race scheduling — see Section 13. When it's enabled with `enableFarmingFans` on and `enableForceRacing` off, the solver decides which turns are race turns and which races are picked, and the legacy fan-farming and look-ahead heuristics step aside. When the solver picks `Train` for a turn, the **legacy extra-race fallback is suppressed entirely** — the bot will not enter a race that the solver did not plan, even if the older fan-farming heuristic would have triggered.
+- **Unsatisfiable requirement:** A fan / trophy / goal-points requirement that survived the waterfall is one no race this turn can satisfy, so extra racing is suppressed rather than opening the race screen only to cancel.
+- **Smart Race Solver:** From Classic year onward, the optional [Smart Race Solver](#14-smart-race-solver) is the only source of discretionary extra races — see Section 14. When it's enabled with `enableForceRacing` off, the solver decides which turns are race turns and which races are picked. When the solver picks `Train` for a turn, every extra-race fallback is **suppressed entirely** — the bot will not enter a race that the solver did not plan.
+- **Scenario bypass:** Trackblazer races as often as possible via `shouldBypassSmartRacing()`, subject only to finals, summer, and the races button being unlocked.
+
+With the solver off and no scenario bypass, the bot runs **no discretionary extra races at all** — only mandatory, maiden, scheduled, requirement-driven, and force-racing entries remain.
 
 > [!NOTE]
 > **Fan and trophy requirements are handled upstream**, in the decision waterfall ([Section 5](#5-decision-engine)), not here. By the time the eligibility check runs, any requirement still outstanding is by construction one that *cannot* be satisfied this turn — a G1-only trophy goal on a turn with no G1 race — so the check suppresses extra racing rather than triggering it.
@@ -593,7 +601,7 @@ When no override applies, each option receives a weight score based on its rewar
 | Mood gain | 80–150 | Higher weight when mood is lower (150 at Awful, 0 at Great). Mood loss: -150 |
 | Bond gain | +20 | Bond loss: -20 |
 | Skill hint | +25 | Learning a new skill |
-| Positive status | +25 | Gaining a beneficial condition |
+| Positive status | +100 | Gaining a beneficial condition (e.g. Practice Perfect) - weighted to beat a typical flat stat line |
 | Negative status | -25 | Gaining a harmful condition |
 | Stat gain (priority stat) | value + 10–50 bonus | Bonus based on stat priority rank (1st: +50, 2nd: +40, 3rd: +30, 4th: +20, 5th: +10) |
 | Stat gain (other) | raw value | No priority bonus |
@@ -1281,7 +1289,7 @@ Trackblazer uses a specialized race selection algorithm (`findSuitableRace()`, f
    - Check for **Rival status** via template matching (`LabelRivalRacer`)
    - Filter by grade based on the current consecutive race count (see [11.5](#115-consecutive-race-system))
 4. **Selection priority:**
-   - **Smart Race Solver match first** — when the [Smart Race Solver](#13-smart-race-solver) has a planned race for this turn and the scan encounters it, the scan **short-circuits** and commits to that race without finishing the rest of the list. See [Section 13.6](#136-race-day-lifecycle--peek-mark-pending-commit).
+   - **Smart Race Solver match first** — when the [Smart Race Solver](#14-smart-race-solver) has a planned race for this turn and the scan encounters it, the scan **short-circuits** and commits to that race without finishing the rest of the list. See [Section 14.6](#146-race-day-lifecycle--peek-mark-pending-commit).
    - **Rival races** (these offer bonus rewards)
    - Among non-rival candidates, races matching the configured **preferred distance** and/or **preferred surface** (Scenario Overrides UI) are preferred over ones that don't
    - Then by **grade:** G1 > G2 > G3 > OP > Pre-OP
@@ -1293,13 +1301,67 @@ Trackblazer uses a specialized race selection algorithm (`findSuitableRace()`, f
 
 ---
 
-## 12. Support-Card Dating Schedule
+## 12. Scenario: Grand Live
+
+Grand Live (Our Grand Concert) layers a currency-and-shop economy on top of the base campaign. Training earns **Performance Points** in five token types (**Da / Pa / Vo / Vi / Co**), which are spent in a **Lessons** facility on **Techniques** (stat gains and permanent training passives) and **Songs** (passives that also raise the **Hype gauge**), building toward periodic **concerts** and a final **Grand Concert**. Training scoring itself is unchanged — the scenario's edge comes from spending tokens well.
+
+### 12.1 Performance Points and Hype
+
+The five token totals live in a vertical panel anchored by the `grandlive_performance_points` header. All token numbers are read with the shared **YOLO digit reader** (the same model that reads training stat gains) at fixed 100px-pitch row crops below the matched header.
+
+- **Main screen, every turn:** the bot logs the five totals plus the Hype state, e.g. `Token totals: Da=112, Pa=98, Vo=76, Vi=104, Co=61 (Hype maxed: true)`. The totals are **logging only** — purchase decisions never compare token counts (see the banner gotcha below). The same screenshot is checked for the `grandlive_great_hype` icon, which feeds the token-hoarding policy.
+- **Training analysis:** each facility's "+N" token gains are read on a parallel analysis thread and appended to the per-training log line as `Token gains: Da +8, Pa +0, ...`. The read **requires a "+" glyph** in the crop — gain overlays always render as "+N", so requiring the plus stops a stray misread digit from becoming a phantom gain (this fixed a phantom Guts Co gain during calibration).
+- **Token Gain debug test:** walks all five facilities from the Training screen and prints a totals-and-gains matrix, doubling as the on-device calibrator for the crop offsets.
+
+### 12.2 The Lessons Facility
+
+Lessons is a free side-action — opening it does not consume the turn — so the bot visits from the main screen on the first turn and then polls on the **Lessons Re-check Interval** (Scenario Overrides → Grand Live, default every 2 turns).
+
+> [!IMPORTANT]
+> **Purchasability comes only from the "Learnable" banner.** A card is buyable exactly when it shows a "Learnable Technique" / "Learnable Song" banner — the bot never infers affordability from token totals, because card costs mix multiple token types and the list's contents are hidden state. The banners are matched at a raised **0.90 confidence** after the default threshold false-positived on a non-learnable card and tapped it.
+
+**Scanning.** Each card is anchored by its "Performance Point Cost" pill (`grandlive_performance_point_cost`); the name, kind tag, and two effect lines are OCR'd at fixed offsets from that anchor. Every card is logged with its Learnable/Locked state so a buy-nothing visit is always explainable. If zero anchors match, the scan re-probes at 0.7 confidence to tell a too-strict threshold (loose > 0) apart from a stale template crop (loose = 0), and dumps the frame in Debug Mode.
+
+**The list is static until a purchase.** The card list only refreshes *after* buying something — never between turns on its own. This drives two behaviors: the bot re-scans after every single purchase (new cards may have appeared), and it does not bother re-opening Lessons every turn when nothing was bought (the configurable poll cadence above).
+
+**Purchase policy**, in order:
+
+1. **Concert day (`forceMaxHype`):** buy Songs first until the Hype gauge maxes. The confirmation dialog shows a max-Hype marker (`LabelGrandLiveMaxHype`) when a purchase will cap the gauge.
+2. **Token hoarding:** on a normal turn, if Hype is already maxed, the career is not in its finale stretch, and a locked card matches one of the **top 2 ranked** effect categories, the bot holds its tokens for it instead of spending on lesser cards.
+3. **Scoring follows the "Lesson Effect Priority" setting** (Scenario Overrides → Grand Live): a drag-to-rank list of effect categories, default `Training Effectiveness > Training Gain > Support Events > Stat Gains > Skill Hints` with Energy unranked. A card sums the rank weights of every category it matches, raw stat gains are additionally weighted by the user's stat prioritization, Techniques get a small tie-bonus over Songs, and remaining ties go to the earlier row. A category deselected from the ranking scores zero, so it is only bought when nothing ranked is learnable.
+4. **Off-style skill hints:** a hint tied to a running style the trainee cannot use (aptitude below C) is skipped unless it is the only learnable option.
+5. **Otherwise, buy anything learnable** — spending tokens is what refreshes the list.
+
+**Energy cards** get special handling:
+
+- Away from the final concert, tapping an Energy card opens its confirmation dialog and the bot OCRs the dialog's printed **"\<new\> / 100"** projected energy. A projection of 100+ means overflow, so the bot cancels and remembers the card for the rest of the visit. Reading the dialog (instead of the trainee's tracked energy) matters because a user can start the bot cold on a concert screen where energy was never read. The raw readout is always logged for calibration.
+- At the final concert / career end, energy is useless, so Energy cards are dropped — **unless Energy is the only learnable card left**, in which case one is bought purely to refresh the list and surface something better.
+
+### 12.3 Concerts
+
+Concert-day screens show only the Lessons and Concert buttons — they are **not** recognized as the main screen — so the concert flows are reached through `checkCampaignSpecificConditions()` in the main loop, checking the Grand Concert button before the regular Concert button.
+
+**Promotional concerts:** the bot first maxes Hype via a Lessons pass (the concert screen renders a larger Lessons button, `grandlive_lessons_big`), then taps Concert, confirms with Start, skips the performance, advances the results with Next, and closes the concert-bonus dialog.
+
+**The Grand Concert (finale)** ticks the "Skip the Grand Concert cutscene" checkbox, and after Start it resolves into reward/claim screens advanced by tapping anywhere (like the Inheritance flow) — the bot waits 2 seconds and taps the screen center three times, letting the main loop pick up whatever screen follows.
+
+### 12.4 Career End
+
+The career-end hook runs a final Lessons pass before skills are bought and the career completes: if the Lessons button is present on the end screen, all remaining Performance Points are spent down (Energy cards skipped as useless, except as a list-refresher when nothing else is learnable), then the bot backs out to the end screen via the Complete Career marker.
+
+### 12.5 Stat Caps
+
+Grand Live's base caps (1600 Speed, 1500 Guts, 1300 everything else) sit in the shared per-scenario table and interact with the beyond-1200 soft-cap model like every other scenario — see [Section 6.3](#63-stat-caps-and-the-beyond-1200-zone).
+
+---
+
+## 13. Support-Card Dating Schedule
 
 Some support cards (Team Sirius, Heirs to the Throne) unlock a chain of **recreation "dates"** that ends in a **Pure Passion** buff. The dating schedule lets the bot run those outings on user-pinned turns and, when a card times Pure Passion for a specific turn, **hold the final outing** until that turn so the buff lands on the summer / Senior training block. The logic lives in the base [Campaign](android/app/src/main/java/com/steve1316/uma_android_automation/bot/Campaign.kt) class, so it applies to every scenario, and the side-effect-free scheduling math is factored into [DatingSchedule.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/DatingSchedule.kt) so it can be unit tested without the OCR / settings machinery.
 
-### 12.1 Settings
+### 13.1 Settings
 
-The schedule is configured on the General Settings page. Regular outing turns are pinned on a `SeasonCalendar` picker — the same 72-cell calendar component the Smart Race Solver uses ([Section 13.5](#135-settings-ui--calendar-preview)).
+The schedule is configured on the General Settings page. Regular outing turns are pinned on a `SeasonCalendar` picker — the same 72-cell calendar component the Smart Race Solver uses ([Section 14.5](#145-settings-ui--calendar-preview)).
 
 | Setting | Meaning |
 |---------|---------|
@@ -1309,27 +1371,27 @@ The schedule is configured on the General Settings page. Regular outing turns ar
 | `recreationTotalOutings` | The chain length for the active card (Team Sirius 7, Heirs to the Throne 5). Used as a fallback until the in-game "X/Y" progress is read. |
 | `enableRecreationCatchUp` | On by default. A pinned outing that got pre-empted (a race landed on its turn, or recreation was unavailable) is made up on the next available turn. |
 
-### 12.2 Decision priority
+### 13.2 Decision priority
 
 `shouldDoRecreationToday()` inserts a `DATE` action into the [Section 5](#5-decision-engine) waterfall, just below the mandatory-race and racing-popup checks:
 
 - A pinned (or catch-up) outing **outranks** scheduled in-game agenda races **and** Smart Race Solver races — the outing wins the turn.
 - It does **not** outrank **mandatory career-goal races** (`IconRaceDayRibbon` / `IconGoalRibbon`), which can never be skipped.
 
-### 12.3 Holding the final outing
+### 13.3 Holding the final outing
 
 Pure Passion must land on the right turn, so the bot must not finish the chain early. Before starting an outing it reads the in-game **"Group Event Progress X/Y"**, and if only the final outing remains and today is not the Pure Passion turn, `shouldHoldFinalOuting()` **backs out** of the Choose Recreation Partner dialog and the turn is spent on a normal action instead. On the Pure Passion turn the final outing is allowed and the buff triggers.
 
-### 12.4 Catch-up and abandon
+### 13.4 Catch-up and abandon
 
 Two follow-up behaviors keep the schedule robust when reality drifts from the plan:
 
 - **Catch-up** (`isBehindSchedule()`, gated by `enableRecreationCatchUp`) — if fewer outings have started than the number of pinned turns already due, the bot does an outing on the next available turn to get back on track.
 - **Abandon** (`isScheduleAbandoned()`) — once the current turn passes `purePassionTurn` with the chain still unfinished, the schedule is dropped and recreation falls back to the opportunistic path. `isScheduleActive()` is the single gate that couples "enabled" with "not abandoned", and every scheduling call site checks it.
 
-### 12.5 Reading the Chain's Progress
+### 13.5 Reading the Chain's Progress
 
-Knowing how far along the date chain is matters because the bot must not finish it early ([Section 12.3](#123-holding-the-final-outing)). The per-run counter (`recreationOutingsStarted`) drifts whenever the user plays a few turns manually or restarts the bot mid-run, so it is never trusted on its own. The bot reads the true position off the screen instead, in three tiers:
+Knowing how far along the date chain is matters because the bot must not finish it early ([Section 13.3](#133-holding-the-final-outing)). The per-run counter (`recreationOutingsStarted`) drifts whenever the user plays a few turns manually or restarts the bot mid-run, so it is never trusted on its own. The bot reads the true position off the screen instead, in three tiers:
 
 1. **The Event Progress chevrons (primary).** The recreation popup draws a row of chevrons next to the **Event Progress** pill — filled/blue for a completed step, hollow/gray for a pending one. The bot counts them and takes the rightmost filled chevron as the completed count and the total number of chevrons as the chain length. This works even for chevron-only dates that display no "X/Y" text at all, which is why it is now the primary signal.
 2. **The "X/Y" text (fallback).** If the chevrons don't resolve, the bot falls back to OCR'ing the "X/Y" progress text on the open partner dialog, anchored to the pill's right edge.
@@ -1338,23 +1400,25 @@ Knowing how far along the date chain is matters because the bot must not finish 
 > [!NOTE]
 > The chevrons are counted by **color segmentation and column projection**, not template matching. Template matching blanks out each hit with a rectangle that bleeds about 10px past it, but the chevrons sit only ~13px apart, so each match was erasing its neighbors — a 5-chevron row read as 3. Splitting the row into runs of non-background columns counts them all. This same undercounting trap applies to any tightly packed row of identical shapes.
 
-### 12.6 Partner-dialog safety
+### 13.6 Partner-dialog safety
 
 Every back-out path in `handleRecreationDate()` — a held final outing, an unreadable dialog, or no selectable date label — routes through `cancelPartnerDialog()`, which cancels the dialog, waits for loading, and returns `false`. This closes a hang where a failed opportunistic recovery used to leave the Choose Recreation Partner dialog open and desync the bot for ~30 minutes. The `choose_recreation_partner` unhandled-dialog handler is the backstop that closes the dialog if it is ever found stranded.
 
 ---
 
-## 13. Smart Race Solver
+## 14. Smart Race Solver
 
 An optimization-based race scheduler that replaces the older Smart Racing Plan. Instead of asking the user to hand-pick races on a calendar, the solver takes the trainee's aptitudes, the bundled race database, and a set of **epithet** goals, and searches the entire 72-turn space for the highest-scoring race-vs-train schedule. The bot then drives the in-game race picker against that plan turn by turn.
 
-### 13.1 When the solver runs
+### 14.1 When the solver runs
 
 The solver is **opt-in** via the `enableSmartRaceSolver` setting on the Racing Settings page. It only takes over extra-race selection when:
 
-- `enableFarmingFans` is on (the bot is allowed to enter extra races at all),
 - `enableForceRacing` is off (the user hasn't asked the bot to race every turn unconditionally),
+- `enableUserInGameRaceAgenda` is off (enabling the agenda auto-disables the solver, since the two cannot both own the racing schedule),
 - and the campaign is past Junior year (the solver plans from Classic onward; Junior racing follows the existing maiden-race / mandatory-race path).
+
+Several other Racing Settings do not disable the solver but can still change what actually runs — `enableG1DayPreference` trains through a scheduled G1, `enableStopOnMandatoryRaces` halts the run mid-schedule, `disableRaceRetries` can end the career early, and `ignoreConsecutiveRaceWarning` affects the turn after a repeat-race popup. Any of these that are on are surfaced as tappable chips at the top of the Race Solver tab by [RacingOverrideChips.tsx](src/pages/Schedule/components/RacingOverrideChips.tsx), tinted by how much they interfere, so the user can see at a glance that the calendar will not execute verbatim.
 
 > [!NOTE]
 > **Junior-year Pre-OP override.** Trackblazer normally rejects Pre-OP races outright during Junior year (their fan rewards are too low to justify the consecutive-race penalty). When the Smart Race Solver explicitly plans a Pre-OP race for a specific Junior turn, the Junior-year grade filter is **overridden** for that turn so the solver's plan can execute. Pre-OP races picked outside of the solver are still filtered out.
@@ -1362,19 +1426,19 @@ The solver is **opt-in** via the `enableSmartRaceSolver` setting on the Racing S
 > [!NOTE]
 > **Manual race locks are honored at runtime.** The Settings UI lets the user pin a specific race or `TRAIN_LOCK_SENTINEL` to a calendar cell. Earlier builds applied these locks to the preview render but not to the live solve loop — the bot would happily race a different race on the locked turn. The peek path now consults the locked schedule directly, so any cell the user pinned is respected during the actual run.
 
-When all three hold, [Racing.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/Racing.kt) calls `SmartRaceSolverIntegration.peekRaceKeyForTurn()` to ask "is there a race planned for the current turn, and if so, which one?" The answer steers both extra-racing eligibility and the race-list scan inside Trackblazer's `findSuitableRace()`.
+When all of those hold, [Racing.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/Racing.kt) calls `SmartRaceSolverIntegration.peekRaceKeyForTurn()` to ask "is there a race planned for the current turn, and if so, which one?" The answer steers both extra-racing eligibility and the race-list scan inside Trackblazer's `findSuitableRace()`.
 
 > [!IMPORTANT]
-> **Trackblazer integration.** Trackblazer's `decideNextAction()` consults `peekDecisionForTurn()` *before* the existing flowchart in [Section 11.1](#111-overview-and-flow-differences). When the solver has picked `Race`, the turn defers to the racing flow; when it picks `Train`, the legacy fan-farming heuristic is bypassed so the turn really is a training turn.
+> **Trackblazer integration.** Trackblazer's `decideNextAction()` consults `peekDecisionForTurn()` *before* the existing flowchart in [Section 11.1](#111-overview-and-flow-differences). When the solver has picked `Race`, the turn defers to the racing flow; when it picks `Train`, the scenario's race-as-often-as-possible bypass is suppressed so the turn really is a training turn.
 
 > [!NOTE]
 > **Mandatory career races are auto-locked.** For every scenario other than Trackblazer, the solver loads each character's forced career races from [character_objectives.json](src/data/character_objectives.json) and locks them onto their turns via [MandatoryRaces.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/MandatoryRaces.kt). For a choice turn (e.g. Oaks vs. Derby) it picks the option that best fits the run's aptitudes. These locks override any manual lock on the same turn and cannot be edited or removed in the Settings UI — the solver must schedule them, and the rest of the plan is optimized around them.
 
-### 13.2 Architecture
+### 14.2 Architecture
 
 ```mermaid
 flowchart LR
-    Settings["SmartRaceSolverSettings (TS)"] -->|SolverConfigSnapshot| Bridge["SmartRaceSolverModule (RN bridge)"]
+    Settings["RaceSolverTab (TS)"] -->|SolverConfigSnapshot| Bridge["SmartRaceSolverModule (RN bridge)"]
     Bridge --> Integration["SmartRaceSolverIntegration"]
     Integration --> Solver["SmartRaceSolver.solve()"]
     Solver -->|exact| MILP["MilpSolver (ojAlgo)"]
@@ -1392,9 +1456,9 @@ The solver itself is a **pure function** — `solve(state) -> Schedule` — defi
 | Domain types | [Schedule.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/Schedule.kt), [SolverState.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/SolverState.kt), [Epithet.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/Epithet.kt), [RaceHistory.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/RaceHistory.kt) | `Decision`, `Schedule`, `Aptitudes`, `EpithetMatcher`, `RaceWin`. |
 | Bot integration | [SmartRaceSolverIntegration.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/SmartRaceSolverIntegration.kt) | Race-history accumulation, lazy JSON parsing, peek / mark / commit lifecycle, calendar broadcasts. |
 | RN bridge | [SmartRaceSolverModule.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/SmartRaceSolverModule.kt), [src/lib/solver/preview.ts](src/lib/solver/preview.ts) | `previewSchedule()` JSON-in / JSON-out call surface for the settings UI. |
-| Settings UI | [src/pages/SmartRaceSolverSettings/](src/pages/SmartRaceSolverSettings/), [src/lib/solver/scoring.ts](src/lib/solver/scoring.ts), [src/lib/solver/constants.ts](src/lib/solver/constants.ts) | Calendar preview, character preset, target / forced epithet picker, weight sliders. |
+| Settings UI | [src/pages/Schedule/RaceSolverTab.tsx](src/pages/Schedule/RaceSolverTab.tsx), [src/lib/solver/scoring.ts](src/lib/solver/scoring.ts), [src/lib/solver/constants.ts](src/lib/solver/constants.ts) | Calendar preview, character preset, target / forced epithet picker, weight sliders. |
 
-### 13.3 Backends — MILP first, beam search as fallback
+### 14.3 Backends — MILP first, beam search as fallback
 
 `SmartRaceSolver.solve(state)` tries the exact backend first and falls back to the heuristic only if the model is infeasible:
 
@@ -1413,7 +1477,7 @@ where `v_race` is the per-race stat + skill-point reward (uplifted by `raceBonus
 > [!NOTE]
 > **Hard scheduling caps.** Two optional limits are enforced as hard constraints in both backends (the MILP adds linear constraints; the heuristic prunes the beam). **Maximum Extra Races** (`smartRaceSolverMaxRaces`, default 0 = no limit) caps how many optional races the whole schedule may contain — mandatory career races always run and do not count toward it. **Maximum Consecutive Races** (`smartRaceSolverMaxConsecutiveRaces`, default 3) forbids more than N races in a row across the 72-turn schedule, with the Late-Dec turn windows (24 / 48 / 72) exempt so a year-end chain is not penalized twice.
 
-### 13.4 Epithets — the goal language
+### 14.4 Epithets — the goal language
 
 Epithets are the goals the solver is trying to satisfy. Each is a flat list of [`EpithetMatcher`](android/app/src/main/java/com/steve1316/uma_android_automation/bot/solver/Epithet.kt) entries combined with logical AND. Subtypes cover:
 
@@ -1427,21 +1491,22 @@ Epithets are the goals the solver is trying to satisfy. Each is a flat list of [
 
 The epithet corpus itself is generated by [scripts/scrapers/epithet_scraper.py](scripts/scrapers/epithet_scraper.py) into [src/data/epithets.json](src/data/epithets.json). Display labels for matcher conditions are pre-computed at build time by [scripts/precompute-epithet-labels.ts](scripts/precompute-epithet-labels.ts) so the runtime renderer never has to re-derive them.
 
-### 13.5 Settings UI — calendar preview
+### 14.5 Settings UI — calendar preview
 
-The [Smart Race Solver Settings page](src/pages/SmartRaceSolverSettings/) lets the user:
+The **Race Solver** tab of the [Schedule page](src/pages/Schedule/RaceSolverTab.tsx) lets the user:
 
 - Pick a **character preset** (sourced from [src/data/characterPresets.json](src/data/characterPresets.json)). Selecting one seeds the six aptitude rows (Sprint / Mile / Medium / Long / Turf / Dirt) — the user can still hand-edit individual cells.
 - Pick **target epithets** (the solver gets a bonus for completing them) and **forced epithets** (hard-locked — schedules that don't complete them are discarded). Empty-matcher epithets are flagged with a red dot and skipped by the solver.
 - Set **per-turn manual locks** — pin a specific race or `TRAIN_LOCK_SENTINEL` onto a calendar cell to override the solver for that turn.
 - Tune the **weights bundle** (`raceValue`, `epithetValue`, `statWeight`, `spWeight`, `hintWeight`, `consecutiveRacePenalty`, `summerPenalty`, `raceBonusPct`, `raceCostPct`, `aptitudeThreshold`, `includeOpAndPreOp`, `allowSummerRacing`).
+- See which **Racing Settings are currently overriding the solver**, as a chip row under the master toggle. Each chip deep-links to the setting that armed it on the Racing Settings page.
 
 After every meaningful change the page debounces a `SmartRaceSolverModule.previewSchedule()` call into Kotlin (see [src/lib/solver/preview.ts](src/lib/solver/preview.ts)) and renders the returned `SchedulePreview` onto a 72-cell calendar. Each cell shows the picked race name, grade badge, and epithet progression for that turn; a popover gives the full per-matcher condition labels and pending prerequisites. A floating Recalculate FAB and a stale-preview warning surface when the inputs have changed but the calendar hasn't refreshed yet.
 
 > [!NOTE]
-> **General vs. Aptitudes layout.** The settings page is split into a **General** section (scheduling constraints and toggles — Disable Schedule Re-Plan Upon Race Loss, Maximum Extra Races, Maximum Consecutive Races, Include OP / Pre-OP Races, and Allow Racing During Summer) and an **Aptitudes** section (the six aptitude rows plus the aptitude-threshold selector). The new caps from [Section 13.3](#133-backends--milp-first-beam-search-as-fallback) live in the General section.
+> **General vs. Aptitudes layout.** The settings page is split into a **General** section (scheduling constraints and toggles — Disable Schedule Re-Plan Upon Race Loss, Maximum Extra Races, Maximum Consecutive Races, Include OP / Pre-OP Races, and Allow Racing During Summer) and an **Aptitudes** section (the six aptitude rows plus the aptitude-threshold selector). The new caps from [Section 14.3](#143-backends--milp-first-beam-search-as-fallback) live in the General section.
 
-### 13.6 Race-day lifecycle — peek, mark pending, commit
+### 14.6 Race-day lifecycle — peek, mark pending, commit
 
 The solver is consulted at three moments per race-day turn:
 
@@ -1455,7 +1520,7 @@ The solver is consulted at three moments per race-day turn:
 > [!NOTE]
 > **Same-track disambiguation by fan count.** Two races on the same turn can share an identical on-screen track string (e.g. both read "Tokyo Turf 2400m"). To make sure it taps the race the solver actually planned, the bot also OCRs each row's fan reward and matches it against the planned race's fan count; a row whose fans cannot be read (returns -1) is accepted for backward compatibility.
 
-### 13.7 Race history — seed, broadcast, calendar
+### 14.7 Race history — seed, broadcast, calendar
 
 `SmartRaceSolverIntegration` keeps two in-memory lists for the current run:
 
@@ -1468,11 +1533,11 @@ After every commit, [LogStreamServer](android/app/src/main/java/com/steve1316/um
 
 ---
 
-## 14. Ask the Docs Chatbot
+## 15. Ask the Docs Chatbot
 
 An optional, fully offline documentation assistant that answers questions about the app. The pipeline is **retrieval-augmented**: a small embedding model finds the most relevant excerpts from the app's own docs and source code, and a downloaded GGUF chat model paraphrases them. Every chat call runs locally — the only network use is the one-time download of the embedder ONNX and the user-selected GGUF.
 
-### 14.1 Overview & guarantees
+### 15.1 Overview & guarantees
 
 - **Opt-in.** Hidden until the user enables `Enable Ask the Docs feature` on the LLM Settings page. The toggle lives at `chat.enableAskTheDocs` in `BotStateContext` and gates both the drawer entry and the rest of the LLM Settings page.
 - **Retrieve-only fallback.** Even with no chat model downloaded — or when generation is rejected by the verifier — the user still gets a verbatim excerpt from the most-similar doc chunk. The feature degrades to "search" rather than failing.
@@ -1507,7 +1572,7 @@ groundingVerifier.overlap()
    └── overlap <  SUMMARY_THRESHOLD ────────────► verifierFallback (verbatim)
 ```
 
-### 14.2 Corpus & indexing
+### 15.2 Corpus & indexing
 
 The corpus is built **at compile time** by [scripts/build-doc-index.ts](scripts/build-doc-index.ts) and shipped as a binary asset that the app loads on first chat call. Sources covered:
 
@@ -1517,7 +1582,7 @@ The corpus is built **at compile time** by [scripts/build-doc-index.ts](scripts/
 
 The script splits each source into roughly section-sized **chunks** (each chunk keeps its `source` and hierarchical `heading` so citations stay readable), embeds them, and writes the binary index consumed by [DocIndex.kt](android/app/src/main/java/com/steve1316/uma_android_automation/llm/DocIndex.kt). The index format is **v2**: chunk metadata (including a single `kind` byte distinguishing `"doc"` from `"code"`) followed by a contiguous block of L2-normalized 384-dim float vectors — small enough to load fully into memory.
 
-### 14.3 Embedding pipeline
+### 15.3 Embedding pipeline
 
 The embedder is `sentence-transformers/all-MiniLM-L6-v2` running through **ONNX Runtime for Android**. The corpus build script and [EmbeddingService.kt](android/app/src/main/java/com/steve1316/uma_android_automation/llm/EmbeddingService.kt) use the same model so query and document vectors live in the same space.
 
@@ -1528,7 +1593,7 @@ The embedder is `sentence-transformers/all-MiniLM-L6-v2` running through **ONNX 
 - **Pooling.** The model returns one vector per token; `EmbeddingService.meanPoolAndNormalize()` masks padding, mean-pools across real tokens, then L2-normalizes. After normalization, **dot product equals cosine similarity**, which lets retrieval skip the divide step entirely.
 - **Lazy init.** Both `EmbeddingService` and `DocIndex` are loaded once and cached using double-checked locking, so the first chat call pays the load cost and every subsequent call is cheap.
 
-### 14.4 Retrieval
+### 15.4 Retrieval
 
 [ChatOrchestrator.kt](android/app/src/main/java/com/steve1316/uma_android_automation/llm/ChatOrchestrator.kt) is the single entry point used by the React Native bridge:
 
@@ -1538,7 +1603,7 @@ The embedder is `sentence-transformers/all-MiniLM-L6-v2` running through **ONNX 
 
 Each result carries `source`, `heading`, `text` (raw chunk), `expandedText` (reassembled section), `score`, and a `kind` of `"doc"` or `"code"` — code citations render with Kotlin syntax highlighting and a `File.kt::member` heading; doc citations render as Markdown.
 
-### 14.5 Generation (optional)
+### 15.5 Generation (optional)
 
 When a downloaded GGUF is present, [llamaRunner.ts](src/lib/chat/llamaRunner.ts) loads it through `llama.rn` and the [LLMChatModule.kt](android/app/src/main/java/com/steve1316/uma_android_automation/llm/LLMChatModule.kt) bridge. The system prompt:
 
@@ -1559,7 +1624,7 @@ Sampling defaults in [llamaRunner.ts](src/lib/chat/llamaRunner.ts) are tuned to 
 > [!TIP]
 > **Stop generation.** The Ask button on the Chat page acts as a stop button while a generation is in flight — tapping it cancels the in-progress `llama.rn` call so a runaway response can be aborted without waiting for `maxOutputTokens` to roll over.
 
-### 14.6 Grounding verifier & failure modes
+### 15.6 Grounding verifier & failure modes
 
 Generated answers are not trusted blindly. [src/lib/chat/groundingVerifier.ts](src/lib/chat/groundingVerifier.ts) computes a token-overlap score between the generated answer and the (trimmed) citation excerpts:
 
@@ -1568,7 +1633,7 @@ Generated answers are not trusted blindly. [src/lib/chat/groundingVerifier.ts](s
 
 This is deliberately conservative: if the model wandered off the docs, the user gets the source text instead of a confident-sounding fabrication.
 
-### 14.7 Model lifecycle
+### 15.7 Model lifecycle
 
 Chat models are GGUF files downloaded at runtime by [ModelDownloader.kt](android/app/src/main/java/com/steve1316/uma_android_automation/llm/ModelDownloader.kt) using Android's system `DownloadManager`. The downloader exposes `pending → running → paused → complete | failed | error` state subtypes that the LLM Settings page subscribes to via a `NativeEventEmitter` for live progress.
 
@@ -1578,7 +1643,7 @@ Chat models are GGUF files downloaded at runtime by [ModelDownloader.kt](android
 - **Race protection.** Because `EmbeddingService` and `DocIndex` are lazily initialized, downloading a chat model while a query is in flight can't corrupt embedding state — generation simply falls back to `retrieveOnly` for that one call and the next call picks up the newly active model.
 - **Deletion.** Per-file or bulk delete is offered from the Downloaded Models list; deleting the active file clears `ACTIVE_MODEL_SETTING` so the next chat call cleanly drops to retrieve-only.
 
-### 14.8 Device fitness panel
+### 15.8 Device fitness panel
 
 The LLM Settings page surfaces a small **Device Fitness** row driven by [src/lib/chat/deviceCapabilities.ts](src/lib/chat/deviceCapabilities.ts):
 
@@ -1594,11 +1659,11 @@ The `i8mm` and Hexagon / OpenCL llama.rn variants are intentionally trimmed from
 
 ---
 
-## 15. Decision Tracer
+## 16. Decision Tracer
 
 The Decision Tracer is a structured **per-turn log block** that answers "why did the bot do X this turn?" without forcing the user to grep across dozens of interleaved `MessageLog` lines. It sits alongside the existing chronological log — the original `MessageLog.i/v/w/e` lines are untouched — and emits a single consolidated **Decision Report** block at the end of every main-screen turn.
 
-### 15.1 Architecture
+### 16.1 Architecture
 
 A single [DecisionTracer.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/DecisionTracer.kt) instance lives on `Campaign` (`Campaign.decisionTracer`). Each main-screen turn:
 
@@ -1608,7 +1673,7 @@ A single [DecisionTracer.kt](android/app/src/main/java/com/steve1316/uma_android
 
 `Campaign` exposes an overrideable `gatherDecisionSettings()` hook so each scenario contributes its own settings snapshot. Trackblazer, URA Finale, and Unity Cup all override this; the base campaign also instruments its `decideNextAction()` priority waterfall and `Racing.kt` instruments race eligibility and result handling.
 
-### 15.2 What ends up in a Decision Report
+### 16.2 What ends up in a Decision Report
 
 Each block is bracketed by a header like `============== Turn 25 (CLASSIC EARLY JANUARY) Decision Report ==============` and contains:
 
@@ -1619,7 +1684,7 @@ Each block is bracketed by a header like `============== Turn 25 (CLASSIC EARLY 
 - **Training selection** — the picked training, its score, and a runner-up list with scores and rejection reasons.
 - **Item usage** — which items were used or deliberately skipped, with the gate that fired.
 
-### 15.3 Coverage
+### 16.3 Coverage
 
 | Layer | Instrumented decisions |
 |-------|------------------------|
@@ -1633,20 +1698,20 @@ Each block is bracketed by a header like `============== Turn 25 (CLASSIC EARLY 
 
 ---
 
-## 16. Remote Log Viewer & Run Analytics
+## 17. Remote Log Viewer & Run Analytics
 
 The **Remote Log Viewer** is an on-device web dashboard served by [LogStreamServer.kt](android/app/src/main/java/com/steve1316/uma_android_automation/utils/LogStreamServer.kt) over a WebSocket and rendered by [log_viewer.html](android/app/src/main/assets/log_viewer.html). Pointing a browser on the same network at the device opens it. Besides the live log stream it has two data tabs: **Race History** (driven by the Smart Race Solver) and **Run Analytics** (a per-run statistics dashboard).
 
-### 16.1 Race History tab
+### 17.1 Race History tab
 
-This tab renders the Smart Race Solver's 72-cell calendar — see [Section 13.7](#137-race-history--seed-broadcast-calendar) for how the data is seeded and broadcast. Two display details were added since:
+This tab renders the Smart Race Solver's 72-cell calendar — see [Section 14.7](#147-race-history--seed-broadcast-calendar) for how the data is seeded and broadcast. Two display details were added since:
 
-- **Mandatory career races** ([Section 13.1](#131-when-the-solver-runs)) render in amber with a pin marker so they stand out from solver-chosen races, and their tooltip labels them as forced career races.
+- **Mandatory career races** ([Section 14.1](#141-when-the-solver-runs)) render in amber with a pin marker so they stand out from solver-chosen races, and their tooltip labels them as forced career races.
 - Each race's **running style** (captured during the Career → Race History scrape) is appended to the per-cell tooltip alongside the track, distance, and fan reward.
 
 The whole panel hides itself when the Smart Race Solver is disabled.
 
-### 16.2 Run Analytics dashboard
+### 17.2 Run Analytics dashboard
 
 The analytics tab is a live, per-run statistics dashboard. A [RunAnalytics.kt](android/app/src/main/java/com/steve1316/uma_android_automation/bot/RunAnalytics.kt) singleton accumulates the run as it happens:
 
