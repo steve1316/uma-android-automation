@@ -55,15 +55,6 @@ import org.json.JSONObject
 import org.opencv.core.Point
 
 /**
- * Whether the trainee has enough energy for a plain fan-farming extra race. A floor of 0 disables the check so it never blocks. Pure so it is unit-testable without a live Racing.
- *
- * @param energy The trainee's current energy percentage.
- * @param minEnergy The minimum energy floor for the fan-farming interval fallback.
- * @return True when energy is at or above the floor, or the floor is disabled.
- */
-internal fun hasEnoughEnergyForExtraRacing(energy: Int, minEnergy: Int): Boolean = minEnergy <= 0 || energy >= minEnergy
-
-/**
  * Whether the extra-race pick should defer to the Smart Race Solver instead of standard racing. Any mandatory career goal (fan, trophy, or goal-pts
  * requirement) forces standard racing, whose double-star and G1-only filtering actually satisfies the goal. The solver only optimizes fans and epithets
  * and never honors these goals, so routing a requirement to it silently drops it. Pure so it is unit-testable without a live Racing.
@@ -125,16 +116,10 @@ internal fun requirementForcesRacing(
  * @property campaign A reference to the current [Campaign] instance.
  */
 class Racing(private val game: Game, private val campaign: Campaign) {
-    /** Whether to enable farming fans through extra races. */
-    val enableFarmingFans = SettingsHelper.getBooleanSetting("racing", "enableFarmingFans")
-
     /** Whether to ignore the warning that appears when racing three times in a row. */
     val ignoreConsecutiveRaceWarning = SettingsHelper.getBooleanSetting("racing", "ignoreConsecutiveRaceWarning")
 
-    /** The number of days to wait between running extra races. */
-    private val daysToRunExtraRaces: Int = SettingsHelper.getIntSetting("racing", "daysToRunExtraRaces")
-
-    /** Minimum energy before the plain fan-farming interval fallback will race. 0 disables it. Gates only the standard cadence, never requirements, the solver, or scenario bypasses. */
+    /** Minimum energy before the G1-day pre-screen will peek at the trainings. Below the floor the bot skips the peek and takes the G1 race. 0 disables the floor. */
     internal val minEnergyForExtraRacing: Int = SettingsHelper.getIntSetting("racing", "minEnergyForExtraRacing", 30)
 
     /** Whether to prefer training over the free race on a G1 race day when a strong-enough rainbow training is available. Default off. */
@@ -856,14 +841,13 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         )
 
     /**
-     * Determines if the extra racing process should be started now or later.
+     * Determines if the extra racing process should be started now or later. Discretionary extra races only ever come from the Smart Race Solver, so with it off this
+     * only stays true for force racing and the scenario bypass.
      *
      * @return True if the current date is okay to start the extra racing process and false otherwise.
      */
     fun checkEligibilityToStartExtraRacingProcess(): Boolean {
         MessageLog.i(TAG, "\n[RACE] Now determining eligibility to start the extra racing process...")
-        val turnsRemaining = game.imageUtils.determineTurnsRemainingBeforeNextGoal()
-        MessageLog.i(TAG, "[RACE] Current remaining number of days before the next mandatory race: $turnsRemaining.")
 
         // Don't bother looking for races on Junior Year Early July (Turn 13) since they only start showing up on Turn 14.
         if (campaign.date.day == 13) {
@@ -895,8 +879,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         }
 
         // When the Smart Race Solver is enabled, its schedule is authoritative for extra races. If the solver did not plan a race for
-        // this turn, suppress every extra-race fallback (including the scenario fan-farm bypass and the racing-interval cadence) so the
-        // bot trains or rests instead of racing as filler. Hard requirements above still short-circuit to true before this guard.
+        // this turn, suppress every extra-race fallback (including the scenario bypass below) so the bot trains or rests instead of
+        // racing as filler. Hard requirements above still short-circuit to true before this guard.
         if (enableSmartRaceSolver) {
             val plannedKey = SmartRaceSolverIntegration.peekRaceKeyForTurn(currentTurn = campaign.date.day, scenario = game.scenario)
             if (plannedKey == null) {
@@ -934,19 +918,10 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             return result
         }
 
-        // Standard racing fallback: race on every Nth day of the racing interval, but only when energy is above the fan-farming floor so filler races do not drain the trainee.
-        val hasEnoughEnergy = hasEnoughEnergyForExtraRacing(campaign.trainee.energy, minEnergyForExtraRacing)
-        val result = enableFarmingFans && (turnsRemaining % daysToRunExtraRaces == 0) && !raceRepeatWarningCheck && hasEnoughEnergy
-        val fallbackReason =
-            when {
-                !enableFarmingFans -> "Farming Fans setting is off"
-                (turnsRemaining % daysToRunExtraRaces) != 0 -> "Not a racing-interval day ($turnsRemaining turns remaining, every $daysToRunExtraRaces days)"
-                raceRepeatWarningCheck -> "Race repeat warning is active"
-                !hasEnoughEnergy -> "Energy ${campaign.trainee.energy}% is below the extra-racing floor of $minEnergyForExtraRacing%"
-                else -> "Standard fallback: every-$daysToRunExtraRaces-day racing window matched"
-            }
-        campaign.decisionTracer.recordRaceEligibility(eligible = result, reason = fallbackReason)
-        return result
+        // Every discretionary extra race now comes from the Smart Race Solver, so with it off there is nothing left to race for and the bot trains or rests instead.
+        MessageLog.i(TAG, "[RACE] The Smart Race Solver is off, so there is no source of extra races. Skipping the extra race check.")
+        campaign.decisionTracer.recordRaceEligibility(eligible = false, reason = "No extra-race source is active (Smart Race Solver is off)")
+        return false
     }
 
     /**
@@ -2431,8 +2406,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
                 if (g1Indices.isEmpty()) {
                     // No G1 races available. Cancel since trophy requirement specifically needs G1 races.
-                    // Trophy requirement is independent of racing plan and farming fans settings.
-                    MessageLog.i(TAG, "[RACE] Trophy requirement active but no G1 races available. Canceling racing process (independent of racing plan/farming fans).")
+                    // A trophy requirement can only be met by a G1, so with none listed this turn there is nothing to race for.
+                    MessageLog.i(TAG, "[RACE] Trophy requirement active but no G1 races available. Canceling racing process.")
                     return false
                 } else {
                     MessageLog.i(TAG, "[RACE] Trophy requirement active. Filtering to ${g1Indices.size} G1 races.")
