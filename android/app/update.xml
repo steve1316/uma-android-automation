@@ -1,27 +1,13 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.8.4</latestVersion>
+    <latestVersion>5.8.5</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.8.4 - Changelog
-
-New
----
-- Add support for the new `Grand Live` scenario: the bot buys Techniques and Songs in `Lessons` based on their Learnable banners, maxes the Hype gauge before each concert, performs the concerts including the final Grand Concert, and spends leftover Performance Points before completing the career.
-- Add 2 `Grand Live` override options to the `Scenario Overrides` page with a `Lesson Effect Priority` ranking that controls which effect categories are bought first and a `Lessons Re-check Interval` for how often the Lessons list is polled.
-- Add a `Start Grand Live Token Gain Test` to the `Debug` page that reads the Performance Point totals and each facility's per-token gains.
-- Add chips to the `Race Solver` tab that call out which `Racing Settings` are currently overriding the `Smart Race Solver`, colored by how much they interfere and tappable to jump straight to the setting.
-
-Adjustments
----
-- Update game data up to `Winning Ticket (Steampunk) 2026-07-26`.
-- Prefer gaining a positive condition like `Practice Perfect` over flat stats when choosing training event options.
-- Remove the `Enable Farming Fans` and `Days to Run Extra Races` settings. They had no effect whenever the `Smart Race Solver` was on, so the solver is now the only thing that schedules extra races. With it off, the bot sticks to mandatory, maiden, scheduled, goal-requirement, and `Force Racing` entries.
-- Rename `Minimum Energy for Extra Races` to `Minimum Energy for G1 Pre-Screen` and move it under `Prefer Training on G1 Days`, which was the only feature still reading it. Your saved value carries over.
+v5.8.5 - Changelog
 
 Fixes
 ---
-- Fix common race events like `Victory!` being attributed to a random character's name in the Training Event Summary.
+- Fix templates for training facility buttons in the non-Grand Live scenarios.
 
 </releaseNotes>
   </update>

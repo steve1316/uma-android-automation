@@ -6,8 +6,8 @@ app-buildToolsVersion = "36.0.0"
 app-minSdk = "24"
 #noinspection ExpiredTargetSdkVersion
 app-targetSdk = "30"
-app-versionCode = "82"
-app-versionName = "5.8.4"
+app-versionCode = "83"
+app-versionName = "5.8.5"
 app-jvm-toolchain = "17"
 
 androidGradleBuildTools = "8.13.0"
