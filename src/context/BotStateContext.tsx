@@ -203,6 +203,7 @@ export interface Settings {
         debugMode_startTrackblazerRaceSelectionTest: boolean
         debugMode_startTrackblazerInventorySyncTest: boolean
         debugMode_startTrackblazerBuyItemsTest: boolean
+        debugMode_startGrandLiveTokenGainTest: boolean
         enableScreenRecording: boolean
         recordingBitRate: number
         recordingFrameRate: number
@@ -258,6 +259,8 @@ export interface Settings {
         unityCupBurstTopStatsOnlyAfterJunior: boolean
         unityCupRetryRaces: boolean
         uraHappyMeekDuelBias: string
+        grandLiveLessonEffectPriority: string[]
+        grandLiveLessonRescanInterval: number
     }
 }
 
@@ -491,6 +494,7 @@ export const defaultSettings: Settings = {
         debugMode_startTrackblazerRaceSelectionTest: false,
         debugMode_startTrackblazerInventorySyncTest: false,
         debugMode_startTrackblazerBuyItemsTest: false,
+        debugMode_startGrandLiveTokenGainTest: false,
         enableScreenRecording: false,
         recordingBitRate: 6,
         recordingFrameRate: 30,
@@ -540,6 +544,8 @@ export const defaultSettings: Settings = {
         unityCupBurstTopStatsOnlyAfterJunior: false,
         unityCupRetryRaces: true,
         uraHappyMeekDuelBias: "Moderate",
+        grandLiveLessonEffectPriority: ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints"],
+        grandLiveLessonRescanInterval: 2,
     },
 }
 

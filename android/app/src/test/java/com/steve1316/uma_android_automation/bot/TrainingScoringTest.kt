@@ -1778,6 +1778,12 @@ class TrainingScoringTest {
         assertEquals(1500, getScenarioStatCap("Trackblazer", StatName.WIT), "Trackblazer Wit cap")
         assertEquals(1200, getScenarioStatCap("Trackblazer", StatName.SPEED), "Trackblazer Speed cap")
         assertEquals(1200, getScenarioStatCap("Trackblazer", StatName.POWER), "Trackblazer Power cap")
+        // Grand Live: SPD 1600, GUTS 1500, everything else 1300.
+        assertEquals(1600, getScenarioStatCap("Grand Live", StatName.SPEED), "Grand Live Speed cap")
+        assertEquals(1300, getScenarioStatCap("Grand Live", StatName.STAMINA), "Grand Live Stamina cap")
+        assertEquals(1300, getScenarioStatCap("Grand Live", StatName.POWER), "Grand Live Power cap")
+        assertEquals(1500, getScenarioStatCap("Grand Live", StatName.GUTS), "Grand Live Guts cap")
+        assertEquals(1300, getScenarioStatCap("Grand Live", StatName.WIT), "Grand Live Wit cap")
         // Unknown scenario falls back to 1200 for every stat.
         assertEquals(1200, getScenarioStatCap("Something Else", StatName.WIT), "Unknown scenario default cap")
     }

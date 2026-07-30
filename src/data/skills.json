@@ -405,6 +405,20 @@
         "upgrade": null,
         "downgrade": null
     },
+    "As a Friend and Rival": {
+        "id": 300091,
+        "name_en": "As a Friend and Rival",
+        "desc_en": "Moderately increase Silence Suzuka's performance through the happiness felt seeing a friend find their running style.",
+        "icon_id": 10031,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "is_exist_chara_id==1002",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Aspire": {
         "id": 202412,
         "name_en": "Aspire",
@@ -485,7 +499,7 @@
         "condition": "ground_type==2&phase_random==2&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202312
     },
@@ -629,6 +643,20 @@
         "upgrade": 201172,
         "downgrade": null
     },
+    "Blatant Fear": {
+        "id": 300051,
+        "name_en": "Blatant Fear",
+        "desc_en": "Greatly decrease velocity on a corner in the second half of the race due to Trainer's obvious anxiety.",
+        "icon_id": 20015,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "remain_distance>=800&remain_distance<=850",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Blazing Pride": {
         "id": 100181,
         "name_en": "Blazing Pride",
@@ -723,7 +751,7 @@
         "condition": "phase_random==1&running_style==4&order_rate>=75",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 202382
     },
@@ -1021,6 +1049,20 @@
         "upgrade": null,
         "downgrade": null
     },
+    "Cheers of a Fellow Dreamer": {
+        "id": 300101,
+        "name_en": "Cheers of a Fellow Dreamer",
+        "desc_en": "Recover Silence Suzuka's endurance on a corner in the second half of the race through a friend's cheers of support.",
+        "icon_id": 20022,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "is_exist_chara_id==1002&remain_distance_viewer_id>=800&remain_distance_viewer_id<=850",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Cherry☆Scramble": {
         "id": 110411,
         "name_en": "Cherry☆Scramble",
@@ -1031,6 +1073,20 @@
         "condition": "order<=3&remain_distance<=401&remain_distance>=399",
         "precondition": "",
         "inherited": true,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
+    "Chin Up, Derby Umamusume!": {
+        "id": 300111,
+        "name_en": "Chin Up, Derby Umamusume!",
+        "desc_en": "Feel closer to being Japan's top racer, moderately increasing performance.",
+        "icon_id": 10011,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "always==1",
+        "precondition": "",
+        "inherited": false,
         "community_tier": null,
         "upgrade": null,
         "downgrade": null
@@ -1441,6 +1497,20 @@
         "upgrade": 200991,
         "downgrade": null
     },
+    "Creeping Anxiety": {
+        "id": 300041,
+        "name_en": "Creeping Anxiety",
+        "desc_en": "Moderately decrease performance due to Trainer's anxiety.",
+        "icon_id": 10014,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "always==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Crescent Gale": {
         "id": 201253,
         "name_en": "Crescent Gale",
@@ -1763,6 +1833,20 @@
         "upgrade": 202171,
         "downgrade": null
     },
+    "Dream Run": {
+        "id": 300061,
+        "name_en": "Dream Run",
+        "desc_en": "Increase velocity on the final straight due to a strong desire to cross the finish line carrying everyone's hopes and dreams.",
+        "icon_id": 20012,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "is_finalcorner==1&corner==0",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Dreams Donned with Pride!": {
         "id": 120011,
         "name_en": "Dreams Donned with Pride!",
@@ -1787,7 +1871,7 @@
         "condition": "ground_type==2&accumulatetime>=10&phase==0&order<=1&bashin_diff_behind<=1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": null,
         "upgrade": 202351,
         "downgrade": null
     },
@@ -2253,6 +2337,20 @@
         "upgrade": null,
         "downgrade": null
     },
+    "Feelin' a Bit Silly": {
+        "id": 1100011,
+        "name_en": "Feelin' a Bit Silly",
+        "desc_en": "Greatly decrease the racer's proficiency in starting races. Effects include slow starts and reduced starting acceleration. Removed at the end of the Career playthrough.",
+        "icon_id": 20064,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "always==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Festive Miracle": {
         "id": 110061,
         "name_en": "Festive Miracle",
@@ -2561,6 +2659,20 @@
         "upgrade": null,
         "downgrade": null
     },
+    "For the Team": {
+        "id": 300121,
+        "name_en": "For the Team",
+        "desc_en": "The whole team feels super determined to win this special race, greatly increasing performance.",
+        "icon_id": 10022,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "always==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Forward, March!": {
         "id": 201682,
         "name_en": "Forward, March!",
@@ -2823,7 +2935,7 @@
         "condition": "ground_type==2&phase_random==3&order_rate<=50&is_lastspurt==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 202282
     },
@@ -3019,7 +3131,7 @@
         "condition": "phase_firsthalf_random==1&running_style==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 202392
     },
@@ -3383,7 +3495,7 @@
         "condition": "phase>=2&is_finalcorner_laterhalf==1&order_rate<=75&order_rate>=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -3482,6 +3594,20 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 2,
+        "upgrade": null,
+        "downgrade": null
+    },
+    "Hoiya! Have a Good Run!": {
+        "id": 300081,
+        "name_en": "Hoiya! Have a Good Run!",
+        "desc_en": "Moderately increase Silence Suzuka's performance thanks to a charm that guarantees a satisfying run.",
+        "icon_id": 10021,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "is_exist_chara_id==1002",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
         "upgrade": null,
         "downgrade": null
     },
@@ -3621,7 +3747,7 @@
         "condition": "distance_rate_after_random==50&order_rate<=65",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 210072
     },
@@ -4591,6 +4717,20 @@
         "upgrade": null,
         "downgrade": 201182
     },
+    "Long Race Enthusiast": {
+        "id": 1200021,
+        "name_en": "Long Race Enthusiast",
+        "desc_en": "Increase performance in Long Turf races. This skill is exclusive to the event.",
+        "icon_id": 10021,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "distance_type==4&ground_type==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Long Shot ○": {
         "id": 200302,
         "name_en": "Long Shot ○",
@@ -4755,7 +4895,7 @@
         "condition": "phase_firsthalf_random==1&running_style==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 202391,
         "downgrade": null
     },
@@ -4885,6 +5025,20 @@
         "upgrade": null,
         "downgrade": 201112
     },
+    "Medium Race Enthusiast": {
+        "id": 1200011,
+        "name_en": "Medium Race Enthusiast",
+        "desc_en": "Increase performance in Medium Turf races. This skill is exclusive to the event.",
+        "icon_id": 10051,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "distance_type==3&ground_type==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Medium Straightaways ○": {
         "id": 201102,
         "name_en": "Medium Straightaways ○",
@@ -4968,6 +5122,20 @@
         "community_tier": 0,
         "upgrade": null,
         "downgrade": 200682
+    },
+    "Mile Race Enthusiast": {
+        "id": 1200031,
+        "name_en": "Mile Race Enthusiast",
+        "desc_en": "Increase performance in Mile Turf races. This skill is exclusive to the event.",
+        "icon_id": 10031,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "distance_type==2&ground_type==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
     },
     "Mile Straightaways ○": {
         "id": 201032,
@@ -5581,7 +5749,7 @@
         "condition": "distance_rate_after_random==50&order_rate<=65",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": 210071,
         "downgrade": null
     },
@@ -6803,6 +6971,20 @@
         "upgrade": 200711,
         "downgrade": null
     },
+    "Ruler of Japan": {
+        "id": 300131,
+        "name_en": "Ruler of Japan",
+        "desc_en": "I'll tackle this with everything I've got!",
+        "icon_id": 20013,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "remain_distance>=350&remain_distance<=400",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Run Like Crazy!": {
         "id": 202321,
         "name_en": "Run Like Crazy!",
@@ -7262,6 +7444,20 @@
         "precondition": "",
         "inherited": true,
         "community_tier": 1,
+        "upgrade": null,
+        "downgrade": null
+    },
+    "Show Me What Lies Beyond!": {
+        "id": 300071,
+        "name_en": "Show Me What Lies Beyond!",
+        "desc_en": "Moderately increase Silence Suzuka's performance thanks to the desire to see her running reach new heights.",
+        "icon_id": 10011,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "is_exist_chara_id==1002",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
         "upgrade": null,
         "downgrade": null
     },
@@ -8560,10 +8756,10 @@
         "icon_id": 20011,
         "cost": 200,
         "eval_pt": 180,
-        "condition": "is_lastspurt==1&is_last_straight==1&order_rate>=40",
+        "condition": "is_lastspurt==1&is_finalcorner==1&corner==0&order_rate>=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -8650,6 +8846,20 @@
         "community_tier": 0,
         "upgrade": null,
         "downgrade": 201272
+    },
+    "Towards the Scenery I Seek": {
+        "id": 300031,
+        "name_en": "Towards the Scenery I Seek",
+        "desc_en": "Moderately increase performance in pursuit of that long sought-after scenery.",
+        "icon_id": 10011,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "always==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
     },
     "Trackblazer": {
         "id": 200711,
@@ -8805,6 +9015,20 @@
         "upgrade": null,
         "downgrade": 201592
     },
+    "Unchanging": {
+        "id": 300021,
+        "name_en": "Unchanging",
+        "desc_en": "Greatly increase performance with the same ambition of days past.",
+        "icon_id": 10012,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "season==4",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
+        "downgrade": null
+    },
     "Undistracted": {
         "id": 202582,
         "name_en": "Undistracted",
@@ -8817,6 +9041,20 @@
         "inherited": false,
         "community_tier": null,
         "upgrade": 202581,
+        "downgrade": null
+    },
+    "Unquenched Thirst": {
+        "id": 300011,
+        "name_en": "Unquenched Thirst",
+        "desc_en": "Moderately increase performance with the desire to race.",
+        "icon_id": 10021,
+        "cost": 200,
+        "eval_pt": 0,
+        "condition": "track_id==10008",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": null,
+        "upgrade": null,
         "downgrade": null
     },
     "Unrestrained": {
@@ -8871,7 +9109,7 @@
         "condition": "phase_random==1&running_style==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": 202372
     },

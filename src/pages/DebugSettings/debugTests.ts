@@ -15,6 +15,7 @@ export interface DebugTestDescriptor {
         | "debugMode_startTrackblazerRaceSelectionTest"
         | "debugMode_startTrackblazerInventorySyncTest"
         | "debugMode_startTrackblazerBuyItemsTest"
+        | "debugMode_startGrandLiveTokenGainTest"
     /** Stable id used for search registration and hero-chip deep-link highlighting. */
     searchId: string
     /** Visible Row title. */
@@ -112,5 +113,12 @@ export const DEBUG_TESTS: DebugTestDescriptor[] = [
         title: "Start Trackblazer Buy Items Test",
         description:
             "Disables normal bot operations and starts the Trackblazer buy items test. Opens the Shop if on the Main Screen and logs shop contents and purchase intentions without actually buying anything.",
+    },
+    {
+        key: "debugMode_startGrandLiveTokenGainTest",
+        searchId: "debug-grand-live-token-gain-test",
+        title: "Start Grand Live Token Gain Test",
+        description:
+            "Disables normal bot operations and starts the Grand Live token gain test. Run this on the Training screen: it reads the five Performance-Point token totals once, then selects each of the five facilities in turn and logs their per-token gains (using the same digit detector as training stat gains).",
     },
 ]

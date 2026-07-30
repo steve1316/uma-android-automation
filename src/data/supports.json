@@ -68,6 +68,16 @@
         ],
         "(❯❯)\nReport: N/A (On Break)": [
             "Wit +10\nSkill points +15\nSubdued Front Runners hint +1"
+        ],
+        "(❯)\nResearching the Limits of Running: Rapport": [
+            "Mood +1\nEnergy +10\nAgnes Tachyon bond +5",
+            "Randomly either\n----------\nSpeed +5\nStamina +5\nWit +5\nPace Chaser Straightaways ○ hint +1/+3\nMurmur hint +1\nAgnes Tachyon bond +5\n----------\n\n----------\nSpeed +5\nWit +5\nPace Chaser Straightaways ○ hint +1\nAgnes Tachyon bond +5"
+        ],
+        "(❯❯)\nResearching the Limits of Running: Dreams": [
+            "Speed +5\nStamina +5\nWit +5\nSkill points +10\nAgnes Tachyon bond +5"
+        ],
+        "(❯❯❯)\nResearching the Limits of Running: Velocity": [
+            "Randomly either\n----------\nEnergy +10\nSkill points +30\nUnstoppable hint +3\n----------\n\n----------\nEnergy +5\nSkill points +10\nUnstoppable hint +1"
         ]
     },
     "Air Groove": {
@@ -230,6 +240,16 @@
         ],
         "(❯❯)\nTraining in Theory": [
             "Randomly either\n----------\nEnergy -20\nPower +5\nPressure hint +1\n----------\n\n----------\nEnergy -10\nStamina +5\nPower +15\nBiwa Hayahide bond +5\nPressure hint +3"
+        ],
+        "(❯)\nThe Problems in Running a Family Business": [
+            "Mood +1\nSkill points +10\nBiwa Hayahide bond +5"
+        ],
+        "(❯❯)\nCognitive Restructuring in a Virtual Space": [
+            "Stamina +20\nBiwa Hayahide bond +5",
+            "Skill points +10\nPrepared to Pass hint +1\nBiwa Hayahide bond +5"
+        ],
+        "(❯❯❯)\nThe Planner's Effect on the Party": [
+            "Stamina +10\nVIP Pass hint +1\nBiwa Hayahide bond +5"
         ]
     },
     "Curren Chan": {
@@ -783,6 +803,48 @@
             "Randomly either\n----------\nSpeed +5\nPower +5\nKitasan Black bond +5\nProfessor of Curvature hint +1\n----------\n\n----------\nSpeed +10\nPower +10\nKitasan Black bond +5\nProfessor of Curvature hint +3"
         ]
     },
+    "Light Hello": {
+        "Light Hello, the Event Planner\nAfter first training": [
+            "Mood +1\nSpeed +12\nGuts +12\nLight Hello bond +10"
+        ],
+        "Another Day's Hard Work!\nRandomly after training (repeatable)": [
+            "Randomly either\n----------\nGuts +3\nMood +1\nSkill points +3\nPerformance token you have the least of +20\nLight Hello bond +7\n----------\n\n----------\nGuts +3\nSkill points +3\nPerformance token you have the least of +20\nLight Hello bond +7"
+        ],
+        "Dawn Under the Waning Moon\nAfter Finals (bond maxed)": [
+            "Speed +25\nGuts +25\nSkill points +37"
+        ],
+        "Until It Shines in Full\nAfter Finals (bond not maxed)": [
+            "Speed +18\nGuts +18\nSkill points +25"
+        ],
+        "Bonding with Light Hello: Letting Loose\nDating before the first New Year's": [
+            "Mood +2\nSpeed +12\nFront Runner Savvy ○ hint +1\nPace Chaser Savvy ○ hint +1\nLight Hello bond +5",
+            "Energy +21\nGuts +12\nLight Hello bond +5"
+        ],
+        "Some Crafty Research ♪": [
+            "Speed +8\nGuts +8\nLight Hello bond +5",
+            "Energy +7\nMood +1\nLight Hello bond +5"
+        ],
+        "Embrace Those Emotions!\nDating starts": [
+            "Energy +21\nMood +1\nSpeed +8\nGuts +8\nLight Hello bond +5\nCan start dating",
+            "Wit +37\nSkill points +37\nMaverick ○ hint +5\nLight Hello bond -5\nEvent chain ended"
+        ],
+        "(❯)\nRepose in the Lunar Mare": [
+            "Maximum Energy +4\nEnergy +35\nMood +1\nLight Hello bond +5"
+        ],
+        "(❯❯)\nTycho's Radiance": [
+            "Energy +35\nMood +1\nGuts +12\nLight Hello bond +5"
+        ],
+        "(❯❯❯)\nHidden Beneath the Regolith": [
+            "Energy +70\nMood +1\nLight Hello bond +5",
+            "Mood +1\nSpeed +18\nGuts +18\nLight Hello bond +5"
+        ],
+        "(❯❯❯❯)\nScaling Mons Huygens": [
+            "Energy +42\nMood +1\nGuts +12\nLight Hello bond +5"
+        ],
+        "(❯❯❯❯❯)\nAt Rainbow Cove": [
+            "Randomly either\n----------\nMood +1\nEnergy +28\nSpeed +6\nGuts +6\nPlaytime's Over! hint +3\nLight Hello bond +5\n----------\n\n----------\nMood +1\nEnergy +14\nPlaytime's Over! hint +1\nLight Hello bond +5"
+        ]
+    },
     "Manhattan Cafe": {
         "(❯)\nDrawn In": [
             "Stamina +10\nWit +5"
@@ -1146,6 +1208,16 @@
         ],
         "(❯❯)\nNew Values Installed": [
             "Energy -10\nPower +5\nGuts +5\nFront Runner Straightaways ○ hint +1\nMihono Bourbon bond +5"
+        ],
+        "(❯)\nPlease Rerun Task": [
+            "Energy +5\nMood +1\nMihono Bourbon bond +5",
+            "Speed +10\nFast-Paced hint +1\nMihono Bourbon bond +5"
+        ],
+        "(❯❯)\nFinding the Common Denominator": [
+            "Speed +10\nSkill points +15\nMihono Bourbon bond +5"
+        ],
+        "(❯❯❯)\nThe Fan-Appreciation Prize Drawing!": [
+            "Speed +10\nTrackblazer hint +1\nMihono Bourbon bond +5"
         ]
     },
     "Mr. C.B.": {
@@ -2135,6 +2207,17 @@
         "(❯❯)\nSpreading the Love of Dance!": [
             "Skill points +15\nMedium Corners ○ hint +1\nTokai Teio bond +5",
             "Energy +20\nTokai Teio bond +5"
+        ],
+        "(❯)\nThe Monarch's Weak Point": [
+            "Mood +2\nTokai Teio bond +5",
+            "Power +5\nWit +10\nTokai Teio bond +5"
+        ],
+        "(❯❯)\nA New Way of Cool": [
+            "Randomly either\n----------\nSkill points +20\nPreferred Position hint +1\nTokai Teio bond +5\n----------\n\n----------\nSkill points +15\nTokai Teio bond +5",
+            "Power +10\nWit +10\nTokai Teio bond +5"
+        ],
+        "(❯❯❯)\nThe Monarch's Play Style": [
+            "Power +10\nWit +20\nProfessor of Curvature hint +1\nTokai Teio bond +5"
         ]
     },
     "Tosen Jordan": {
@@ -2195,6 +2278,16 @@
         "(❯❯❯)\nTurbo Is Strong!": [
             "Randomly either\n----------\nEnergy -10\nSpeed +5\nEarly Lead hint +3\n----------\n\n----------\nEnergy -10\nSpeed +25\nTaking the Lead hint +3\nTwin Turbo bond +5",
             "Energy +15\nWatchful Eye hint +3"
+        ],
+        "(❯)\nChasing Down Turbo!": [
+            "Randomly either\n----------\nSpeed +15\nGuts +15\nTwin Turbo bond +5\n----------\n\n----------\nEnergy -20\nSpeed +10\nGuts +10\nPlaytime's Over! hint +1\nTwin Turbo bond +5\nEvent chain ended",
+            "Skill points +10\nTwin Turbo bond +5"
+        ],
+        "(❯❯)\nGaming with Turbo!": [
+            "Randomly either\n----------\nEnergy -5\nSpeed +15\nGuts +15\nSkill points +15\nTwin Turbo bond +5\n----------\n\n----------\nEnergy -20\nSpeed +10\nGuts +10\nGivin' It 1000% hint +1\nTwin Turbo bond +5\nEvent chain ended"
+        ],
+        "(❯❯❯)\nThe Unbeatable Turbo!": [
+            "Randomly either\n----------\nEnergy -20\nSpeed +10\nGuts +10\nGivin' It 1000% hint +2\nTwin Turbo bond +5\n----------\n\n----------\nEnergy -5\nSpeed +15\nGuts +15\nGivin' It 1000% hint +3\nTwin Turbo bond +5"
         ]
     },
     "Vodka": {

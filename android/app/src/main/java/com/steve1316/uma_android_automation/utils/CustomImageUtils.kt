@@ -30,6 +30,7 @@ import com.steve1316.uma_android_automation.components.IconStatBlockStamina
 import com.steve1316.uma_android_automation.components.IconStatBlockTrainer
 import com.steve1316.uma_android_automation.components.IconStatBlockWit
 import com.steve1316.uma_android_automation.components.IconStatSupportEtsukoOtonashi
+import com.steve1316.uma_android_automation.components.IconStatSupportLightHello
 import com.steve1316.uma_android_automation.components.IconStatSupportRikoKashimoto
 import com.steve1316.uma_android_automation.components.IconStatSupportYayoiAkikawa
 import com.steve1316.uma_android_automation.components.IconUnityCupExtremeSpiritExplosion
@@ -135,6 +136,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
     /** Whether to use YOLOv8 for stat detection. */
     private val useYolo: Boolean = SettingsHelper.getBooleanSetting("training", "enableYoloStatDetection")
+
+    /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios.
+     * Lazy because this class is constructed before `game.scenario` is initialized, so an eager read would cache an empty scenario. */
+    private val scenarioHasCompactTopLeftBox: Boolean by lazy { game.scenario == "Unity Cup" || game.scenario == "Grand Live" }
 
     /**
      * Defines the details of a race.
@@ -613,6 +618,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val statSupportComponentMap: Map<String, ComponentInterface> =
             mapOf(
                 "stat_support_etsuko_otonashi" to IconStatSupportEtsukoOtonashi,
+                "stat_support_light_hello" to IconStatSupportLightHello,
                 "stat_support_riko_kashimoto" to IconStatSupportRikoKashimoto,
                 "stat_support_yayoi_akikawa" to IconStatSupportYayoiAkikawa,
             )
@@ -675,6 +681,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
                     "Trackblazer" -> {
                         listOf(
+                            Triple("stat_support_etsuko_otonashi", "Etsuko Otonashi", false),
+                            Triple("stat_support_yayoi_akikawa", "Yayoi Akikawa", false),
+                        )
+                    }
+
+                    "Grand Live" -> {
+                        listOf(
+                            Triple("stat_support_light_hello", "Light Hello", false),
                             Triple("stat_support_etsuko_otonashi", "Etsuko Otonashi", false),
                             Triple("stat_support_yayoi_akikawa", "Yayoi Akikawa", false),
                         )
@@ -1601,6 +1615,66 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Read an integer from a screen region using the YOLO digit detector - the same model that reads training stat gains - with
+     * an OCR fallback when YOLO stat detection is disabled or finds nothing. The "+" class is dropped, so a "+30" gain reads as 30.
+     * The crop rectangle is clamped to the bitmap bounds so out-of-range offsets never crash.
+     *
+     * When [requirePlus] is set, the region must contain a "+" glyph to count as a number. This gates gain overlays (always shown
+     * as "+N") so an empty slot with a stray misread digit reads as 0 instead of a phantom gain.
+     *
+     * @param sourceBitmap The full screenshot to crop from.
+     * @param x Left edge of the crop in screen pixels.
+     * @param y Top edge of the crop in screen pixels.
+     * @param width Crop width in screen pixels.
+     * @param height Crop height in screen pixels.
+     * @param requirePlus When true, return 0 unless a "+" glyph is present in the region (for gain overlays).
+     * @param debugName Label used for OCR debug output on the fallback path.
+     * @return The parsed integer, 0 when [requirePlus] is set but no "+" is present, or null when nothing readable was found.
+     */
+    fun readNumberFromRegion(sourceBitmap: Bitmap, x: Int, y: Int, width: Int, height: Int, requirePlus: Boolean = false, debugName: String = ""): Int? {
+        if (useYolo) {
+            val crop = createSafeBitmap(sourceBitmap, x, y, width, height, "readNumberFromRegion") ?: return null
+            try {
+                val detections = getYoloDetector(context).detect(crop)
+                if (requirePlus && detections.none { it.label == "+" }) return 0
+                val digits = detections.sortedBy { it.x }.map { it.label }.filter { it != "+" }.joinToString("")
+                digits.toIntOrNull()?.let { return it }
+            } finally {
+                crop.recycle()
+            }
+        }
+
+        // performOCROnRegion clamps its crop internally.
+        val text = performOCROnRegion(sourceBitmap, x, y, width, height, scale = 2.0, debugName = debugName)
+        if (requirePlus && !text.contains("+")) return 0
+        return text.filter { it.isDigit() }.toIntOrNull()
+    }
+
+    /**
+     * Whether a screen region holds a vivid-green mark. Used to read checkbox state by colour: a ticked checkbox's checkmark is green
+     * while an un-ticked one is grey, and grayscale template matching cannot tell them apart.
+     *
+     * @param sourceBitmap The full screenshot.
+     * @param x Left edge of the region in screen pixels.
+     * @param y Top edge of the region in screen pixels.
+     * @param width Region width in screen pixels.
+     * @param height Region height in screen pixels.
+     * @param minPixels Minimum vivid-green pixels for the region to count as green.
+     * @return True when the region contains at least [minPixels] green pixels.
+     */
+    fun isRegionGreen(sourceBitmap: Bitmap, x: Int, y: Int, width: Int, height: Int, minPixels: Int = 20): Boolean {
+        val crop = createSafeBitmap(sourceBitmap, x, y, width, height, "isRegionGreen") ?: return false
+        val hsv = crop.toHsvMat()
+        val mask = Mat()
+        Core.inRange(hsv, Scalar(40.0, 150.0, 150.0), Scalar(80.0, 255.0, 255.0), mask)
+        val greenPixels = Core.countNonZero(mask)
+        hsv.release()
+        mask.release()
+        crop.recycle()
+        return greenPixels >= minPixels
+    }
+
+    /**
      * Determines the stat gain values from a training session.
      *
      * Uses template matching to identify individual digits and the "+" sign in the stat gain area. Supports multi-row detection for specialized scenarios.
@@ -2277,9 +2351,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val (energyTextLocation, sourceBitmap) = LabelEnergy.find(this)
 
         if (energyTextLocation != null) {
-            // Determine crop region based on the current scenario.
+            // Scenarios with the extra top-left box use a higher, narrower crop that targets the turns box above it.
             val (offsetX, offsetY, width, height) =
-                if (game.scenario == "Unity Cup") {
+                if (scenarioHasCompactTopLeftBox) {
                     listOf(-260, -137, relWidth(100), relHeight(80))
                 } else {
                     listOf(-246, -100, relWidth(140), relHeight(95))
@@ -2300,21 +2374,16 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     debugName = "DayForExtraRace",
                 )
 
-            // Parse the result.
+            // Parse the result. A non-numeric readout means the box shows a label instead of a countdown - "Race Day", or "GOAL" on a
+            // mandatory-race turn (Turn 12 etc.) - both meaning the race is this turn (0 turns remaining). This avoids erroring on those days.
+            val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
             val result =
-                try {
-                    if (detectedText.lowercase().contains("ace") || detectedText.lowercase().contains("da")) {
-                        // This is "Race Day", so there are 0 turns left before the mandatory race.
-                        MessageLog.i(TAG, "[INFO] Detected Race Day for extra racing: $detectedText")
-                        0
-                    } else {
-                        val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
-                        MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
-                        cleanedResult.toInt()
-                    }
-                } catch (_: NumberFormatException) {
-                    MessageLog.e(TAG, "[ERROR] determineTurnsRemainingBeforeNextGoal:: Could not convert \"$detectedText\" to integer for the turns remaining.")
-                    -1
+                if (cleanedResult.isEmpty()) {
+                    MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText (mandatory race / goal turn - 0 remaining).")
+                    0
+                } else {
+                    MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
+                    cleanedResult.toInt()
                 }
 
             return result
@@ -2367,12 +2436,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         // Main screen detection path.
         val (energyLocation, sourceBitmap) = LabelEnergy.find(this)
-        val offsetX =
-            if (game.scenario == "Unity Cup") {
-                -40
-            } else {
-                -268
-            }
+        // Scenarios with the extra top-left box place the date banner closer to the Energy label (the box occupies the usual far-left date spot), so they use a smaller left offset.
+        val offsetX = if (scenarioHasCompactTopLeftBox) -40 else -268
 
         if (energyLocation != null) {
             // Perform OCR with no thresholding (date text is on moving background).

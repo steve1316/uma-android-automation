@@ -117,6 +117,26 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The turn (`campaign.date.day`) the cached analysis was computed for. The cache is reused only when this matches the current turn, so a prior turn's analysis never leaks. */
     private var cachedAnalysisTurn: Int? = null
 
+    /** The training selection button for each stat's facility. */
+    internal val trainingButtons: Map<StatName, ComponentInterface> =
+        mapOf(
+            StatName.SPEED to ButtonTrainingSpeed,
+            StatName.STAMINA to ButtonTrainingStamina,
+            StatName.POWER to ButtonTrainingPower,
+            StatName.GUTS to ButtonTrainingGuts,
+            StatName.WIT to ButtonTrainingWit,
+        )
+
+    /** The header icon confirming each stat's facility is the selected one on the Training screen. */
+    internal val iconTrainingHeaders: Map<StatName, ComponentInterface> =
+        mapOf(
+            StatName.SPEED to IconTrainingHeaderSpeed,
+            StatName.STAMINA to IconTrainingHeaderStamina,
+            StatName.POWER to IconTrainingHeaderPower,
+            StatName.GUTS to IconTrainingHeaderGuts,
+            StatName.WIT to IconTrainingHeaderWit,
+        )
+
     /** The current training scenario name. */
     private val scenario = game.scenario
 
@@ -1182,13 +1202,56 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-        analyzeTrainings(mapOf("singleTraining" to true))
+        // Pass "test" so the analyzer does not skip the training on failure-chance / minimum-gain thresholds - this is a debug read.
+        analyzeTrainings(mapOf("singleTraining" to true, "test" to true))
         val result = trainingMap[trainingName]
         if (result != null) {
-            MessageLog.v(TAG, "[TEST] OCR Results for $trainingName: $result")
+            MessageLog.i(TAG, "[TEST] Single Training OCR Result:\n${formatTrainingMatrix(listOf(trainingName to result))}")
         } else {
             MessageLog.e(TAG, "[ERROR] startSingleTrainingOCRTest:: OCR failed for $trainingName.")
         }
+    }
+
+    /**
+     * Three-letter column heading for a stat in the training OCR matrix.
+     *
+     * @param stat The stat.
+     * @return The stat's short heading.
+     */
+    private fun statAbbrev(stat: StatName): String =
+        when (stat) {
+            StatName.SPEED -> "Spd"
+            StatName.STAMINA -> "Sta"
+            StatName.POWER -> "Pow"
+            StatName.GUTS -> "Gut"
+            StatName.WIT -> "Wit"
+        }
+
+    /**
+     * Render analyzed trainings as a fixed-width matrix for the OCR debug tests: one row per facility, one right-aligned column
+     * per stat gain, then the failure chance, skill-hint, and rainbow counts. A null option prints "-" across its row.
+     *
+     * @param options The analyzed trainings keyed by facility, in print order.
+     * @return The header row followed by one indented row per facility, newline-separated.
+     */
+    private fun formatTrainingMatrix(options: List<Pair<StatName, TrainingOption?>>): String {
+        val header =
+            buildString {
+                append("  ").append("Facility".padEnd(9))
+                StatName.entries.forEach { append(statAbbrev(it).padStart(6)) }
+                append("Fail".padStart(7)).append("Hints".padStart(7)).append("Rainbow".padStart(9))
+            }
+        val rows =
+            options.map { (stat, option) ->
+                buildString {
+                    append("  ").append(stat.name.padEnd(9))
+                    StatName.entries.forEach { s -> append((option?.let { (it.statGains[s] ?: 0).toString() } ?: "-").padStart(6)) }
+                    append((option?.let { "${it.failureChance}%" } ?: "-").padStart(7))
+                    append((option?.numSkillHints?.toString() ?: "-").padStart(7))
+                    append((option?.numRainbow?.toString() ?: "-").padStart(9))
+                }
+            }
+        return (listOf(header) + rows).joinToString("\n")
     }
 
     /**
@@ -1199,9 +1262,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     fun startComprehensiveTrainingOCRTest() {
         MessageLog.v(TAG, "[TEST] Starting Comprehensive Training OCR Test.")
 
-        analyzeTrainings()
-        val result = trainingMap
-        MessageLog.v(TAG, "[TEST] Comprehensive OCR Results: $result")
+        // Pass "test" so the analyzer keeps every training in the map regardless of skip thresholds - this is a debug read.
+        analyzeTrainings(mapOf("test" to true))
+        val matrix = formatTrainingMatrix(StatName.entries.map { it to trainingMap[it] })
+        MessageLog.i(TAG, "[TEST] Comprehensive Training OCR Results:\n$matrix")
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1244,24 +1308,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         } else {
             MessageLog.v(TAG, "\n[TRAINING] Now starting process to analyze all 5 Trainings.")
         }
-
-        val trainingButtons: Map<StatName, ComponentInterface> =
-            mapOf(
-                StatName.SPEED to ButtonTrainingSpeed,
-                StatName.STAMINA to ButtonTrainingStamina,
-                StatName.POWER to ButtonTrainingPower,
-                StatName.GUTS to ButtonTrainingGuts,
-                StatName.WIT to ButtonTrainingWit,
-            )
-
-        val iconTrainingHeaders: Map<StatName, ComponentInterface> =
-            mapOf(
-                StatName.SPEED to IconTrainingHeaderSpeed,
-                StatName.STAMINA to IconTrainingHeaderStamina,
-                StatName.POWER to IconTrainingHeaderPower,
-                StatName.GUTS to IconTrainingHeaderGuts,
-                StatName.WIT to IconTrainingHeaderWit,
-            )
 
         /**
          * Detects the current active (selected) stat in the training screen.
@@ -1825,8 +1871,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }
 
-            // Cross-validate failure chances across trainings to correct OCR misreads.
-            normalizeFailureChances(analysisResults)
+            // Cross-validate failure chances across trainings to correct OCR misreads. Skipped for debug reads (test): the trainee's
+            // energy is not the live value there, so the energy-based estimate would wrongly clamp genuinely-high reads down to 0%.
+            if (!test) normalizeFailureChances(analysisResults)
 
             // Process results and populate training maps.
             processAnalysisResults(analysisResults, ignoreFailureChance, test, args)
@@ -2869,15 +2916,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     statsTrainedOverBuffer.add(trainingSelected)
                 }
             }
-
-            val trainingButtons: Map<StatName, ComponentInterface> =
-                mapOf(
-                    StatName.SPEED to ButtonTrainingSpeed,
-                    StatName.STAMINA to ButtonTrainingStamina,
-                    StatName.POWER to ButtonTrainingPower,
-                    StatName.GUTS to ButtonTrainingGuts,
-                    StatName.WIT to ButtonTrainingWit,
-                )
 
             // These values are hardcoded and exhaustive. A KeyError would be a programmer error.
             val trainingButton: ComponentInterface = trainingButtons[trainingSelected]!!

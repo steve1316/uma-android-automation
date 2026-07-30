@@ -1070,6 +1070,18 @@ const searchConfig: SearchOption[] = [
         description: "Minimum projected fan gain on a race before the bot uses a Glow Stick on it. Applies on standard and finale days.",
         page: "ScenarioOverridesSettings",
     },
+    {
+        id: "grand-live-lesson-effect-priority",
+        title: "Grand Live Lesson Effect Priority",
+        description: "Rank which effect categories the bot buys first in Lessons. Deselected categories are only bought when nothing ranked is learnable.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "grand-live-lesson-rescan-interval",
+        title: "Grand Live Lessons Re-check Interval",
+        description: "How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time.",
+        page: "ScenarioOverridesSettings",
+    },
 
     // ============================================================
     // Discord Settings
@@ -1251,6 +1263,13 @@ const searchConfig: SearchOption[] = [
         title: "Start Trackblazer Buy Items Test",
         description:
             "Disables normal bot operations and starts the Trackblazer buy items test. Opens the Shop if on the Main Screen and logs shop contents and purchase intentions without actually buying anything.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-grand-live-token-gain-test",
+        title: "Start Grand Live Token Gain Test",
+        description:
+            "Disables normal bot operations and starts the Grand Live token gain test. Run this on the Training screen: it reads the five Performance-Point token totals once, then selects each of the five facilities in turn and logs their per-token gains (using the same digit detector as training stat gains).",
         page: "DebugSettings",
     },
     {

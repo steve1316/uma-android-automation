@@ -14,6 +14,27 @@
         ]
     },
     "Unity Cup": {},
+    "Grand Live": {
+        "Proposal! A New Single": [
+            "Passion +20\nYayoi Akikawa bond +10",
+            "Mental +20\nYayoi Akikawa bond +10"
+        ],
+        "Tracen Idol": [
+            "Energy +15",
+            "Passion +20"
+        ],
+        "Every Bit of Effort Counts": [
+            "Energy +10",
+            "Guts +10"
+        ],
+        "Closer Together": [
+            "Full Tilt hint +1 (Full Speed! if Smart Falcon is scenario-linked)",
+            "Focus hint +1 (Concentration if Mihono Bourbon is scenario-linked)",
+            "Rosy Outlook hint +1 (Trackblazer if Silence Suzuka is scenario-linked)",
+            "All I've Got hint +1 (Come What May if Agnes Tachyon is scenario-linked)",
+            "Lane Legerdemain hint +1"
+        ]
+    },
     "Trackblazer": {
         "Ordinary? Or Full Throttle?!": [
             "Stamina +6\nGuts +6",

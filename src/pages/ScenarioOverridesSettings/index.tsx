@@ -17,6 +17,7 @@ import { ValuePill } from "../../components/ui/value-pill"
 import { ModalHeader } from "../../components/ui/modal-header"
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
+import DraggablePriorityList from "../../components/DraggablePriorityList"
 import { CircleCheckBig, Trash2 } from "lucide-react-native"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import trackblazerIcons from "./icons"
@@ -28,7 +29,7 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 
 /** Scenarios that currently have a dedicated set of overrides on this page. Only these appear in the campaign picker, since picking any other scenario would render nothing. */
-const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup", "URA Finale"] as const
+const SCENARIOS_WITH_OVERRIDES = ["Trackblazer", "Unity Cup", "URA Finale", "Grand Live"] as const
 
 /** Options for the URA Finale Happy Meek duel training-bias picker. The `value` doubles as the short text shown in the row's right-side pill. */
 const DUEL_BIAS_OPTIONS = [
@@ -36,6 +37,12 @@ const DUEL_BIAS_OPTIONS = [
     { value: "Moderate", label: "Moderate - prefer the duel when it is close to the best pick" },
     { value: "Aggressive", label: "Aggressive - strongly prefer the duel facility" },
 ] as const
+
+/** The Grand Live Lesson effect categories rankable in the Lesson Effect Priority list. The ids double as the strings stored in the setting. */
+const GRAND_LIVE_LESSON_CATEGORIES = ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints", "Energy"].map((name) => ({ id: name, label: name }))
+
+/** Options for the Grand Live Lessons re-check interval picker, in turns. */
+const GRAND_LIVE_INTERVAL_OPTIONS = [1, 2, 3, 4, 5] as const
 
 /**
  * Resolves the bot's active scenario to a campaign this page can render overrides for.
@@ -109,6 +116,8 @@ const ScenarioOverridesSettings = () => {
     const [showResetAll, setShowResetAll] = useState(false)
     const [scenarioPickerOpen, setScenarioPickerOpen] = useState(false)
     const [duelBiasPickerOpen, setDuelBiasPickerOpen] = useState(false)
+    const [lessonPriorityPickerOpen, setLessonPriorityPickerOpen] = useState(false)
+    const [lessonIntervalPickerOpen, setLessonIntervalPickerOpen] = useState(false)
 
     // Which scenario the page is currently editing overrides for. Seeded from the bot's active scenario and re-synced whenever it changes.
     // Switching campaigns here stays local to the page and does not change the bot's actual run target (`general.scenario`).
@@ -237,6 +246,12 @@ const ScenarioOverridesSettings = () => {
         updateOverrideSetting("uraHappyMeekDuelBias", defaultSettings.scenarioOverrides.uraHappyMeekDuelBias)
     }, [updateOverrideSetting, defaultSettings])
 
+    /** Reset the Grand Live Lessons section to defaults. */
+    const resetGrandLiveDefaults = useCallback(() => {
+        updateOverrideSetting("grandLiveLessonEffectPriority", defaultSettings.scenarioOverrides.grandLiveLessonEffectPriority)
+        updateOverrideSetting("grandLiveLessonRescanInterval", defaultSettings.scenarioOverrides.grandLiveLessonRescanInterval)
+    }, [updateOverrideSetting, defaultSettings])
+
     /** Reset the currently-edited scenario's overrides to defaults. */
     const resetAllDefaults = useCallback(() => {
         if (activeCampaign === "Unity Cup") {
@@ -244,6 +259,8 @@ const ScenarioOverridesSettings = () => {
             resetUnityCupRacingDefaults()
         } else if (activeCampaign === "URA Finale") {
             resetUraFinaleDefaults()
+        } else if (activeCampaign === "Grand Live") {
+            resetGrandLiveDefaults()
         } else {
             resetRacingDefaults()
             resetEnergyDefaults()
@@ -262,6 +279,7 @@ const ScenarioOverridesSettings = () => {
         resetUnityCupDefaults,
         resetUnityCupRacingDefaults,
         resetUraFinaleDefaults,
+        resetGrandLiveDefaults,
     ])
 
     const styles = useMemo(
@@ -858,6 +876,35 @@ const ScenarioOverridesSettings = () => {
                                     </Section>
                                 )}
 
+                                {activeCampaign === "Grand Live" && (
+                                    <Section label="Lessons" collapsible labelRight={makeResetLink(resetGrandLiveDefaults)}>
+                                        <SearchableItem
+                                            id="grand-live-lesson-effect-priority"
+                                            title="Lesson Effect Priority"
+                                            description="Rank which effect categories the bot buys first in Lessons. Deselected categories are only bought when nothing ranked is learnable."
+                                        >
+                                            <Row
+                                                title="Lesson Effect Priority"
+                                                description="Drag to rank which effects Lessons buys first. Deselected categories become last-resort purchases."
+                                                onPress={() => setLessonPriorityPickerOpen(true)}
+                                                right={<ValuePill label={`${scenarioOverrides.grandLiveLessonEffectPriority.length} ranked`} />}
+                                            />
+                                        </SearchableItem>
+                                        <SearchableItem
+                                            id="grand-live-lesson-rescan-interval"
+                                            title="Lessons Re-check Interval"
+                                            description="How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time."
+                                        >
+                                            <Row
+                                                title="Lessons Re-check Interval"
+                                                description="Turns between polls of the Lessons list for newly learnable cards."
+                                                onPress={() => setLessonIntervalPickerOpen(true)}
+                                                right={<ValuePill label={`Every ${scenarioOverrides.grandLiveLessonRescanInterval} turn(s)`} />}
+                                            />
+                                        </SearchableItem>
+                                    </Section>
+                                )}
+
                                 {/* Reset All footer */}
                                 <Pressable
                                     onPress={() => setShowResetAll(true)}
@@ -945,6 +992,41 @@ const ScenarioOverridesSettings = () => {
                             onPress={() => {
                                 updateOverrideSetting("uraHappyMeekDuelBias", o.value)
                                 setDuelBiasPickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
+
+            <SheetModal
+                visible={lessonPriorityPickerOpen}
+                onRequestClose={() => setLessonPriorityPickerOpen(false)}
+                header={<ModalHeader title="LESSON EFFECT PRIORITY" onClose={() => setLessonPriorityPickerOpen(false)} />}
+                footer={null}
+            >
+                <DraggablePriorityList
+                    items={GRAND_LIVE_LESSON_CATEGORIES}
+                    selectedItems={scenarioOverrides.grandLiveLessonEffectPriority}
+                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonEffectPriority", next)}
+                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonEffectPriority", orderedItems)}
+                />
+            </SheetModal>
+
+            <SheetModal
+                visible={lessonIntervalPickerOpen}
+                onRequestClose={() => setLessonIntervalPickerOpen(false)}
+                header={<ModalHeader title="LESSONS RE-CHECK INTERVAL" onClose={() => setLessonIntervalPickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {GRAND_LIVE_INTERVAL_OPTIONS.map((n) => (
+                        <ModalRadioRow
+                            key={n}
+                            label={n === 1 ? "Every turn" : `Every ${n} turns`}
+                            selected={n === scenarioOverrides.grandLiveLessonRescanInterval}
+                            onPress={() => {
+                                updateOverrideSetting("grandLiveLessonRescanInterval", n)
+                                setLessonIntervalPickerOpen(false)
                             }}
                         />
                     ))}
