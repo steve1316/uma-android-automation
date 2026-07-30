@@ -117,8 +117,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The turn (`campaign.date.day`) the cached analysis was computed for. The cache is reused only when this matches the current turn, so a prior turn's analysis never leaks. */
     private var cachedAnalysisTurn: Int? = null
 
-    /** The training selection button for each stat's facility. */
-    internal val trainingButtons: Map<StatName, ComponentInterface> =
+    /** The training selection button for each stat's facility. Scenarios whose facility buttons do not match these templates override this with their own set. */
+    internal open val trainingButtons: Map<StatName, ComponentInterface> =
         mapOf(
             StatName.SPEED to ButtonTrainingSpeed,
             StatName.STAMINA to ButtonTrainingStamina,
@@ -2764,7 +2764,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                             "Finale forced WIT (trainWitDuringFinale enabled and day>72, no other training viable)"
                         }
                     // Directly attempt to tap Wit training.
-                    if (ButtonTrainingWit.click(game.imageUtils, taps = 3)) {
+                    if (trainingButtons.getValue(StatName.WIT).click(game.imageUtils, taps = 3)) {
                         game.waitForLoading()
                         MessageLog.v(TAG, "[TRAINING] Successfully forced Wit training during the Finale instead of recovering energy.")
                         campaign.decisionTracer.recordTrainingSelection(
