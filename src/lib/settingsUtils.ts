@@ -192,6 +192,17 @@ export const applyMigrations = (settings: any, rawSettings?: any): { settings: a
         markMigrated("Dropped removed setting enablePopupCheck.")
     }
 
+    // Migration: Drop the removed fan-farming cadence settings. The Smart Race Solver is now the only source of discretionary extra races.
+    const racing = migratedSettings.racing as any
+    if (racing?.enableFarmingFans !== undefined) {
+        delete racing.enableFarmingFans
+        markMigrated("Dropped removed setting enableFarmingFans.")
+    }
+    if (racing?.daysToRunExtraRaces !== undefined) {
+        delete racing.daysToRunExtraRaces
+        markMigrated("Dropped removed setting daysToRunExtraRaces.")
+    }
+
     // Migration: Rename the Crane Game setting to Claw Machine.
     if (general?.enableCraneGameAttempt !== undefined) {
         migratedSettings.general.enableClawMachineAttempt = general.enableCraneGameAttempt
