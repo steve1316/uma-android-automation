@@ -12,15 +12,6 @@ import org.junit.jupiter.api.Test
 @DisplayName("Racing decision helpers")
 class RacingDecisionTest {
     @Test
-    @DisplayName("Extra-racing energy gate blocks below the floor, allows at or above, and is disabled at 0")
-    fun testHasEnoughEnergyForExtraRacing() {
-        assertFalse(hasEnoughEnergyForExtraRacing(energy = 25, minEnergy = 30), "25% energy is below the 30% floor, so the fan-farming race should be skipped")
-        assertTrue(hasEnoughEnergyForExtraRacing(energy = 30, minEnergy = 30), "Exactly the floor is enough energy to race")
-        assertTrue(hasEnoughEnergyForExtraRacing(energy = 45, minEnergy = 30), "Above the floor is enough energy to race")
-        assertTrue(hasEnoughEnergyForExtraRacing(energy = 0, minEnergy = 0), "A floor of 0 disables the check entirely")
-    }
-
-    @Test
     @DisplayName("Any mandatory career goal always uses standard racing across every settings configuration")
     fun testMandatoryRequirementAlwaysUsesStandardRacing() {
         // Regression guard for the Senior-year trophy failure: a fan, trophy, or goal-pts requirement must never

@@ -2514,8 +2514,8 @@ abstract class Campaign(game: Game) : Task(game) {
             return MainScreenAction.RACE
         }
 
-        // Checked last so it only ever replaces a training turn. Racing keeps its own energy floor (minEnergyForExtraRacing), and a mandatory race, an injury, or a bad mood all still
-        // take precedence above.
+        // Checked last so it only ever replaces a training turn. Every racing path above - mandatory, scheduled, requirement, force racing, and the solver's own schedule - already
+        // returned before this, as did an injury or a bad mood, so resting here never costs a planned race.
         if (shouldRestForLowEnergy(trainee.energy, minEnergyToTrain, date.isSummer(), isFinals)) {
             MessageLog.i(TAG, "[INFO] Energy (${trainee.energy}%) is below the minimum of $minEnergyToTrain% required to train. Resting instead.")
             decisionTracer.recordActionChoice(MainScreenAction.REST, "Energy ${trainee.energy}% is below the $minEnergyToTrain% minimum-energy-to-train floor")

@@ -53,9 +53,7 @@ export interface Settings {
 
     // Racing settings
     racing: {
-        enableFarmingFans: boolean
         ignoreConsecutiveRaceWarning: boolean
-        daysToRunExtraRaces: number
         minEnergyForExtraRacing: number
         disableRaceRetries: boolean
         enableFreeRaceRetry: boolean
@@ -283,9 +281,7 @@ export const defaultSettings: Settings = {
         dialogWaitDelay: 0.5,
     },
     racing: {
-        enableFarmingFans: false,
         ignoreConsecutiveRaceWarning: false,
-        daysToRunExtraRaces: 5,
         minEnergyForExtraRacing: 30,
         disableRaceRetries: false,
         enableFreeRaceRetry: false,

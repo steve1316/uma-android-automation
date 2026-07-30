@@ -43,7 +43,7 @@ type PerDistanceKey = "Short" | "Mile" | "Medium" | "Long"
 
 /**
  * The Racing Settings page.
- * Provides configuration for fan farming, race behavior, race strategies, force racing, and in-game race agenda.
+ * Provides configuration for race behavior, race strategies, force racing, and in-game race agenda.
  */
 const RacingSettings = () => {
     usePerformanceLogging("RacingSettings")
@@ -62,9 +62,7 @@ const RacingSettings = () => {
     // Merge current racing settings with defaults to handle missing properties.
     const racingSettings = { ...defaultSettings.racing, ...racing }
     const {
-        enableFarmingFans,
         ignoreConsecutiveRaceWarning,
-        daysToRunExtraRaces,
         minEnergyForExtraRacing,
         disableRaceRetries,
         enableFreeRaceRetry,
@@ -86,7 +84,7 @@ const RacingSettings = () => {
 
     /**
      * Update a racing setting with special handling for the in-game race agenda.
-     * When the in-game race agenda is enabled, it automatically disables the Farming Fans and Smart Race Solver settings to prevent conflicts.
+     * When the in-game race agenda is enabled, it automatically disables the Smart Race Solver setting to prevent conflicts.
      * @param key The key of the setting to update.
      * @param value The value to set the setting to.
      */
@@ -94,9 +92,8 @@ const RacingSettings = () => {
         (key: keyof Settings["racing"], value: any) => {
             if (key === "enableUserInGameRaceAgenda" && value) {
                 updateRacing((prev) => ({
-                    // Disable Farming Fans and the Smart Race Solver when User In Game Race Agenda is enabled.
+                    // Disable the Smart Race Solver when User In Game Race Agenda is enabled.
                     ...prev,
-                    enableFarmingFans: false,
                     enableUserInGameRaceAgenda: true,
                     enableSmartRaceSolver: false,
                 }))
@@ -176,43 +173,6 @@ const RacingSettings = () => {
                             Race Behavior */}
                         <Section label="Race Behavior">
                             <ToggleSetting
-                                id="enable-farming-fans"
-                                title="Enable Farming Fans"
-                                description="When enabled, the bot will start running extra races to gain fans."
-                                checked={enableFarmingFans}
-                                onCheckedChange={(checked) => updateRacingSetting("enableFarmingFans", checked)}
-                            />
-                            <View style={{ padding: SPACING.md }}>
-                                <CustomSlider
-                                    searchId="days-to-run-extra-races"
-                                    value={daysToRunExtraRaces}
-                                    placeholder={defaultSettings.racing.daysToRunExtraRaces}
-                                    onValueChange={(value) => updateRacingSetting("daysToRunExtraRaces", value)}
-                                    min={1}
-                                    max={15}
-                                    step={1}
-                                    label="Days to Run Extra Races"
-                                    showValue={true}
-                                    showLabels={true}
-                                    description="Extra races are eligible only on days where current day % value == 0. For example, 5 means days 5, 10, 15, etc. Has no effect when Smart Race Solver is enabled."
-                                />
-                            </View>
-                            <View style={{ padding: SPACING.md }}>
-                                <CustomSlider
-                                    searchId="min-energy-for-extra-racing"
-                                    value={minEnergyForExtraRacing}
-                                    placeholder={defaultSettings.racing.minEnergyForExtraRacing}
-                                    onValueChange={(value) => updateRacingSetting("minEnergyForExtraRacing", value)}
-                                    min={0}
-                                    max={100}
-                                    step={5}
-                                    label="Minimum Energy for Extra Races"
-                                    showValue={true}
-                                    showLabels={true}
-                                    description="Skip the fan-farming extra race when energy is below this percentage. 0 disables the floor. Only gates the standard fan-farming cadence, never mandatory, scheduled, or solver races."
-                                />
-                            </View>
-                            <ToggleSetting
                                 id="ignore-consecutive-race-warning"
                                 title="Ignore Consecutive Race Warning"
                                 description="When enabled, the bot will ignore the warning popup about consecutive races and continue racing."
@@ -278,6 +238,19 @@ const RacingSettings = () => {
                                         showValue={true}
                                         showLabels={true}
                                         description="The best training must have at least this many rainbow supports to train instead of racing the G1."
+                                    />
+                                    <CustomSlider
+                                        searchId="min-energy-for-g1-prescreen"
+                                        value={minEnergyForExtraRacing}
+                                        placeholder={defaultSettings.racing.minEnergyForExtraRacing}
+                                        onValueChange={(value) => updateRacingSetting("minEnergyForExtraRacing", value)}
+                                        min={0}
+                                        max={100}
+                                        step={5}
+                                        label="Minimum Energy for G1 Pre-Screen"
+                                        showValue={true}
+                                        showLabels={true}
+                                        description="Skip the training peek and take the G1 race when energy is below this percentage. 0 disables the floor so the peek always runs."
                                     />
                                 </View>
                             )}
@@ -384,7 +357,7 @@ const RacingSettings = () => {
                             <ToggleSetting
                                 id="enable-user-in-game-race-agenda"
                                 title="Enable User In-Game Race Agenda"
-                                description="When enabled, the bot will load your selected in-game race agenda instead of using the racing plan settings. Note that this will disable the farming fans and racing plan settings."
+                                description="When enabled, the bot will load your selected in-game race agenda and race the turns it lists. Note that this will turn off the Smart Race Solver, since the two cannot both own the racing schedule."
                                 checked={enableUserInGameRaceAgenda}
                                 onCheckedChange={(checked) => updateRacingSetting("enableUserInGameRaceAgenda", checked)}
                             />
