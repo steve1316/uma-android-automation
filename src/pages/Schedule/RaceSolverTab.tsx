@@ -14,6 +14,7 @@ import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
 import CustomSlider from "../../components/CustomSlider"
 import { AptitudeRow, EpithetChip } from "./components/Helpers"
+import RacingOverrideChips from "./components/RacingOverrideChips"
 import { isEpithetAllowed } from "./raceEditing"
 import { Trash2 } from "lucide-react-native"
 import { Section } from "../../components/ui/section"
@@ -382,6 +383,8 @@ function RaceSolverTab() {
                     />
                 </SearchableItem>
 
+                <RacingOverrideChips racing={racingSettings} />
+
                 <SearchableItem
                     id="smart-solver-how-it-works"
                     condition={enableSmartRaceSolver}
@@ -393,8 +396,16 @@ function RaceSolverTab() {
                         <InfoCallout title="How the solver works">
                             <SubTopic title="How it works">
                                 The solver searches the entire 72-turn career and picks, for every turn, the best decision (Race / Train / Rest) that maximizes your projected score against the target
-                                epithet rewards. The bot only races on the turns the solver has chosen in the calculated schedule - every other turn becomes training or rest, even when Farming Fans
-                                would otherwise add an extra race. Hard goal requirements (fan / trophy / goal-points) and the Force Racing setting are the only things that can override the schedule.
+                                epithet rewards. The bot only races on the turns the solver has chosen in the calculated schedule - every other turn becomes training or rest. Hard goal requirements
+                                (fan / trophy / goal-points) always take priority over the schedule, and several Racing settings can override it too - see below.
+                            </SubTopic>
+                            <SubTopic title="Racing settings that override the solver">
+                                Some settings on the Racing Settings page are checked before the solver's schedule is, so they can change or skip what it planned. Any that are currently on appear as
+                                chips under the toggle above, and tapping one jumps straight to it. "Force Racing" and "Enable User In-Game Race Agenda" disable the solver outright - the bot races
+                                every turn or follows your in-game agenda instead of the schedule. "Prefer Training on G1 Days" peeks at the trainings first and will train through a G1 the solver
+                                planned to race. "Stop on Mandatory Races" halts the bot at every mandatory race, so the schedule pauses until you resume it, and "Disable Race Retries" ends the career
+                                on a failed mandatory race, so the rest of the schedule never runs. "Ignore Consecutive Race Warning" is the mildest - the solver's own picks already bypass that popup,
+                                but leaving it off can cost the turn right after one appears.
                             </SubTopic>
                             <SubTopic title="What happens when you lose a race">
                                 A loss is recorded against that turn and the solver immediately re-plans the remaining turns. Epithets that depended on the lost race may shift to alternative paths or
