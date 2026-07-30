@@ -24,7 +24,7 @@ export interface RaceEntry {
     distanceType: string
     /** Race distance in meters (e.g. 1600, 2400). */
     distanceMeters: number
-    /** Fans rewarded for winning, used by the Farming Fans flow. */
+    /** Fans rewarded for winning, weighted by the solver's `fanWeight`. */
     fans: number
     /** Race-track venue name (e.g. "Tokyo", "Hanshin"). */
     raceTrack: string

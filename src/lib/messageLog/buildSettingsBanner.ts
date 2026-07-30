@@ -159,9 +159,6 @@ ${mediumTargetsString}
 ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 
 ---------- Racing Options ----------
-👥 Prioritize Farming Fans: ${settings.racing.enableFarmingFans ? "✅" : "❌"}
-⏰ Modulo Days to Farm Fans: ${settings.racing.enableFarmingFans ? `${settings.racing.daysToRunExtraRaces} days` : "❌"}
-🔋 Minimum Energy for Extra Races: ${settings.racing.minEnergyForExtraRacing > 0 ? `${settings.racing.minEnergyForExtraRacing}%` : "❌"}
 🚫 Ignore Consecutive Race Warning: ${settings.racing.ignoreConsecutiveRaceWarning ? "✅" : "❌"}
 🔄 Disable Race Retries: ${settings.racing.disableRaceRetries ? "✅" : "❌"}
 \t🔄 Allow Daily Free Race Retry: ${settings.racing.enableFreeRaceRetry ? "✅" : "❌"}
@@ -169,6 +166,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🏁 Stop on Mandatory Race: ${settings.racing.enableStopOnMandatoryRaces ? "✅" : "❌"}
 🏃 Force Racing Every Day: ${settings.racing.enableForceRacing ? "✅" : "❌"}
 🌈 Prefer Training on G1 Days: ${settings.racing.enableG1DayPreference ? `✅ (>= ${settings.racing.g1DayMinRainbowCount} rainbows)` : "❌"}
+\t🔋 Minimum Energy for G1 Pre-Screen: ${settings.racing.minEnergyForExtraRacing > 0 ? `${settings.racing.minEnergyForExtraRacing}%` : "❌"}
 🏁 Enable User In-Game Race Agenda: ${settings.racing.enableUserInGameRaceAgenda ? "✅" : "❌"}
 🏁 Limit Extra Races to Agenda: ${settings.racing.limitRacesToInGameAgenda ? "✅" : "❌"}
 🏁 Skip Summer Training for Agenda: ${settings.racing.skipSummerTrainingForAgenda ? "✅" : "❌"}

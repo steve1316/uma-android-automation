@@ -407,25 +407,6 @@ const searchConfig: SearchOption[] = [
     // Racing Settings
     // ============================================================
     {
-        id: "enable-farming-fans",
-        title: "Enable Farming Fans",
-        description: "When enabled, the bot will start running extra races to gain fans.",
-        page: "RacingSettings",
-    },
-    {
-        id: "days-to-run-extra-races",
-        title: "Days to Run Extra Races",
-        description: "Extra races are eligible only on days where current day % value == 0. For example, 5 means days 5, 10, 15, etc. Has no effect when Smart Race Solver is enabled.",
-        page: "RacingSettings",
-    },
-    {
-        id: "min-energy-for-extra-racing",
-        title: "Minimum Energy for Extra Races",
-        description:
-            "Skip the fan-farming extra race when energy is below this percentage. 0 disables the floor. Only gates the standard fan-farming cadence, never mandatory, scheduled, or solver races.",
-        page: "RacingSettings",
-    },
-    {
         id: "enable-g1-day-preference",
         title: "Prefer Training on G1 Days",
         description: "On a G1 race day (Classic/Senior years), peek at the trainings first and stay to train when a strong rainbow training is available instead of taking the race.",
@@ -435,6 +416,13 @@ const searchConfig: SearchOption[] = [
         id: "g1-day-min-rainbow-count",
         title: "Minimum Rainbows to Train Over G1",
         description: "The best training must have at least this many rainbow supports to train instead of racing the G1.",
+        page: "RacingSettings",
+        parentId: "enable-g1-day-preference",
+    },
+    {
+        id: "min-energy-for-g1-prescreen",
+        title: "Minimum Energy for G1 Pre-Screen",
+        description: "Skip the training peek and take the G1 race when energy is below this percentage. 0 disables the floor so the peek always runs.",
         page: "RacingSettings",
         parentId: "enable-g1-day-preference",
     },
@@ -545,7 +533,7 @@ const searchConfig: SearchOption[] = [
         id: "enable-user-in-game-race-agenda",
         title: "Enable User In-Game Race Agenda",
         description:
-            "When enabled, the bot will load your selected in-game race agenda instead of using the racing plan settings. Note that this will disable the farming fans and racing plan settings.",
+            "When enabled, the bot will load your selected in-game race agenda and race the turns it lists. Note that this will turn off the Smart Race Solver, since the two cannot both own the racing schedule.",
         page: "RacingSettings",
     },
     {
