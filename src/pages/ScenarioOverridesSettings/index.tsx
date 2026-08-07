@@ -23,6 +23,9 @@ import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import trackblazerIcons from "./icons"
 import { Section } from "../../components/ui/section"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../components/ui/alert-dialog"
+// The dialog buttons hand their text color down through `TextClassContext`, which only this `Text` reads - React Native's ignores it and
+// falls back to the default dark color, which is unreadable on the dialog's dark button backgrounds.
+import { Text as ThemedText } from "../../components/ui/text"
 import CampaignCard from "../../components/CampaignCard"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
@@ -935,10 +938,10 @@ const ScenarioOverridesSettings = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel onPress={() => setShowResetAll(false)}>
-                            <Text>Cancel</Text>
+                            <ThemedText>Cancel</ThemedText>
                         </AlertDialogCancel>
                         <AlertDialogAction onPress={resetAllDefaults}>
-                            <Text>Reset</Text>
+                            <ThemedText>Reset</ThemedText>
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
