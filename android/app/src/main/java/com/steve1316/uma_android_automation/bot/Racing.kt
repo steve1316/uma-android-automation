@@ -1147,6 +1147,25 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Checks whether the skip button is genuinely locked.
+     *
+     * [ButtonViewResults.checkDisabled] reads a button as disabled whenever its crop is darker than the template, so a fading screen makes
+     * every button look disabled. Only a true result is re-checked on a fresh frame since that branch costs us a full manual race.
+     *
+     * @param sourceBitmap The frame that the first check is made against.
+     * @return Whether the skip button is disabled, or null if the button could not be found.
+     */
+    private fun isSkipLocked(sourceBitmap: Bitmap): Boolean? {
+        val bIsLocked: Boolean? = ButtonViewResults.checkDisabled(game.imageUtils, sourceBitmap)
+        if (bIsLocked != true) {
+            return bIsLocked
+        }
+
+        game.wait(game.dialogWaitDelay, skipWaitingForLoading = true)
+        return ButtonViewResults.checkDisabled(game.imageUtils)
+    }
+
+    /**
      * Executes the race with retry logic.
      *
      * @param retryUntilFirst True to keep retrying until 1st place whenever possible (mandatory races and Unity Cup races).
@@ -1176,7 +1195,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 continue
             }
 
-            val bitmap: Bitmap = game.imageUtils.getSourceBitmap()
+            var bitmap: Bitmap = game.imageUtils.getSourceBitmap()
 
             when {
                 // Handle the race prep screen.
@@ -1190,11 +1209,17 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     // Latch the result so we don't continuously try to handle strategy.
                     if (!bDidSelectRaceStrategy) {
                         bDidSelectRaceStrategy = selectRaceStrategy()
+                        // The dialog only opens when a strategy actually had to be set, and it leaves the bitmap above seconds out of date.
+                        // Settle and re-capture in that case so the skip button is judged on a current frame instead of a pre-dialog one.
+                        if (bHasSetTemporaryRunningStyle) {
+                            game.wait(game.dialogWaitDelay, skipWaitingForLoading = true)
+                            bitmap = game.imageUtils.getSourceBitmap()
+                        }
                     }
 
-                    when (ButtonViewResults.checkDisabled(game.imageUtils, bitmap)) {
+                    when (isSkipLocked(bitmap)) {
                         true -> {
-                            if (ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap)) {
+                            if (ButtonRaceManual.click(game.imageUtils)) {
                                 MessageLog.i(TAG, "[RACE] Skip is locked. Running race manually.")
                                 // Clicking this button triggers connection to server.
                                 game.waitForLoading()
