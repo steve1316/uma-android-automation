@@ -637,14 +637,15 @@ class Trainee {
         // Extract reference point coordinates from cached location or find it if not available.
         val refPoint = statTrackLocation ?: LabelStatTrackSurface.find(imageUtils = imageUtils).first
         if (refPoint == null) {
-            name = "null"
+            // Leave the name empty so the caller's isEmpty() guard retries next time. A placeholder here would block every later attempt.
+            MessageLog.w(TAG, "[WARN] readName:: Could not find the stat track surface label to anchor the name crop.")
             return
         }
 
         // Extract the coordinates from the reference point and cache the location.
         val refX = refPoint.x.toDouble()
         val refY = refPoint.y.toDouble()
-        if (statTrackLocation == null && refPoint != null) {
+        if (statTrackLocation == null) {
             statTrackLocation = refPoint
         }
 
