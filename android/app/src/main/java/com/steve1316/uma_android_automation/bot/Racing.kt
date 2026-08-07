@@ -1632,8 +1632,11 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         // Otherwise, it would have found itself at the Race Selection screen already (by way of the insufficient fans popup).
         val loc: Point? = IconRaceDayRibbon.find(game.imageUtils).first
         if (loc != null) {
-            // Offset 100px down from the ribbon since the ribbon isn't clickable.
-            game.tap(loc.x, loc.y + 100, IconRaceDayRibbon.template.path, ignoreWaiting = true)
+            // Prefer the scenario's own race-day button since its size and position vary, such as Grand Live rendering a smaller one in a
+            // Skills / Race / Lessons row. Fall back to tapping 100px below the ribbon, which is not clickable itself.
+            if (!campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
+                game.tap(loc.x, loc.y + 100, IconRaceDayRibbon.template.path, ignoreWaiting = true)
+            }
             game.wait(0.5, skipWaitingForLoading = true)
             // Check for the consecutive race dialog before proceeding.
             campaign.handleDialogs(args = mapOf("overrideIgnoreConsecutiveRaceWarning" to true))
@@ -1777,8 +1780,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         }
 
         MessageLog.v(TAG, "[RACE] Confirming the mandatory race selection.")
-        if (!campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
-            MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the race-day Race button on the main screen.")
+        // This is the Race button on the race list, not the race-day button on the main screen, which the caller already tapped to get here.
+        if (!ButtonRace.click(game.imageUtils, tries = 10)) {
+            MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the Race button on the race list screen.")
         }
         game.wait(1.0)
         MessageLog.i(TAG, "[RACE] Confirming any popup from the mandatory race selection.")
