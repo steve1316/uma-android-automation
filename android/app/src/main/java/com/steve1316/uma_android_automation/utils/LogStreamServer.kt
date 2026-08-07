@@ -1188,19 +1188,14 @@ object LogStreamServer {
                             try {
                                 val fullLogs = MessageLog.getMessageLogCopy().joinToString("\n")
 
-                                // Set headers to trigger a file download in the browser.
-                                val datePart =
-                                    SimpleDateFormat(
-                                        "yyyy-MM-dd-HH-mm-ss",
-                                        Locale.getDefault(),
-                                    ).format(Date())
-
-                                // Prefix the download with the scraped trainee name (falling back to "uaa" before one is read),
-                                // matching how saved log files are named. MessageLog.logFileNamePrefix holds the underscore-joined name.
-                                val namePart = MessageLog.logFileNamePrefix.ifEmpty { "uaa" }
+                                // Name the download exactly like a saved log file, stamp and no-name form alike, so the Event Log Visualizer reads
+                                // the trainee back instead of treating the fallback as a name. Mirrors MessageLog.saveLogToFile().
+                                val datePart = SimpleDateFormat("yyyy-MM-dd HH_mm_ss", Locale.getDefault()).format(Date())
+                                val prefix = MessageLog.logFileNamePrefix
+                                val fileName = if (prefix.isEmpty()) "log @ $datePart" else "${prefix}_$datePart"
                                 call.response.header(
                                     HttpHeaders.ContentDisposition,
-                                    "attachment; filename=\"${namePart}_logs_$datePart.txt\"",
+                                    "attachment; filename=\"$fileName.txt\"",
                                 )
                                 call.respondText(fullLogs, ContentType.Text.Plain)
                             } catch (e: Exception) {
