@@ -1147,6 +1147,25 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Checks whether the skip button is genuinely locked.
+     *
+     * [ButtonViewResults.checkDisabled] reads a button as disabled whenever its crop is darker than the template, so a fading screen makes
+     * every button look disabled. Only a true result is re-checked on a fresh frame since that branch costs us a full manual race.
+     *
+     * @param sourceBitmap The frame that the first check is made against.
+     * @return Whether the skip button is disabled, or null if the button could not be found.
+     */
+    private fun isSkipLocked(sourceBitmap: Bitmap): Boolean? {
+        val bIsLocked: Boolean? = ButtonViewResults.checkDisabled(game.imageUtils, sourceBitmap)
+        if (bIsLocked != true) {
+            return bIsLocked
+        }
+
+        game.wait(game.dialogWaitDelay, skipWaitingForLoading = true)
+        return ButtonViewResults.checkDisabled(game.imageUtils)
+    }
+
+    /**
      * Executes the race with retry logic.
      *
      * @param retryUntilFirst True to keep retrying until 1st place whenever possible (mandatory races and Unity Cup races).
@@ -1176,7 +1195,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 continue
             }
 
-            val bitmap: Bitmap = game.imageUtils.getSourceBitmap()
+            var bitmap: Bitmap = game.imageUtils.getSourceBitmap()
 
             when {
                 // Handle the race prep screen.
@@ -1190,11 +1209,17 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     // Latch the result so we don't continuously try to handle strategy.
                     if (!bDidSelectRaceStrategy) {
                         bDidSelectRaceStrategy = selectRaceStrategy()
+                        // The dialog only opens when a strategy actually had to be set, and it leaves the bitmap above seconds out of date.
+                        // Settle and re-capture in that case so the skip button is judged on a current frame instead of a pre-dialog one.
+                        if (bHasSetTemporaryRunningStyle) {
+                            game.wait(game.dialogWaitDelay, skipWaitingForLoading = true)
+                            bitmap = game.imageUtils.getSourceBitmap()
+                        }
                     }
 
-                    when (ButtonViewResults.checkDisabled(game.imageUtils, bitmap)) {
+                    when (isSkipLocked(bitmap)) {
                         true -> {
-                            if (ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap)) {
+                            if (ButtonRaceManual.click(game.imageUtils)) {
                                 MessageLog.i(TAG, "[RACE] Skip is locked. Running race manually.")
                                 // Clicking this button triggers connection to server.
                                 game.waitForLoading()
@@ -1632,8 +1657,11 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         // Otherwise, it would have found itself at the Race Selection screen already (by way of the insufficient fans popup).
         val loc: Point? = IconRaceDayRibbon.find(game.imageUtils).first
         if (loc != null) {
-            // Offset 100px down from the ribbon since the ribbon isn't clickable.
-            game.tap(loc.x, loc.y + 100, IconRaceDayRibbon.template.path, ignoreWaiting = true)
+            // Prefer the scenario's own race-day button since its size and position vary, such as Grand Live rendering a smaller one in a
+            // Skills / Race / Lessons row. Fall back to tapping 100px below the ribbon, which is not clickable itself.
+            if (!campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
+                game.tap(loc.x, loc.y + 100, IconRaceDayRibbon.template.path, ignoreWaiting = true)
+            }
             game.wait(0.5, skipWaitingForLoading = true)
             // Check for the consecutive race dialog before proceeding.
             campaign.handleDialogs(args = mapOf("overrideIgnoreConsecutiveRaceWarning" to true))
@@ -1777,8 +1805,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         }
 
         MessageLog.v(TAG, "[RACE] Confirming the mandatory race selection.")
-        if (!campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
-            MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the race-day Race button on the main screen.")
+        // This is the Race button on the race list, not the race-day button on the main screen, which the caller already tapped to get here.
+        if (!ButtonRace.click(game.imageUtils, tries = 10)) {
+            MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the Race button on the race list screen.")
         }
         game.wait(1.0)
         MessageLog.i(TAG, "[RACE] Confirming any popup from the mandatory race selection.")
