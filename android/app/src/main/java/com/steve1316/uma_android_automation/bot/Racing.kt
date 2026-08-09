@@ -203,6 +203,12 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     /** Tracks the distance of the last race that was selected. */
     var lastRaceDistance: TrackDistance? = null
 
+    /** Tracks the name of the last race that was selected. Empty when the race was never matched against the database. */
+    var lastRaceName: String = ""
+
+    /** Tracks the surface of the last race that was selected. */
+    var lastRaceSurface: TrackSurface? = null
+
     /** Tracks if the last race selected was a Rival Race. */
     var lastRaceIsRival: Boolean = false
 
@@ -1311,6 +1317,27 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Mirror a finished race into [RunAnalytics] for the Analytics tab. This is the sole recorder for the career racing flow, so it runs on every
+     * campaign whether or not the Smart Race Solver is enabled. Fields the racing flow never resolved are sent empty and simply go uncharted.
+     * Unity Cup team races take their own results path and are not covered here.
+     *
+     * @param won True when the trainee finished 1st.
+     * @param isExtra True when this was an extra race rather than a mandatory one.
+     */
+    private fun recordRaceForAnalytics(won: Boolean, isExtra: Boolean) {
+        RunAnalytics.recordRace(
+            turn = campaign.date.day,
+            name = lastRaceName,
+            grade = lastRaceGrade?.name ?: "",
+            surface = lastRaceSurface?.name ?: "",
+            distance = lastRaceDistance?.name ?: "",
+            fans = lastRaceFans,
+            won = won,
+            mandatory = !isExtra,
+        )
+    }
+
+    /**
      * Finishes up and confirms the results of the race and its success.
      *
      * @param isExtra Flag to determine the following actions to finish up this mandatory or extra race.
@@ -1327,6 +1354,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         if (!ButtonNext.check(game.imageUtils, tries = 30)) {
             MessageLog.e(TAG, "[ERROR] finalizeRaceResults:: Cannot start the cleanup process for finishing the race. Moving on...")
             SmartRaceSolverIntegration.commitPendingRace(won = false)
+            recordRaceForAnalytics(won = false, isExtra = isExtra)
             return false
         }
 
@@ -1336,6 +1364,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         val firstPlace = LabelCongratulations.check(game.imageUtils)
         MessageLog.i(TAG, "[RACE] Race result detected - 1st place: $firstPlace.")
         SmartRaceSolverIntegration.commitPendingRace(won = firstPlace)
+        recordRaceForAnalytics(won = firstPlace, isExtra = isExtra)
 
         // Max time limit for the while loop to attempt to finalize race results.
         // It really shouldn't ever take this long.
@@ -1629,6 +1658,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             lastRaceGrade = null
             lastRaceFans = 0
             lastRaceDistance = null
+            lastRaceName = ""
+            lastRaceSurface = null
             lastRaceIsRival = false
             bRetriedCurrentRace = false
         }
@@ -1807,6 +1838,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 if (raceDataList.isNotEmpty()) {
                     val raceData = raceDataList[0]
                     lastRaceDistance = raceData.trackDistance
+                    lastRaceName = raceData.name
+                    lastRaceSurface = raceData.trackSurface
                     // Preserve any grade/fans already set above (e.g. by the Finale block).
                     if (lastRaceGrade == null) lastRaceGrade = raceData.grade
                     if (lastRaceFans == 0) lastRaceFans = raceData.fans
@@ -2179,6 +2212,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     lastRaceGrade = raceDataList[0].grade
                     lastRaceFans = raceDataList[0].fans
                     lastRaceDistance = raceDataList[0].trackDistance
+                    lastRaceName = raceDataList[0].name
+                    lastRaceSurface = raceDataList[0].trackSurface
                     MessageLog.i(TAG, "[RACE] Detected scheduled race grade: $lastRaceGrade.")
 
                     // Stage the scheduled race so finalizeRaceResults() records its win/loss in the solver's history. Without this, scheduled
@@ -2280,6 +2315,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     lastRaceGrade = match.grade
                     lastRaceFans = match.fans
                     lastRaceDistance = match.trackDistance
+                    lastRaceName = match.name
+                    lastRaceSurface = match.trackSurface
                     lastRaceIsRival = match.isRival
                     return true
                 }
@@ -2337,6 +2374,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         lastRaceGrade = solverPick.grade
         lastRaceFans = solverPick.fans
         lastRaceDistance = solverPick.trackDistance
+        lastRaceName = solverPick.name
+        lastRaceSurface = solverPick.trackSurface
         lastRaceIsRival = solverPick.isRival
         return true
     }
@@ -2523,6 +2562,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         lastRaceGrade = raceDataList.firstOrNull()?.grade
         lastRaceFans = raceDataList.firstOrNull()?.fans ?: 0
         lastRaceDistance = raceDataList.firstOrNull()?.trackDistance
+        lastRaceName = raceDataList.firstOrNull()?.name ?: selectedRaceName
+        lastRaceSurface = raceDataList.firstOrNull()?.trackSurface
         lastRaceIsRival = filteredRaces[index].isRival
 
         // Selects the determined race on screen.

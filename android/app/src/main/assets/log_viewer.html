@@ -5868,7 +5868,7 @@
                 // Races by grade.
                 var byGrade = totals.racesByGrade || {}
                 var grades = Object.keys(byGrade)
-                    .filter(function (k) { return byGrade[k] > 0 })
+                    .filter(function (k) { return k && byGrade[k] > 0 })
                     .sort(function (a, b) { return ANALYTIC_GRADE_RANK.indexOf(a) - ANALYTIC_GRADE_RANK.indexOf(b) })
                 analyticUpdateChart("racesByGrade", function (c) {
                     c.data.labels = grades.map(analyticGradeLabel)
@@ -5968,7 +5968,7 @@
 
 
                 var gradesSeen = []
-                races.forEach(function (r) { if (gradesSeen.indexOf(r.grade) < 0) gradesSeen.push(r.grade) })
+                races.forEach(function (r) { if (r.grade && gradesSeen.indexOf(r.grade) < 0) gradesSeen.push(r.grade) })
                 gradesSeen.sort(function (a, b) { return ANALYTIC_GRADE_RANK.indexOf(a) - ANALYTIC_GRADE_RANK.indexOf(b) })
                 analyticUpdateChart("winByGrade", function (c) {
                     c.data.labels = gradesSeen.map(analyticGradeLabel)
