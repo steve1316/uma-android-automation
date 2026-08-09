@@ -1232,15 +1232,10 @@ class Trackblazer(game: Game) : Campaign(game) {
     }
 
     /**
-     * Pulls the picked stat's failure-chance and stat-gain map out of the snapshot so the Decision Report's `Pick:` line can show them. Returns
-     * (null, null) when the pick is null or absent from both snapshots. `failureChance < 0` is treated as "OCR did not measure" and surfaced as null.
+     * Pulls the picked stat's failure-chance and stat-gain map out of the snapshot so the Decision Report's `Pick:` line can show them.
+     * Reads the snapshots rather than the live analyzer state, which `confirmAndCloseItemDialog` clears later in the turn.
      */
-    private fun pickedStatDetails(picked: StatName?): Pair<Int?, Map<StatName, Int>?> {
-        if (picked == null) return null to null
-        analysisSnapshotForReport.firstOrNull { it.name == picked }?.let { return it.failureChance.takeIf { fc -> fc >= 0 } to it.statGains }
-        skippedSnapshotForReport[picked]?.let { return it.failureChance.takeIf { fc -> fc >= 0 } to it.statGains }
-        return null to null
-    }
+    private fun pickedStatDetails(picked: StatName?): Pair<Int?, Map<StatName, Int>?> = training.pickedStatDetails(picked, analysisSnapshotForReport, skippedSnapshotForReport)
 
     private fun buildTrainingRunnerUps(picked: StatName?): List<DecisionTracer.TrainingRunnerUp> {
         val analyzed = analysisSnapshotForReport
