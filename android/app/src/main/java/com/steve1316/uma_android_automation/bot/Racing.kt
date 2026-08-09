@@ -1827,10 +1827,10 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             // Distance is unknown for Finale races; per-distance strategy will fall back to blanket.
         }
 
-        // OCR the mandatory race name via the on-screen double-star prediction icon so per-distance strategy uses the actual race distance. Without this,
-        // lastRaceDistance stays null and per-distance strategy falls back to the user's blanket strategy for every mandatory race. Gated on
-        // enablePerDistanceStrategy so users not using per-distance don't pay the OCR + DB lookup overhead.
-        if (enablePerDistanceStrategy && lastRaceDistance == null) {
+        // OCR the mandatory race name via the on-screen double-star prediction icon to resolve its name, grade, surface, and distance. Per-distance
+        // strategy needs the distance to avoid falling back to the user's blanket strategy, and the Analytics tab needs the rest to chart the race
+        // rather than just counting it. Skipped once the details are already known so the OCR + DB lookup only runs when it would add something.
+        if (lastRaceDistance == null) {
             val predictionLocations = IconRaceListPredictionDoubleStar.findAll(game.imageUtils)
             if (predictionLocations.isNotEmpty()) {
                 val raceName = game.imageUtils.extractRaceName(predictionLocations[0])
@@ -1846,7 +1846,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     MessageLog.i(TAG, "[RACE] Detected mandatory race \"${raceData.name}\" (Grade: ${raceData.grade}, Distance: ${raceData.trackDistance}).")
                 }
             } else {
-                MessageLog.i(TAG, "[RACE] No double-star prediction found on mandatory race screen. Per-distance strategy will fall back to blanket.")
+                MessageLog.i(TAG, "[RACE] No double-star prediction found on mandatory race screen. Per-distance strategy will fall back to blanket and the race goes uncharted.")
             }
         }
 
