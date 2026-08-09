@@ -11,17 +11,17 @@ import com.steve1316.uma_android_automation.components.ButtonCancel
 import com.steve1316.uma_android_automation.components.ButtonCareerEndSkillsMini
 import com.steve1316.uma_android_automation.components.ButtonClose
 import com.steve1316.uma_android_automation.components.ButtonCompleteCareer
-import com.steve1316.uma_android_automation.components.ButtonLearn
 import com.steve1316.uma_android_automation.components.ButtonGrandLiveConcert
 import com.steve1316.uma_android_automation.components.ButtonGrandLiveGrandConcert
+import com.steve1316.uma_android_automation.components.ButtonGrandLiveLessons
 import com.steve1316.uma_android_automation.components.ButtonGrandLiveLessonsBig
 import com.steve1316.uma_android_automation.components.ButtonGrandLiveStart
 import com.steve1316.uma_android_automation.components.ButtonInfirmaryMini
-import com.steve1316.uma_android_automation.components.ButtonGrandLiveLessons
+import com.steve1316.uma_android_automation.components.ButtonLearn
+import com.steve1316.uma_android_automation.components.ButtonNext
 import com.steve1316.uma_android_automation.components.ButtonRaceDayMini
 import com.steve1316.uma_android_automation.components.ButtonRacesMini
 import com.steve1316.uma_android_automation.components.ButtonRecreationMini
-import com.steve1316.uma_android_automation.components.ButtonNext
 import com.steve1316.uma_android_automation.components.ButtonSkip
 import com.steve1316.uma_android_automation.components.Checkbox
 import com.steve1316.uma_android_automation.components.ComponentInterface
@@ -237,6 +237,11 @@ class GrandLive(game: Game) : Campaign(game) {
      * @return True when the per-turn Lessons side-action should run.
      */
     private fun shouldOpenLessonsThisTurn(): Boolean {
+        // A misread date can land ahead of the real turn, which would otherwise hold the interval closed for as many turns as the date overshot.
+        if (lastLessonScanDay > date.day) {
+            MessageLog.i(TAG, "[GRAND_LIVE] Last Lessons scan is dated after the current turn (day ${date.day} < $lastLessonScanDay); re-checking now.")
+            lastLessonScanDay = -1
+        }
         if (lastLessonScanDay >= 0 && date.day - lastLessonScanDay < lessonRescanInterval) {
             MessageLog.i(TAG, "[GRAND_LIVE] Skipping Lessons: re-checked recently, next poll in ${lessonRescanInterval - (date.day - lastLessonScanDay)} turn(s).")
             return false
@@ -298,12 +303,12 @@ class GrandLive(game: Game) : Campaign(game) {
 
             val confirmSource = game.imageUtils.getSourceBitmap()
 
-            // For an Energy card away from the final concert, read the dialog's printed "<new> / 100" and cancel if it would cap out (wasted energy).
+            // For an Energy card away from the final concert, read the dialog's printed "<new> / <cap>" and cancel if it would cap out (wasted energy).
             // Reading the dialog avoids relying on the trainee's energy, which is unknown when the bot is started straight on a concert screen.
             if (!isFinalConcert && parseEnergyGain(choice.effectText) != null) {
                 val projected = readDialogProjectedEnergy(confirmSource)
-                if (projected != null && projected >= 100) {
-                    MessageLog.i(TAG, "[GRAND_LIVE] Skipping '${choice.name}': projected energy ${projected}/100 would overflow.")
+                if (projected != null && projected.first >= projected.second) {
+                    MessageLog.i(TAG, "[GRAND_LIVE] Skipping '${choice.name}': projected energy ${projected.first}/${projected.second} would overflow.")
                     ButtonCancel.click(game.imageUtils, sourceBitmap = confirmSource, tries = 5)
                     skippedEnergyCards.add(choice.name)
                     game.wait(game.dialogWaitDelay)
@@ -399,7 +404,10 @@ class GrandLive(game: Game) : Campaign(game) {
         if (anchors.isEmpty()) {
             // Probe a looser confidence so the log tells us whether the anchor is a threshold miss (loose > 0 -> lower the confidence) or a crop mismatch (loose == 0 -> recrop grandlive_performance_point_cost).
             val loose = LabelGrandLiveLessonCost.findAll(game.imageUtils, sourceBitmap = sourceBitmap, confidence = 0.7).size
-            MessageLog.i(TAG, "[GRAND_LIVE] Lessons scan: no cost-pill anchors at default confidence ($loose at 0.7). If >0, the crop matches but the threshold is too strict; if 0, recrop grandlive_performance_point_cost.")
+            MessageLog.i(
+                TAG,
+                "[GRAND_LIVE] Lessons scan: no cost-pill anchors at default confidence ($loose at 0.7). If >0, the crop matches but the threshold is too strict; if 0, recrop grandlive_performance_point_cost.",
+            )
             // Dump the exact frame the scan ran against (debug mode only) so the actual Lessons screen can be inspected.
             game.imageUtils.saveDebugScreenshot(sourceBitmap, "grandlive_lessons_scan_empty")
             return emptyList()
@@ -486,13 +494,13 @@ class GrandLive(game: Game) : Campaign(game) {
     }
 
     /**
-     * Read the projected new energy the Lessons purchase confirmation prints as "<new> / 100" above its energy bar. Used to cancel an
+     * Read the projected new energy the Lessons purchase confirmation prints as "<new> / <cap>" above its energy bar. Used to cancel an
      * Energy purchase that would cap out. Reads the dialog rather than the trainee's energy, which is unknown when the bot starts on a concert screen.
      *
      * @param sourceBitmap The confirmation-dialog screenshot.
-     * @return The projected new energy (0-100), or null when the readout could not be parsed.
+     * @return The projected new energy and the cap it was read against, or null when the readout could not be parsed.
      */
-    private fun readDialogProjectedEnergy(sourceBitmap: Bitmap): Int? {
+    private fun readDialogProjectedEnergy(sourceBitmap: Bitmap): Pair<Int, Int>? {
         val text =
             game.imageUtils.performOCROnRegion(
                 sourceBitmap,
@@ -507,7 +515,12 @@ class GrandLive(game: Game) : Campaign(game) {
                 debugName = "grandlive_lesson_projected_energy",
             )
         val projected = parseProjectedEnergy(text)
-        MessageLog.i(TAG, "[GRAND_LIVE] Projected-energy readout OCR'd as \"$text\" -> ${projected ?: "unparsed"}.")
+        if (projected == null) {
+            // Worth a warning: an unparsed readout disables the overflow check for this purchase, so energy can silently be wasted.
+            MessageLog.w(TAG, "[GRAND_LIVE] Projected-energy readout OCR'd as \"$text\" -> unparsed; buying without the overflow check.")
+        } else {
+            MessageLog.i(TAG, "[GRAND_LIVE] Projected-energy readout OCR'd as \"$text\" -> ${projected.first}/${projected.second}.")
+        }
         return projected
     }
 

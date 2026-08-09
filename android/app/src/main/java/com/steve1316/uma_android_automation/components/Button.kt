@@ -68,6 +68,7 @@ val ButtonLearn = button("learn")
 val ButtonReset = button("reset", Region.bottomHalf)
 val ButtonRace = button("race", Region.bottomHalf)
 val ButtonRaceDayRace = button("race_day_race", Region.bottomHalf)
+
 // Grand Live's race-day bottom row is Skills / Race / Lessons, so its Race button renders smaller than the standard race-day template.
 val ButtonRaceDayMini = button("race_day_race_mini", Region.bottomHalf)
 val ButtonRaceAgain = button("race_again", Region.bottomHalf)
@@ -132,6 +133,7 @@ object ButtonMenuBarRace : MultiStateButtonInterface {
 
 val ButtonCompleteCareer = button("complete_career", Region.bottomHalf)
 val ButtonCareerEndSkills = button("career_end_skills")
+
 // Grand Live's career-end screen has a three-button bottom row (Skills / Complete Career / Lessons), so the Skills button renders smaller than the standard template.
 val ButtonCareerEndSkillsMini = button("career_end_skills_mini")
 val ButtonClawMachine = button("claw_machine", Region.bottomHalf)
@@ -153,6 +155,7 @@ val ButtonRest = button("rest", Region.bottomHalf)
 val ButtonRestAndRecreation = button("rest_and_recreation", Region.bottomHalf)
 val ButtonInfirmary = button("infirmary", Region.bottomHalf)
 val ButtonRecreation = button("recreation", Region.bottomHalf)
+
 // Grand Live shrinks the bottom action row to four buttons (Lessons is added), so Infirmary / Recreation / Races render smaller than the standard templates.
 val ButtonInfirmaryMini = button("infirmary_mini", Region.bottomHalf)
 val ButtonRecreationMini = button("recreation_mini", Region.bottomHalf)
@@ -166,6 +169,7 @@ val ButtonTrainingStamina = button("training_stamina", Region.bottomHalf)
 val ButtonTrainingPower = button("training_power", Region.bottomHalf)
 val ButtonTrainingGuts = button("training_guts", Region.bottomHalf)
 val ButtonTrainingWit = button("training_wit", Region.bottomHalf)
+
 // Grand Live's facility buttons do not match the standard templates above, so it uses this alternative crop.
 val ButtonTrainingSpeedAlt = button("training_speed_alt", Region.bottomHalf)
 val ButtonTrainingStaminaAlt = button("training_stamina_alt", Region.bottomHalf)
