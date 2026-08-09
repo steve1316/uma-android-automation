@@ -804,5 +804,18 @@
             "Turf": "A",
             "Dirt": "E"
         }
+    },
+    "Yukino Bijin": {
+        "name": "Yukino Bijin",
+        "distanceAptitudes": {
+            "Sprint": "D",
+            "Mile": "A",
+            "Medium": "A",
+            "Long": "E"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "B"
+        }
     }
 }

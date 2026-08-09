@@ -1720,6 +1720,36 @@
         "characters": [],
         "matchers": []
     },
+    "Iwate's Natural Beauty": {
+        "name": "Iwate's Natural Beauty",
+        "bullet_points": [
+            "Yukino Bijin only",
+            "Win a graded race held in Morioka",
+            "Win the Oka Sho, Japanese Oaks and Shuka Sho",
+            "Earn a total of at least 320000 fans"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Yukino Bijin"
+        ],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Oka Sho",
+                "displayLabel": "Win the Oka Sho"
+            },
+            {
+                "type": "winRace",
+                "name": "Japanese Oaks",
+                "displayLabel": "Win the Japanese Oaks"
+            },
+            {
+                "type": "winRace",
+                "name": "Shuka Sho",
+                "displayLabel": "Win the Shuka Sho"
+            }
+        ]
+    },
     "Jinx Breaker": {
         "name": "Jinx Breaker",
         "bullet_points": [

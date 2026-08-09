@@ -2025,7 +2025,7 @@
         "condition": "running_style==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 201551,
         "downgrade": null
     },
@@ -2039,7 +2039,7 @@
         "condition": "running_style==4",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201552
     },
@@ -2837,7 +2837,7 @@
         "condition": "running_style==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 201521,
         "downgrade": null
     },
@@ -2851,7 +2851,7 @@
         "condition": "running_style==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201522
     },
@@ -4377,7 +4377,7 @@
         "condition": "running_style==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 201541,
         "downgrade": null
     },
@@ -4391,7 +4391,7 @@
         "condition": "running_style==3",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201542
     },
@@ -5931,7 +5931,7 @@
         "condition": "running_style==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": 201531,
         "downgrade": null
     },
@@ -5945,7 +5945,7 @@
         "condition": "running_style==2",
         "precondition": "",
         "inherited": false,
-        "community_tier": 2,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 201532
     },
@@ -7597,7 +7597,7 @@
         "condition": "distance_diff_top<=5&remain_distance<=300&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },

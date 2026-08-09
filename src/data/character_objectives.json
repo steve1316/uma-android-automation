@@ -6589,5 +6589,127 @@
                 ]
             }
         ]
+    },
+    "Yukino Bijin": {
+        "name": "Yukino Bijin",
+        "mandatoryRaces": [
+            {
+                "turn": 23,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Hanshin Juvenile Fillies",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 6500
+                    }
+                ]
+            },
+            {
+                "turn": 31,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Oka Sho",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 10500
+                    }
+                ]
+            },
+            {
+                "turn": 34,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Japanese Oaks",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 11000
+                    }
+                ]
+            },
+            {
+                "turn": 38,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Queen Stakes",
+                        "grade": "G3",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 3600
+                    }
+                ]
+            },
+            {
+                "turn": 44,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Shuka Sho",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 54,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Osaka Hai",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 13500
+                    }
+                ]
+            },
+            {
+                "turn": 57,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Victoria Mile",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 10500
+                    }
+                ]
+            },
+            {
+                "turn": 69,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Queen Elizabeth II Cup",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 10500
+                    }
+                ]
+            },
+            {
+                "turn": 70,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Japan Cup",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 30000
+                    }
+                ]
+            }
+        ]
     }
 }
