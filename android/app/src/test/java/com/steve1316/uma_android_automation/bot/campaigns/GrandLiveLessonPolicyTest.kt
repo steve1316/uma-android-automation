@@ -103,11 +103,18 @@ class GrandLiveLessonPolicyTest {
     }
 
     @Test
-    @DisplayName("Projected energy is parsed from the dialog's '<new> / 100' readout")
+    @DisplayName("Projected energy is parsed from the dialog's '<new> / <cap>' readout")
     fun parsesProjectedEnergy() {
-        assertEquals(78, parseProjectedEnergy("78 / 100"))
-        assertEquals(100, parseProjectedEnergy("100/100"))
+        assertEquals(78 to 100, parseProjectedEnergy("78 / 100"))
+        assertEquals(100 to 100, parseProjectedEnergy("100/100"))
         assertNull(parseProjectedEnergy("no number here"))
+    }
+
+    @Test
+    @DisplayName("A misread energy cap still parses, so the overflow guard is not silently disabled")
+    fun parsesProjectedEnergyWithMisreadCap() {
+        // Observed on device: the cap OCR'd as "104", which the old hardcoded "/100" pattern could not match at all.
+        assertEquals(87 to 104, parseProjectedEnergy("87 /104"))
     }
 
     @Test
@@ -162,6 +169,50 @@ class GrandLiveLessonPolicyTest {
         val gainFirst = listOf(LessonEffectCategory.TRAINING_GAIN, LessonEffectCategory.STAT_GAINS)
         val chosen = chooseLessonPurchase(options, priority, forceMaxHype = true, hypeMaxed = false, categoryOrder = gainFirst)
         assertEquals(LessonKind.SONG, chosen?.kind)
+    }
+
+    @Test
+    @DisplayName("The top-ranked category beats two lower-ranked ones stacked on one card")
+    fun topRankBeatsStackedLowerRanks() {
+        // Observed on device: a Training Gain + Support Events song used to outscore a Training Effectiveness song because the weights summed.
+        val options =
+            listOf(
+                song("Power +22 Friendship Training Effectiveness +5%", 0),
+                song("Training Stamina Gain +1 Support Chain Event Frequency Lvl +1", 1),
+            )
+        val chosen = chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)
+        assertEquals(0, chosen?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A card matching more categories wins when the better-ranked ones tie")
+    fun moreCategoriesWinsOnEqualPrefix() {
+        val options =
+            listOf(
+                song("Training Speed Gain +1", 0),
+                song("Training Speed Gain +1 Support Chain Event Frequency Lvl +1", 1),
+            )
+        val chosen = chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)
+        assertEquals(1, chosen?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Training Effectiveness is inferred when OCR truncated the label to a bare percentage")
+    fun inferTrainingEffectivenessFromBarePercent() {
+        // Observed on device: "Precious Treasure Box" reads as "Speed +26" / "+10%", losing the label entirely.
+        assertTrue(detectLessonCategories("Speed +26 +10%").contains(LessonEffectCategory.TRAINING_EFFECTIVENESS))
+        assertTrue(detectLessonCategories("Guts +26 +10%").contains(LessonEffectCategory.TRAINING_EFFECTIVENESS))
+        // A small stat gain with no percentage is an ordinary technique, not a Training Effectiveness song.
+        assertFalse(detectLessonCategories("Speed +5").contains(LessonEffectCategory.TRAINING_EFFECTIVENESS))
+    }
+
+    @Test
+    @DisplayName("The post-concert overlay is stripped instead of masking the real effect")
+    fun stripsConcertOverOverlay() {
+        val effect = "Wit +22 O This bonus won't take effect, as the concert is over."
+        assertEquals(StatName.WIT to 22, parseStatGain(effect))
+        assertTrue(detectLessonCategories(effect).contains(LessonEffectCategory.TRAINING_EFFECTIVENESS))
+        assertTrue(detectLessonCategories(effect).contains(LessonEffectCategory.STAT_GAINS))
     }
 
     @Test

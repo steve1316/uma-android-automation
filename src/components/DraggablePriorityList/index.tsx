@@ -33,8 +33,9 @@ interface DraggablePriorityListProps {
 }
 
 /**
- * A drag-to-reorder list paired with checkbox toggles. Selected items render on top with a numeric badge and grip handle. Unselected items render below
- * a dashed separator with a plain checkbox. Consumed inside `SheetModal` - the parent owns scroll so this component does not wrap its rows in a ScrollView.
+ * A drag-to-reorder list paired with checkbox toggles. Selected items render on top with a numeric badge, a remove button, and a grip handle, and the row
+ * body is the drag target. Unselected items render below a dashed separator with a plain checkbox and are appended to the end when selected.
+ * Consumed inside `SheetModal` - the parent owns scroll so this component does not wrap its rows in a ScrollView.
  * @param items All items.
  * @param selectedItems Selected items in priority order.
  * @param onSelectionChange Selection toggle callback.
@@ -79,6 +80,7 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
                 badgeText: { ...TYPE.monoValue, color: colors.onBrand, fontSize: 11, fontWeight: "700" as const },
                 selectedLabel: { ...TYPE.body, color: colors.text, flex: 1 },
                 grip: { opacity: 0.7 },
+                remove: { opacity: 0.7, paddingHorizontal: 2 },
                 separator: { borderTopWidth: 1, borderStyle: "dashed", borderColor: colors.borderHair, marginVertical: SPACING.sm },
                 unselectedList: { gap: SPACING.xs + 2 },
             }),
@@ -88,21 +90,32 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
     const renderSelectedItem = (info: DragListRenderItemInfo<PriorityItem>) => {
         const { item, onDragStart, onDragEnd } = info
         const priorityNumber = orderedSelected.indexOf(item.id) + 1
+        // The row body starts a drag rather than toggling selection. Removal lives on its own button, since a drag that the pan responder read as a
+        // tap used to silently deselect the item, and re-selecting it appended it to the bottom of the list.
         return (
             <Pressable
                 style={styles.selectedRow}
-                onPress={() => onSelectionChange(selectedItems.filter((id) => id !== item.id))}
+                onPressIn={onDragStart}
+                onPressOut={onDragEnd}
                 android_ripple={{ color: colors.ripple, foreground: true }}
-                accessibilityRole="button"
-                accessibilityLabel={`${item.label} priority ${priorityNumber}`}
+                accessibilityLabel={`${item.label} priority ${priorityNumber}, drag to reorder`}
             >
                 <View style={styles.badge}>
                     <Text style={styles.badgeText}>{priorityNumber}</Text>
                 </View>
                 <Text style={styles.selectedLabel}>{item.label}</Text>
-                <Pressable onPress={() => {}} onPressIn={onDragStart} onPressOut={onDragEnd} style={styles.grip} accessibilityLabel="Drag to reorder">
-                    <Ionicons name="reorder-three" size={20} color={colors.brand} />
+                <Pressable
+                    onPress={() => onSelectionChange(orderedSelected.filter((id) => id !== item.id))}
+                    hitSlop={SPACING.sm}
+                    style={styles.remove}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${item.label} from the priority list`}
+                >
+                    <Ionicons name="close" size={18} color={colors.textMuted} />
                 </Pressable>
+                <View style={styles.grip}>
+                    <Ionicons name="reorder-three" size={20} color={colors.brand} />
+                </View>
             </Pressable>
         )
     }
@@ -115,8 +128,9 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
         onOrderChange(copy)
     }
 
+    // Both lists read `orderedSelected` so a reorder that has not yet propagated back through the parent cannot make an item appear in both or neither.
     const selectedData = orderedSelected.map((id) => items.find((it) => it.id === id)).filter((x): x is PriorityItem => !!x)
-    const unselected = items.filter((it) => !selectedItems.includes(it.id))
+    const unselected = items.filter((it) => !orderedSelected.includes(it.id))
 
     return (
         <View style={style}>
@@ -129,12 +143,12 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
             {unselected.length > 0 ? (
                 <View style={styles.unselectedList}>
                     {unselected.map((item) => (
-                        <ModalCheckRow key={item.id} label={item.label} checked={false} dim onPress={() => onSelectionChange([...selectedItems, item.id])} />
+                        <ModalCheckRow key={item.id} label={item.label} checked={false} dim onPress={() => onSelectionChange([...orderedSelected, item.id])} />
                     ))}
                 </View>
             ) : null}
 
-            {selectedItems.length === 0 ? <Text style={styles.empty}>NO ITEMS SELECTED - SELECT TO SET ORDER</Text> : null}
+            {selectedData.length === 0 ? <Text style={styles.empty}>NO ITEMS SELECTED - SELECT TO SET ORDER</Text> : null}
         </View>
     )
 }
