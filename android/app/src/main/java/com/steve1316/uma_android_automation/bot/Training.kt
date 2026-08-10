@@ -2767,11 +2767,14 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     if (trainingButtons.getValue(StatName.WIT).click(game.imageUtils, taps = 3)) {
                         game.waitForLoading()
                         MessageLog.v(TAG, "[TRAINING] Successfully forced Wit training during the Finale instead of recovering energy.")
+                        val (finalePickFail, finalePickGains) = pickedStatDetails(StatName.WIT)
                         campaign.decisionTracer.recordTrainingSelection(
                             selected = StatName.WIT,
                             source = SelectionSource.FORCED_DEFAULT,
                             reason = finaleReason,
                             runnerUps = buildRunnerUps(StatName.WIT),
+                            pickedFailureChance = finalePickFail,
+                            pickedStatGains = finalePickGains,
                         )
                         firstTrainingCheck = false
                     } else {
@@ -2825,6 +2828,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             } else {
                 // Now select the training option with the highest weight.
+                val (pickFail, pickGains) = pickedStatDetails(trainingSelected)
                 campaign.decisionTracer.recordTrainingSelection(
                     selected = trainingSelected,
                     source = if (forceStat != null) SelectionSource.FORCED_DEFAULT else lastSelectionSource,
@@ -2835,6 +2839,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                             "Selected by Training.handleTraining base flow (analyzer pick)"
                         },
                     runnerUps = buildRunnerUps(trainingSelected),
+                    pickedFailureChance = pickFail,
+                    pickedStatGains = pickGains,
                 )
                 executeTraining(trainingSelected)
                 firstTrainingCheck = false
@@ -2846,6 +2852,26 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         }
         MessageLog.v(TAG, "********************")
         return trainingSelected
+    }
+
+    /**
+     * Looks up the failure chance and stat gains for the training that was picked this turn.
+     * Feeds both the Decision Report `Pick:` line and the Run Analytics charts.
+     *
+     * @param picked The stat selected this turn. Null when no training was picked.
+     * @param analysis Analyzed trainings to search. Defaults to the live cache. Trackblazer passes a snapshot since its cache is cleared mid-turn.
+     * @param skipped Skipped trainings to fall back on. Defaults to the live map, with the same Trackblazer caveat as `analysis`.
+     * @return A pair of (failure chance, stat gains) for the picked training, each null when neither source has an entry for it.
+     */
+    internal fun pickedStatDetails(
+        picked: StatName?,
+        analysis: List<TrainingAnalysisResult> = cachedAnalysisResults.orEmpty(),
+        skipped: Map<StatName, TrainingOption> = skippedTrainingMap,
+    ): Pair<Int?, Map<StatName, Int>?> {
+        if (picked == null) return null to null
+        analysis.firstOrNull { it.name == picked }?.let { return it.failureChance.takeIf { fc -> fc >= 0 } to it.statGains }
+        skipped[picked]?.let { return it.failureChance.takeIf { fc -> fc >= 0 } to it.statGains }
+        return null to null
     }
 
     /**

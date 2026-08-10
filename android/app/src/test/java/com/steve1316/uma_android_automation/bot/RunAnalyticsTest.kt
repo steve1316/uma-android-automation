@@ -83,6 +83,19 @@ class RunAnalyticsTest {
     }
 
     @Test
+    @DisplayName("a turn's race is recorded once even when a later record names it differently")
+    fun `dedupes repeated race by turn`() {
+        // OCR can read the same race under a different name, so the turn alone has to settle identity.
+        RunAnalytics.recordRace(15, "Hopeful Stakes", "G3", "TURF", "MILE", 1200, true, false)
+        RunAnalytics.recordRace(15, "hopeful stakes (OCR)", "", "", "", 0, true, false)
+
+        val races = snapshot(false).getJSONArray("races")
+        assertEquals(1, races.length())
+        assertEquals("Hopeful Stakes", races.getJSONObject(0).getString("name"))
+        assertEquals("G3", races.getJSONObject(0).getString("grade"))
+    }
+
+    @Test
     @DisplayName("races tally wins, grades, and bucket into the correct year")
     fun `aggregates races and per-year`() {
         recordTraining(gameDate(DateYear.JUNIOR, DateMonth.MARCH, DatePhase.EARLY, 5), trainee("A", 1, 1, 1, 1, 1, 80, 1), StatName.SPEED, mapOf(StatName.SPEED to 10), 0)

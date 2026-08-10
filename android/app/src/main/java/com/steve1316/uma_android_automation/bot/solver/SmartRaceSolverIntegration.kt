@@ -5,7 +5,6 @@ import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.automation_library.utils.TextUtils
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.Racing.RaceData
-import com.steve1316.uma_android_automation.bot.RunAnalytics
 import com.steve1316.uma_android_automation.types.Aptitude
 import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.RaceGrade
@@ -249,7 +248,6 @@ object SmartRaceSolverIntegration {
     fun commitPendingRace(won: Boolean) {
         val pending = pendingRace ?: return
         pendingRace = null
-        recordRaceForAnalytics(pending, won)
         if (!won) {
             recordRaceLost(pending.raceKey, pending.name, pending.classYear, pending.turnNumber)
             MessageLog.i(TAG, "Race \"${pending.name}\" on turn ${pending.turnNumber} did not finish 1st; recorded as a loss.")
@@ -266,27 +264,6 @@ object SmartRaceSolverIntegration {
         logEpithetProgressAfterWin(pending.name, pending.turnNumber, historyBefore, historyAfter)
         broadcastCalendarSnapshot(reuseSchedule = true)
         logSyntheticDebutOnce(pending.turnNumber)
-    }
-
-    /**
-     * Mirror a committed race outcome into [RunAnalytics] for the Analytics tab. Looks up the full race details (grade, surface, distance, fans) from the
-     * cached candidate pool so the analytics snapshot carries the same data the calendar shows.
-     *
-     * @param pending The race that was just confirmed won or lost.
-     * @param won True when the trainee finished 1st.
-     */
-    private fun recordRaceForAnalytics(pending: RaceWin, won: Boolean) {
-        val candidate = cachedRaces?.let { findCandidate(pending.turnNumber, pending.raceKey, pending.name, it) }
-        RunAnalytics.recordRace(
-            turn = pending.turnNumber,
-            name = pending.name,
-            grade = candidate?.grade?.name ?: "",
-            surface = candidate?.terrain?.name ?: "",
-            distance = candidate?.distanceType?.name ?: "",
-            fans = candidate?.fans ?: 0,
-            won = won,
-            mandatory = candidate?.isMandatory == true,
-        )
     }
 
     /**

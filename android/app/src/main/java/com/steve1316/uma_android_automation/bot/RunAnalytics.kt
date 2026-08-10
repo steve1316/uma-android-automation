@@ -274,19 +274,21 @@ object RunAnalytics {
     }
 
     /**
-     * Record one committed race outcome. Deduplicated by turn + name. Does not broadcast on its own - the turn-end `recordTurn` that follows picks it up.
+     * Record one committed race outcome. Deduplicated by turn. Does not broadcast on its own - the turn-end `recordTurn` that follows picks it up.
      *
      * @param turn Turn the race ran on.
-     * @param name Race name.
-     * @param grade Race grade enum name (e.g. "G1", "PRE_OP").
-     * @param surface Track surface enum name (e.g. "TURF").
-     * @param distance Track distance enum name (e.g. "MEDIUM").
+     * @param name Race name. Empty when the racing flow never matched the race against the database.
+     * @param grade Race grade enum name (e.g. "G1", "PRE_OP"). Empty when unresolved, which keeps it out of the grade charts.
+     * @param surface Track surface enum name (e.g. "TURF"). Empty when unresolved.
+     * @param distance Track distance enum name (e.g. "MEDIUM"). Empty when unresolved.
      * @param fans Fans awarded by the race.
      * @param won True when the trainee finished 1st.
      * @param mandatory True when the race was a locked mandatory race.
      */
     fun recordRace(turn: Int, name: String, grade: String, surface: String, distance: String, fans: Int, won: Boolean, mandatory: Boolean) {
-        if (races.any { it.turn == turn && it.name == name }) return
+        // Only one career race can run per turn, so the turn alone identifies it. Guards against a second record for the same race arriving
+        // under a different name, which OCR can easily produce.
+        if (races.any { it.turn == turn }) return
         races.add(RaceRecord(turn, name, grade, surface, distance, fans, won, mandatory))
     }
 

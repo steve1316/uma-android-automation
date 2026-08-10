@@ -2532,7 +2532,7 @@
                     <button id="compactBtn" class="toolbar-btn icon active" onclick="toggleCondensing()" title="Toggle log condensation (timestamps may appear out of order when enabled)">
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h10M3 8h10M3 11h10" /></svg>
                     </button>
-                    <button class="toolbar-btn icon" onclick="copyAllLogs()" title="Copy all logs">
+                    <button class="toolbar-btn icon" onclick="copyAllLogs(event)" title="Copy all logs">
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8" height="9" rx="1.5" /><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" /></svg>
                     </button>
                     <button class="toolbar-btn icon" onclick="downloadLogs()" title="Download logs">
@@ -3816,9 +3816,49 @@
             }
 
             /**
-             * Copies the content of all currently stored log messages to the clipboard.
+             * Writes text to the clipboard. The viewer is served over plain http on the LAN, which is not a secure context, so navigator.clipboard is
+             * undefined in every browser. Fall back to a hidden textarea plus execCommand, which still works outside a secure context.
+             *
+             * @param {string} text - The text to place on the clipboard.
+             * @returns {Promise<boolean>} Resolves true when the copy succeeded.
              */
-            function copyAllLogs() {
+            function writeToClipboard(text) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    return navigator.clipboard.writeText(text).then(
+                        function () {
+                            return true
+                        },
+                        function (e) {
+                            console.error("Clipboard write failed:", e)
+                            return false
+                        }
+                    )
+                }
+                var ta = document.createElement("textarea")
+                ta.value = text
+                // Keep the textarea off-screen but still selectable, and avoid scrolling the page when it gains focus.
+                ta.style.position = "fixed"
+                ta.style.top = "-1000px"
+                ta.setAttribute("readonly", "")
+                document.body.appendChild(ta)
+                var ok = false
+                try {
+                    ta.select()
+                    ta.setSelectionRange(0, text.length)
+                    ok = document.execCommand("copy")
+                } catch (e) {
+                    console.error("Clipboard fallback failed:", e)
+                }
+                document.body.removeChild(ta)
+                return Promise.resolve(ok)
+            }
+
+            /**
+             * Copies the content of all currently stored log messages to the clipboard.
+             *
+             * @param {Event} ev - The originating click event, used to find the button to flash.
+             */
+            function copyAllLogs(ev) {
                 var text = allMessages
                     .map(function (m) {
                         var line = ""
@@ -3828,16 +3868,16 @@
                         return m.parsed.newline + line
                     })
                     .join("\n")
-                navigator.clipboard.writeText(text).then(function () {
+                // Read the button up front since currentTarget is cleared once the event finishes dispatching.
+                var btn = ev.currentTarget
+                writeToClipboard(text).then(function (ok) {
                     // Briefly flash the icon button to confirm, then restore its original SVG.
-                    var btn = event.target.closest(".toolbar-btn")
-                    if (btn) {
-                        var original = btn.innerHTML
-                        btn.textContent = "✓"
-                        setTimeout(function () {
-                            btn.innerHTML = original
-                        }, 1500)
-                    }
+                    if (!ok || !btn) return
+                    var original = btn.innerHTML
+                    btn.textContent = "✓"
+                    setTimeout(function () {
+                        btn.innerHTML = original
+                    }, 1500)
                 })
             }
 
@@ -5828,7 +5868,7 @@
                 // Races by grade.
                 var byGrade = totals.racesByGrade || {}
                 var grades = Object.keys(byGrade)
-                    .filter(function (k) { return byGrade[k] > 0 })
+                    .filter(function (k) { return k && byGrade[k] > 0 })
                     .sort(function (a, b) { return ANALYTIC_GRADE_RANK.indexOf(a) - ANALYTIC_GRADE_RANK.indexOf(b) })
                 analyticUpdateChart("racesByGrade", function (c) {
                     c.data.labels = grades.map(analyticGradeLabel)
@@ -5928,7 +5968,7 @@
 
 
                 var gradesSeen = []
-                races.forEach(function (r) { if (gradesSeen.indexOf(r.grade) < 0) gradesSeen.push(r.grade) })
+                races.forEach(function (r) { if (r.grade && gradesSeen.indexOf(r.grade) < 0) gradesSeen.push(r.grade) })
                 gradesSeen.sort(function (a, b) { return ANALYTIC_GRADE_RANK.indexOf(a) - ANALYTIC_GRADE_RANK.indexOf(b) })
                 analyticUpdateChart("winByGrade", function (c) {
                     c.data.labels = gradesSeen.map(analyticGradeLabel)
