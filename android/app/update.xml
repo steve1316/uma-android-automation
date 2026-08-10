@@ -1,13 +1,24 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.8.5</latestVersion>
+    <latestVersion>5.8.6</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.8.5 - Changelog
+v5.8.6 - Changelog
+
+Adjustments
+---
+- Update game data up to `Yukino Bijin 2026-08-04`.
+- Update Automation Library version to 2.5.9.
+- Retry the trainee name read instead of caching a null placeholder.
+- Improve mandatory race handling.
+- Rank Grand Live Lessons by priority order instead of summed weights.
 
 Fixes
 ---
-- Fix templates for training facility buttons in the non-Grand Live scenarios.
+- Fix incorrect text color used for the `Reset` popup in the `Scenario Overrides Settings` page.
+- Fix log names not being saved correctly from the `Remote Log Viewer`.
+- Fix broken copy button in the `Remote Log Viewer`.
+- Fix empty Analytics charts in the `Remote Log Viewer`.
 
 </releaseNotes>
   </update>
