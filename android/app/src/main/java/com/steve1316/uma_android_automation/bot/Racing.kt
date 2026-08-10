@@ -1657,11 +1657,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         // Otherwise, it would have found itself at the Race Selection screen already (by way of the insufficient fans popup).
         val loc: Point? = IconRaceDayRibbon.find(game.imageUtils).first
         if (loc != null) {
-            // Prefer the scenario's own race-day button since its size and position vary, such as Grand Live rendering a smaller one in a
-            // Skills / Race / Lessons row. Fall back to tapping 100px below the ribbon, which is not clickable itself.
-            if (!campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
-                game.tap(loc.x, loc.y + 100, IconRaceDayRibbon.template.path, ignoreWaiting = true)
-            }
+            tapRaceDayButton(loc)
             game.wait(0.5, skipWaitingForLoading = true)
             // Check for the consecutive race dialog before proceeding.
             campaign.handleDialogs(args = mapOf("overrideIgnoreConsecutiveRaceWarning" to true))
@@ -1755,6 +1751,23 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Taps the race-day button on the main screen to open the race list.
+     *
+     * Prefers the scenario's own race-day button since its size and position vary, such as Grand Live rendering a smaller one in a
+     * Skills / Race / Lessons row. Falls back to tapping 100px below the race day ribbon, which is not clickable itself.
+     *
+     * @param ribbonLocation The already-found location of the race day ribbon. Defaults to null to look for it here.
+     */
+    private fun tapRaceDayButton(ribbonLocation: Point? = null) {
+        if (campaign.raceDayButton.click(game.imageUtils, tries = 3)) {
+            return
+        }
+
+        val loc: Point = ribbonLocation ?: IconRaceDayRibbon.find(game.imageUtils).first ?: return
+        game.tap(loc.x, loc.y + 100, IconRaceDayRibbon.template.path, ignoreWaiting = true)
+    }
+
+    /**
      * Handles the process for a mandatory race.
      *
      * @return True if the mandatory race process was completed successfully, false otherwise.
@@ -1766,6 +1779,14 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             MessageLog.v(TAG, "********************")
             detectedMandatoryRaceCheck = true
             return false
+        }
+
+        // The caller already tapped the race-day button, but that tap gets swallowed while the turn's intro animation is still playing.
+        // Everything below reads the race list, so re-tap until it opens instead of running the whole flow against the main screen.
+        for (attempt in 1..3) {
+            if (ButtonRaceListFullStats.check(game.imageUtils, tries = 10)) break
+            MessageLog.i(TAG, "[RACE] The race list has not opened yet. Tapping the race-day button again.")
+            tapRaceDayButton()
         }
 
         // For Finale races, manually set the grade and fans.
