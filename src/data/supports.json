@@ -279,6 +279,26 @@
             "Sprint Corners ○ hint +1\nCurren Chan bond +5"
         ]
     },
+    "Daiichi Ruby": {
+        "Magnificent Dismay?": [
+            "Energy +15\nDaiichi Ruby bond +5",
+            "Power +15\nDaiichi Ruby bond +5"
+        ],
+        "Magnificent Melodia": [
+            "Skill points +25\nDaiichi Ruby bond +5",
+            "Gap Closer hint +1\nDaiichi Ruby bond +5"
+        ],
+        "(❯)\nTo Uphold Oneself with Strictness": [
+            "Randomly either\n----------\nPower +10\nDaiichi Ruby bond +5\n----------\n\n----------\nPower +15\nLate Surger Corners ○ hint +2\nDaiichi Ruby bond +5"
+        ],
+        "(❯❯)\nTo Exert Oneself with Diligence": [
+            "Energy +10\nPower +10\nDaiichi Ruby bond +5",
+            "Skill points +10\nSprinting Gear hint +2\nDaiichi Ruby bond +5"
+        ],
+        "(❯❯❯)\nTo Conduct Oneself with Kindness": [
+            "Power +15\nSkill points +25\nLightning Surge hint +1\nDaiichi Ruby bond +5"
+        ]
+    },
     "Daitaku Helios": {
         "(❯)\nA Legendary Smile in the House!": [
             "Energy -5\nPower +15\n(random) Early Lead hint +1\nDaitaku Helios bond +5",
@@ -305,6 +325,15 @@
         "(❯❯)\n#LOL #Party! #Round2": [
             "Power +10\n(random) Speed +10\nStraight Descent hint +1/+3\nDaitaku Helios bond +5",
             "Energy +20\nWatchful Eye hint +1\nDaitaku Helios bond +5"
+        ],
+        "(❯)\nHelios's Hype Heaven: The Lead-up ☆": [
+            "Randomly either\n----------\nSpeed +5\nSkill points +10\nDaitaku Helios bond +5\n----------\n\n----------\nSpeed +15\nSkill points +20\nFront Runner Straightaways ○ hint +1\nDaitaku Helios bond +5"
+        ],
+        "(❯❯)\nHelios's Hype Heaven Week!": [
+            "Randomly either\n----------\nSkill points +15\nDaitaku Helios bond +5\n----------\n\n----------\nSkill points +40\nTail Held High hint +1\nDaitaku Helios bond +10"
+        ],
+        "(❯❯❯)\nHype Heaven, Part Two!": [
+            "Randomly either\n----------\nSpeed +10\nGuts +5\nSkill points +10\nPerfect Spot! hint +1\nDaitaku Helios bond +5\n----------\n\n----------\nSpeed +15\nGuts +10\nSkill points +10\nPerfect Spot! hint +3\nDaitaku Helios bond +5"
         ]
     },
     "Daiwa Scarlet": {
@@ -724,6 +753,23 @@
         ],
         "(❯❯❯)\nAim for That Sparkling Moment!": [
             "Randomly either\n----------\nEnergy -10\nGuts +10\nRestless hint +1 or Moxie hint +1\n----------\n\n----------\nEnergy -10\nGuts +20\nWit +5\nRestless hint +3"
+        ]
+    },
+    "K.S.Miracle": {
+        "Spreading Kindness": [
+            "Speed +5\nPower +5\nGuts +5\nK.S.Miracle bond +5",
+            "Mood +2\nK.S.Miracle bond +5"
+        ],
+        "Come Rain or River": [
+            "Wit +20\nK.S.Miracle bond +5",
+            "Light as a Feather hint +1\nK.S.Miracle bond +5"
+        ],
+        "(❯)\nAcross Still Waters": [
+            "Speed +5\nPower +5\nGuts +5\nSprint Straightaways ○ hint +1\nK.S.Miracle bond +5"
+        ],
+        "(❯❯)\nOn Thin Ice": [
+            "Skill points +35\nK.S.Miracle bond +5",
+            "Energy +30\nK.S.Miracle bond +5"
         ]
     },
     "Kawakami Princess": {
@@ -1148,6 +1194,16 @@
         "(❯❯❯)\nOptimistic Escapism: Never Give Up!": [
             "Randomly either\n----------\nEnergy -10\nStamina +5\nGuts +5\nKeeping the Lead hint +3\nMejiro Palmer bond +5\n----------\n\n----------\nEnergy -10\nStamina +20\nGuts +20\nVanguard Spirit hint +3\nMejiro Palmer bond +5",
             "Energy +10\nLone Wolf hint +1"
+        ],
+        "(❯)\nGiving up Candy's No Big Deal": [
+            "Skill points +30\nMejiro Palmer bond +5",
+            "Energy +30\nPassing Pro hint +2\nEvent chain ended"
+        ],
+        "(❯❯)\nAs Long as You’re Happy": [
+            "Speed +15\nFront Runner Corners ○ hint +1\nMejiro Palmer bond +5"
+        ],
+        "(❯❯❯)\nThis Is Just Who I Am": [
+            "Randomly either\n----------\nSpeed +10\nStamina +10\nTaking the Lead hint +1\nMejiro Palmer bond +5\n----------\n\n----------\nSpeed +15\nStamina +15\nTaking the Lead hint +3\nMejiro Palmer bond +5"
         ]
     },
     "Mejiro Ryan": {
@@ -1743,6 +1799,15 @@
         ],
         "(❯❯)\nC'mon Gates, Open Already!": [
             "Randomly either\n----------\nSpeed +10\nSkill points +15\nShifting Gears hint +3\nShinko Windy bond +5\n----------\n\n----------\nSpeed +5\nSkill points +10\nShinko Windy bond +5"
+        ],
+        "(❯)\nWhat Do You Mean, \"Stale?!\"": [
+            "Speed +15\nShinko Windy bond +5"
+        ],
+        "(❯❯)\nThe Big Prank Plan!": [
+            "Power +15\nFull Tilt hint +1\nShinko Windy bond +5"
+        ],
+        "(❯❯❯)\nExecuting the Plan!": [
+            "Guts +20\nSkill points +10\nMaestro of the Mud hint +1\nShinko Windy bond +5"
         ]
     },
     "Silence Suzuka": {

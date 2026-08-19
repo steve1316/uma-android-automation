@@ -610,6 +610,19 @@
             "Dirt": "G"
         }
     },
+    "Seeking the Pearl": {
+        "name": "Seeking the Pearl",
+        "distanceAptitudes": {
+            "Sprint": "A",
+            "Mile": "A",
+            "Medium": "E",
+            "Long": "G"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "F"
+        }
+    },
     "Seiun Sky": {
         "name": "Seiun Sky",
         "distanceAptitudes": {

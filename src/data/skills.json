@@ -2520,18 +2520,18 @@
         "downgrade": null
     },
     "Flash Forward": {
-        "id": 202401,
+        "id": 201103,
         "name_en": "Flash Forward",
-        "desc_en": "Increase acceleration when trying to pass another runner from the back late-race. (Sprint/Mile)",
-        "icon_id": 20042,
-        "cost": 180,
+        "desc_en": "Increase velocity on a straight. (Medium)",
+        "icon_id": 20012,
+        "cost": 150,
         "eval_pt": 508,
-        "condition": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1",
+        "condition": "distance_type==3&straight_random==1",
         "precondition": "",
         "inherited": false,
         "community_tier": 1,
-        "upgrade": null,
-        "downgrade": 202402
+        "upgrade": 201102,
+        "downgrade": null
     },
     "Flashy☆Landing": {
         "id": 100241,
@@ -3761,7 +3761,7 @@
         "condition": "remain_distance<=201&remain_distance>=199&distance_diff_top<=5&order>=2@remain_distance<=201&remain_distance>=199&distance_diff_top<=10&order>=2",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -4646,6 +4646,20 @@
         "community_tier": 3,
         "upgrade": null,
         "downgrade": 201132
+    },
+    "Lightning Surge": {
+        "id": 202401,
+        "name_en": "Lightning Surge",
+        "desc_en": "Increase acceleration when trying to pass another runner from the back late-race. (Sprint/Mile)",
+        "icon_id": 20042,
+        "cost": 180,
+        "eval_pt": 508,
+        "condition": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1",
+        "precondition": "",
+        "inherited": false,
+        "community_tier": 0,
+        "upgrade": null,
+        "downgrade": 202402
     },
     "Lights of Vaudeville": {
         "id": 100051,
@@ -7401,7 +7415,7 @@
         "condition": "distance_type==1&straight_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 200962,
         "downgrade": null
     },

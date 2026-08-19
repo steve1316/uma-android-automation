@@ -3987,6 +3987,55 @@
         "characters": [],
         "matchers": []
     },
+    "Twinkling Pearl": {
+        "name": "Twinkling Pearl",
+        "bullet_points": [
+            "Seeking the Pearl only",
+            "Win the Oka Sho",
+            "Win the NHK Mile Cup",
+            "Win the Japanese Oaks",
+            "Win the Shuka Sho",
+            "Win the Takamatsunomiya Kinen",
+            "Win the Sprinters Stakes (Senior)"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Seeking the Pearl"
+        ],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Oka Sho",
+                "displayLabel": "Win the Oka Sho"
+            },
+            {
+                "type": "winRace",
+                "name": "NHK Mile Cup",
+                "displayLabel": "Win the NHK Mile Cup"
+            },
+            {
+                "type": "winRace",
+                "name": "Japanese Oaks",
+                "displayLabel": "Win the Japanese Oaks"
+            },
+            {
+                "type": "winRace",
+                "name": "Shuka Sho",
+                "displayLabel": "Win the Shuka Sho"
+            },
+            {
+                "type": "winRace",
+                "name": "Takamatsunomiya Kinen",
+                "displayLabel": "Win the Takamatsunomiya Kinen"
+            },
+            {
+                "type": "winRace",
+                "name": "Sprinters Stakes",
+                "atClass": "Senior",
+                "displayLabel": "Win the Sprinters Stakes"
+            }
+        ]
+    },
     "Two-Way Runner": {
         "name": "Two-Way Runner",
         "bullet_points": [
