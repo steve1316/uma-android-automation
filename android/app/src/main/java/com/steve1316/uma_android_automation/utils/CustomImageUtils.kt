@@ -379,6 +379,38 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Matches an already-loaded template against a source bitmap, shrinking the template by each factor in turn until one matches.
+     *
+     * A template can never be found when the game renders its text smaller than the captured asset, which is what happens to text the game shrinks to fit a fixed-width slot. Each factor is applied
+     * to the template bitmap up front rather than passed to `match()` as a test scale, so that `match()` still layers its own device scaling on top. Forcing a test scale would bypass that and break
+     * every non-1080p device, where the baseline scale is not 1.0 to begin with.
+     *
+     * @param sourceBitmap The source bitmap to search within.
+     * @param templateBitmap The template to look for, already decoded by the caller.
+     * @param templateName The template's name, used only for match logging.
+     * @param shrinkFactors The factors to shrink the template by, in the order they should be attempted. The first one that matches wins.
+     * @param region Region (x, y, width, height) of the source to match. Defaults to (0, 0, 0, 0) for full search.
+     * @param customConfidence Optional confidence threshold override. Defaults to 0.0.
+     * @return The factor that matched, or null if none of them did.
+     */
+    fun matchTemplateAtScales(
+        sourceBitmap: Bitmap,
+        templateBitmap: Bitmap,
+        templateName: String,
+        shrinkFactors: List<Double>,
+        region: IntArray = intArrayOf(0, 0, 0, 0),
+        customConfidence: Double = 0.0,
+    ): Double? {
+        shrinkFactors.forEach { factor ->
+            val shrunkTemplate =
+                if (factor == 1.0) templateBitmap else templateBitmap.scale((templateBitmap.width * factor).toInt(), (templateBitmap.height * factor).toInt())
+            if (match(sourceBitmap, shrunkTemplate, templateName, region = region, customConfidence = customConfidence).second != null) return factor
+        }
+
+        return null
+    }
+
+    /**
      * Finds the best-matching candidate template within a cropped cell by argmax over correlation scores.
      *
      * Unlike the first-match-wins loop it replaces, this scores every candidate template and returns the one with the highest TM_CCOEFF_NORMED correlation, so a lower-ranked template that merely

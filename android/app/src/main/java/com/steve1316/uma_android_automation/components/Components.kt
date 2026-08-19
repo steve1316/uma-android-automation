@@ -283,6 +283,31 @@ interface ComponentInterface : BaseComponentInterface {
     }
 
     /**
+     * Checks if the component is on screen, shrinking the template by each factor in [shrinkFactors] until one matches.
+     *
+     * Use this for text the game shrinks to fit a fixed-width slot, where the on-screen size no longer matches the captured template. Ordinary components should keep using [check], which only
+     * probes the captured size.
+     *
+     * @param imageUtils A reference to a CustomImageUtils instance.
+     * @param sourceBitmap The source bitmap to search within.
+     * @param shrinkFactors The factors to shrink the template by, in the order they should be attempted.
+     * @param region The screen region to search in.
+     * @param confidence The threshold (0.0, 1.0] required for a match.
+     * @return The factor that matched, or null if the component was not found at any of them.
+     */
+    fun checkAtScales(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, shrinkFactors: List<Double>, region: IntArray? = null, confidence: Double? = null): Double? {
+        val templateBitmap: Bitmap = template.getBitmap(imageUtils) ?: return null
+        return imageUtils.matchTemplateAtScales(
+            sourceBitmap = sourceBitmap,
+            templateBitmap = templateBitmap,
+            templateName = template.path,
+            shrinkFactors = shrinkFactors,
+            region = region ?: template.region,
+            customConfidence = confidence ?: template.confidence,
+        )
+    }
+
+    /**
      * Checks if the component is in a disabled state.
      *
      * @param imageUtils See [BaseComponentInterface.checkDisabled]
