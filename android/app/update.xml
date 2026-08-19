@@ -1,24 +1,15 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.8.6</latestVersion>
+    <latestVersion>5.8.7</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.8.6 - Changelog
+v5.8.7 - Changelog
 
 Adjustments
 ---
-- Update game data up to `Yukino Bijin 2026-08-04`.
-- Update Automation Library version to 2.5.9.
-- Retry the trainee name read instead of caching a null placeholder.
-- Improve mandatory race handling.
-- Rank Grand Live Lessons by priority order instead of summed weights.
-
-Fixes
----
-- Fix incorrect text color used for the `Reset` popup in the `Scenario Overrides Settings` page.
-- Fix log names not being saved correctly from the `Remote Log Viewer`.
-- Fix broken copy button in the `Remote Log Viewer`.
-- Fix empty Analytics charts in the `Remote Log Viewer`.
+- Update game data up to Agnes Digital (Halloween) 2026-08-17.
+- Improve career goal reading so a goal's race requirements are identified directly, including goal text that the game shrinks down to fit.
+- Improve Grand Live Lessons reading so learnable cards are recognized regardless of the card's wording or type.
 
 </releaseNotes>
   </update>
