@@ -67,17 +67,33 @@ fun readTokenNumber(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, center: 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Lessons card geometry (Lessons screen)
 
-/** How far above a card's cost pill to look for its "Learnable" banner (the banner sits near the top of the card), in reference (1080-wide) pixels. Kept below the card pitch so a banner maps to exactly one card. */
-const val LESSON_CARD_HEIGHT = 350
+/**
+ * How far above a card's cost pill to look for its "Learnable!" ribbon, in reference (1080-wide) pixels.
+ * The ribbon sits 338px up and the cards are 408px apart, so 338 through 745 reaches this card's own ribbon and no other card's.
+ */
+const val LESSON_CARD_HEIGHT = 380
 
-/** Match confidence for the "Learnable" banners. Kept high so a non-learnable card is never mistaken as purchasable. */
-const val LESSON_BANNER_CONFIDENCE = 0.90
+/**
+ * Match confidence for the "Learnable!" ribbon. A real ribbon scores 0.956+ on both card colours and the best false positive is 0.36.
+ * The margin is wide on purpose: the bot's own capture is not pixel-identical to an adb screenshot, and Technique cards ran the old 0.90 too close.
+ */
+const val LESSON_RIBBON_CONFIDENCE = 0.85
+
+/**
+ * Whether one of the matched "Learnable!" ribbons belongs to the card anchored at [anchorY], meaning that card is purchasable.
+ *
+ * @param ribbonYs The y centers of every ribbon matched on the screen.
+ * @param anchorY The y center of this card's cost pill.
+ * @param cardHeight How far above the pill to look, normally [LESSON_CARD_HEIGHT] scaled to the device.
+ * @return True when a ribbon falls in this card's band.
+ */
+fun hasLearnableRibbon(ribbonYs: List<Double>, anchorY: Double, cardHeight: Int): Boolean = ribbonYs.any { it in (anchorY - cardHeight)..anchorY }
 
 /**
  * Crop offsets for one Lessons card, all relative to the matched `grandlive_lesson_cost` ("Performance Point Cost") pill center, in reference (1080-wide) pixels.
  *
  * @property name The card's title-bar name region.
- * @property kind The card's kind-tag region ("Songs" / "Technique"), top-right of the title bar.
+ * @property kind The card's kind-tag region ("Song" / "Technique"), top-right of the title bar.
  * @property effect1 The first effect line region.
  * @property effect2 The second effect line region ("None" when the card has only one effect).
  */

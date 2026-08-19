@@ -26,8 +26,7 @@ import com.steve1316.uma_android_automation.components.ButtonSkip
 import com.steve1316.uma_android_automation.components.Checkbox
 import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.IconGrandLiveGreatHype
-import com.steve1316.uma_android_automation.components.LabelGrandLiveLearnableSong
-import com.steve1316.uma_android_automation.components.LabelGrandLiveLearnableTechnique
+import com.steve1316.uma_android_automation.components.LabelGrandLiveLearnable
 import com.steve1316.uma_android_automation.components.LabelGrandLiveLessonCost
 import com.steve1316.uma_android_automation.components.LabelGrandLiveMaxHype
 import com.steve1316.uma_android_automation.components.LabelGrandLivePerformancePoints
@@ -36,7 +35,7 @@ import com.steve1316.uma_android_automation.types.StatName
 import org.opencv.core.Point
 
 /**
- * A learnable Lessons card paired with its on-screen tap point (the matched banner location).
+ * A learnable Lessons card paired with its on-screen tap point (derived from the matched cost-pill anchor).
  *
  * @property option The pure policy data for this card.
  * @property point The on-screen point to tap to open this card.
@@ -389,18 +388,14 @@ class GrandLive(game: Game) : Campaign(game) {
 
     /**
      * Scan the Lessons screen by enumerating each card off its `grandlive_lesson_cost` ("Performance Point Cost") pill and reading
-     * its name, kind, and effect lines. Purchasability comes from the "Learnable" banner near the card's top. Every card is logged
-     * (name, kind, Learnable/Locked, effects) so a no-op is always explainable.
+     * its name, kind, and effect lines. Purchasability comes from the "Learnable!" ribbon above each card, which is identical artwork on
+     * every card, so the kind is read separately off the kind tag. Every card is logged so a buy-nothing visit is always explainable.
      *
      * @return The [ScannedLesson]s currently on screen, top-to-bottom, each with its on-screen tap point.
      */
     private fun scanLessons(): List<ScannedLesson> {
         val sourceBitmap = game.imageUtils.getSourceBitmap()
         val anchors = LabelGrandLiveLessonCost.findAll(game.imageUtils, sourceBitmap = sourceBitmap).sortedBy { it.y }
-        // A "Learnable Technique" / "Learnable Song" banner near a card's top means it is purchasable; match each banner to the card whose cost pill sits just below it.
-        val techBannerYs = LabelGrandLiveLearnableTechnique.findAll(game.imageUtils, sourceBitmap = sourceBitmap, confidence = LESSON_BANNER_CONFIDENCE).map { it.y }
-        val songBannerYs = LabelGrandLiveLearnableSong.findAll(game.imageUtils, sourceBitmap = sourceBitmap, confidence = LESSON_BANNER_CONFIDENCE).map { it.y }
-
         if (anchors.isEmpty()) {
             // Probe a looser confidence so the log tells us whether the anchor is a threshold miss (loose > 0 -> lower the confidence) or a crop mismatch (loose == 0 -> recrop grandlive_performance_point_cost).
             val loose = LabelGrandLiveLessonCost.findAll(game.imageUtils, sourceBitmap = sourceBitmap, confidence = 0.7).size
@@ -413,25 +408,33 @@ class GrandLive(game: Game) : Campaign(game) {
             return emptyList()
         }
 
-        MessageLog.i(TAG, "[GRAND_LIVE] Lessons scan found ${anchors.size} card(s):")
+        // A "Learnable!" ribbon above a card means it is purchasable. Match each one to the card whose cost pill sits below it.
+        // The template averages the ribbon over both card colours (purple Song, green Technique) because the header tints the ribbon's lower rows.
+        val ribbonYs = LabelGrandLiveLearnable.findAll(game.imageUtils, sourceBitmap = sourceBitmap, confidence = LESSON_RIBBON_CONFIDENCE).map { it.y }
+        if (ribbonYs.isEmpty()) {
+            // All cards locked is normal late in a run, so stay quiet unless the probe shows the ribbon is there and only the threshold rejected it.
+            // Not debug-gated on purpose: a stale crop has to be visible in an ordinary run, which is how the "Songs" -> "Song" reword slipped by.
+            val loose = LabelGrandLiveLearnable.findAll(game.imageUtils, sourceBitmap = sourceBitmap, confidence = 0.7).size
+            if (loose > 0) {
+                MessageLog.w(TAG, "[GRAND_LIVE] $loose ribbon(s) match at 0.7 but none at $LESSON_RIBBON_CONFIDENCE, so every card reads as locked. Lower the threshold or recrop grandlive_learnable.")
+                game.imageUtils.saveDebugScreenshot(sourceBitmap, "grandlive_lessons_no_ribbon")
+            }
+        }
+
+        MessageLog.i(TAG, "[GRAND_LIVE] Lessons scan found ${anchors.size} card(s) and ${ribbonYs.size} Learnable ribbon(s):")
         return anchors.mapIndexed { rowIndex, anchor ->
-            val cardTop = anchor.y - game.imageUtils.relHeight(LESSON_CARD_HEIGHT)
-            val hasTechBanner = techBannerYs.any { it in cardTop..anchor.y }
-            val hasSongBanner = songBannerYs.any { it in cardTop..anchor.y }
-            val purchasable = hasTechBanner || hasSongBanner
+            val purchasable = hasLearnableRibbon(ribbonYs, anchor.y, game.imageUtils.relHeight(LESSON_CARD_HEIGHT))
 
             val name = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.name, "grandlive_lesson_name_$rowIndex")
             val effect1 = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.effect1, "grandlive_lesson_effect1_$rowIndex")
             val effect2 = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.effect2, "grandlive_lesson_effect2_$rowIndex")
 
-            // Kind from the banner when purchasable, otherwise OCR the kind tag (only needed to label locked cards).
-            val kind =
-                when {
-                    hasSongBanner -> LessonKind.SONG
-                    hasTechBanner -> LessonKind.TECHNIQUE
-                    ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.kind, "grandlive_lesson_kind_$rowIndex").lowercase().contains("tech") -> LessonKind.TECHNIQUE
-                    else -> LessonKind.SONG
-                }
+            // The ribbon is kind-agnostic, so the kind tag is the only kind signal. An unreadable tag falls back to Song and breaks concert day.
+            val kindText = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.kind, "grandlive_lesson_kind_$rowIndex")
+            val kind = if (kindText.contains("tech", ignoreCase = true)) LessonKind.TECHNIQUE else LessonKind.SONG
+            if (!kindText.contains("song", ignoreCase = true) && kind == LessonKind.SONG) {
+                MessageLog.w(TAG, "[GRAND_LIVE]   Row $rowIndex kind tag read as \"$kindText\"; defaulting to Song. Recheck LESSON_CARD_CROPS.kind if this repeats.")
+            }
             val effectText = listOf(effect1, effect2).filter { it.isNotBlank() }.joinToString(" ")
             val tapPoint = Point(game.imageUtils.relX(anchor.x, 200).toDouble(), game.imageUtils.relY(anchor.y, -150).toDouble())
 
