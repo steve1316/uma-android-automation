@@ -2455,8 +2455,11 @@ abstract class Campaign(game: Game) : Task(game) {
             MessageLog.i(TAG, "[INFO] Racing requirement is active and the races DB has a qualifying race this turn. Bypassing health and mood checks.")
             decisionTracer.recordActionChoice(MainScreenAction.RACE, "Racing requirement (fans, trophy, or goal pts) active")
             return MainScreenAction.RACE
-        } else if (racing.hasTrophyRequirement) {
-            MessageLog.i(TAG, "[INFO] Trophy requirement is active but the races database holds no G1 for this turn ($date). Skipping the race-screen round-trip; continuing with the normal decision.")
+        } else if (racing.hasG1OnlyRequirement) {
+            MessageLog.i(
+                TAG,
+                "[INFO] G1-only trophy requirement is active but the races database holds no G1 for this turn ($date). Skipping the race-screen round-trip; continuing with the normal decision.",
+            )
         }
 
         if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {

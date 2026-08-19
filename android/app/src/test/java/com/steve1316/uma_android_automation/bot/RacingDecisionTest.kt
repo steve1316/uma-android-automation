@@ -64,30 +64,30 @@ class RacingDecisionTest {
         fun forces(
             fan: Boolean = false,
             trophy: Boolean = false,
-            preOp: Boolean = false,
-            g3: Boolean = false,
+            g1Only: Boolean = false,
             goalPts: Boolean = false,
             hasG1: Boolean,
         ) = requirementForcesRacing(
             hasFanRequirement = fan,
             hasTrophyRequirement = trophy,
-            hasPreOpOrAboveRequirement = preOp,
-            hasG3OrAboveRequirement = g3,
+            hasG1OnlyRequirement = g1Only,
             hasInsufficientGoalRacePtsRequirement = goalPts,
             hasG1ThisTurn = hasG1,
         )
 
         // The one skip case: a G1-only trophy on a turn the races DB holds no G1 for - navigating would just cancel.
-        assertFalse(forces(trophy = true, hasG1 = false), "A G1-only trophy with no G1 in the races DB this turn must skip the race-screen round-trip")
-        assertTrue(forces(trophy = true, hasG1 = true), "A G1-only trophy with a G1 in the races DB this turn must force racing")
+        assertFalse(forces(trophy = true, g1Only = true, hasG1 = false), "A G1-only trophy with no G1 in the races DB this turn must skip the race-screen round-trip")
+        assertTrue(forces(trophy = true, g1Only = true, hasG1 = true), "A G1-only trophy with a G1 in the races DB this turn must force racing")
 
-        // Trophies that accept other grades always force racing, even when the DB holds no G1.
-        assertTrue(forces(trophy = true, preOp = true, hasG1 = false), "A Pre-OP-or-above trophy accepts other grades, so it must force racing even with no G1")
-        assertTrue(forces(trophy = true, g3 = true, hasG1 = false), "A G3-or-above trophy accepts other grades, so it must force racing even with no G1")
+        // Trophies that accept other grades always force racing, even when the DB holds no G1. This is also the regression guard for the Smart Falcon career loss: a trophy whose criteria line
+        // could not be read is NOT proof of a G1-only goal, and treating it as one made the bot train through every turn without a G1 until the goal expired.
+        assertTrue(forces(trophy = true, hasG1 = false), "A trophy that is not positively read as G1-only must force racing even with no G1, rather than sit the turn out")
 
         // Fan and goal-point requirements are met by any race, so they always force racing regardless of G1 availability.
         assertTrue(forces(fan = true, hasG1 = false), "A fan requirement is met by any race, so it must force racing even with no G1")
         assertTrue(forces(goalPts = true, hasG1 = false), "A goal-race-points requirement is met by any race, so it must force racing even with no G1")
+        assertTrue(forces(fan = true, trophy = true, g1Only = true, hasG1 = false), "A fan requirement alongside a G1-only trophy is still met by any race, so it must force racing")
+        assertTrue(forces(goalPts = true, trophy = true, g1Only = true, hasG1 = false), "A goal-race-points requirement alongside a G1-only trophy must force racing")
 
         // No requirement active: this gate never forces racing (the caller uses the normal eligibility path instead).
         assertFalse(forces(hasG1 = true), "With no requirement active, this gate must not force racing")
