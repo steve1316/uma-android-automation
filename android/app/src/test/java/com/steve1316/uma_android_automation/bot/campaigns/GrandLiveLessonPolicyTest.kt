@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 /**
  * Unit tests for the pure Grand Live Lessons purchase policy (priority-weighted stat techniques, meaningful passives, force-max-Hype).
- * Card detection, purchasability (the "Learnable" banner), and the buy tap are verified on device; the "what to buy next" ordering is covered here.
+ * Card detection and the buy tap are verified on device. The ribbon-to-card window and the "what to buy next" ordering are covered here.
  * Every option passed in is already purchasable - the policy only orders them.
  */
 @DisplayName("Grand Live Lessons purchase policy")
@@ -224,5 +224,28 @@ class GrandLiveLessonPolicyTest {
         val statFirst = listOf(LessonEffectCategory.STAT_GAINS, LessonEffectCategory.SKILL_HINTS, LessonEffectCategory.TRAINING_GAIN)
         assertTrue(isSoughtAfter("Speed +5", statFirst))
         assertFalse(isSoughtAfter("Training Power Gain +1", statFirst))
+    }
+
+    @Test
+    @DisplayName("Each Learnable ribbon maps to the one card whose cost pill sits below it")
+    fun ribbonMapsToItsOwnCard() {
+        // Measured on a 1080x1920 device: cost pills at 673 / 1081 / 1489, ribbons 338px above each.
+        val ribbonYs = listOf(335.0, 743.0, 1152.0)
+        val anchors = listOf(673.0, 1081.0, 1489.0)
+        anchors.forEach { assertTrue(hasLearnableRibbon(ribbonYs, it, LESSON_CARD_HEIGHT)) }
+        // A card whose ribbon is missing stays locked even though its neighbours have one.
+        assertFalse(hasLearnableRibbon(listOf(335.0), 1081.0, LESSON_CARD_HEIGHT))
+        assertFalse(hasLearnableRibbon(emptyList(), 673.0, LESSON_CARD_HEIGHT))
+    }
+
+    @Test
+    @DisplayName("The shipped look-back window gives every card exactly one ribbon")
+    fun ribbonWindowClaimsExactlyOneRibbonPerCard() {
+        val ribbonYs = listOf(335.0, 743.0, 1152.0)
+        val anchors = listOf(673.0, 1081.0, 1489.0)
+        anchors.forEach { anchor -> assertEquals(1, ribbonYs.count { it in (anchor - LESSON_CARD_HEIGHT)..anchor }) }
+        // Short of the 338px ribbon offset a card misses its own ribbon, and from 338 + the 408px pitch it also claims the ribbon of the card above.
+        assertFalse(hasLearnableRibbon(ribbonYs, 673.0, 337))
+        assertEquals(2, ribbonYs.count { it in (1081.0 - 746)..1081.0 })
     }
 }
