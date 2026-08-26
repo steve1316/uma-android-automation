@@ -1077,6 +1077,12 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "grand-live-song-priority",
+        title: "Grand Live Song Priority",
+        description: "Rank which Songs the bot buys first in Lessons. A ranked Song is bought ahead of anything else learnable, whatever its effects.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "grand-live-lesson-rescan-interval",
         title: "Grand Live Lessons Re-check Interval",
         description: "How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time.",

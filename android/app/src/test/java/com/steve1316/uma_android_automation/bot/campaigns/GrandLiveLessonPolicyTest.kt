@@ -21,6 +21,8 @@ class GrandLiveLessonPolicyTest {
 
     private fun song(effect: String, row: Int) = LessonOption(LessonKind.SONG, name = "", effectText = effect, purchasable = true, rowIndex = row)
 
+    private fun namedSong(name: String, effect: String, row: Int) = LessonOption(LessonKind.SONG, name = name, effectText = effect, purchasable = true, rowIndex = row)
+
     @Test
     @DisplayName("Buys a basic stat technique for the top-priority stat")
     fun buysTopPriorityStatTechnique() {
@@ -218,12 +220,12 @@ class GrandLiveLessonPolicyTest {
     @Test
     @DisplayName("Sought-after means matching a category in the top 2 ranks")
     fun soughtAfterFollowsTopRanks() {
-        assertTrue(isSoughtAfter("Friendship Training Effectiveness +10%", DEFAULT_LESSON_EFFECT_PRIORITY))
-        assertFalse(isSoughtAfter("Speed +5", DEFAULT_LESSON_EFFECT_PRIORITY))
+        assertTrue(isSoughtAfter(song("Friendship Training Effectiveness +10%", 0), DEFAULT_LESSON_EFFECT_PRIORITY))
+        assertFalse(isSoughtAfter(tech("Speed +5", 0), DEFAULT_LESSON_EFFECT_PRIORITY))
 
         val statFirst = listOf(LessonEffectCategory.STAT_GAINS, LessonEffectCategory.SKILL_HINTS, LessonEffectCategory.TRAINING_GAIN)
-        assertTrue(isSoughtAfter("Speed +5", statFirst))
-        assertFalse(isSoughtAfter("Training Power Gain +1", statFirst))
+        assertTrue(isSoughtAfter(tech("Speed +5", 0), statFirst))
+        assertFalse(isSoughtAfter(tech("Training Power Gain +1", 0), statFirst))
     }
 
     @Test
@@ -452,5 +454,99 @@ class GrandLiveLessonPolicyTest {
         assertFalse(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.STAT_GAINS))
         // A stat gain riding alongside a passive is still found.
         assertEquals(listOf(StatName.WIT to 6), parseStatGains("Wit +6 Skill Pts +6"))
+    }
+
+    @Test
+    @DisplayName("Song titles normalize down to the letters OCR can be trusted on")
+    fun normalizesSongTitles() {
+        // The game's decorative glyphs came back as ")" and "d" for the same song in one run, so nothing outside letters and digits can carry signal.
+        assertEquals(normalizeSongName("Hoppity Sunny Days\u266a"), normalizeSongName("Hoppity Sunny Days )"))
+        assertEquals(normalizeSongName("Present March\u266a"), normalizeSongName("Present March >"))
+        assertEquals("gothisway", normalizeSongName("Go This Way"))
+    }
+
+    @Test
+    @DisplayName("Every corrupted title read on device still resolves to its song")
+    fun matchesCorruptedTitlesFromDevice() {
+        // Each of these is a real read from a run log, paired with the title it has to resolve to.
+        val reads =
+            listOf(
+                "Beven Colors Scenery" to "Seven Colors Scenery",
+                "Jur Blue Bird Days" to "Our Blue Bird Days",
+                "ley, Guess What!" to "Hey, Guess What!",
+                "So This Way" to "Go This Way",
+                "Hoppity Sunny Days d" to "Hoppity Sunny Days\u266a",
+                "Full Speed Ahead! Umadol Powert" to "Full Speed Ahead! Umadol Power\u2606",
+            )
+        reads.forEach { (read, truth) ->
+            assertEquals(0, matchSongRank(read, listOf(truth)), "expected '$read' to match '$truth'")
+        }
+    }
+
+    @Test
+    @DisplayName("A title close to a ranked song but not it is left unmatched")
+    fun rejectsNearMissTitles() {
+        // The closest pair of distinct titles in the game. Letting one stand in for the other would buy the wrong song outright.
+        assertNull(matchSongRank("Run n' Run!", listOf("Run for Our Dream!")))
+        assertNull(matchSongRank("Dream Sky", listOf("Sky-Blue Spring")))
+        assertNull(matchSongRank("", listOf("Go This Way")))
+        assertNull(matchSongRank("Go This Way", emptyList()))
+    }
+
+    @Test
+    @DisplayName("A ranked song is bought ahead of a better-ranked effect on another card")
+    fun rankedSongWinsOutright() {
+        val options =
+            listOf(
+                namedSong("Precious Treasure Box", "Speed +26 Friendship Training Effectiveness +10%", 0),
+                namedSong("Go This Way", "Training Power Gain +1 Support Chain Event Frequency Lvl +1", 1),
+            )
+        // Without a song ranking the Training Effectiveness card wins on category rank.
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        // Naming the weaker song promotes it above every effect ranking.
+        val goThisWayFirst = listOf("Go This Way")
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, songPriority = goThisWayFirst)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Between two ranked songs the higher-ranked title wins, and unranked songs fall back to effect order")
+    fun ordersRankedSongsAmongThemselves() {
+        val options =
+            listOf(
+                namedSong("Sunbeam Cheer", "Training Wit Gain +2 Support Chain Event Frequency Lvl +1", 0),
+                namedSong("Go This Way", "Training Power Gain +1 Support Chain Event Frequency Lvl +1", 1),
+            )
+        val order = listOf("Go This Way", "Sunbeam Cheer")
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, songPriority = order)?.rowIndex)
+
+        // A song nobody ranked is still ordered by its effects, so the bigger Training Gain wins.
+        val unrelated = listOf("Dream Sky")
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, songPriority = unrelated)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A locked song ranked in the top spots is worth holding tokens for")
+    fun topRankedLockedSongIsSoughtAfter() {
+        // A plain stat gain is not a top-2 category, so only the song ranking can make these cards sought after.
+        val order = listOf("Go This Way", "Sunbeam Cheer", "Dream Sky")
+        assertTrue(isSoughtAfter(namedSong("So This Way", "Speed +5", 0), DEFAULT_LESSON_EFFECT_PRIORITY, order))
+        // Ranked, but below the top spots, so it does not justify sitting on tokens.
+        assertFalse(isSoughtAfter(namedSong("Dream Sky", "Speed +5", 0), DEFAULT_LESSON_EFFECT_PRIORITY, order))
+    }
+
+    @Test
+    @DisplayName("The shipped song list holds every learnable song and none of the automatic ones")
+    fun songListIsComplete() {
+        assertEquals(21, GRAND_LIVE_SONGS.size)
+        assertEquals(GRAND_LIVE_SONGS.size, GRAND_LIVE_SONGS.map { normalizeSongName(it) }.toSet().size)
+        // Both of these are granted automatically and never appear as a purchasable card.
+        assertFalse(GRAND_LIVE_SONGS.any { normalizeSongName(it) == normalizeSongName("Make Debut!") })
+        assertFalse(GRAND_LIVE_SONGS.any { normalizeSongName(it) == normalizeSongName("GIRLS' LEGEND U") })
+        // No two shipped titles may be close enough to match each other, or a ranked song could stand in for its neighbour.
+        GRAND_LIVE_SONGS.forEach { title ->
+            val others = GRAND_LIVE_SONGS.filter { it != title }
+            assertNull(matchSongRank(title, others), "'$title' matched another shipped title")
+        }
     }
 }
