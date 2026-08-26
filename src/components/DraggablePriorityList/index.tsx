@@ -9,7 +9,7 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 
 /** A single priority list item. */
-interface PriorityItem {
+export interface PriorityItem {
     /** Stable identifier used by the drag list. */
     id: string
     /** Visible label. */

@@ -17,7 +17,7 @@ import { ValuePill } from "../../components/ui/value-pill"
 import { ModalHeader } from "../../components/ui/modal-header"
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
-import DraggablePriorityList from "../../components/DraggablePriorityList"
+import DraggablePriorityList, { PriorityItem } from "../../components/DraggablePriorityList"
 import { CircleCheckBig, Trash2 } from "lucide-react-native"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import trackblazerIcons from "./icons"
@@ -112,6 +112,40 @@ function ChipMultiSelect({ title, description, options, selected, onToggle }: Ch
         </View>
     )
 }
+
+/** Props for `PriorityPickerSheet`. */
+interface PriorityPickerSheetProps {
+    /** Whether the sheet is currently open. */
+    visible: boolean
+    /** Called when the sheet should close, from either the header or a back gesture. */
+    onClose: () => void
+    /** Uppercase heading shown in the sheet's header. */
+    title: string
+    /** Every rankable item, each with the id stored in the setting and an optional second line of detail. */
+    items: PriorityItem[]
+    /** The currently ranked ids, index 0 = highest. */
+    selected: string[]
+    /** Called with the next ranked order whenever a row is toggled or dragged. */
+    onChange: (next: string[]) => void
+}
+
+/**
+ * A sheet wrapping a drag-to-rank list. The Grand Live overrides open four of these and they differ only in heading, item list, and the setting they
+ * write, so the shell lives here once.
+ *
+ * @param visible Whether the sheet is open.
+ * @param onClose Close callback.
+ * @param title Header text.
+ * @param items Every rankable item.
+ * @param selected The currently ranked ids.
+ * @param onChange Called with the next ranked order.
+ * @returns The sheet containing the priority list.
+ */
+const PriorityPickerSheet = ({ visible, onClose, title, items, selected, onChange }: PriorityPickerSheetProps) => (
+    <SheetModal visible={visible} onRequestClose={onClose} header={<ModalHeader title={title} onClose={onClose} />} footer={null}>
+        <DraggablePriorityList items={items} selectedItems={selected} onSelectionChange={onChange} onOrderChange={onChange} />
+    </SheetModal>
+)
 
 /**
  * The Scenario Overrides Settings page.
@@ -1052,47 +1086,32 @@ const ScenarioOverridesSettings = () => {
                 </View>
             </SheetModal>
 
-            <SheetModal
+            <PriorityPickerSheet
                 visible={lessonPriorityPickerOpen}
-                onRequestClose={() => setLessonPriorityPickerOpen(false)}
-                header={<ModalHeader title="LESSON EFFECT PRIORITY" onClose={() => setLessonPriorityPickerOpen(false)} />}
-                footer={null}
-            >
-                <DraggablePriorityList
-                    items={GRAND_LIVE_LESSON_CATEGORIES}
-                    selectedItems={scenarioOverrides.grandLiveLessonEffectPriority}
-                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonEffectPriority", next)}
-                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonEffectPriority", orderedItems)}
-                />
-            </SheetModal>
+                onClose={() => setLessonPriorityPickerOpen(false)}
+                title="LESSON EFFECT PRIORITY"
+                items={GRAND_LIVE_LESSON_CATEGORIES}
+                selected={scenarioOverrides.grandLiveLessonEffectPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveLessonEffectPriority", next)}
+            />
 
-            <SheetModal
+            <PriorityPickerSheet
                 visible={lessonStatPriorityPickerOpen}
-                onRequestClose={() => setLessonStatPriorityPickerOpen(false)}
-                header={<ModalHeader title="LESSON STAT PRIORITY" onClose={() => setLessonStatPriorityPickerOpen(false)} />}
-                footer={null}
-            >
-                <DraggablePriorityList
-                    items={statPriorityItems}
-                    selectedItems={scenarioOverrides.grandLiveLessonStatPriority}
-                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonStatPriority", next)}
-                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonStatPriority", orderedItems)}
-                />
-            </SheetModal>
+                onClose={() => setLessonStatPriorityPickerOpen(false)}
+                title="LESSON STAT PRIORITY"
+                items={statPriorityItems}
+                selected={scenarioOverrides.grandLiveLessonStatPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveLessonStatPriority", next)}
+            />
 
-            <SheetModal
+            <PriorityPickerSheet
                 visible={lessonHintPriorityPickerOpen}
-                onRequestClose={() => setLessonHintPriorityPickerOpen(false)}
-                header={<ModalHeader title="LESSON SKILL HINT PRIORITY" onClose={() => setLessonHintPriorityPickerOpen(false)} />}
-                footer={null}
-            >
-                <DraggablePriorityList
-                    items={GRAND_LIVE_HINT_TAGS}
-                    selectedItems={scenarioOverrides.grandLiveLessonHintPriority}
-                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonHintPriority", next)}
-                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonHintPriority", orderedItems)}
-                />
-            </SheetModal>
+                onClose={() => setLessonHintPriorityPickerOpen(false)}
+                title="LESSON SKILL HINT PRIORITY"
+                items={GRAND_LIVE_HINT_TAGS}
+                selected={scenarioOverrides.grandLiveLessonHintPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveLessonHintPriority", next)}
+            />
 
             <SheetModal
                 visible={lessonIntervalPickerOpen}
