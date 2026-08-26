@@ -119,8 +119,11 @@ const val MAX_LESSON_PURCHASES_PER_VISIT = 20
 /** A locked card counts as "sought after" (worth holding tokens for) when it matches a category ranked within this many top spots of the user's priority order. */
 private const val SOUGHT_AFTER_TOP_RANKS = 2
 
+/** The stat names as a regex alternation, derived from [StatName] so the gain patterns below cannot drift from the enum. */
+private val STAT_ALTERNATION = StatName.entries.joinToString("|") { it.name.lowercase() }
+
 /** Matches a raw stat-gain effect that leads with the stat (e.g. "Speed +5"), distinguishing it from passives like "Training Power Gain +1". */
-private val RAW_STAT_GAIN_REGEX = Regex("^\\s*(speed|stamina|power|guts|wit)\\s*\\+?\\s*(\\d+)", RegexOption.IGNORE_CASE)
+private val RAW_STAT_GAIN_REGEX = Regex("^\\s*($STAT_ALTERNATION)\\s*\\+?\\s*(\\d+)", RegexOption.IGNORE_CASE)
 
 /**
  * The greyed-out warning the game overlays on a Song's effect line once the concert has passed. The effect crop picks it up instead of (or
@@ -128,8 +131,11 @@ private val RAW_STAT_GAIN_REGEX = Regex("^\\s*(speed|stamina|power|guts|wit)\\s*
  */
 private val CONCERT_OVER_OVERLAY_REGEX = Regex("O?\\s*This bonus won't take effect.*", RegexOption.IGNORE_CASE)
 
-/** Matches an effect line that OCR'd down to a bare percentage ("+10%"), losing the "Friendship Training Effectiveness" label in front of it. */
-private val BARE_PERCENT_REGEX = Regex("(^|\\s)\\+\\s*\\d+\\s*%", RegexOption.IGNORE_CASE)
+/**
+ * Matches the percentage on a Friendship / Training Effectiveness effect, capturing it so the same pattern both recognizes the category and measures it.
+ * A percentage is also how the category is recovered when OCR truncated the line to a bare "+10%", losing the label in front of it.
+ */
+private val EFFECTIVENESS_PERCENT_REGEX = Regex("\\+\\s*(\\d+)\\s*%")
 
 /**
  * Smallest raw stat gain that only ever appears on a Friendship Training Effectiveness Song. Techniques top out well below this, so a card
@@ -139,6 +145,24 @@ private const val TRAINING_EFFECTIVENESS_STAT_FLOOR = 20
 
 /** Matches an Energy gain effect (e.g. "Energy +20"). */
 private val ENERGY_GAIN_REGEX = Regex("energy\\s*\\+\\s*(\\d+)", RegexOption.IGNORE_CASE)
+
+/**
+ * Matches a passive training-gain effect that names its stat ("Training Wit Gain +2"), which the leading-stat [RAW_STAT_GAIN_REGEX] deliberately refuses.
+ * Only the stat tie-break reads this. It must never decide the Training Gain category, or every such card would start matching Stat Gains too.
+ */
+private val TRAINING_STAT_GAIN_REGEX = Regex("training\\s+($STAT_ALTERNATION)\\s+gain\\s*\\+?\\s*(\\d+)", RegexOption.IGNORE_CASE)
+
+/**
+ * Matches the amount on a training-gain effect even when OCR lost the stat word ("Training Gain +2"). Anchored on "gain" so it reads this effect's amount
+ * and not a neighbouring line's, and kept as loose as the "training" plus "gain" keywords that recognize the category.
+ */
+private val TRAINING_GAIN_AMOUNT_REGEX = Regex("gain[^+]*\\+\\s*(\\d+)", RegexOption.IGNORE_CASE)
+
+/**
+ * Matches the amount on a skill-point or skill-hint effect ("Skill Point Bonus +3", "Skill Hint Lvl +2"), tolerating a lost leading word.
+ * Anchored on the same keywords that recognize the category, so a card can never be read as a hint and then score no magnitude.
+ */
+private val SKILL_HINT_AMOUNT_REGEX = Regex("(?:hint|skill\\s+point)[^+]*\\+\\s*(\\d+)", RegexOption.IGNORE_CASE)
 
 /**
  * Matches the resulting-energy readout on the Lessons purchase confirmation ("78 / 100"), capturing both the projected new energy and the
@@ -207,9 +231,11 @@ data class LessonOption(
  * A card's effect text reduced to what the purchase ordering compares on.
  *
  * @property ranks The user-ranked positions of the categories the card matched, ascending, compared lexicographically.
- * @property statTieBreak Value of the card's raw stat gain, higher is better, used only once [ranks] ties.
+ * @property categoryValue How much of its best-ranked category the card grants (a "+2" gain, a "+10%" bonus), higher is better. Only ever compared between
+ *   cards whose [ranks] already tied, which means they matched the same categories, so the value always compares like against like.
+ * @property statTieBreak Value of the card's stat gain, higher is better, used only once [ranks] and [categoryValue] tie.
  */
-private data class LessonEffectProfile(val ranks: List<Int>, val statTieBreak: Double)
+private data class LessonEffectProfile(val ranks: List<Int>, val categoryValue: Double, val statTieBreak: Double)
 
 /**
  * Strip the post-concert warning overlay the game paints over a Song's effect line. The effect crop reads it as trailing noise, which would
@@ -243,12 +269,42 @@ private fun parseStatGainIn(cleaned: String): Pair<StatName, Int>? {
 }
 
 /**
+ * Parse a passive training-gain effect ("Training Wit Gain +2") into its stat and amount. This is the counterpart to [parseStatGain], which only accepts a
+ * gain that leads the effect. A card matching here still belongs to Training Gain, never to Stat Gains.
+ *
+ * @param effectText The card's effect line(s).
+ * @return The (stat, amount) pair, or null when the effect is not a named training gain.
+ */
+fun parseTrainingStatGain(effectText: String): Pair<StatName, Int>? = parseTrainingStatGainIn(stripConcertOverOverlay(effectText))
+
+/**
+ * Parse a named training gain from text the overlay has already been stripped from, so a caller that cleans once does not pay for it again.
+ *
+ * @param cleaned The card's effect line(s), overlay already removed.
+ * @return The (stat, amount) pair, or null when the effect is not a named training gain.
+ */
+private fun parseTrainingStatGainIn(cleaned: String): Pair<StatName, Int>? {
+    val match = TRAINING_STAT_GAIN_REGEX.find(cleaned) ?: return null
+    val stat = StatName.fromName(match.groupValues[1]) ?: return null
+    val amount = match.groupValues[2].toIntOrNull() ?: return null
+    return stat to amount
+}
+
+/**
  * Parse an Energy gain effect ("Energy +20").
  *
  * @param effectText The card's effect line(s).
  * @return The energy gain amount, or null when the card grants no energy.
  */
-fun parseEnergyGain(effectText: String): Int? = ENERGY_GAIN_REGEX.find(stripConcertOverOverlay(effectText))?.groupValues?.get(1)?.toIntOrNull()
+fun parseEnergyGain(effectText: String): Int? = parseEnergyGainIn(stripConcertOverOverlay(effectText))
+
+/**
+ * Parse an Energy gain from text the overlay has already been stripped from, so a caller that cleans once does not pay for it again.
+ *
+ * @param cleaned The card's effect line(s), overlay already removed.
+ * @return The energy gain amount, or null when the card grants no energy.
+ */
+private fun parseEnergyGainIn(cleaned: String): Int? = ENERGY_GAIN_REGEX.find(cleaned)?.groupValues?.get(1)?.toIntOrNull()
 
 /**
  * The running style named in a skill-hint effect (e.g. "Pace Chaser" in "Skill Hint Lvl +3 (Pace Chaser)"). Returns null for a
@@ -277,35 +333,65 @@ fun parseProjectedEnergy(text: String): Pair<Int, Int>? {
 }
 
 /**
- * Detect which effect categories a card's effect text matches. A card with two effect lines can match several.
+ * Everything one pass over a card's effect text yields, so neither the categories, the magnitudes, nor the comparator ever re-parse it.
  *
- * Training Effectiveness is also inferred when OCR lost its label, which happens often enough to matter: the effect crop routinely reads
- * the "+10%" cards down to a bare percentage, and the post-concert overlay can replace the line outright. A bare percentage and a raw stat
- * gain at or above [TRAINING_EFFECTIVENESS_STAT_FLOOR] both only ever occur on these Songs, so either one stands in for the missing label.
+ * @property magnitudes The matched categories, each mapped to how much of it the card grants. Support Events is flat and Stat Gains is ordered by the
+ *   stat prioritization instead, so both map to 0.0.
+ * @property rawStatGain The card's leading stat gain ("Speed +26"), or null.
+ * @property trainingStatGain The card's named passive gain ("Training Wit Gain +2"), or null.
+ */
+private data class LessonEffectReading(
+    val magnitudes: Map<LessonEffectCategory, Double>,
+    val rawStatGain: Pair<StatName, Int>?,
+    val trainingStatGain: Pair<StatName, Int>?,
+)
+
+/**
+ * Detect which effect categories a card's effect text matches. A card with two effect lines can match several.
  *
  * @param effectText The card's effect line(s).
  * @return The matched categories (empty when nothing recognizable was read).
  */
-fun detectLessonCategories(effectText: String): Set<LessonEffectCategory> = detectLessonCategoriesIn(stripConcertOverOverlay(effectText))
+fun detectLessonCategories(effectText: String): Set<LessonEffectCategory> = readLessonEffect(stripConcertOverOverlay(effectText)).magnitudes.keys
 
 /**
- * Match categories against text the overlay has already been stripped from, so a caller that cleans once does not pay for it again.
+ * The first capture group of [regex] in [text], as a number.
+ *
+ * @param regex A pattern whose first group holds an amount.
+ * @param text The text to search.
+ * @return The parsed amount, or null when the pattern did not match.
+ */
+private fun firstAmount(regex: Regex, text: String): Double? = regex.find(text)?.groupValues?.get(1)?.toDoubleOrNull()
+
+/**
+ * Read a card's categories and how much of each it grants, in one pass. Recognition and measurement live on the same line on purpose: a magnitude pattern
+ * stricter than the keyword that recognized the category would let a card match and then score zero, silently falling back to screen position. Every
+ * magnitude falls back to 0.0, so a lost amount only ever costs a tie-break, never the category.
+ *
+ * Training Effectiveness is also inferred when OCR lost its label, which happens often enough to matter: the effect crop routinely reads the "+10%" cards
+ * down to a bare percentage, and the post-concert overlay can replace the line outright. A bare percentage and a raw stat gain at or above
+ * [TRAINING_EFFECTIVENESS_STAT_FLOOR] both only ever occur on these Songs, so either one stands in for the missing label.
  *
  * @param cleaned The card's effect line(s), overlay already removed.
- * @return The matched categories (empty when nothing recognizable was read).
+ * @return The card's reading, with empty magnitudes when nothing recognizable was read.
  */
-private fun detectLessonCategoriesIn(cleaned: String): Set<LessonEffectCategory> {
+private fun readLessonEffect(cleaned: String): LessonEffectReading {
     val t = cleaned.lowercase()
-    val statGain = parseStatGainIn(cleaned)
-    val categories = mutableSetOf<LessonEffectCategory>()
-    val labelLost = BARE_PERCENT_REGEX.containsMatchIn(cleaned) || (statGain?.second ?: 0) >= TRAINING_EFFECTIVENESS_STAT_FLOOR
-    if ("friendship" in t || "training effectiveness" in t || labelLost) categories.add(LessonEffectCategory.TRAINING_EFFECTIVENESS)
-    if ("training" in t && "gain" in t) categories.add(LessonEffectCategory.TRAINING_GAIN)
-    if (("support" in t && "event" in t) || "specialty priority" in t) categories.add(LessonEffectCategory.SUPPORT_EVENTS)
-    if (statGain != null) categories.add(LessonEffectCategory.STAT_GAINS)
-    if ("hint" in t || "skill point" in t) categories.add(LessonEffectCategory.SKILL_HINTS)
-    if (ENERGY_GAIN_REGEX.containsMatchIn(cleaned)) categories.add(LessonEffectCategory.ENERGY)
-    return categories
+    val rawStatGain = parseStatGainIn(cleaned)
+    val trainingStatGain = parseTrainingStatGainIn(cleaned)
+    val percent = firstAmount(EFFECTIVENESS_PERCENT_REGEX, cleaned)
+    val energy = parseEnergyGainIn(cleaned)
+    val magnitudes = mutableMapOf<LessonEffectCategory, Double>()
+    val labelLost = percent != null || (rawStatGain?.second ?: 0) >= TRAINING_EFFECTIVENESS_STAT_FLOOR
+    if ("friendship" in t || "training effectiveness" in t || labelLost) magnitudes[LessonEffectCategory.TRAINING_EFFECTIVENESS] = percent ?: 0.0
+    if ("training" in t && "gain" in t) {
+        magnitudes[LessonEffectCategory.TRAINING_GAIN] = trainingStatGain?.second?.toDouble() ?: firstAmount(TRAINING_GAIN_AMOUNT_REGEX, cleaned) ?: 0.0
+    }
+    if (("support" in t && "event" in t) || "specialty priority" in t) magnitudes[LessonEffectCategory.SUPPORT_EVENTS] = 0.0
+    if (rawStatGain != null) magnitudes[LessonEffectCategory.STAT_GAINS] = 0.0
+    if ("hint" in t || "skill point" in t) magnitudes[LessonEffectCategory.SKILL_HINTS] = firstAmount(SKILL_HINT_AMOUNT_REGEX, cleaned) ?: 0.0
+    if (energy != null) magnitudes[LessonEffectCategory.ENERGY] = energy.toDouble()
+    return LessonEffectReading(magnitudes, rawStatGain, trainingStatGain)
 }
 
 /**
@@ -321,15 +407,18 @@ private fun detectLessonCategoriesIn(cleaned: String): Set<LessonEffectCategory>
  */
 private fun profileLessonEffect(effectText: String, statPriority: List<StatName>, categoryOrder: List<LessonEffectCategory>): LessonEffectProfile {
     val cleaned = stripConcertOverOverlay(effectText)
-    val statGain = parseStatGainIn(cleaned)
+    val reading = readLessonEffect(cleaned)
+    // A leading stat gain is what puts a card in Stat Gains, so it is preferred here; the named passive only stands in for the tie-break.
+    val statGain = reading.rawStatGain ?: reading.trainingStatGain
     val statRank = statGain?.let { statPriority.indexOf(it.first) } ?: -1
     val ranks =
-        detectLessonCategoriesIn(cleaned)
+        reading.magnitudes.keys
             .filterNot { it == LessonEffectCategory.STAT_GAINS && statRank < 0 }
             .mapNotNull { categoryOrder.indexOf(it).takeIf { rank -> rank >= 0 } }
             .sorted()
+    val categoryValue = ranks.firstOrNull()?.let { reading.magnitudes[categoryOrder[it]] } ?: 0.0
     val statTieBreak = if (statGain != null && statRank >= 0) (statPriority.size - statRank).toDouble() + statGain.second * 0.001 else 0.0
-    return LessonEffectProfile(ranks, statTieBreak)
+    return LessonEffectProfile(ranks, categoryValue, statTieBreak)
 }
 
 /**
@@ -348,8 +437,11 @@ private fun compareLessonRanks(a: List<Int>, b: List<Int>): Int {
 }
 
 /**
- * Pick the best card, profiling each one exactly once. Category ranks decide first, then a Technique edges out a Song of equal effect
- * value, then the better raw stat gain, and finally the earlier row.
+ * Pick the best card, profiling each one exactly once. Category ranks decide first, then how much of that category the card grants, then a Technique
+ * edges out a Song of equal value, then the better stat gain, and finally the earlier row.
+ *
+ * Magnitude sits above the Technique preference on purpose: a "Training Wit Gain +2" Song is worth more than a "Training Guts Gain +1" Technique, and
+ * before magnitude was read at all those two tied all the way down to screen position.
  *
  * @param options The cards to choose between.
  * @param statPriority The bot's ordered stat prioritization (index 0 = highest).
@@ -361,6 +453,7 @@ private fun bestLesson(options: List<LessonOption>, statPriority: List<StatName>
         .map { it to profileLessonEffect(it.effectText, statPriority, categoryOrder) }
         .maxWithOrNull(
             Comparator<Pair<LessonOption, LessonEffectProfile>> { a, b -> compareLessonRanks(a.second.ranks, b.second.ranks) }
+                .thenBy { it.second.categoryValue }
                 .thenBy { it.first.kind == LessonKind.TECHNIQUE }
                 .thenBy { it.second.statTieBreak }
                 .thenByDescending { it.first.rowIndex },

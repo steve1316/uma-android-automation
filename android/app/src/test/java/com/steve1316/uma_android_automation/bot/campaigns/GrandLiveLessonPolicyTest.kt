@@ -248,4 +248,107 @@ class GrandLiveLessonPolicyTest {
         assertFalse(hasLearnableRibbon(ribbonYs, 673.0, 337))
         assertEquals(2, ribbonYs.count { it in (1081.0 - 746)..1081.0 })
     }
+    @Test
+    @DisplayName("A bigger Training Gain wins over a smaller one, even for a lower-priority stat")
+    fun prefersBiggerTrainingGain() {
+        // Reported on device: the bot bought "Training Guts Gain +1" over "Training Wit Gain +2". Both cards match the same categories, so the
+        // ranks tied and the pick fell through to screen position. Guts also outranks Wit in this priority, so only the magnitude can decide.
+        val options =
+            listOf(
+                song("Training Guts Gain +1 Support Chain Event Frequency Lvl +1", 0),
+                song("Training Wit Gain +2 Support Chain Event Frequency Lvl +1", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        // Swapping the rows must not change the answer, which is what proves the choice no longer rides on screen position.
+        val swapped =
+            listOf(
+                song("Training Wit Gain +2 Support Chain Event Frequency Lvl +1", 0),
+                song("Training Guts Gain +1 Support Chain Event Frequency Lvl +1", 1),
+            )
+        assertEquals(0, chooseLessonPurchase(swapped, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A +10% Training Effectiveness song beats a +5% one carrying a better stat")
+    fun prefersBiggerTrainingEffectiveness() {
+        // "Full Speed Ahead! Umadol Power" (Speed +22, +5%) used to beat "Fanfare for the Future!" (Guts +26, +10%) because the percentage was
+        // never read, so the tie fell to the raw stat riding along on the card and Speed outranks Guts.
+        val options =
+            listOf(
+                song("Speed +22 Friendship Training Effectiveness +5%", 0),
+                song("Guts +26 Friendship Training Effectiveness +10%", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A bigger gain on a Song outranks the Technique preference")
+    fun magnitudeBeatsTechniquePreference() {
+        val options =
+            listOf(
+                tech("Training Speed Gain +1", 0),
+                song("Training Speed Gain +2", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Equal Training Gain magnitudes fall through to the stat prioritization")
+    fun equalTrainingGainFallsToStat() {
+        val options =
+            listOf(
+                song("Training Wit Gain +2", 0),
+                song("Training Speed Gain +2", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A named training gain is parsed without becoming a raw stat gain")
+    fun parsesTrainingStatGain() {
+        assertEquals(StatName.WIT to 2, parseTrainingStatGain("Training Wit Gain +2"))
+        assertNull(parseTrainingStatGain("Speed +22"))
+        // The named gain must never leak into Stat Gains, or the category ranks would shift for every Training Gain card.
+        assertFalse(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.STAT_GAINS))
+        assertTrue(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.TRAINING_GAIN))
+    }
+
+    @Test
+    @DisplayName("Magnitude survives OCR losing a leading word, so a card never scores zero for a category it matched")
+    fun magnitudeToleratesLostLabel() {
+        // Detection accepts a bare "hint" or a bare "training" plus "gain", so measurement has to accept the same. When it did not, a card read as
+        // "Hint Lvl +3" counted as a Skill Hint, scored zero, and fell back to screen position - the very failure this ordering exists to prevent.
+        val hints =
+            listOf(
+                tech("Hint Lvl +1", 0),
+                tech("Hint Lvl +3", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(hints, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        val gains =
+            listOf(
+                song("Training Gain +1", 0),
+                song("Training Gain +2", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(gains, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Effect text captured from a real run scores the way the log shows it should")
+    fun scoresRealDeviceEffectText() {
+        // Every string here is verbatim from a Grand Live run, OCR noise included. The bare "+10%" is a card whose Friendship Training Effectiveness
+        // label was lost entirely, and it still has to outrank a Training Gain song.
+        val options =
+            listOf(
+                song("Training Skill Pt Gain +2 Specialty Priority +5", 0),
+                song("Guts +26 +10%", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        // The post-concert overlay trails the real effect and must not mask it.
+        val expired = "Training Skill Pt Gain +3 Support Chain Event Frequency Lvl +1 O This bonus won't take effect, as the concert is over."
+        assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.TRAINING_GAIN))
+        assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.SUPPORT_EVENTS))
+    }
 }
