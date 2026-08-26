@@ -248,6 +248,7 @@ class GrandLiveLessonPolicyTest {
         assertFalse(hasLearnableRibbon(ribbonYs, 673.0, 337))
         assertEquals(2, ribbonYs.count { it in (1081.0 - 746)..1081.0 })
     }
+
     @Test
     @DisplayName("A bigger Training Gain wins over a smaller one, even for a lower-priority stat")
     fun prefersBiggerTrainingGain() {
@@ -315,6 +316,50 @@ class GrandLiveLessonPolicyTest {
     }
 
     @Test
+    @DisplayName("Hint tags are parsed from the effect's parenthetical")
+    fun parsesHintTags() {
+        assertEquals(setOf(LessonHintTag.PACE_CHASER), parseHintTags("Skill Hint Lvl +3 (Pace Chaser)"))
+        assertEquals(setOf(LessonHintTag.MEDIUM), parseHintTags("Energy +20 Skill Hint Lvl +3 (Medium)"))
+        assertTrue(parseHintTags("Training Speed Gain +1").isEmpty())
+    }
+
+    @Test
+    @DisplayName("A ranked skill-hint tag wins over an unranked one")
+    fun rankedHintTagWins() {
+        val options =
+            listOf(
+                tech("Skill Hint Lvl +1 (Sprint)", 0),
+                tech("Skill Hint Lvl +1 (Long)", 1),
+            )
+        // With no hint ranking the two are indistinguishable, so the earlier row wins.
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        val longFirst = listOf(LessonHintTag.LONG)
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = longFirst)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A hint whose tag is unranked is still bought when it is the only option")
+    fun unrankedHintIsLastResort() {
+        val options = listOf(tech("Skill Hint Lvl +1 (Sprint)", 0))
+        val longFirst = listOf(LessonHintTag.LONG)
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = longFirst)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A hint with no recognizable tag is never demoted by the hint ranking")
+    fun untaggedHintIsNotDemoted() {
+        // OCR routinely loses the parenthetical, and a card that reads as a bare hint must not fall below an unrelated unranked card.
+        val options =
+            listOf(
+                tech("Skill Hint Lvl +2", 0),
+                tech("Energy +20", 1),
+            )
+        val longFirst = listOf(LessonHintTag.LONG)
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = longFirst)?.rowIndex)
+    }
+
+    @Test
     @DisplayName("Magnitude survives OCR losing a leading word, so a card never scores zero for a category it matched")
     fun magnitudeToleratesLostLabel() {
         // Detection accepts a bare "hint" or a bare "training" plus "gain", so measurement has to accept the same. When it did not, a card read as
@@ -335,6 +380,22 @@ class GrandLiveLessonPolicyTest {
     }
 
     @Test
+    @DisplayName("Skill point cards are recognized through the abbreviated wording the game actually prints")
+    fun recognizesAbbreviatedSkillPoints() {
+        // Observed on device: the game only ever prints "Skill Pts +12" or "Training Skill Pt Gain +3", never "Skill Point". The old keyword looked for
+        // the spelled-out form, so a card granting only skill points matched no category at all and fell through to screen position.
+        assertTrue(detectLessonCategories("Skill Pts +12").contains(LessonEffectCategory.SKILL_HINTS))
+        assertTrue(detectLessonCategories("Training Skill Pt Gain +3").contains(LessonEffectCategory.SKILL_HINTS))
+
+        val options =
+            listOf(
+                tech("Skill Pts +5", 0),
+                tech("Skill Pts +12", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
     @DisplayName("Effect text captured from a real run scores the way the log shows it should")
     fun scoresRealDeviceEffectText() {
         // Every string here is verbatim from a Grand Live run, OCR noise included. The bare "+10%" is a card whose Friendship Training Effectiveness
@@ -351,19 +412,18 @@ class GrandLiveLessonPolicyTest {
         assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.TRAINING_GAIN))
         assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.SUPPORT_EVENTS))
     }
-    @Test
-    @DisplayName("Skill point cards are recognized through the abbreviated wording the game actually prints")
-    fun recognizesAbbreviatedSkillPoints() {
-        // Observed on device: the game only ever prints "Skill Pts +12" or "Training Skill Pt Gain +3", never "Skill Point". The old keyword looked for
-        // the spelled-out form, so a card granting only skill points matched no category at all and fell through to screen position.
-        assertTrue(detectLessonCategories("Skill Pts +12").contains(LessonEffectCategory.SKILL_HINTS))
-        assertTrue(detectLessonCategories("Training Skill Pt Gain +3").contains(LessonEffectCategory.SKILL_HINTS))
 
+    @Test
+    @DisplayName("A ranked hint tag beats a bigger skill-point total, whose magnitude is a different unit")
+    fun rankedHintBeatsSkillPointTotal() {
+        // Taken from a device scan. Both cards are Skill Hints, but one measures a hint level and the other a skill-point total, so their magnitudes are
+        // not comparable as numbers. The tag the user ranked is the better signal and has to win.
         val options =
             listOf(
-                tech("Skill Pts +5", 0),
-                tech("Skill Pts +12", 1),
+                tech("Skill Hint Lvl +1 (End Closer)", 0),
+                tech("Skill Pts +5", 1),
             )
-        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+        val endCloserRanked = listOf(LessonHintTag.LONG, LessonHintTag.END_CLOSER)
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = endCloserRanked)?.rowIndex)
     }
 }

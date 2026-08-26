@@ -75,6 +75,14 @@ class GrandLive(game: Game) : Campaign(game) {
     private val lessonEffectPriority: List<LessonEffectCategory> =
         SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveLessonEffectPriority").mapNotNull { LessonEffectCategory.fromDisplayName(it) }.ifEmpty { DEFAULT_LESSON_EFFECT_PRIORITY }
 
+    /** Stat order applied to Lessons stat gains (Scenario Overrides). Falls back to the global training prioritization when the user has not set a Grand Live one. */
+    private val lessonStatPriority: List<StatName> =
+        SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveLessonStatPriority").mapNotNull { StatName.fromName(it) }.ifEmpty { training.statPrioritization }
+
+    /** User-ranked skill-hint tags (Scenario Overrides). Empty means no hint preference, which is the original behavior. */
+    private val lessonHintPriority: List<LessonHintTag> =
+        SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveLessonHintPriority").mapNotNull { LessonHintTag.fromDisplayName(it) }
+
     /** Turns between Lessons re-checks (Scenario Overrides). The list is static until a purchase, so polling more often than tokens grow wastes screen time. */
     private val lessonRescanInterval: Int = SettingsHelper.getIntSetting("scenarioOverrides", "grandLiveLessonRescanInterval", 2)
 
@@ -289,7 +297,7 @@ class GrandLive(game: Game) : Campaign(game) {
             // Prefer on-style options; a skill hint for a running style we cannot use is only bought when it is the sole affordable option.
             val onStyle = purchasable.filter { !isOffStyleHint(it.option.effectText) }
             val candidates = if (onStyle.isNotEmpty()) onStyle else purchasable
-            val choice = chooseLessonPurchase(candidates.map { it.option }, training.statPrioritization, forceMaxHype, hypeMaxed, lessonEffectPriority)
+            val choice = chooseLessonPurchase(candidates.map { it.option }, lessonStatPriority, forceMaxHype, hypeMaxed, lessonEffectPriority, lessonHintPriority)
             if (choice == null) {
                 MessageLog.i(TAG, "[GRAND_LIVE] No learnable Lessons purchase; leaving the Lessons screen.")
                 break
@@ -474,11 +482,15 @@ class GrandLive(game: Game) : Campaign(game) {
      * Whether a card's effect is a skill hint tied to a running style the trainee cannot use (aptitude below C), so it should not be
      * bought over an on-style option. A non-hint effect, a distance / generic hint, or an on-style hint all return false.
      *
+     * A tag the user ranked in the hint priority is never treated as off-style - an explicit choice outranks the aptitude guess.
+     *
      * @param effectText The card's effect line(s).
      * @return True when the effect is an off-style skill hint.
      */
     private fun isOffStyleHint(effectText: String): Boolean {
-        val style = parseHintRunningStyle(effectText) ?: return false
+        val tags = parseHintTags(effectText)
+        if (tags.any { it in lessonHintPriority }) return false
+        val style = tags.firstNotNullOfOrNull { it.runningStyle } ?: return false
         val aptitude = trainee.runningStyleAptitudes[style] ?: return false
         return aptitude < Aptitude.C
     }
