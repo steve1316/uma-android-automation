@@ -159,10 +159,16 @@ private val TRAINING_STAT_GAIN_REGEX = Regex("training\\s+($STAT_ALTERNATION)\\s
 private val TRAINING_GAIN_AMOUNT_REGEX = Regex("gain[^+]*\\+\\s*(\\d+)", RegexOption.IGNORE_CASE)
 
 /**
- * Matches the amount on a skill-point or skill-hint effect ("Skill Point Bonus +3", "Skill Hint Lvl +2"), tolerating a lost leading word.
+ * Matches the skill-point wording a Lessons card uses. The game always abbreviates it ("Skill Pts +22", "Training Skill Pt Gain +2") and never spells the
+ * word out, so the original "skill point" keyword never fired and a card granting only skill points matched no category at all.
+ */
+private val SKILL_POINT_REGEX = Regex("skill\\s+p(?:ts?|oint)", RegexOption.IGNORE_CASE)
+
+/**
+ * Matches the amount on a skill-point or skill-hint effect ("Training Skill Pt Gain +3", "Skill Hint Lvl +2"), tolerating a lost leading word.
  * Anchored on the same keywords that recognize the category, so a card can never be read as a hint and then score no magnitude.
  */
-private val SKILL_HINT_AMOUNT_REGEX = Regex("(?:hint|skill\\s+point)[^+]*\\+\\s*(\\d+)", RegexOption.IGNORE_CASE)
+private val SKILL_HINT_AMOUNT_REGEX = Regex("(?:hint|skill\\s+p(?:ts?|oint))[^+]*\\+\\s*(\\d+)", RegexOption.IGNORE_CASE)
 
 /**
  * Matches the resulting-energy readout on the Lessons purchase confirmation ("78 / 100"), capturing both the projected new energy and the
@@ -389,7 +395,7 @@ private fun readLessonEffect(cleaned: String): LessonEffectReading {
     }
     if (("support" in t && "event" in t) || "specialty priority" in t) magnitudes[LessonEffectCategory.SUPPORT_EVENTS] = 0.0
     if (rawStatGain != null) magnitudes[LessonEffectCategory.STAT_GAINS] = 0.0
-    if ("hint" in t || "skill point" in t) magnitudes[LessonEffectCategory.SKILL_HINTS] = firstAmount(SKILL_HINT_AMOUNT_REGEX, cleaned) ?: 0.0
+    if ("hint" in t || SKILL_POINT_REGEX.containsMatchIn(cleaned)) magnitudes[LessonEffectCategory.SKILL_HINTS] = firstAmount(SKILL_HINT_AMOUNT_REGEX, cleaned) ?: 0.0
     if (energy != null) magnitudes[LessonEffectCategory.ENERGY] = energy.toDouble()
     return LessonEffectReading(magnitudes, rawStatGain, trainingStatGain)
 }

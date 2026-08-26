@@ -351,4 +351,19 @@ class GrandLiveLessonPolicyTest {
         assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.TRAINING_GAIN))
         assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.SUPPORT_EVENTS))
     }
+    @Test
+    @DisplayName("Skill point cards are recognized through the abbreviated wording the game actually prints")
+    fun recognizesAbbreviatedSkillPoints() {
+        // Observed on device: the game only ever prints "Skill Pts +12" or "Training Skill Pt Gain +3", never "Skill Point". The old keyword looked for
+        // the spelled-out form, so a card granting only skill points matched no category at all and fell through to screen position.
+        assertTrue(detectLessonCategories("Skill Pts +12").contains(LessonEffectCategory.SKILL_HINTS))
+        assertTrue(detectLessonCategories("Training Skill Pt Gain +3").contains(LessonEffectCategory.SKILL_HINTS))
+
+        val options =
+            listOf(
+                tech("Skill Pts +5", 0),
+                tech("Skill Pts +12", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
 }
