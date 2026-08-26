@@ -44,6 +44,18 @@ const DUEL_BIAS_OPTIONS = [
 /** The Grand Live Lesson effect categories rankable in the Lesson Effect Priority list. The ids double as the strings stored in the setting. */
 const GRAND_LIVE_LESSON_CATEGORIES = ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints", "Energy"].map((name) => ({ id: name, label: name }))
 
+/** Track distance labels, shared by the Trackblazer preferred-distance chips and the Grand Live hint priority list. */
+const TRACK_DISTANCE_OPTIONS = ["Sprint", "Mile", "Medium", "Long"]
+
+/** Track surface labels, shared by the Trackblazer preferred-surface chips and the Grand Live hint priority list. */
+const TRACK_SURFACE_OPTIONS = ["Turf", "Dirt"]
+
+/** Running style labels, as a skill hint's parenthetical prints them on a Lessons card. */
+const RUNNING_STYLE_OPTIONS = ["Front Runner", "Pace Chaser", "Late Surger", "End Closer"]
+
+/** The Grand Live skill-hint tags rankable in the Lesson Skill Hint Priority list. These are the parentheticals the Lessons cards print, and the ids double as the strings stored in the setting. */
+const GRAND_LIVE_HINT_TAGS = [...RUNNING_STYLE_OPTIONS, ...TRACK_DISTANCE_OPTIONS, ...TRACK_SURFACE_OPTIONS].map((name) => ({ id: name, label: name }))
+
 /** Options for the Grand Live Lessons re-check interval picker, in turns. */
 const GRAND_LIVE_INTERVAL_OPTIONS = [1, 2, 3, 4, 5] as const
 
@@ -120,7 +132,12 @@ const ScenarioOverridesSettings = () => {
     const [scenarioPickerOpen, setScenarioPickerOpen] = useState(false)
     const [duelBiasPickerOpen, setDuelBiasPickerOpen] = useState(false)
     const [lessonPriorityPickerOpen, setLessonPriorityPickerOpen] = useState(false)
+    const [lessonStatPriorityPickerOpen, setLessonStatPriorityPickerOpen] = useState(false)
+    const [lessonHintPriorityPickerOpen, setLessonHintPriorityPickerOpen] = useState(false)
     const [lessonIntervalPickerOpen, setLessonIntervalPickerOpen] = useState(false)
+
+    // Built once so the memoized priority list is not handed a fresh array on every render, matching the module-level constants its sibling pickers use.
+    const statPriorityItems = useMemo(() => defaultSettings.training.statPrioritization.map((stat) => ({ id: stat, label: stat })), [defaultSettings.training.statPrioritization])
 
     // Which scenario the page is currently editing overrides for. Seeded from the bot's active scenario and re-synced whenever it changes.
     // Switching campaigns here stays local to the page and does not change the bot's actual run target (`general.scenario`).
@@ -252,6 +269,8 @@ const ScenarioOverridesSettings = () => {
     /** Reset the Grand Live Lessons section to defaults. */
     const resetGrandLiveDefaults = useCallback(() => {
         updateOverrideSetting("grandLiveLessonEffectPriority", defaultSettings.scenarioOverrides.grandLiveLessonEffectPriority)
+        updateOverrideSetting("grandLiveLessonStatPriority", defaultSettings.scenarioOverrides.grandLiveLessonStatPriority)
+        updateOverrideSetting("grandLiveLessonHintPriority", defaultSettings.scenarioOverrides.grandLiveLessonHintPriority)
         updateOverrideSetting("grandLiveLessonRescanInterval", defaultSettings.scenarioOverrides.grandLiveLessonRescanInterval)
     }, [updateOverrideSetting, defaultSettings])
 
@@ -398,7 +417,7 @@ const ScenarioOverridesSettings = () => {
                                             <ChipMultiSelect
                                                 title="Preferred Track Distances"
                                                 description="Select preferred track distances for extra race selection. Matching races will be prioritized. Leave empty for no preference."
-                                                options={["Sprint", "Mile", "Medium", "Long"]}
+                                                options={TRACK_DISTANCE_OPTIONS}
                                                 selected={scenarioOverrides.trackblazerPreferredDistances}
                                                 onToggle={(next) => updateOverrideSetting("trackblazerPreferredDistances", next)}
                                             />
@@ -406,7 +425,7 @@ const ScenarioOverridesSettings = () => {
                                             <ChipMultiSelect
                                                 title="Preferred Track Surfaces"
                                                 description="Select preferred track surfaces for extra race selection. Matching races will be prioritized. Leave empty for no preference."
-                                                options={["Turf", "Dirt"]}
+                                                options={TRACK_SURFACE_OPTIONS}
                                                 selected={scenarioOverrides.trackblazerPreferredSurfaces}
                                                 onToggle={(next) => updateOverrideSetting("trackblazerPreferredSurfaces", next)}
                                             />
@@ -894,6 +913,38 @@ const ScenarioOverridesSettings = () => {
                                             />
                                         </SearchableItem>
                                         <SearchableItem
+                                            id="grand-live-lesson-stat-priority"
+                                            title="Lesson Stat Priority"
+                                            description="Stat order applied to stat gains in Lessons. Leave empty to reuse the global Training stat prioritization."
+                                        >
+                                            <Row
+                                                title="Lesson Stat Priority"
+                                                description="Drag to rank which stats Lessons favors. Leave empty to follow the global Training stat prioritization."
+                                                onPress={() => setLessonStatPriorityPickerOpen(true)}
+                                                right={
+                                                    <ValuePill
+                                                        label={scenarioOverrides.grandLiveLessonStatPriority.length === 0 ? "Global" : `${scenarioOverrides.grandLiveLessonStatPriority.length} ranked`}
+                                                    />
+                                                }
+                                            />
+                                        </SearchableItem>
+                                        <SearchableItem
+                                            id="grand-live-lesson-hint-priority"
+                                            title="Lesson Skill Hint Priority"
+                                            description="Rank which skill hints the bot favors in Lessons. Ranked hints are also bought even when the running style is off-aptitude."
+                                        >
+                                            <Row
+                                                title="Lesson Skill Hint Priority"
+                                                description="Drag to rank which skill hints Lessons favors. Deselected hints become last-resort purchases."
+                                                onPress={() => setLessonHintPriorityPickerOpen(true)}
+                                                right={
+                                                    <ValuePill
+                                                        label={scenarioOverrides.grandLiveLessonHintPriority.length === 0 ? "None" : `${scenarioOverrides.grandLiveLessonHintPriority.length} ranked`}
+                                                    />
+                                                }
+                                            />
+                                        </SearchableItem>
+                                        <SearchableItem
                                             id="grand-live-lesson-rescan-interval"
                                             title="Lessons Re-check Interval"
                                             description="How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time."
@@ -1012,6 +1063,34 @@ const ScenarioOverridesSettings = () => {
                     selectedItems={scenarioOverrides.grandLiveLessonEffectPriority}
                     onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonEffectPriority", next)}
                     onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonEffectPriority", orderedItems)}
+                />
+            </SheetModal>
+
+            <SheetModal
+                visible={lessonStatPriorityPickerOpen}
+                onRequestClose={() => setLessonStatPriorityPickerOpen(false)}
+                header={<ModalHeader title="LESSON STAT PRIORITY" onClose={() => setLessonStatPriorityPickerOpen(false)} />}
+                footer={null}
+            >
+                <DraggablePriorityList
+                    items={statPriorityItems}
+                    selectedItems={scenarioOverrides.grandLiveLessonStatPriority}
+                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonStatPriority", next)}
+                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonStatPriority", orderedItems)}
+                />
+            </SheetModal>
+
+            <SheetModal
+                visible={lessonHintPriorityPickerOpen}
+                onRequestClose={() => setLessonHintPriorityPickerOpen(false)}
+                header={<ModalHeader title="LESSON SKILL HINT PRIORITY" onClose={() => setLessonHintPriorityPickerOpen(false)} />}
+                footer={null}
+            >
+                <DraggablePriorityList
+                    items={GRAND_LIVE_HINT_TAGS}
+                    selectedItems={scenarioOverrides.grandLiveLessonHintPriority}
+                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonHintPriority", next)}
+                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonHintPriority", orderedItems)}
                 />
             </SheetModal>
 

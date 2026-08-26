@@ -248,4 +248,209 @@ class GrandLiveLessonPolicyTest {
         assertFalse(hasLearnableRibbon(ribbonYs, 673.0, 337))
         assertEquals(2, ribbonYs.count { it in (1081.0 - 746)..1081.0 })
     }
+
+    @Test
+    @DisplayName("A bigger Training Gain wins over a smaller one, even for a lower-priority stat")
+    fun prefersBiggerTrainingGain() {
+        // Reported on device: the bot bought "Training Guts Gain +1" over "Training Wit Gain +2". Both cards match the same categories, so the
+        // ranks tied and the pick fell through to screen position. Guts also outranks Wit in this priority, so only the magnitude can decide.
+        val options =
+            listOf(
+                song("Training Guts Gain +1 Support Chain Event Frequency Lvl +1", 0),
+                song("Training Wit Gain +2 Support Chain Event Frequency Lvl +1", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        // Swapping the rows must not change the answer, which is what proves the choice no longer rides on screen position.
+        val swapped =
+            listOf(
+                song("Training Wit Gain +2 Support Chain Event Frequency Lvl +1", 0),
+                song("Training Guts Gain +1 Support Chain Event Frequency Lvl +1", 1),
+            )
+        assertEquals(0, chooseLessonPurchase(swapped, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A +10% Training Effectiveness song beats a +5% one carrying a better stat")
+    fun prefersBiggerTrainingEffectiveness() {
+        // "Full Speed Ahead! Umadol Power" (Speed +22, +5%) used to beat "Fanfare for the Future!" (Guts +26, +10%) because the percentage was
+        // never read, so the tie fell to the raw stat riding along on the card and Speed outranks Guts.
+        val options =
+            listOf(
+                song("Speed +22 Friendship Training Effectiveness +5%", 0),
+                song("Guts +26 Friendship Training Effectiveness +10%", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A bigger gain on a Song outranks the Technique preference")
+    fun magnitudeBeatsTechniquePreference() {
+        val options =
+            listOf(
+                tech("Training Speed Gain +1", 0),
+                song("Training Speed Gain +2", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Equal Training Gain magnitudes fall through to the stat prioritization")
+    fun equalTrainingGainFallsToStat() {
+        val options =
+            listOf(
+                song("Training Wit Gain +2", 0),
+                song("Training Speed Gain +2", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A named training gain is parsed without becoming a raw stat gain")
+    fun parsesTrainingStatGain() {
+        assertEquals(StatName.WIT to 2, parseTrainingStatGain("Training Wit Gain +2"))
+        assertNull(parseTrainingStatGain("Speed +22"))
+        // The named gain must never leak into Stat Gains, or the category ranks would shift for every Training Gain card.
+        assertFalse(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.STAT_GAINS))
+        assertTrue(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.TRAINING_GAIN))
+    }
+
+    @Test
+    @DisplayName("Hint tags are parsed from the effect's parenthetical")
+    fun parsesHintTags() {
+        assertEquals(setOf(LessonHintTag.PACE_CHASER), parseHintTags("Skill Hint Lvl +3 (Pace Chaser)"))
+        assertEquals(setOf(LessonHintTag.MEDIUM), parseHintTags("Energy +20 Skill Hint Lvl +3 (Medium)"))
+        assertTrue(parseHintTags("Training Speed Gain +1").isEmpty())
+    }
+
+    @Test
+    @DisplayName("A ranked skill-hint tag wins over an unranked one")
+    fun rankedHintTagWins() {
+        val options =
+            listOf(
+                tech("Skill Hint Lvl +1 (Sprint)", 0),
+                tech("Skill Hint Lvl +1 (Long)", 1),
+            )
+        // With no hint ranking the two are indistinguishable, so the earlier row wins.
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        val longFirst = listOf(LessonHintTag.LONG)
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = longFirst)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A hint whose tag is unranked is still bought when it is the only option")
+    fun unrankedHintIsLastResort() {
+        val options = listOf(tech("Skill Hint Lvl +1 (Sprint)", 0))
+        val longFirst = listOf(LessonHintTag.LONG)
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = longFirst)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A hint with no recognizable tag is never demoted by the hint ranking")
+    fun untaggedHintIsNotDemoted() {
+        // OCR routinely loses the parenthetical, and a card that reads as a bare hint must not fall below an unrelated unranked card.
+        val options =
+            listOf(
+                tech("Skill Hint Lvl +2", 0),
+                tech("Energy +20", 1),
+            )
+        val longFirst = listOf(LessonHintTag.LONG)
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = longFirst)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Magnitude survives OCR losing a leading word, so a card never scores zero for a category it matched")
+    fun magnitudeToleratesLostLabel() {
+        // Detection accepts a bare "hint" or a bare "training" plus "gain", so measurement has to accept the same. When it did not, a card read as
+        // "Hint Lvl +3" counted as a Skill Hint, scored zero, and fell back to screen position - the very failure this ordering exists to prevent.
+        val hints =
+            listOf(
+                tech("Hint Lvl +1", 0),
+                tech("Hint Lvl +3", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(hints, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        val gains =
+            listOf(
+                song("Training Gain +1", 0),
+                song("Training Gain +2", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(gains, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Skill point cards are recognized through the abbreviated wording the game actually prints")
+    fun recognizesAbbreviatedSkillPoints() {
+        // Observed on device: the game only ever prints "Skill Pts +12" or "Training Skill Pt Gain +3", never "Skill Point". The old keyword looked for
+        // the spelled-out form, so a card granting only skill points matched no category at all and fell through to screen position.
+        assertTrue(detectLessonCategories("Skill Pts +12").contains(LessonEffectCategory.SKILL_HINTS))
+        assertTrue(detectLessonCategories("Training Skill Pt Gain +3").contains(LessonEffectCategory.SKILL_HINTS))
+
+        val options =
+            listOf(
+                tech("Skill Pts +5", 0),
+                tech("Skill Pts +12", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("Effect text captured from a real run scores the way the log shows it should")
+    fun scoresRealDeviceEffectText() {
+        // Every string here is verbatim from a Grand Live run, OCR noise included. The bare "+10%" is a card whose Friendship Training Effectiveness
+        // label was lost entirely, and it still has to outrank a Training Gain song.
+        val options =
+            listOf(
+                song("Training Skill Pt Gain +2 Specialty Priority +5", 0),
+                song("Guts +26 +10%", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+
+        // The post-concert overlay trails the real effect and must not mask it.
+        val expired = "Training Skill Pt Gain +3 Support Chain Event Frequency Lvl +1 O This bonus won't take effect, as the concert is over."
+        assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.TRAINING_GAIN))
+        assertTrue(detectLessonCategories(expired).contains(LessonEffectCategory.SUPPORT_EVENTS))
+    }
+
+    @Test
+    @DisplayName("A ranked hint tag beats a bigger skill-point total, whose magnitude is a different unit")
+    fun rankedHintBeatsSkillPointTotal() {
+        // Taken from a device scan. Both cards are Skill Hints, but one measures a hint level and the other a skill-point total, so their magnitudes are
+        // not comparable as numbers. The tag the user ranked is the better signal and has to win.
+        val options =
+            listOf(
+                tech("Skill Hint Lvl +1 (End Closer)", 0),
+                tech("Skill Pts +5", 1),
+            )
+        val endCloserRanked = listOf(LessonHintTag.LONG, LessonHintTag.END_CLOSER)
+        assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = endCloserRanked)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A two-stat Technique is scored on the best-ranked stat it grants, not the one printed first")
+    fun scoresMultiStatCardOnBestRankedStat() {
+        // Observed on device: "Guts +6 Wit +6" read as a Guts card, so with Guts unranked the whole card was demoted even though it grants ranked Wit.
+        val statPriority = listOf(StatName.STAMINA, StatName.WIT)
+        assertEquals(listOf(StatName.GUTS to 6, StatName.WIT to 6), parseStatGains("Guts +6 Wit +6"))
+        assertTrue(detectLessonCategories("Guts +6 Wit +6").contains(LessonEffectCategory.STAT_GAINS))
+
+        val options =
+            listOf(
+                tech("Power +12", 0),
+                tech("Guts +6 Wit +6", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, statPriority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A passive that names a stat is still not a raw stat gain")
+    fun passiveIsNotARawStatGain() {
+        // The amount has to follow the stat directly. Widening the match to a second stat must not start pulling passives into Stat Gains.
+        assertTrue(parseStatGains("Training Power Gain +1").isEmpty())
+        assertTrue(parseStatGains("Training Skill Pt Gain +2 Specialty Priority +5").isEmpty())
+        assertFalse(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.STAT_GAINS))
+        // A stat gain riding alongside a passive is still found.
+        assertEquals(listOf(StatName.WIT to 6), parseStatGains("Wit +6 Skill Pts +6"))
+    }
 }

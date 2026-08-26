@@ -1065,6 +1065,18 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "grand-live-lesson-stat-priority",
+        title: "Grand Live Lesson Stat Priority",
+        description: "Stat order applied to stat gains in Lessons. Leave empty to reuse the global Training stat prioritization.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
+        id: "grand-live-lesson-hint-priority",
+        title: "Grand Live Lesson Skill Hint Priority",
+        description: "Rank which skill hints the bot favors in Lessons. Ranked hints are also bought even when the running style is off-aptitude.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "grand-live-lesson-rescan-interval",
         title: "Grand Live Lessons Re-check Interval",
         description: "How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time.",
