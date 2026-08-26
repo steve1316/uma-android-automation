@@ -426,4 +426,31 @@ class GrandLiveLessonPolicyTest {
         val endCloserRanked = listOf(LessonHintTag.LONG, LessonHintTag.END_CLOSER)
         assertEquals(0, chooseLessonPurchase(options, priority, forceMaxHype = false, hypeMaxed = true, hintPriority = endCloserRanked)?.rowIndex)
     }
+
+    @Test
+    @DisplayName("A two-stat Technique is scored on the best-ranked stat it grants, not the one printed first")
+    fun scoresMultiStatCardOnBestRankedStat() {
+        // Observed on device: "Guts +6 Wit +6" read as a Guts card, so with Guts unranked the whole card was demoted even though it grants ranked Wit.
+        val statPriority = listOf(StatName.STAMINA, StatName.WIT)
+        assertEquals(listOf(StatName.GUTS to 6, StatName.WIT to 6), parseStatGains("Guts +6 Wit +6"))
+        assertTrue(detectLessonCategories("Guts +6 Wit +6").contains(LessonEffectCategory.STAT_GAINS))
+
+        val options =
+            listOf(
+                tech("Power +12", 0),
+                tech("Guts +6 Wit +6", 1),
+            )
+        assertEquals(1, chooseLessonPurchase(options, statPriority, forceMaxHype = false, hypeMaxed = true)?.rowIndex)
+    }
+
+    @Test
+    @DisplayName("A passive that names a stat is still not a raw stat gain")
+    fun passiveIsNotARawStatGain() {
+        // The amount has to follow the stat directly. Widening the match to a second stat must not start pulling passives into Stat Gains.
+        assertTrue(parseStatGains("Training Power Gain +1").isEmpty())
+        assertTrue(parseStatGains("Training Skill Pt Gain +2 Specialty Priority +5").isEmpty())
+        assertFalse(detectLessonCategories("Training Wit Gain +2").contains(LessonEffectCategory.STAT_GAINS))
+        // A stat gain riding alongside a passive is still found.
+        assertEquals(listOf(StatName.WIT to 6), parseStatGains("Wit +6 Skill Pts +6"))
+    }
 }

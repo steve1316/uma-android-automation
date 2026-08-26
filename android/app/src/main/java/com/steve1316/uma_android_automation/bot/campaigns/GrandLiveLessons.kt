@@ -122,8 +122,12 @@ private const val SOUGHT_AFTER_TOP_RANKS = 2
 /** The stat names as a regex alternation, derived from [StatName] so the gain patterns below cannot drift from the enum. */
 private val STAT_ALTERNATION = StatName.entries.joinToString("|") { it.name.lowercase() }
 
-/** Matches a raw stat-gain effect that leads with the stat (e.g. "Speed +5"), distinguishing it from passives like "Training Power Gain +1". */
-private val RAW_STAT_GAIN_REGEX = Regex("^\\s*($STAT_ALTERNATION)\\s*\\+?\\s*(\\d+)", RegexOption.IGNORE_CASE)
+/**
+ * Matches a raw stat-gain effect (e.g. "Speed +5"), including a second one on a card that grants two ("Guts +6 Wit +6"). What separates these from a
+ * passive like "Training Power Gain +1" is the amount following the stat directly, so the stat is matched at a word boundary rather than at the start of
+ * the effect - anchoring at the start would read only the first stat and make the second invisible.
+ */
+private val RAW_STAT_GAIN_REGEX = Regex("(?:^|\\s)($STAT_ALTERNATION)\\s*\\+?\\s*(\\d+)", RegexOption.IGNORE_CASE)
 
 /**
  * The greyed-out warning the game overlays on a Song's effect line once the concert has passed. The effect crop picks it up instead of (or
@@ -299,26 +303,35 @@ private data class LessonEffectProfile(val ranks: List<Int>, val categoryValue: 
 private fun stripConcertOverOverlay(effectText: String): String = CONCERT_OVER_OVERLAY_REGEX.replace(effectText, "").trim()
 
 /**
- * Parse a raw stat-gain effect ("Speed +5") into its stat and amount. Passive effects that merely mention a stat
- * ("Training Power Gain +1") do not match, since the stat must lead the effect.
+ * Parse the first raw stat-gain effect ("Speed +5") into its stat and amount. Passive effects that merely mention a stat ("Training Power Gain +1") do not
+ * match, since a raw gain prints its amount directly after the stat.
  *
  * @param effectText The card's effect line.
- * @return The (stat, amount) pair, or null when the effect is not a raw stat gain.
+ * @return The (stat, amount) pair, or null when the effect grants no raw stat gain.
  */
-fun parseStatGain(effectText: String): Pair<StatName, Int>? = parseStatGainIn(stripConcertOverOverlay(effectText))
+fun parseStatGain(effectText: String): Pair<StatName, Int>? = parseStatGains(effectText).firstOrNull()
 
 /**
- * Parse a raw stat gain from text the overlay has already been stripped from, so a caller that cleans once does not pay for it again.
+ * Parse every raw stat-gain effect on a card. A Technique can grant two ("Guts +6 Wit +6"), and scoring only the first would hide the second from the
+ * stat prioritization entirely.
+ *
+ * @param effectText The card's effect line(s).
+ * @return The (stat, amount) pairs in printed order, empty when the card grants no raw stat gain.
+ */
+fun parseStatGains(effectText: String): List<Pair<StatName, Int>> = parseStatGainsIn(stripConcertOverOverlay(effectText))
+
+/**
+ * Parse raw stat gains from text the overlay has already been stripped from, so a caller that cleans once does not pay for it again.
  *
  * @param cleaned The card's effect line(s), overlay already removed.
- * @return The (stat, amount) pair, or null when the effect is not a raw stat gain.
+ * @return The (stat, amount) pairs in printed order, empty when the card grants no raw stat gain.
  */
-private fun parseStatGainIn(cleaned: String): Pair<StatName, Int>? {
-    val match = RAW_STAT_GAIN_REGEX.find(cleaned) ?: return null
-    val stat = StatName.fromName(match.groupValues[1]) ?: return null
-    val amount = match.groupValues[2].toIntOrNull() ?: return null
-    return stat to amount
-}
+private fun parseStatGainsIn(cleaned: String): List<Pair<StatName, Int>> =
+    RAW_STAT_GAIN_REGEX.findAll(cleaned).mapNotNull { match ->
+        val stat = StatName.fromName(match.groupValues[1]) ?: return@mapNotNull null
+        val amount = match.groupValues[2].toIntOrNull() ?: return@mapNotNull null
+        stat to amount
+    }.toList()
 
 /**
  * Parse a passive training-gain effect ("Training Wit Gain +2") into its stat and amount. This is the counterpart to [parseStatGain], which only accepts a
@@ -397,12 +410,12 @@ fun parseProjectedEnergy(text: String): Pair<Int, Int>? {
  *
  * @property magnitudes The matched categories, each mapped to how much of it the card grants. Support Events is flat and Stat Gains is ordered by the
  *   stat prioritization instead, so both map to 0.0.
- * @property rawStatGain The card's leading stat gain ("Speed +26"), or null.
+ * @property rawStatGains The card's raw stat gains ("Speed +26", or both of "Guts +6 Wit +6"), empty when it grants none.
  * @property trainingStatGain The card's named passive gain ("Training Wit Gain +2"), or null.
  */
 private data class LessonEffectReading(
     val magnitudes: Map<LessonEffectCategory, Double>,
-    val rawStatGain: Pair<StatName, Int>?,
+    val rawStatGains: List<Pair<StatName, Int>>,
     val trainingStatGain: Pair<StatName, Int>?,
 )
 
@@ -437,21 +450,21 @@ private fun firstAmount(regex: Regex, text: String): Double? = regex.find(text)?
  */
 private fun readLessonEffect(cleaned: String): LessonEffectReading {
     val t = cleaned.lowercase()
-    val rawStatGain = parseStatGainIn(cleaned)
+    val rawStatGains = parseStatGainsIn(cleaned)
     val trainingStatGain = parseTrainingStatGainIn(cleaned)
     val percent = firstAmount(EFFECTIVENESS_PERCENT_REGEX, cleaned)
     val energy = parseEnergyGainIn(cleaned)
     val magnitudes = mutableMapOf<LessonEffectCategory, Double>()
-    val labelLost = percent != null || (rawStatGain?.second ?: 0) >= TRAINING_EFFECTIVENESS_STAT_FLOOR
+    val labelLost = percent != null || (rawStatGains.maxOfOrNull { it.second } ?: 0) >= TRAINING_EFFECTIVENESS_STAT_FLOOR
     if ("friendship" in t || "training effectiveness" in t || labelLost) magnitudes[LessonEffectCategory.TRAINING_EFFECTIVENESS] = percent ?: 0.0
     if ("training" in t && "gain" in t) {
         magnitudes[LessonEffectCategory.TRAINING_GAIN] = trainingStatGain?.second?.toDouble() ?: firstAmount(TRAINING_GAIN_AMOUNT_REGEX, cleaned) ?: 0.0
     }
     if (("support" in t && "event" in t) || "specialty priority" in t) magnitudes[LessonEffectCategory.SUPPORT_EVENTS] = 0.0
-    if (rawStatGain != null) magnitudes[LessonEffectCategory.STAT_GAINS] = 0.0
+    if (rawStatGains.isNotEmpty()) magnitudes[LessonEffectCategory.STAT_GAINS] = 0.0
     if ("hint" in t || SKILL_POINT_REGEX.containsMatchIn(cleaned)) magnitudes[LessonEffectCategory.SKILL_HINTS] = firstAmount(SKILL_HINT_AMOUNT_REGEX, cleaned) ?: 0.0
     if (energy != null) magnitudes[LessonEffectCategory.ENERGY] = energy.toDouble()
-    return LessonEffectReading(magnitudes, rawStatGain, trainingStatGain)
+    return LessonEffectReading(magnitudes, rawStatGains, trainingStatGain)
 }
 
 /**
@@ -475,9 +488,14 @@ private fun profileLessonEffect(
 ): LessonEffectProfile {
     val cleaned = stripConcertOverOverlay(effectText)
     val reading = readLessonEffect(cleaned)
-    // A leading stat gain is what puts a card in Stat Gains, so it is preferred here; the named passive only stands in for the tie-break.
-    val statGain = reading.rawStatGain ?: reading.trainingStatGain
-    val statRank = statGain?.let { statPriority.indexOf(it.first) } ?: -1
+    // A card can grant two stats ("Guts +6 Wit +6"), so it is scored on the best-ranked one it grants rather than whichever prints first, with the larger
+    // amount breaking a tie between two equally ranked stats. A raw gain is what puts a card in Stat Gains; the named passive only feeds the tie-break.
+    val rankedStatGain =
+        reading.rawStatGains
+            .mapNotNull { gain -> statPriority.indexOf(gain.first).takeIf { it >= 0 }?.let { rank -> rank to gain } }
+            .minWithOrNull(compareBy({ it.first }, { -it.second.second }))
+    val statGain = rankedStatGain?.second ?: reading.trainingStatGain
+    val statRank = rankedStatGain?.first ?: reading.trainingStatGain?.let { statPriority.indexOf(it.first) } ?: -1
     // Scanning the tag table is only worth it once the user has ranked something, and an unrecognized tag must never count as an unwanted one.
     val hintTags = if (hintPriority.isEmpty()) emptySet() else parseHintTagsIn(cleaned)
     val hintRank = hintPriority.indexOfFirst { it in hintTags }.takeIf { it >= 0 }
@@ -486,7 +504,7 @@ private fun profileLessonEffect(
     val hintUnwanted = hintTags.isNotEmpty() && hintRank == null
     val ranks =
         reading.magnitudes.keys
-            .filterNot { (it == LessonEffectCategory.STAT_GAINS && statRank < 0) || (it == LessonEffectCategory.SKILL_HINTS && hintUnwanted) }
+            .filterNot { (it == LessonEffectCategory.STAT_GAINS && rankedStatGain == null) || (it == LessonEffectCategory.SKILL_HINTS && hintUnwanted) }
             .mapNotNull { categoryOrder.indexOf(it).takeIf { rank -> rank >= 0 } }
             .sorted()
     val categoryValue = ranks.firstOrNull()?.let { reading.magnitudes[categoryOrder[it]] } ?: 0.0
