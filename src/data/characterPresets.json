@@ -64,6 +64,19 @@
             "Dirt": "G"
         }
     },
+    "Aston Machan": {
+        "name": "Aston Machan",
+        "distanceAptitudes": {
+            "Sprint": "A",
+            "Mile": "B",
+            "Medium": "G",
+            "Long": "G"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "G"
+        }
+    },
     "Bamboo Memory": {
         "name": "Bamboo Memory",
         "distanceAptitudes": {

@@ -4121,6 +4121,26 @@
         "characters": [],
         "matchers": []
     },
+    "Undying Machan": {
+        "name": "Undying Machan",
+        "bullet_points": [
+            "Aston Machan only",
+            "Win the Sprinters Stakes",
+            "Win at least twice against both Daiwa Scarlet and Vodka",
+            "Earn a total of at least 320000 fans and complete the Career having cleared all objectives"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Aston Machan"
+        ],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Sprinters Stakes",
+                "displayLabel": "Win the Sprinters Stakes"
+            }
+        ]
+    },
     "Unexpected": {
         "name": "Unexpected",
         "bullet_points": [
