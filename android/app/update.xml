@@ -1,15 +1,23 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.8.7</latestVersion>
+    <latestVersion>5.8.8</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.8.7 - Changelog
+v5.8.8 - Changelog
+
+New
+---
+- Add 3 `Grand Live` override options to the `Scenario Overrides` page: a `Grand Live Lesson Stat Priority` for which stat gains are bought first, a `Grand Live Lesson Skill Hint Priority` that also buys ranked hints even when the running style is off-aptitude, and a `Grand Live Song Priority` that buys a ranked Song ahead of anything else learnable.
 
 Adjustments
 ---
-- Update game data up to Agnes Digital (Halloween) 2026-08-17.
-- Improve career goal reading so a goal's race requirements are identified directly, including goal text that the game shrinks down to fit.
-- Improve Grand Live Lessons reading so learnable cards are recognized regardless of the card's wording or type.
+- Update game data up to `Aston Machan 2026-08-24`.
+- Rank `Lessons` cards by how much each one actually grants instead of treating every card in an effect category as equal.
+- Show each item's effects underneath its name in the priority list pickers so you can see what you are ranking.
+
+Fixes
+---
+- Fix `Lessons` cards that only grant skill points being ignored because the game abbreviates the wording on them.
 
 </releaseNotes>
   </update>
