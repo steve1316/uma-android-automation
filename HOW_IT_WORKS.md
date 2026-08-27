@@ -1,6 +1,6 @@
 # How It Works
 
-*Last updated: 2026-07-29*
+*Last updated: 2026-08-26*
 
 A comprehensive guide to the inner workings of the app. This document explains what the bot does at each step of a campaign, how it makes decisions, and how each scenario differs.
 
@@ -1327,10 +1327,17 @@ Lessons is a free side-action — opening it does not consume the turn — so th
 **Purchase policy**, in order:
 
 1. **Concert day (`forceMaxHype`):** buy Songs first until the Hype gauge maxes. The confirmation dialog shows a max-Hype marker (`LabelGrandLiveMaxHype`) when a purchase will cap the gauge.
-2. **Token hoarding:** on a normal turn, if Hype is already maxed, the career is not in its finale stretch, and a locked card matches one of the **top 2 ranked** effect categories, the bot holds its tokens for it instead of spending on lesser cards.
-3. **Scoring follows the "Lesson Effect Priority" setting** (Scenario Overrides → Grand Live): a drag-to-rank list of effect categories, default `Training Effectiveness > Training Gain > Support Events > Stat Gains > Skill Hints` with Energy unranked. A card sums the rank weights of every category it matches, raw stat gains are additionally weighted by the user's stat prioritization, Techniques get a small tie-bonus over Songs, and remaining ties go to the earlier row. A category deselected from the ranking scores zero, so it is only bought when nothing ranked is learnable.
-4. **Off-style skill hints:** a hint tied to a running style the trainee cannot use (aptitude below C) is skipped unless it is the only learnable option.
-5. **Otherwise, buy anything learnable** — spending tokens is what refreshes the list.
+2. **Token hoarding:** on a normal turn, if Hype is already maxed, the career is not in its finale stretch, and a locked card is either a Song in the user's **top 2** ranked song spots or matches one of the **top 2 ranked** effect categories, the bot holds its tokens for it instead of spending on lesser cards. Only the top spots count here, unlike the ordering below which honors every ranked entry — sitting on tokens costs a turn, so it takes more than a mild preference to justify.
+3. **Off-style skill hints are filtered out:** a hint tied to a running style the trainee cannot use (aptitude below C) is dropped unless it is the only learnable option. A tag the user ranked in the hint priority is never treated as off-style, because an explicit choice outranks the aptitude guess.
+4. **A ranked Song wins outright.** The **Song Priority** setting (Scenario Overrides → Grand Live) ranks the scenario's Songs by name, and a Song matching a ranked title is bought ahead of anything else learnable, whatever its effects. The card's OCR'd title is matched against the list by **fuzzy best match at 0.85 similarity**, because routine misreads ("Jur Blue Bird Days" for "Our Blue Bird Days") would otherwise drop a ranked Song out of the ranking entirely.
+5. **Otherwise cards are ordered by effect**, resolving ties down this chain:
+    - **Effect category**, from the **Lesson Effect Priority** setting: a drag-to-rank list, default `Training Effectiveness > Training Gain > Support Events > Stat Gains > Skill Hints` with Energy unranked. Two cards are compared on their matched ranks element-wise, best rank first, so the card matching the higher-ranked category wins. When one card's ranks are a prefix of the other's, the card matching more categories wins, so a strictly better card is never passed over. A category deselected from the ranking is dropped, so a card matching only deselected categories is bought last.
+    - **Skill hint tag**, from the **Lesson Skill Hint Priority** setting. It sits above magnitude because Skill Hints is the one category holding two units that are not comparable as numbers — a hint level ("Skill Hint Lvl +1") and a skill-point total ("Skill Pts +5") — so an explicit tag ranking is the better signal. A hint whose tag is absent from a non-empty ranking is demoted below anything ranked rather than blocked, and a tag OCR failed to recognize at all is never demoted.
+    - **Magnitude:** how much of its top-ranked category the card actually grants, read off the effect text. It sits above the Technique preference on purpose — a "Training Wit Gain +2" Song is worth more than a "Training Guts Gain +1" Technique, and before magnitude was read at all those two tied all the way down to screen position.
+    - **Technique over Song** at equal value, then the **better stat gain**, then the earlier row.
+6. **Otherwise, buy anything learnable** — spending tokens is what refreshes the list.
+
+**Stat gains** are ranked by the **Lesson Stat Priority** setting, which falls back to the global training stat prioritization when left empty. A card granting two stats ("Guts +6 Wit +6") is scored on the best-ranked one it grants, with the larger amount breaking a tie between two equally ranked stats. A card whose stat is absent from the ranking is demoted rather than blocked, so it is still bought when it is the only option.
 
 **Energy cards** get special handling:
 
