@@ -3,6 +3,7 @@ package com.steve1316.uma_android_automation.bot.campaigns
 import android.graphics.Bitmap
 import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.types.fuzzyBestMatchIndex
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import org.opencv.core.Point
 
@@ -116,8 +117,51 @@ val LESSON_CARD_CROPS =
 /** Upper bound on purchases per Lessons visit, as a runaway guard on the buy-and-rescan loop. */
 const val MAX_LESSON_PURCHASES_PER_VISIT = 20
 
-/** A locked card counts as "sought after" (worth holding tokens for) when it matches a category ranked within this many top spots of the user's priority order. */
+/** A locked card counts as "sought after" (worth holding tokens for) when it matches a category, or is a Song, ranked within this many top spots. */
 private const val SOUGHT_AFTER_TOP_RANKS = 2
+
+/**
+ * Every Song that can be learned in Lessons, spelled as the game prints it. The user ranks a subset via the Song Priority setting (Scenario Overrides).
+ * "Make Debut!" and "GIRLS' LEGEND U" are deliberately absent: both are granted automatically and never appear as a purchasable card. The two
+ * decorative glyphs are written as escapes to keep this file plain ASCII - \u2606 is a star and \u266a is a musical note.
+ */
+val GRAND_LIVE_SONGS: List<String> =
+    listOf(
+        "Believe in Miracles!",
+        "Run n' Run!",
+        "Full Speed Ahead! Umadol Power\u2606",
+        "Here Comes Our Time",
+        "Zero Is Where the Center Stands!",
+        "Go This Way",
+        "Ring Ring Diary",
+        "Getaway! Fallin' Love",
+        "Run for Our Dream!",
+        "Our Blue Bird Days",
+        "Hey, Guess What!",
+        "Grow Up and Shine!",
+        "Seven Colors Scenery",
+        "Sunbeam Cheer",
+        "Hoppity Sunny Days\u266a",
+        "Precious Treasure Box",
+        "Fanfare for the Future!",
+        "Present March\u266a",
+        "Dream Sky",
+        "The World's at Our Whim",
+        "Sky-Blue Spring",
+    )
+
+/**
+ * Everything outside letters and digits, dropped before two song titles are compared. OCR reads the game's decorative glyphs inconsistently - one run
+ * returned the same song as both "Hoppity Sunny Days )" and "Hoppity Sunny Days d" - so punctuation and spacing carry no signal.
+ */
+private val SONG_NAME_NOISE_REGEX = Regex("[^a-z0-9]")
+
+/**
+ * Lowest Jaro-Winkler score accepted as a title match. Measured against every corrupted read observed on device: the worst true match was
+ * "So This Way" for "Go This Way" at 0.93, and the closest two distinct titles ("Run n' Run!" against "Run for Our Dream!") scored 0.78. This sits
+ * between the two, so it tolerates unseen OCR noise without letting one song stand in for another.
+ */
+private const val SONG_MATCH_THRESHOLD = 0.85
 
 /** The stat names as a regex alternation, derived from [StatName] so the gain patterns below cannot drift from the enum. */
 private val STAT_ALTERNATION = StatName.entries.joinToString("|") { it.name.lowercase() }
@@ -290,8 +334,16 @@ data class LessonOption(
  * @property statTieBreak Value of the card's stat gain, higher is better, used only once the earlier tie-breaks tie.
  * @property hintTieBreak Value of the card's best user-ranked skill-hint tag, higher is better, zero when the card is not a ranked hint. Outranks
  *   [categoryValue], since Skill Hints mixes hint levels with skill-point totals and an explicit ranking beats comparing those two as numbers.
+ * @property songRank The card's position in the user's ranked song list, or null when it is not a ranked Song. Decided before everything else, since
+ *   naming a song is a more direct instruction than any ranking of its effects.
  */
-private data class LessonEffectProfile(val ranks: List<Int>, val categoryValue: Double, val statTieBreak: Double, val hintTieBreak: Double)
+private data class LessonProfile(
+    val ranks: List<Int>,
+    val categoryValue: Double,
+    val statTieBreak: Double,
+    val hintTieBreak: Double,
+    val songRank: Int?,
+)
 
 /**
  * Strip the post-concert warning overlay the game paints over a Song's effect line. The effect crop reads it as trailing noise, which would
@@ -468,25 +520,49 @@ private fun readLessonEffect(cleaned: String): LessonEffectReading {
 }
 
 /**
- * Reduce a Lessons card's effect text to everything the purchase ordering needs. Computed once per card so the comparator never re-parses.
+ * Reduce a song title to the letters and digits OCR can be trusted on, so punctuation and the game's decorative glyphs cannot break a match.
+ *
+ * @param raw The title as printed or as OCR read it.
+ * @return The normalized form, empty when the title held nothing comparable.
+ */
+fun normalizeSongName(raw: String): String = SONG_NAME_NOISE_REGEX.replace(raw.lowercase(), "")
+
+/**
+ * Find where an OCR'd card title sits in the user's ranked song list. The closest title above [SONG_MATCH_THRESHOLD] wins, which is what absorbs the
+ * routine misreads ("Jur Blue Bird Days" for "Our Blue Bird Days"). An exact read needs no special case: it scores 1.0 and nothing can beat it.
+ *
+ * @param name The card's OCR'd title.
+ * @param songPriority The user's ranked song titles (index 0 = highest).
+ * @return The matching rank, or null when the title is not one of the ranked songs.
+ */
+fun matchSongRank(name: String, songPriority: List<String>): Int? {
+    val normalized = normalizeSongName(name)
+    if (normalized.isEmpty() || songPriority.isEmpty()) return null
+    return fuzzyBestMatchIndex(normalized, songPriority.map { normalizeSongName(it) }, SONG_MATCH_THRESHOLD)
+}
+
+/**
+ * Reduce a Lessons card to everything the purchase ordering needs. Computed once per card so the comparator never re-parses.
  *
  * Categories left out of the ranking are dropped, as is a Stat Gains match whose stat is absent from the stat prioritization, and a Skill Hints match
  * whose tag is absent from a non-empty hint ranking - such a card ranks below anything with a ranked effect, but is still bought when it is the only
  * option. A hint whose tag was not recognized at all is never dropped, so OCR noise cannot demote a card.
  *
- * @param effectText The card's effect line(s).
+ * @param option The card to profile.
  * @param statPriority The bot's ordered stat prioritization (index 0 = highest).
  * @param categoryOrder The user's ranked effect categories (index 0 = highest).
  * @param hintPriority The user's ranked skill-hint tags (index 0 = highest). Empty means no hint preference.
+ * @param songPriority The user's ranked song titles (index 0 = highest). Empty means no song preference.
  * @return The card's ranking profile.
  */
-private fun profileLessonEffect(
-    effectText: String,
+private fun profileLesson(
+    option: LessonOption,
     statPriority: List<StatName>,
     categoryOrder: List<LessonEffectCategory>,
     hintPriority: List<LessonHintTag>,
-): LessonEffectProfile {
-    val cleaned = stripConcertOverOverlay(effectText)
+    songPriority: List<String>,
+): LessonProfile {
+    val cleaned = stripConcertOverOverlay(option.effectText)
     val reading = readLessonEffect(cleaned)
     // A card can grant two stats ("Guts +6 Wit +6"), so it is scored on the best-ranked one it grants rather than whichever prints first, with the larger
     // amount breaking a tie between two equally ranked stats. A raw gain is what puts a card in Stat Gains; the named passive only feeds the tie-break.
@@ -510,7 +586,8 @@ private fun profileLessonEffect(
     val categoryValue = ranks.firstOrNull()?.let { reading.magnitudes[categoryOrder[it]] } ?: 0.0
     val statTieBreak = if (statGain != null && statRank >= 0) (statPriority.size - statRank).toDouble() + statGain.second * 0.001 else 0.0
     val hintTieBreak = hintRank?.let { (hintPriority.size - it).toDouble() } ?: 0.0
-    return LessonEffectProfile(ranks, categoryValue, statTieBreak, hintTieBreak)
+    val songRank = if (option.kind == LessonKind.SONG) matchSongRank(option.name, songPriority) else null
+    return LessonProfile(ranks, categoryValue, statTieBreak, hintTieBreak, songRank)
 }
 
 /**
@@ -529,8 +606,9 @@ private fun compareLessonRanks(a: List<Int>, b: List<Int>): Int {
 }
 
 /**
- * Pick the best card, profiling each one exactly once. Category ranks decide first, then the better-ranked skill hint, then how much of that category the
- * card grants, then a Technique edges out a Song of equal value, then the better stat gain, and finally the earlier row.
+ * Pick the best card, profiling each one exactly once. A song the user ranked by name wins outright; after that category ranks decide, then the
+ * better-ranked skill hint, then how much of that category the card grants, then a Technique edges out a Song of equal value, then the better stat gain,
+ * and finally the earlier row.
  *
  * Magnitude sits above the Technique preference on purpose: a "Training Wit Gain +2" Song is worth more than a "Training Guts Gain +1" Technique, and
  * before magnitude was read at all those two tied all the way down to screen position.
@@ -542,6 +620,7 @@ private fun compareLessonRanks(a: List<Int>, b: List<Int>): Int {
  * @param statPriority The bot's ordered stat prioritization (index 0 = highest).
  * @param categoryOrder The user's ranked effect categories (index 0 = highest).
  * @param hintPriority The user's ranked skill-hint tags (index 0 = highest).
+ * @param songPriority The user's ranked song titles (index 0 = highest).
  * @return The best card, or null when `options` is empty.
  */
 private fun bestLesson(
@@ -549,11 +628,13 @@ private fun bestLesson(
     statPriority: List<StatName>,
     categoryOrder: List<LessonEffectCategory>,
     hintPriority: List<LessonHintTag>,
+    songPriority: List<String>,
 ): LessonOption? =
     options
-        .map { it to profileLessonEffect(it.effectText, statPriority, categoryOrder, hintPriority) }
+        .map { it to profileLesson(it, statPriority, categoryOrder, hintPriority, songPriority) }
         .maxWithOrNull(
-            Comparator<Pair<LessonOption, LessonEffectProfile>> { a, b -> compareLessonRanks(a.second.ranks, b.second.ranks) }
+            compareByDescending<Pair<LessonOption, LessonProfile>> { it.second.songRank ?: Int.MAX_VALUE }
+                .then { a, b -> compareLessonRanks(a.second.ranks, b.second.ranks) }
                 .thenBy { it.second.hintTieBreak }
                 .thenBy { it.second.categoryValue }
                 .thenBy { it.first.kind == LessonKind.TECHNIQUE }
@@ -562,15 +643,22 @@ private fun bestLesson(
         )?.first
 
 /**
- * Whether a card's effect is worth holding tokens for while it is locked: true when it matches a category ranked within the user's top
- * [SOUGHT_AFTER_TOP_RANKS] priority spots.
+ * Whether a card is worth holding tokens for while it is locked: true when it is a Song ranked within the user's top [SOUGHT_AFTER_TOP_RANKS] song
+ * spots, or when its effect matches a category ranked that highly. Only the top spots count, unlike the purchase ordering which honors every ranked
+ * song: sitting on tokens costs a turn, so it takes more than a mild preference to justify.
  *
- * @param effectText The card's effect line(s).
+ * @param option The locked card.
  * @param categoryOrder The user's ranked effect categories (index 0 = highest).
+ * @param songPriority The user's ranked song titles (index 0 = highest). Empty means no song preference.
  * @return True when the card is sought after.
  */
-fun isSoughtAfter(effectText: String, categoryOrder: List<LessonEffectCategory>): Boolean =
-    detectLessonCategories(effectText).any { category -> categoryOrder.indexOf(category).let { it in 0 until SOUGHT_AFTER_TOP_RANKS } }
+fun isSoughtAfter(option: LessonOption, categoryOrder: List<LessonEffectCategory>, songPriority: List<String> = emptyList()): Boolean {
+    if (option.kind == LessonKind.SONG) {
+        val songRank = matchSongRank(option.name, songPriority)
+        if (songRank != null && songRank < SOUGHT_AFTER_TOP_RANKS) return true
+    }
+    return detectLessonCategories(option.effectText).any { category -> categoryOrder.indexOf(category).let { it in 0 until SOUGHT_AFTER_TOP_RANKS } }
+}
 
 /**
  * Choose the next Lessons purchase. We do not hoard tokens, so any affordable card is worth buying (spending tokens and refreshing
@@ -583,6 +671,7 @@ fun isSoughtAfter(effectText: String, categoryOrder: List<LessonEffectCategory>)
  * @param hypeMaxed Whether the Hype gauge is already full.
  * @param categoryOrder The user's ranked effect categories (index 0 = highest).
  * @param hintPriority The user's ranked skill-hint tags (index 0 = highest). Empty means no hint preference.
+ * @param songPriority The user's ranked song titles (index 0 = highest). Empty means no song preference.
  * @return The chosen option, or null when `options` is empty.
  */
 fun chooseLessonPurchase(
@@ -592,11 +681,12 @@ fun chooseLessonPurchase(
     hypeMaxed: Boolean,
     categoryOrder: List<LessonEffectCategory> = DEFAULT_LESSON_EFFECT_PRIORITY,
     hintPriority: List<LessonHintTag> = emptyList(),
+    songPriority: List<String> = emptyList(),
 ): LessonOption? {
     if (forceMaxHype && !hypeMaxed) {
-        val hypeSong = bestLesson(options.filter { it.kind == LessonKind.SONG }, statPriority, categoryOrder, hintPriority)
+        val hypeSong = bestLesson(options.filter { it.kind == LessonKind.SONG }, statPriority, categoryOrder, hintPriority, songPriority)
         if (hypeSong != null) return hypeSong
     }
 
-    return bestLesson(options, statPriority, categoryOrder, hintPriority)
+    return bestLesson(options, statPriority, categoryOrder, hintPriority, songPriority)
 }

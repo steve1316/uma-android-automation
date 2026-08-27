@@ -17,7 +17,7 @@ import { ValuePill } from "../../components/ui/value-pill"
 import { ModalHeader } from "../../components/ui/modal-header"
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
-import DraggablePriorityList from "../../components/DraggablePriorityList"
+import DraggablePriorityList, { PriorityItem } from "../../components/DraggablePriorityList"
 import { CircleCheckBig, Trash2 } from "lucide-react-native"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import trackblazerIcons from "./icons"
@@ -55,6 +55,34 @@ const RUNNING_STYLE_OPTIONS = ["Front Runner", "Pace Chaser", "Late Surger", "En
 
 /** The Grand Live skill-hint tags rankable in the Lesson Skill Hint Priority list. These are the parentheticals the Lessons cards print, and the ids double as the strings stored in the setting. */
 const GRAND_LIVE_HINT_TAGS = [...RUNNING_STYLE_OPTIONS, ...TRACK_DISTANCE_OPTIONS, ...TRACK_SURFACE_OPTIONS].map((name) => ({ id: name, label: name }))
+
+/**
+ * The Grand Live Songs rankable in the Song Priority list, each shown with the effect it grants. The ids double as the strings stored in the setting and
+ * must stay in step with the song list the bot matches OCR'd card titles against.
+ */
+const GRAND_LIVE_SONGS = [
+    { id: "Believe in Miracles!", label: "Believe in Miracles!", description: "Training Wit Gain +1, Specialty Priority +5" },
+    { id: "Run n' Run!", label: "Run n' Run!", description: "Skill Pts +22, Friendship Training Effectiveness +5%" },
+    { id: "Full Speed Ahead! Umadol Power☆", label: "Full Speed Ahead! Umadol Power☆", description: "Speed +22, Friendship Training Effectiveness +5%" },
+    { id: "Here Comes Our Time", label: "Here Comes Our Time", description: "Power +22, Friendship Training Effectiveness +5%" },
+    { id: "Zero Is Where the Center Stands!", label: "Zero Is Where the Center Stands!", description: "Training Speed Gain +1, Support Chain Event Frequency Lvl +1" },
+    { id: "Go This Way", label: "Go This Way", description: "Training Power Gain +1, Support Chain Event Frequency Lvl +1" },
+    { id: "Ring Ring Diary", label: "Ring Ring Diary", description: "Training Stamina Gain +1, Support Chain Event Frequency Lvl +1" },
+    { id: "Getaway! Fallin' Love", label: "Getaway! Fallin' Love", description: "Training Guts Gain +1, Support Chain Event Frequency Lvl +1" },
+    { id: "Run for Our Dream!", label: "Run for Our Dream!", description: "Training Skill Pt Gain +2, Specialty Priority +5" },
+    { id: "Our Blue Bird Days", label: "Our Blue Bird Days", description: "Training Speed Gain +2, Specialty Priority +5" },
+    { id: "Hey, Guess What!", label: "Hey, Guess What!", description: "Training Guts Gain +2, Specialty Priority +5" },
+    { id: "Grow Up and Shine!", label: "Grow Up and Shine!", description: "Training Skill Pt Gain +3, Support Chain Event Frequency Lvl +1" },
+    { id: "Seven Colors Scenery", label: "Seven Colors Scenery", description: "Training Power Gain +2, Specialty Priority +5" },
+    { id: "Sunbeam Cheer", label: "Sunbeam Cheer", description: "Training Wit Gain +2, Support Chain Event Frequency Lvl +1" },
+    { id: "Hoppity Sunny Days♪", label: "Hoppity Sunny Days♪", description: "Training Stamina Gain +2, Specialty Priority +5" },
+    { id: "Precious Treasure Box", label: "Precious Treasure Box", description: "Speed +26, Friendship Training Effectiveness +10%" },
+    { id: "Fanfare for the Future!", label: "Fanfare for the Future!", description: "Guts +26, Friendship Training Effectiveness +10%" },
+    { id: "Present March♪", label: "Present March♪", description: "Power +22, Friendship Training Effectiveness +5%" },
+    { id: "Dream Sky", label: "Dream Sky", description: "Wit +22, Friendship Training Effectiveness +5%" },
+    { id: "The World's at Our Whim", label: "The World's at Our Whim", description: "Stamina +22, Friendship Training Effectiveness +5%" },
+    { id: "Sky-Blue Spring", label: "Sky-Blue Spring", description: "Guts +22, Friendship Training Effectiveness +5%" },
+]
 
 /** Options for the Grand Live Lessons re-check interval picker, in turns. */
 const GRAND_LIVE_INTERVAL_OPTIONS = [1, 2, 3, 4, 5] as const
@@ -113,6 +141,40 @@ function ChipMultiSelect({ title, description, options, selected, onToggle }: Ch
     )
 }
 
+/** Props for `PriorityPickerSheet`. */
+interface PriorityPickerSheetProps {
+    /** Whether the sheet is currently open. */
+    visible: boolean
+    /** Called when the sheet should close, from either the header or a back gesture. */
+    onClose: () => void
+    /** Uppercase heading shown in the sheet's header. */
+    title: string
+    /** Every rankable item, each with the id stored in the setting and an optional second line of detail. */
+    items: PriorityItem[]
+    /** The currently ranked ids, index 0 = highest. */
+    selected: string[]
+    /** Called with the next ranked order whenever a row is toggled or dragged. */
+    onChange: (next: string[]) => void
+}
+
+/**
+ * A sheet wrapping a drag-to-rank list. The Grand Live overrides open four of these and they differ only in heading, item list, and the setting they
+ * write, so the shell lives here once.
+ *
+ * @param visible Whether the sheet is open.
+ * @param onClose Close callback.
+ * @param title Header text.
+ * @param items Every rankable item.
+ * @param selected The currently ranked ids.
+ * @param onChange Called with the next ranked order.
+ * @returns The sheet containing the priority list.
+ */
+const PriorityPickerSheet = ({ visible, onClose, title, items, selected, onChange }: PriorityPickerSheetProps) => (
+    <SheetModal visible={visible} onRequestClose={onClose} header={<ModalHeader title={title} onClose={onClose} />} footer={null}>
+        <DraggablePriorityList items={items} selectedItems={selected} onSelectionChange={onChange} onOrderChange={onChange} />
+    </SheetModal>
+)
+
 /**
  * The Scenario Overrides Settings page.
  * Provides configuration for scenario-specific behavior overrides.
@@ -134,6 +196,7 @@ const ScenarioOverridesSettings = () => {
     const [lessonPriorityPickerOpen, setLessonPriorityPickerOpen] = useState(false)
     const [lessonStatPriorityPickerOpen, setLessonStatPriorityPickerOpen] = useState(false)
     const [lessonHintPriorityPickerOpen, setLessonHintPriorityPickerOpen] = useState(false)
+    const [songPriorityPickerOpen, setSongPriorityPickerOpen] = useState(false)
     const [lessonIntervalPickerOpen, setLessonIntervalPickerOpen] = useState(false)
 
     // Built once so the memoized priority list is not handed a fresh array on every render, matching the module-level constants its sibling pickers use.
@@ -271,6 +334,7 @@ const ScenarioOverridesSettings = () => {
         updateOverrideSetting("grandLiveLessonEffectPriority", defaultSettings.scenarioOverrides.grandLiveLessonEffectPriority)
         updateOverrideSetting("grandLiveLessonStatPriority", defaultSettings.scenarioOverrides.grandLiveLessonStatPriority)
         updateOverrideSetting("grandLiveLessonHintPriority", defaultSettings.scenarioOverrides.grandLiveLessonHintPriority)
+        updateOverrideSetting("grandLiveSongPriority", defaultSettings.scenarioOverrides.grandLiveSongPriority)
         updateOverrideSetting("grandLiveLessonRescanInterval", defaultSettings.scenarioOverrides.grandLiveLessonRescanInterval)
     }, [updateOverrideSetting, defaultSettings])
 
@@ -945,6 +1009,18 @@ const ScenarioOverridesSettings = () => {
                                             />
                                         </SearchableItem>
                                         <SearchableItem
+                                            id="grand-live-song-priority"
+                                            title="Song Priority"
+                                            description="Rank which Songs the bot buys first in Lessons. A ranked Song is bought ahead of anything else learnable, whatever its effects."
+                                        >
+                                            <Row
+                                                title="Song Priority"
+                                                description="Drag to rank which Songs Lessons buys first. A ranked Song outranks every effect ordering below."
+                                                onPress={() => setSongPriorityPickerOpen(true)}
+                                                right={<ValuePill label={scenarioOverrides.grandLiveSongPriority.length === 0 ? "None" : `${scenarioOverrides.grandLiveSongPriority.length} ranked`} />}
+                                            />
+                                        </SearchableItem>
+                                        <SearchableItem
                                             id="grand-live-lesson-rescan-interval"
                                             title="Lessons Re-check Interval"
                                             description="How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time."
@@ -1052,47 +1128,41 @@ const ScenarioOverridesSettings = () => {
                 </View>
             </SheetModal>
 
-            <SheetModal
+            <PriorityPickerSheet
                 visible={lessonPriorityPickerOpen}
-                onRequestClose={() => setLessonPriorityPickerOpen(false)}
-                header={<ModalHeader title="LESSON EFFECT PRIORITY" onClose={() => setLessonPriorityPickerOpen(false)} />}
-                footer={null}
-            >
-                <DraggablePriorityList
-                    items={GRAND_LIVE_LESSON_CATEGORIES}
-                    selectedItems={scenarioOverrides.grandLiveLessonEffectPriority}
-                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonEffectPriority", next)}
-                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonEffectPriority", orderedItems)}
-                />
-            </SheetModal>
+                onClose={() => setLessonPriorityPickerOpen(false)}
+                title="LESSON EFFECT PRIORITY"
+                items={GRAND_LIVE_LESSON_CATEGORIES}
+                selected={scenarioOverrides.grandLiveLessonEffectPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveLessonEffectPriority", next)}
+            />
 
-            <SheetModal
+            <PriorityPickerSheet
                 visible={lessonStatPriorityPickerOpen}
-                onRequestClose={() => setLessonStatPriorityPickerOpen(false)}
-                header={<ModalHeader title="LESSON STAT PRIORITY" onClose={() => setLessonStatPriorityPickerOpen(false)} />}
-                footer={null}
-            >
-                <DraggablePriorityList
-                    items={statPriorityItems}
-                    selectedItems={scenarioOverrides.grandLiveLessonStatPriority}
-                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonStatPriority", next)}
-                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonStatPriority", orderedItems)}
-                />
-            </SheetModal>
+                onClose={() => setLessonStatPriorityPickerOpen(false)}
+                title="LESSON STAT PRIORITY"
+                items={statPriorityItems}
+                selected={scenarioOverrides.grandLiveLessonStatPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveLessonStatPriority", next)}
+            />
 
-            <SheetModal
+            <PriorityPickerSheet
                 visible={lessonHintPriorityPickerOpen}
-                onRequestClose={() => setLessonHintPriorityPickerOpen(false)}
-                header={<ModalHeader title="LESSON SKILL HINT PRIORITY" onClose={() => setLessonHintPriorityPickerOpen(false)} />}
-                footer={null}
-            >
-                <DraggablePriorityList
-                    items={GRAND_LIVE_HINT_TAGS}
-                    selectedItems={scenarioOverrides.grandLiveLessonHintPriority}
-                    onSelectionChange={(next) => updateOverrideSetting("grandLiveLessonHintPriority", next)}
-                    onOrderChange={(orderedItems) => updateOverrideSetting("grandLiveLessonHintPriority", orderedItems)}
-                />
-            </SheetModal>
+                onClose={() => setLessonHintPriorityPickerOpen(false)}
+                title="LESSON SKILL HINT PRIORITY"
+                items={GRAND_LIVE_HINT_TAGS}
+                selected={scenarioOverrides.grandLiveLessonHintPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveLessonHintPriority", next)}
+            />
+
+            <PriorityPickerSheet
+                visible={songPriorityPickerOpen}
+                onClose={() => setSongPriorityPickerOpen(false)}
+                title="SONG PRIORITY"
+                items={GRAND_LIVE_SONGS}
+                selected={scenarioOverrides.grandLiveSongPriority}
+                onChange={(next) => updateOverrideSetting("grandLiveSongPriority", next)}
+            />
 
             <SheetModal
                 visible={lessonIntervalPickerOpen}

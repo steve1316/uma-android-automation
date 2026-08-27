@@ -260,6 +260,7 @@ export interface Settings {
         grandLiveLessonEffectPriority: string[]
         grandLiveLessonStatPriority: string[]
         grandLiveLessonHintPriority: string[]
+        grandLiveSongPriority: string[]
         grandLiveLessonRescanInterval: number
     }
 }
@@ -545,6 +546,7 @@ export const defaultSettings: Settings = {
         grandLiveLessonEffectPriority: ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints"],
         grandLiveLessonStatPriority: [],
         grandLiveLessonHintPriority: [],
+        grandLiveSongPriority: [],
         grandLiveLessonRescanInterval: 2,
     },
 }

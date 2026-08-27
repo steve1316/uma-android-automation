@@ -83,6 +83,9 @@ class GrandLive(game: Game) : Campaign(game) {
     private val lessonHintPriority: List<LessonHintTag> =
         SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveLessonHintPriority").mapNotNull { LessonHintTag.fromDisplayName(it) }
 
+    /** User-ranked Song titles (Scenario Overrides). A ranked Song is bought ahead of anything else learnable. Empty means no song preference. */
+    private val lessonSongPriority: List<String> = SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveSongPriority")
+
     /** Turns between Lessons re-checks (Scenario Overrides). The list is static until a purchase, so polling more often than tokens grow wastes screen time. */
     private val lessonRescanInterval: Int = SettingsHelper.getIntSetting("scenarioOverrides", "grandLiveLessonRescanInterval", 2)
 
@@ -297,7 +300,8 @@ class GrandLive(game: Game) : Campaign(game) {
             // Prefer on-style options; a skill hint for a running style we cannot use is only bought when it is the sole affordable option.
             val onStyle = purchasable.filter { !isOffStyleHint(it.option.effectText) }
             val candidates = if (onStyle.isNotEmpty()) onStyle else purchasable
-            val choice = chooseLessonPurchase(candidates.map { it.option }, lessonStatPriority, forceMaxHype, hypeMaxed, lessonEffectPriority, lessonHintPriority)
+            val choice =
+                chooseLessonPurchase(candidates.map { it.option }, lessonStatPriority, forceMaxHype, hypeMaxed, lessonEffectPriority, lessonHintPriority, lessonSongPriority)
             if (choice == null) {
                 MessageLog.i(TAG, "[GRAND_LIVE] No learnable Lessons purchase; leaving the Lessons screen.")
                 break
@@ -446,6 +450,12 @@ class GrandLive(game: Game) : Campaign(game) {
             val effectText = listOf(effect1, effect2).filter { it.isNotBlank() }.joinToString(" ")
             val tapPoint = Point(game.imageUtils.relX(anchor.x, 200).toDouble(), game.imageUtils.relY(anchor.y, -150).toDouble())
 
+            // A Song the shipped list does not know cannot be ranked, and a title the game reworded would otherwise go unnoticed until someone
+            // wondered why their Song Priority stopped applying.
+            if (kind == LessonKind.SONG && name.isNotBlank() && matchSongRank(name, GRAND_LIVE_SONGS) == null) {
+                MessageLog.w(TAG, "[GRAND_LIVE]   Song \"$name\" matches no known Song, so Song Priority cannot rank it. Recheck the shipped song list if this repeats.")
+            }
+
             val status = if (purchasable) "Learnable" else "Locked"
             val kindLabel = kind.name.lowercase().replaceFirstChar { it.uppercase() }
             MessageLog.i(TAG, "[GRAND_LIVE]   ${name.ifBlank { "?" }} ($kindLabel $status)")
@@ -505,7 +515,7 @@ class GrandLive(game: Game) : Campaign(game) {
      */
     private fun shouldWaitForLockedLesson(scanned: List<ScannedLesson>): Boolean {
         if (!isHypeMaxed || date.bIsFinaleSeason) return false
-        return scanned.any { !it.option.purchasable && isSoughtAfter(it.option.effectText, lessonEffectPriority) }
+        return scanned.any { !it.option.purchasable && isSoughtAfter(it.option, lessonEffectPriority, lessonSongPriority) }
     }
 
     /**
