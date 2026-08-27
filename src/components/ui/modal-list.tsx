@@ -10,6 +10,8 @@ import { RADII } from "../../lib/radii"
 export interface ModalCheckRowProps {
     /** The visible label. */
     label: string
+    /** Optional muted line rendered below the label. Use to say what the option grants, so the choice can be made without leaving the screen. */
+    description?: string
     /** Whether the row is currently selected. */
     checked: boolean
     /** Called when the row is tapped. */
@@ -23,13 +25,14 @@ export interface ModalCheckRowProps {
 /**
  * A card-tile row with a 18x18 check box, used by multi-select and priority modals.
  * @param label Visible label.
+ * @param description Optional muted line rendered below the label.
  * @param checked Whether selected.
  * @param onPress Tap handler.
  * @param dim Render the label at 60% opacity when true.
  * @param style Optional outer style override.
  * @returns A Pressable card tile.
  */
-const ModalCheckRowImpl = ({ label, checked, onPress, dim, style }: ModalCheckRowProps) => {
+const ModalCheckRowImpl = ({ label, description, checked, onPress, dim, style }: ModalCheckRowProps) => {
     const { colors } = useTheme()
     const styles = useMemo(
         () =>
@@ -57,7 +60,9 @@ const ModalCheckRowImpl = ({ label, checked, onPress, dim, style }: ModalCheckRo
                     justifyContent: "center",
                 },
                 boxActive: { borderColor: colors.brand, backgroundColor: colors.brand },
-                label: { ...TYPE.body, color: colors.text, flex: 1 },
+                textBlock: { flex: 1, gap: 2 },
+                label: { ...TYPE.body, color: colors.text },
+                description: { ...TYPE.caption, color: colors.textMuted },
                 labelDim: { opacity: 0.6 },
             }),
         [colors]
@@ -71,7 +76,10 @@ const ModalCheckRowImpl = ({ label, checked, onPress, dim, style }: ModalCheckRo
             accessibilityState={{ checked }}
         >
             <View style={[styles.box, checked && styles.boxActive]}>{checked ? <Ionicons name="checkmark" size={14} color={colors.onBrand} /> : null}</View>
-            <Text style={[styles.label, dim && !checked && styles.labelDim]}>{label}</Text>
+            <View style={[styles.textBlock, dim && !checked && styles.labelDim]}>
+                <Text style={styles.label}>{label}</Text>
+                {description ? <Text style={styles.description}>{description}</Text> : null}
+            </View>
         </Pressable>
     )
 }

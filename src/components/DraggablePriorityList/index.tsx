@@ -14,7 +14,7 @@ export interface PriorityItem {
     id: string
     /** Visible label. */
     label: string
-    /** Optional secondary line. */
+    /** Optional muted second line, rendered under the label on both the ranked and unranked rows. */
     description?: string
 }
 
@@ -34,7 +34,8 @@ interface DraggablePriorityListProps {
 
 /**
  * A drag-to-reorder list paired with checkbox toggles. Selected items render on top with a numeric badge, a remove button, and a grip handle, and the row
- * body is the drag target. Unselected items render below a dashed separator with a plain checkbox and are appended to the end when selected.
+ * body is the drag target. Unselected items render below a dashed separator with a plain checkbox and are appended to the end when selected. An item
+ * carrying a description shows it as a muted second line on both lists, so a choice can be made without leaving the sheet.
  * Consumed inside `SheetModal` - the parent owns scroll so this component does not wrap its rows in a ScrollView.
  * @param items All items.
  * @param selectedItems Selected items in priority order.
@@ -78,7 +79,9 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
                     justifyContent: "center",
                 },
                 badgeText: { ...TYPE.monoValue, color: colors.onBrand, fontSize: 11, fontWeight: "700" as const },
-                selectedLabel: { ...TYPE.body, color: colors.text, flex: 1 },
+                selectedTextBlock: { flex: 1, gap: 2 },
+                selectedLabel: { ...TYPE.body, color: colors.text },
+                selectedDescription: { ...TYPE.caption, color: colors.textMuted },
                 grip: { opacity: 0.7 },
                 remove: { opacity: 0.7, paddingHorizontal: 2 },
                 separator: { borderTopWidth: 1, borderStyle: "dashed", borderColor: colors.borderHair, marginVertical: SPACING.sm },
@@ -103,7 +106,10 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
                 <View style={styles.badge}>
                     <Text style={styles.badgeText}>{priorityNumber}</Text>
                 </View>
-                <Text style={styles.selectedLabel}>{item.label}</Text>
+                <View style={styles.selectedTextBlock}>
+                    <Text style={styles.selectedLabel}>{item.label}</Text>
+                    {item.description ? <Text style={styles.selectedDescription}>{item.description}</Text> : null}
+                </View>
                 <Pressable
                     onPress={() => onSelectionChange(orderedSelected.filter((id) => id !== item.id))}
                     hitSlop={SPACING.sm}
@@ -143,7 +149,7 @@ const DraggablePriorityList = ({ items, selectedItems, onSelectionChange, onOrde
             {unselected.length > 0 ? (
                 <View style={styles.unselectedList}>
                     {unselected.map((item) => (
-                        <ModalCheckRow key={item.id} label={item.label} checked={false} dim onPress={() => onSelectionChange([...orderedSelected, item.id])} />
+                        <ModalCheckRow key={item.id} label={item.label} description={item.description} checked={false} dim onPress={() => onSelectionChange([...orderedSelected, item.id])} />
                     ))}
                 </View>
             ) : null}
