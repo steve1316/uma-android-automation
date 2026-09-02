@@ -139,7 +139,7 @@ This project is separated into a React Native frontend configured via Expo and a
 5. The dev environment is ready. Run `yarn start` or `npx expo start` to run the Metro HTTP server.
 6. To ensure code consistency, developers should format and lint the codebase using the following commands:
     - `yarn format`: Formats both TypeScript/TSX files (via **Prettier**) and Kotlin files (via **Ktlint**).
-    - `yarn format:tsx`: Formats only TypeScript and TSX files using **Prettier**.
+    - `yarn format:tsx`: Formats only TypeScript and TSX files using **Prettier** (following settings in [.prettierrc](./.prettierrc), with exclusions in [.prettierignore](./.prettierignore)).
     - `yarn format:kt`: Formats only Kotlin files using **Ktlint** (following settings in [android/.editorconfig](./android/.editorconfig)).
 7. To test Android builds, execute `yarn android` to compile and install the application directly on your device. Use `yarn build` for release APK generation.
 

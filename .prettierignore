@@ -1,0 +1,24 @@
+# Dependencies and build output.
+node_modules/
+android/build/
+android/app/build/
+android/scoring-shared/build/
+android/app/src/main/assets/index.android.bundle
+.expo/
+dist/
+web-build/
+coverage/
+.cache/
+
+# Generated game data. Written by scripts/data-scraper/main.py, not hand-edited.
+src/data/*.json
+
+# Generated scoring parity fixtures. Written by TrainingScoringFixtureGeneratorTest.
+src/lib/training/scoring/__fixtures__/
+
+# Hand-formatted single-file app served by the Remote Log Viewer. Prettier would reflow
+# ~6k lines of inlined CSS and JS and churn the diff on every unrelated edit.
+android/app/src/main/assets/log_viewer.html
+
+# Lockfile.
+yarn.lock
