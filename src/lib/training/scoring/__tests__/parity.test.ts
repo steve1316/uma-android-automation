@@ -68,12 +68,12 @@ function hydrateTraining(raw: any): TrainingOption {
 describe("training scoring parity", () => {
     test("every input has a matching fixture", () => {
         expect(expected.length).toBe(inputs.length)
-        const expectedIds = new Set(expected.map(e => e.id))
+        const expectedIds = new Set(expected.map((e) => e.id))
         for (const i of inputs) expect(expectedIds.has(i.id)).toBe(true)
     })
 
     for (const input of inputs) {
-        const fix = expected.find(e => e.id === input.id)!
+        const fix = expected.find((e) => e.id === input.id)!
         test(input.id, () => {
             const cfg = hydrateConfig(input.config)
             const tr = hydrateTraining(input.training)

@@ -410,7 +410,8 @@ export const SCORING_CONSTANTS_CATALOG: ReadonlyArray<ScoringConstantEntry> = [
     {
         key: "unityFillEnergyPenaltyPerGauge",
         label: "Unity fill energy penalty per gauge",
-        description: "Per-fillable-gauge penalty subtracted from the fill bonus to reflect Special Training's extra energy cost. Default 0 (off); raise it to make strong stat turns win over pure filling.",
+        description:
+            "Per-fillable-gauge penalty subtracted from the fill bonus to reflect Special Training's extra energy cost. Default 0 (off); raise it to make strong stat turns win over pure filling.",
         group: "misc",
         subgroup: "unityCup",
         defaultValue: D.unityFillEnergyPenaltyPerGauge,
@@ -432,7 +433,8 @@ export const SCORING_CONSTANTS_CATALOG: ReadonlyArray<ScoringConstantEntry> = [
     {
         key: "unityExtremeBurstBaseBonus",
         label: "Unity extreme burst base bonus",
-        description: "Flat Unity Cup bonus for a training with a support ready for an Extreme Spirit Burst (bigger, cap-raising, 0% fail, one-time). Larger than the normal burst bonus so the extreme facility always outranks it.",
+        description:
+            "Flat Unity Cup bonus for a training with a support ready for an Extreme Spirit Burst (bigger, cap-raising, 0% fail, one-time). Larger than the normal burst bonus so the extreme facility always outranks it.",
         group: "misc",
         subgroup: "unityCup",
         defaultValue: D.unityExtremeBurstBaseBonus,

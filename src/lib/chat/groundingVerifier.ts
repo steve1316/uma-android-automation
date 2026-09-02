@@ -15,6 +15,7 @@ export const DEFAULT_THRESHOLD = 0.4
 export const SUMMARY_THRESHOLD = 0.3
 
 /** English stopwords stripped before overlap computation so common function words don't carry the ratio. */
+// prettier-ignore
 const STOPWORDS = new Set<string>([
     "a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "and", "or", "but", "if", "then",
     "to", "of", "in", "on", "for", "with", "by", "at", "as", "from", "into", "about", "it", "its", "this",

@@ -10,13 +10,7 @@ export enum StatName {
 }
 
 /** Canonical ordered list of every `StatName`, used when iterating all stats in a stable order. */
-export const ALL_STAT_NAMES: readonly StatName[] = [
-    StatName.SPEED,
-    StatName.STAMINA,
-    StatName.POWER,
-    StatName.GUTS,
-    StatName.WIT,
-]
+export const ALL_STAT_NAMES: readonly StatName[] = [StatName.SPEED, StatName.STAMINA, StatName.POWER, StatName.GUTS, StatName.WIT]
 
 /** Enum of the four in-game career year buckets used by date-sensitive scoring rules. */
 export enum DateYear {

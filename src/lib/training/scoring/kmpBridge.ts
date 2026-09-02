@@ -122,7 +122,7 @@ export function toKtScoringConstants(c: TrainingScoringConstants): InstanceType<
         c.unityFillEnergyPenaltyPerGauge,
         c.unityBurstEnergyPenaltyPerGauge,
         c.unityExtremeBurstBaseBonus,
-        c.unityExtremeBurstPerGaugeBonus,
+        c.unityExtremeBurstPerGaugeBonus
     )
 }
 
@@ -187,7 +187,7 @@ export function toKtTrainingConfig(config: TrainingConfig): InstanceType<typeof 
         config.enablePrioritizeNearMaxFriendship,
         toKtStatSet(config.statsTrainedOverBuffer),
         toKtScoringConstants(config.scoring),
-        toKtStatMap(config.statCaps ?? {}),
+        toKtStatMap(config.statCaps ?? {})
     )
 }
 
@@ -199,7 +199,7 @@ export function toKtTrainingOption(t: TrainingOption): InstanceType<typeof ns.Tr
         collections.KtList.fromJsArray(t.relationshipBars.map(toKtBarFillResult)),
         t.numRainbow,
         t.numSkillHints,
-        t.trainingLevel,
+        t.trainingLevel
     )
 }
 
