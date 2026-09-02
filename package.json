@@ -21,7 +21,8 @@
         "test:coverage": "jest --coverage",
         "test:kt": "cd android && ./gradlew test",
         "build:doc-index": "tsx scripts/build-doc-index.ts",
-        "build:scoring": "cd android && ./gradlew :scoring-shared:jsNodeProductionLibraryDistribution",
+        "build:scoring": "cd android && ./gradlew :scoring-shared:jsNodeProductionLibraryDistribution && tsx ../scripts/sync-scoring.ts",
+        "sync:scoring": "tsx scripts/sync-scoring.ts",
         "perf:nav": "tsx scripts/perf-nav-test.ts"
     },
     "dependencies": {
