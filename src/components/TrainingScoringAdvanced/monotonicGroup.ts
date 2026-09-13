@@ -17,12 +17,7 @@ export type MonotonicUpdate = [string, number]
  * @param currentValues Current values keyed by catalog key. Missing keys fall back to each entry's default.
  * @returns Ordered list of `[key, value]` updates to dispatch, always including the originating change first.
  */
-export function propagateMonotonic(
-    entries: readonly ScoringConstantEntry[],
-    key: string,
-    value: number,
-    currentValues: Record<string, number>
-): MonotonicUpdate[] {
+export function propagateMonotonic(entries: readonly ScoringConstantEntry[], key: string, value: number, currentValues: Record<string, number>): MonotonicUpdate[] {
     const entry = entries.find((e) => e.key === key)
     if (!entry || !entry.monotonicGroup) return [[key, value]]
     const group = entries.filter((e) => e.monotonicGroup === entry.monotonicGroup)

@@ -449,7 +449,7 @@ const isEpithetCompletedAtTurn = (
     epithetsByName: Map<string, EpithetEntry>,
     preview: SchedulePreview,
     racesByKey: Record<string, RaceEntry>,
-    visited: Set<string> = new Set(),
+    visited: Set<string> = new Set()
 ): boolean => {
     if (visited.has(epName)) return false
     const ep = epithetsByName.get(epName)
@@ -489,7 +489,7 @@ export const pendingPrerequisitesForEpithet = (
     upToTurn: number,
     epithetsByName: Map<string, EpithetEntry>,
     preview: SchedulePreview,
-    racesByKey: Record<string, RaceEntry>,
+    racesByKey: Record<string, RaceEntry>
 ): string[] => {
     const out: string[] = []
     const seen = new Set<string>()

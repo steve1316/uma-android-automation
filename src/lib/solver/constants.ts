@@ -199,7 +199,6 @@ export const gradeColor = (grade: string): string | undefined => GRADE_COLORS[no
 /** Every epithet from the bundled `epithets.json`, keyed by name. The single cast of that data file - import this rather than re-casting it. */
 export const EPITHETS_BY_NAME = epithetsData as unknown as Record<string, EpithetEntry>
 
-
 export const DEFAULT_APTITUDES: AptitudeMap = { Sprint: "A", Mile: "A", Medium: "A", Long: "A", Turf: "A", Dirt: "A" }
 
 export const DEFAULT_WEIGHTS: WeightsMap = {

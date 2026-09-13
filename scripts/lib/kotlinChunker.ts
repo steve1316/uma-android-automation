@@ -16,29 +16,16 @@ import Parser from "tree-sitter"
 import Kotlin from "tree-sitter-kotlin"
 
 export interface KotlinChunk {
-	id: string
-	source: string
-	heading: string
-	text: string
-	kind: "code"
+    id: string
+    source: string
+    heading: string
+    text: string
+    kind: "code"
 }
 
-const DECL_TYPES = new Set([
-	"class_declaration",
-	"object_declaration",
-	"interface_declaration",
-	"enum_class_declaration",
-	"function_declaration",
-	"companion_object",
-])
+const DECL_TYPES = new Set(["class_declaration", "object_declaration", "interface_declaration", "enum_class_declaration", "function_declaration", "companion_object"])
 
-const CONTAINER_TYPES = new Set([
-	"class_declaration",
-	"object_declaration",
-	"interface_declaration",
-	"enum_class_declaration",
-	"companion_object",
-])
+const CONTAINER_TYPES = new Set(["class_declaration", "object_declaration", "interface_declaration", "enum_class_declaration", "companion_object"])
 
 let _parser: Parser | null = null
 /**
@@ -48,11 +35,11 @@ let _parser: Parser | null = null
  * @returns The shared tree-sitter [Parser] instance bound to the Kotlin grammar.
  */
 function getParser(): Parser {
-	if (!_parser) {
-		_parser = new Parser()
-		_parser.setLanguage(Kotlin as unknown as Parser.Language)
-	}
-	return _parser
+    if (!_parser) {
+        _parser = new Parser()
+        _parser.setLanguage(Kotlin as unknown as Parser.Language)
+    }
+    return _parser
 }
 
 /**
@@ -62,14 +49,14 @@ function getParser(): Parser {
  * @returns Ordered [KotlinChunk] list; class containers emit a header chunk plus one chunk per member.
  */
 export function chunkKotlinFile(filePath: string): KotlinChunk[] {
-	const src = fs.readFileSync(filePath, "utf-8")
-	const tree = getParser().parse(src)
-	const filename = path.basename(filePath)
+    const src = fs.readFileSync(filePath, "utf-8")
+    const tree = getParser().parse(src)
+    const filename = path.basename(filePath)
 
-	const kdocByEnd = collectKDocs(tree.rootNode, src)
-	const chunks: KotlinChunk[] = []
-	walk(tree.rootNode, src, filename, [], kdocByEnd, chunks)
-	return chunks
+    const kdocByEnd = collectKDocs(tree.rootNode, src)
+    const chunks: KotlinChunk[] = []
+    walk(tree.rootNode, src, filename, [], kdocByEnd, chunks)
+    return chunks
 }
 
 /**
@@ -82,17 +69,17 @@ export function chunkKotlinFile(filePath: string): KotlinChunk[] {
  * @returns Map from KDoc end offset to KDoc source text (including the comment delimiters).
  */
 function collectKDocs(root: Parser.SyntaxNode, src: string): Map<number, string> {
-	const out = new Map<number, string>()
-	const stack: Parser.SyntaxNode[] = [root]
-	while (stack.length > 0) {
-		const node = stack.pop()!
-		if (node.type === "multiline_comment") {
-			const text = src.slice(node.startIndex, node.endIndex)
-			if (text.startsWith("/**")) out.set(node.endIndex, text)
-		}
-		for (const c of node.children) stack.push(c)
-	}
-	return out
+    const out = new Map<number, string>()
+    const stack: Parser.SyntaxNode[] = [root]
+    while (stack.length > 0) {
+        const node = stack.pop()!
+        if (node.type === "multiline_comment") {
+            const text = src.slice(node.startIndex, node.endIndex)
+            if (text.startsWith("/**")) out.set(node.endIndex, text)
+        }
+        for (const c of node.children) stack.push(c)
+    }
+    return out
 }
 
 /**
@@ -105,10 +92,10 @@ function collectKDocs(root: Parser.SyntaxNode, src: string): Map<number, string>
  * @returns The KDoc source text when one immediately precedes [declStart], otherwise `null`.
  */
 function findKDocBefore(declStart: number, src: string, kdocByEnd: Map<number, string>): string | null {
-	let i = declStart - 1
-	while (i >= 0 && /\s/.test(src[i])) i--
-	const cursor = i + 1
-	return kdocByEnd.get(cursor) ?? null
+    let i = declStart - 1
+    while (i >= 0 && /\s/.test(src[i])) i--
+    const cursor = i + 1
+    return kdocByEnd.get(cursor) ?? null
 }
 
 /**
@@ -123,54 +110,47 @@ function findKDocBefore(declStart: number, src: string, kdocByEnd: Map<number, s
  * @param kdocByEnd KDoc end-offset → text map produced by [collectKDocs].
  * @param out Output sink; chunks are pushed in declaration order.
  */
-function walk(
-	node: Parser.SyntaxNode,
-	src: string,
-	source: string,
-	hierarchy: string[],
-	kdocByEnd: Map<number, string>,
-	out: KotlinChunk[],
-): void {
-	for (const child of node.children) {
-		if (!DECL_TYPES.has(child.type)) {
-			walk(child, src, source, hierarchy, kdocByEnd, out)
-			continue
-		}
+function walk(node: Parser.SyntaxNode, src: string, source: string, hierarchy: string[], kdocByEnd: Map<number, string>, out: KotlinChunk[]): void {
+    for (const child of node.children) {
+        if (!DECL_TYPES.has(child.type)) {
+            walk(child, src, source, hierarchy, kdocByEnd, out)
+            continue
+        }
 
-		const name = declarationName(child, src) ?? (child.type === "companion_object" ? "Companion" : `<${child.type}>`)
-		const kdoc = findKDocBefore(child.startIndex, src, kdocByEnd)
-		const isContainer = CONTAINER_TYPES.has(child.type)
+        const name = declarationName(child, src) ?? (child.type === "companion_object" ? "Companion" : `<${child.type}>`)
+        const kdoc = findKDocBefore(child.startIndex, src, kdocByEnd)
+        const isContainer = CONTAINER_TYPES.has(child.type)
 
-		if (isContainer) {
-			const headerEnd = findContainerHeaderEnd(child)
-			const headerSource = src.slice(child.startIndex, headerEnd)
-			const headerText = combineWithKDoc(kdoc, headerSource).trim()
-			const headerHierarchy = [...hierarchy, name]
-			// Skip nearly-empty headers (e.g. bare `companion object` with no KDoc) - they add noise without signal.
-			if (kdoc !== null || headerText.length > 30) {
-				out.push({
-					id: `${source}#${headerHierarchy.join(".")}`,
-					source,
-					heading: headerHierarchy.join(" › "),
-					text: headerText,
-					kind: "code",
-				})
-			}
-			const body = child.childForFieldName("body") ?? findBody(child)
-			if (body) walk(body, src, source, headerHierarchy, kdocByEnd, out)
-		} else {
-			const funcSource = src.slice(child.startIndex, child.endIndex)
-			const funcText = combineWithKDoc(kdoc, funcSource).trim()
-			const memberHierarchy = [...hierarchy, name]
-			out.push({
-				id: `${source}#${memberHierarchy.join(".")}`,
-				source,
-				heading: memberHierarchy.join(" › "),
-				text: funcText,
-				kind: "code",
-			})
-		}
-	}
+        if (isContainer) {
+            const headerEnd = findContainerHeaderEnd(child)
+            const headerSource = src.slice(child.startIndex, headerEnd)
+            const headerText = combineWithKDoc(kdoc, headerSource).trim()
+            const headerHierarchy = [...hierarchy, name]
+            // Skip nearly-empty headers (e.g. bare `companion object` with no KDoc) - they add noise without signal.
+            if (kdoc !== null || headerText.length > 30) {
+                out.push({
+                    id: `${source}#${headerHierarchy.join(".")}`,
+                    source,
+                    heading: headerHierarchy.join(" › "),
+                    text: headerText,
+                    kind: "code",
+                })
+            }
+            const body = child.childForFieldName("body") ?? findBody(child)
+            if (body) walk(body, src, source, headerHierarchy, kdocByEnd, out)
+        } else {
+            const funcSource = src.slice(child.startIndex, child.endIndex)
+            const funcText = combineWithKDoc(kdoc, funcSource).trim()
+            const memberHierarchy = [...hierarchy, name]
+            out.push({
+                id: `${source}#${memberHierarchy.join(".")}`,
+                source,
+                heading: memberHierarchy.join(" › "),
+                text: funcText,
+                kind: "code",
+            })
+        }
+    }
 }
 
 /**
@@ -182,14 +162,14 @@ function walk(
  * @returns The declaration's name as written in source, or `null` when none can be located.
  */
 function declarationName(node: Parser.SyntaxNode, src: string): string | null {
-	const named = node.childForFieldName("name")
-	if (named) return src.slice(named.startIndex, named.endIndex)
-	for (const c of node.children) {
-		if (c.type === "simple_identifier" || c.type === "type_identifier") {
-			return src.slice(c.startIndex, c.endIndex)
-		}
-	}
-	return null
+    const named = node.childForFieldName("name")
+    if (named) return src.slice(named.startIndex, named.endIndex)
+    for (const c of node.children) {
+        if (c.type === "simple_identifier" || c.type === "type_identifier") {
+            return src.slice(c.startIndex, c.endIndex)
+        }
+    }
+    return null
 }
 
 /**
@@ -200,7 +180,7 @@ function declarationName(node: Parser.SyntaxNode, src: string): string | null {
  * @returns `body` prefixed by `kdoc + "\n"` when [kdoc] is non-null, otherwise `body` unchanged.
  */
 function combineWithKDoc(kdoc: string | null, body: string): string {
-	return kdoc ? `${kdoc}\n${body}` : body
+    return kdoc ? `${kdoc}\n${body}` : body
 }
 
 /**
@@ -211,9 +191,9 @@ function combineWithKDoc(kdoc: string | null, body: string): string {
  * @returns Source offset where the container body begins; falls back to [node]'s end when no body is present.
  */
 function findContainerHeaderEnd(node: Parser.SyntaxNode): number {
-	const body = node.childForFieldName("body") ?? findBody(node)
-	if (body) return body.startIndex
-	return node.endIndex
+    const body = node.childForFieldName("body") ?? findBody(node)
+    if (body) return body.startIndex
+    return node.endIndex
 }
 
 /**
@@ -223,10 +203,10 @@ function findContainerHeaderEnd(node: Parser.SyntaxNode): number {
  * @returns The first child of type `class_body`, `enum_class_body`, or `object_literal`, or `null`.
  */
 function findBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
-	for (const c of node.children) {
-		if (c.type === "class_body" || c.type === "enum_class_body" || c.type === "object_literal") return c
-	}
-	return null
+    for (const c of node.children) {
+        if (c.type === "class_body" || c.type === "enum_class_body" || c.type === "object_literal") return c
+    }
+    return null
 }
 
 /**
@@ -237,16 +217,16 @@ function findBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
  * @returns Absolute paths to every `.kt` file discovered under [rootDir], in traversal order.
  */
 export function findKotlinFiles(rootDir: string): string[] {
-	const out: string[] = []
-	const stack: string[] = [rootDir]
-	while (stack.length > 0) {
-		const dir = stack.pop()!
-		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-			const full = path.join(dir, entry.name)
-			if (entry.isDirectory()) stack.push(full)
-			else if (entry.isFile() && entry.name.endsWith(".kt")) out.push(full)
-		}
-	}
-	out.sort()
-	return out
+    const out: string[] = []
+    const stack: string[] = [rootDir]
+    while (stack.length > 0) {
+        const dir = stack.pop()!
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name)
+            if (entry.isDirectory()) stack.push(full)
+            else if (entry.isFile() && entry.name.endsWith(".kt")) out.push(full)
+        }
+    }
+    out.sort()
+    return out
 }

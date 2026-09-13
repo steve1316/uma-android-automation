@@ -82,11 +82,7 @@ export interface ScenarioScoringInputs {
  * @param settings Optional saved-settings inputs. Omitted in unit tests; provided by the sandbox modal.
  * @returns Scoring inputs for the 5 trainings.
  */
-export function scenarioToScoring(
-    scenario: SandboxScenario,
-    constants: TrainingScoringConstants = DEFAULT_TRAINING_SCORING_CONSTANTS,
-    settings?: SandboxSettingsInputs
-): ScenarioScoringInputs {
+export function scenarioToScoring(scenario: SandboxScenario, constants: TrainingScoringConstants = DEFAULT_TRAINING_SCORING_CONSTANTS, settings?: SandboxSettingsInputs): ScenarioScoringInputs {
     const statPrioritization = settings ? statNamesFromLabels(settings.statPrioritization) : DEFAULT_PRIORITY
     const summerTrainingStatPriority = settings ? statNamesFromLabels(settings.summerTrainingStatPriority) : DEFAULT_SUMMER_PRIORITY
     const blacklist = settings ? statNamesFromLabels(settings.trainingBlacklist) : []
