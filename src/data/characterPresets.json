@@ -831,6 +831,19 @@
             "Dirt": "E"
         }
     },
+    "Yamanin Zephyr": {
+        "name": "Yamanin Zephyr",
+        "distanceAptitudes": {
+            "Sprint": "B",
+            "Mile": "A",
+            "Medium": "A",
+            "Long": "G"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "D"
+        }
+    },
     "Yukino Bijin": {
         "name": "Yukino Bijin",
         "distanceAptitudes": {

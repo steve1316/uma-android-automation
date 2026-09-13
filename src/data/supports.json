@@ -1107,6 +1107,16 @@
         ],
         "(❯❯)\nThe Place I Wish to Stand": [
             "Energy +30\nMood +1"
+        ],
+        "(❯)\nLet's Use Our Imaginations": [
+            "Energy +15",
+            "Speed +15"
+        ],
+        "(❯❯)\nLet's Read a Story": [
+            "Speed +10\nSkill points +5\nMejiro Ardan bond +5"
+        ],
+        "(❯❯❯)\nLet's Learn Through Immersion": [
+            "Speed +10\nRace Planner hint +1\nMejiro Ardan bond +5"
         ]
     },
     "Mejiro Bright": {
@@ -1498,6 +1508,16 @@
         ],
         "(❯❯)\n\"Happiness? Don't Mind If I Do\" —Oguri Cap": [
             "Power +7\nGuts +7\nSkill points +10\nWet Conditions ○ hint +1\nOguri Cap bond +5"
+        ],
+        "(❯)\nFostering Gratitude": [
+            "Skill points +30\nOguri Cap bond +5"
+        ],
+        "(❯❯)\nCreating Smiles": [
+            "Randomly either\n----------\nEnergy +30\nSpeed +10\nTriple 7s hint +1\nOguri Cap bond +5\n----------\n\n----------\nEnergy +10\nOguri Cap bond +5",
+            "Speed +7\nWit +7\nSkill points +20\nOguri Cap bond +5"
+        ],
+        "(❯❯❯)\nSharing Happiness": [
+            "Randomly either\n----------\n\n----------\n\n----------\nSpeed +10\nWit +10\nSkill points +20\nSolid Strike hint +3\nOguri Cap bond +5\n----------\n\n----------\nSpeed +7\nWit +7\nSkill points +15\nSolid Strike hint +1\nOguri Cap bond +5"
         ]
     },
     "Rice Shower": {
@@ -2007,6 +2027,26 @@
             "Speed +10\nEnd Closer Straightaways ○ hint +2\nSweep Tosho bond +5"
         ]
     },
+    "Symboli Kris S": {
+        "A Professional's Feelings": [
+            "Guts +25\nSymboli Kris S bond +5",
+            "Energy +15\nSymboli Kris S bond +5"
+        ],
+        "A Professional's Creed": [
+            "Stamina +15\nSymboli Kris S bond +5",
+            "Cloudy Days ○ hint +1\nSymboli Kris S bond +5"
+        ],
+        "(❯)\nA Day off with Kris S": [
+            "Maximum Energy +4\nMood +1\nSymboli Kris S bond +5",
+            "Stamina +7\nPower +7\nGuts +7\nSymboli Kris S bond +5"
+        ],
+        "(❯❯)\nProud and Polar Opposites": [
+            "Energy +15\nGuts +10\nCompetitive Spirit ○ hint +2\nSymboli Kris S bond +5"
+        ],
+        "(❯❯❯)\nKris S the Coachinator": [
+            "Stamina +15\nGuts +15\nSkill points +10\nClaw Forward hint +1\nSymboli Kris S bond +5"
+        ]
+    },
     "Symboli Rudolf": {
         "The Emperor's Encouragement": [
             "Speed +10\nSymboli Rudolf bond +5",
@@ -2092,6 +2132,25 @@
         ],
         "(❯❯❯)\nMy Flaws Make Me Who I Am!": [
             "Stamina +10\nPower +10\nFast & Furious hint +2\nTamamo Cross bond +5"
+        ]
+    },
+    "Tanino Gimlet": {
+        "The Euphoria of Destruction!": [
+            "Energy +15\nTanino Gimlet bond +5",
+            "Skill points +30\nTanino Gimlet bond +5"
+        ],
+        "An Electrifying Present!": [
+            "Power +10\nSkill points +5\nTanino Gimlet bond +5",
+            "End Closer Savvy ○ hint +1\nTanino Gimlet bond +5"
+        ],
+        "(❯)\nAs the Great Artists of Yore...": [
+            "Randomly either\n----------\nPower +15\nSkill points +15\nTanino Gimlet bond +5\n----------\n\n----------\nSkill points +10\nTanino Gimlet bond +5"
+        ],
+        "(❯❯)\nAs the Criminal from the North...": [
+            "Randomly either\n----------\nStamina +15\nPower +15\nTanino Gimlet bond +5\n----------\n\n----------\nPower +10\nTanino Gimlet bond +5"
+        ],
+        "(❯❯❯)\nAs Bacchus, God of Wine...": [
+            "Stamina +10\nPower +10\nSturm und Drang hint +1\nTanino Gimlet bond +5"
         ]
     },
     "Tazuna Hayakawa": {
@@ -2321,6 +2380,12 @@
         "Helping Out to the MAX!": [
             "Fighter hint +1\nTsurumaru Tsuyoshi bond +5",
             "Guts +15\nTsurumaru Tsuyoshi bond +5"
+        ],
+        "(❯)\nAn Optimistic Outlook!": [
+            "Energy -5\nSpeed +7\nGuts +7\nSkill points +7\nTsurumaru Tsuyoshi bond +5"
+        ],
+        "(❯❯)\nA Strength That's All My Own!": [
+            "Energy -5\nSpeed +10\nPower +10\nGuts +10\nLate Surger Straightaways ○ hint +1\nTsurumaru Tsuyoshi bond +5"
         ]
     },
     "Twin Turbo": {
@@ -2437,6 +2502,15 @@
         ],
         "(❯❯❯)\nYaeno Muteki's Love Song Nightmare": [
             "Randomly either\n----------\nEnergy -10\nSpeed +10\nStamina +10\nPower +20\nIt's On! hint +3\n----------\n\n----------\nEnergy -10\nIt's On! hint +1"
+        ],
+        "(❯)\nFirst, Know Thyself": [
+            "Randomly either\n----------\nSpeed +10\nPower +10\nGuts +10\nHydrate hint +1\nYaeno Muteki bond +5\n----------\n\n----------\nSpeed +5\nPower +5\nGuts +5\nYaeno Muteki bond +5"
+        ],
+        "(❯❯)\nSecond, Know Thy Duty": [
+            "Randomly either\n----------\nSkill points +40\nLeft-Handed ○ hint +3\nYaeno Muteki bond +5\n----------\n\n----------\nSkill points +15\nLeft-Handed ○ hint +1\nYaeno Muteki bond +5"
+        ],
+        "(❯❯❯)\nThird, Show Thy Spirit": [
+            "Randomly either\n----------\nSpeed +7\nPower +7\nGuts +7\nSkill points +15\nKiller Tunes hint +3\n----------\n\n----------\nSpeed +7\nSkill points +15\nKiller Tunes hint +2\n----------\n\n----------\nSkill points +15\nKiller Tunes hint +1"
         ]
     },
     "Yukino Bijin": {

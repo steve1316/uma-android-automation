@@ -6821,6 +6821,102 @@
             }
         ]
     },
+    "Yamanin Zephyr": {
+        "name": "Yamanin Zephyr",
+        "mandatoryRaces": [
+            {
+                "turn": 31,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "New Zealand Trophy",
+                        "grade": "G2",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 5400
+                    }
+                ]
+            },
+            {
+                "turn": 34,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Aoi Stakes",
+                        "grade": "G3",
+                        "surface": "Turf",
+                        "distanceType": "Sprint",
+                        "fans": 3800
+                    }
+                ]
+            },
+            {
+                "turn": 42,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Sprinters Stakes",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Sprint",
+                        "fans": 13000
+                    }
+                ]
+            },
+            {
+                "turn": 46,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Mile Championship",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 11000
+                    }
+                ]
+            },
+            {
+                "turn": 59,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Yasuda Kinen",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Mile",
+                        "fans": 13000
+                    }
+                ]
+            },
+            {
+                "turn": 66,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Sprinters Stakes",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Sprint",
+                        "fans": 13000
+                    }
+                ]
+            },
+            {
+                "turn": 68,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tenno Sho (Autumn)",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 15000
+                    }
+                ]
+            }
+        ]
+    },
     "Yukino Bijin": {
         "name": "Yukino Bijin",
         "mandatoryRaces": [

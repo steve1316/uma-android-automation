@@ -4446,6 +4446,39 @@
             }
         ]
     },
+    "Wind Incarnate": {
+        "name": "Wind Incarnate",
+        "bullet_points": [
+            "Yamanin Zephyr only",
+            "Win the Yasuda Kinen twice",
+            "Win the Sprinters Stakes",
+            "Win the Takarazuka Kinen (Senior)",
+            "Reach 1200 or more Speed"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Yamanin Zephyr"
+        ],
+        "matchers": [
+            {
+                "type": "winRaceTimes",
+                "name": "Yasuda Kinen",
+                "times": 2,
+                "displayLabel": "Win the Yasuda Kinen (2 times)"
+            },
+            {
+                "type": "winRace",
+                "name": "Sprinters Stakes",
+                "displayLabel": "Win the Sprinters Stakes"
+            },
+            {
+                "type": "winRace",
+                "name": "Takarazuka Kinen",
+                "atClass": "Senior",
+                "displayLabel": "Win the Takarazuka Kinen"
+            }
+        ]
+    },
     "Witness to Legend": {
         "name": "Witness to Legend",
         "bullet_points": [
