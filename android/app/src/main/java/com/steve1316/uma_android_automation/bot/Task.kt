@@ -1,6 +1,8 @@
 package com.steve1316.uma_android_automation.bot
 
 import android.graphics.Bitmap
+import com.steve1316.automation_library.utils.BotHold
+import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
@@ -49,6 +51,21 @@ sealed interface TaskResult {
      */
     data class Error(override val code: TaskResultCode = TaskResultCode.TASK_RESULT_UNHANDLED_EXCEPTION, override val message: String = "Task completed with errors.") : TaskResult
 }
+
+/**
+ * Maps a task's result to the outcome the overlay and the notification show.
+ *
+ * @param result The result the task ended with.
+ * @return The outcome and the reason text shown with it.
+ */
+fun outcomeFor(result: TaskResult): Pair<BotStatus.Outcome, String> =
+    when (result.code) {
+        TaskResultCode.TASK_RESULT_COMPLETE -> BotStatus.Outcome.FINISHED to "Career complete"
+        TaskResultCode.TASK_RESULT_BREAKPOINT_REACHED -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
+        TaskResultCode.TASK_RESULT_MANUALLY_STOPPED -> BotStatus.Outcome.STOPPED_BY_USER to "You stopped the bot"
+        TaskResultCode.TASK_RESULT_UNHANDLED_EXCEPTION -> BotStatus.Outcome.CRASHED to result.message
+        TaskResultCode.TASK_RESULT_CONNECTION_ERROR -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
+    }
 
 /**
  * Base class for all automation tasks.
@@ -124,6 +141,8 @@ abstract class Task(game: Game) : DialogHandler(game) {
      * @param result The [TaskResult] that caused the task to end.
      */
     private fun handleTaskEnd(result: TaskResult) {
+        val (outcome, reason) = outcomeFor(result)
+        BotStatus.setOutcome(outcome, reason)
         val logMessage = "${result.javaClass.simpleName} (${result.code}): ${result.message}"
         game.notificationMessage = logMessage
         val discordMessage = "${this::class.simpleName}:: ${result.javaClass.simpleName} (${result.code}): ${result.message}"
@@ -164,6 +183,8 @@ abstract class Task(game: Game) : DialogHandler(game) {
 
         while (true) {
             try {
+                // Hold here while the user has paused the bot. This sits between steps so no clock-timed loop is cut short by a pause.
+                BotHold.awaitIfPaused()
                 val tmpResult: TaskResult? = process()
                 // Stop the task if a non-null result is received.
                 if (tmpResult != null) {
