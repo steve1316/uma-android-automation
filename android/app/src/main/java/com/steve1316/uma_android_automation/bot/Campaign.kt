@@ -2405,12 +2405,12 @@ abstract class Campaign(game: Game) : Task(game) {
 
         // Check if bot should stop before the finals.
         if (checkFinalsStop()) {
-            throw InterruptedException(game.notificationMessage)
+            throw CampaignBreakpointException(game.notificationMessage)
         }
 
         // Check if bot should stop at the user specified date.
         if (checkStopAtDate()) {
-            throw InterruptedException(game.notificationMessage)
+            throw CampaignBreakpointException(game.notificationMessage)
         }
 
         return false
