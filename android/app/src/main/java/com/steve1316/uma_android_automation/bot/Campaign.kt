@@ -2186,6 +2186,8 @@ abstract class Campaign(game: Game) : Task(game) {
         // Skip if we've already checked the date this turn and no game-advancing action was taken.
         if (!bHasCheckedDateThisTurn) {
             val dateChanged = updateDate()
+            // Show the new turn now, so a planned stop in performGlobalChecks() reports this turn and not the last one.
+            DecisionTracer.pushProgress(date.day)
             // Once-per-run: log the Smart Race Solver Preview schedule and seed mid-run history
             // recovery now that the date is known, so it appears in logs before shop/items.
             SmartRaceSolverIntegration.runStartupHooks(game = game, currentTurn = date.day, scenario = game.scenario)
