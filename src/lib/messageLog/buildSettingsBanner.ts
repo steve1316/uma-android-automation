@@ -262,6 +262,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 📅 Dating Schedule: ${settings.general.enableDatingSchedule ? `✅ (${DATING_SCHEDULE_PRESETS[settings.general.datingSchedulePreset]?.label ?? "Custom"} | Recreation: ${settings.general.recreationTurns.map(formatCareerTurn).join(", ") || "none"} | Pure Passion: ${settings.general.purePassionTurn > 0 ? formatCareerTurn(settings.general.purePassionTurn) : "none"} | Outings: ${settings.general.recreationTotalOutings} | Catch-up: ${settings.general.enableRecreationCatchUp ? "on" : "off"})` : "❌"}
 ⏰ Wait Delay: ${settings.general.waitDelay}s
 ⏰ Dialog Wait Delay: ${settings.general.dialogWaitDelay}s
+🕹️ Overlay: ${settings.misc.overlayStyle === "simple" ? "Simple" : "Tray"} (${settings.misc.overlayButtonSizeDP} dp)
 
 ---------- Debug Options ----------
 🐛 Debug Mode: ${settings.debug.enableDebugMode ? "✅" : "❌"}
