@@ -12,6 +12,9 @@ import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.DialogInterface
 import com.steve1316.uma_android_automation.components.DialogUtils
 
+/** The result a run ends with when the user stops it. Its message is the one the task-end log line has always printed. */
+internal val MANUALLY_STOPPED_RESULT: TaskResult = TaskResult.Success(TaskResultCode.TASK_RESULT_MANUALLY_STOPPED, "Bot was manually stopped by the user.")
+
 /** The possible result codes for a task's execution. */
 enum class TaskResultCode {
     /** The task completed all its objectives successfully. */
@@ -66,6 +69,80 @@ fun outcomeFor(result: TaskResult): Pair<BotStatus.Outcome, String> =
         TaskResultCode.TASK_RESULT_UNHANDLED_EXCEPTION -> BotStatus.Outcome.CRASHED to result.message
         TaskResultCode.TASK_RESULT_CONNECTION_ERROR -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
     }
+
+/** What the task loop needs from the bot, so the loop itself can be unit tested with fakes. */
+internal interface TaskLoopHooks {
+    /**
+     * Waits at the safe point while the user has paused the bot.
+     *
+     * @return True if the bot was paused there.
+     */
+    fun awaitIfPaused(): Boolean
+
+    /**
+     * Clears an abort raised by a pause.
+     *
+     * @return True if the interrupt or failure came from a pause abort.
+     */
+    fun acknowledgeAbort(): Boolean
+
+    /**
+     * Whether the user or the system asked the run to stop.
+     *
+     * @return True once a stop was requested. A stop always wins over a restart.
+     */
+    fun isStopRequested(): Boolean
+
+    /**
+     * Clears per-turn state so the next step decides afresh from the screen.
+     */
+    fun onResumeAfterAbort()
+
+    /**
+     * Checks that the game is in front after a pause, and asks for a new pause when it is not.
+     *
+     * @return True when the game is in front or unknown, false when a new pause was requested.
+     */
+    fun ensureGameInFront(): Boolean
+
+    /**
+     * Runs one step of the task.
+     *
+     * @return A result to end the loop, or null to keep going.
+     */
+    fun process(): TaskResult?
+}
+
+/**
+ * Runs a task's steps until one returns a result. A pause can abort a step midway. The loop then waits at the safe point, clears per-turn
+ * state, checks the game is in front, and starts the next step from the current screen. A stop always ends the run, even mid-pause.
+ *
+ * @param hooks What the loop needs from the bot.
+ * @return The result that ended the loop.
+ */
+internal fun runTaskLoop(hooks: TaskLoopHooks): TaskResult {
+    var bPendingResync = false
+    while (true) {
+        try {
+            val bPaused = hooks.awaitIfPaused()
+            if (bPaused || bPendingResync) {
+                bPendingResync = false
+                hooks.onResumeAfterAbort()
+            }
+            if (bPaused && !hooks.ensureGameInFront()) continue
+            val result = hooks.process()
+            if (result != null) return result
+        } catch (_: InterruptedException) {
+            // StepAbortedException is an InterruptedException, so a stop and an abort both land here. The stop check comes first.
+            if (hooks.isStopRequested() || !hooks.acknowledgeAbort()) return MANUALLY_STOPPED_RESULT
+            bPendingResync = true
+        } catch (e: Exception) {
+            // Fallout from an abort, such as a missing screenshot, restarts the same way. Anything else is a real failure.
+            if (hooks.isStopRequested() || !hooks.acknowledgeAbort()) throw e
+            bPendingResync = true
+        }
+    }
+}
 
 /**
  * Base class for all automation tasks.
