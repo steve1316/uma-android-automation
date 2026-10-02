@@ -48,6 +48,9 @@ private class FakeHooks(steps: List<Step>, paused: List<Boolean> = emptyList(), 
     /** How many times `ensureGameInFront()` ran. */
     var inFrontCalls = 0
 
+    /** When true, a stop lands while `acknowledgeAbort()` runs. */
+    var stopDuringAck = false
+
     /**
      * Aborts the running step the way a library checkpoint does.
      *
@@ -64,6 +67,7 @@ private class FakeHooks(steps: List<Step>, paused: List<Boolean> = emptyList(), 
         ackCalls++
         val had = abortRaised
         abortRaised = false
+        if (stopDuringAck) stopRequested = true
         return had
     }
 
@@ -188,5 +192,33 @@ class TaskLoopTest {
         assertEquals(2, hooks.processCalls)
         assertEquals(0, hooks.inFrontCalls)
         assertEquals(0, hooks.resyncCalls)
+    }
+
+    @Test
+    fun aStopDuringTheAcknowledgeEndsTheRunAfterAnInterrupt() {
+        val hooks = FakeHooks(listOf<Step>({ stopDuringAck = true; abort() }, { DONE }))
+        assertEquals(TaskResultCode.TASK_RESULT_MANUALLY_STOPPED, runTaskLoop(hooks).code)
+        assertEquals(1, hooks.ackCalls)
+        assertEquals(0, hooks.resyncCalls)
+        assertEquals(1, hooks.processCalls)
+    }
+
+    @Test
+    fun aStopDuringTheAcknowledgeEndsTheRunAfterFallout() {
+        val hooks =
+            FakeHooks(
+                listOf<Step>(
+                    {
+                        stopDuringAck = true
+                        abortRaised = true
+                        throw IllegalStateException("No screenshot after the abort")
+                    },
+                    { DONE },
+                ),
+            )
+        assertEquals(TaskResultCode.TASK_RESULT_MANUALLY_STOPPED, runTaskLoop(hooks).code)
+        assertEquals(1, hooks.ackCalls)
+        assertEquals(0, hooks.resyncCalls)
+        assertEquals(1, hooks.processCalls)
     }
 }

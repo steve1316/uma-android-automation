@@ -135,10 +135,14 @@ internal fun runTaskLoop(hooks: TaskLoopHooks): TaskResult {
         } catch (_: InterruptedException) {
             // StepAbortedException is an InterruptedException, so a stop and an abort both land here. The stop check comes first.
             if (hooks.isStopRequested() || !hooks.acknowledgeAbort()) return MANUALLY_STOPPED_RESULT
+            // A stop can land while the abort is acknowledged.
+            if (hooks.isStopRequested()) return MANUALLY_STOPPED_RESULT
             bPendingResync = true
         } catch (e: Exception) {
             // Fallout from an abort, such as a missing screenshot, restarts the same way. Anything else is a real failure.
             if (hooks.isStopRequested() || !hooks.acknowledgeAbort()) throw e
+            // A stop can land while the abort is acknowledged. The exception was abort fallout, so the run ends as a manual stop.
+            if (hooks.isStopRequested()) return MANUALLY_STOPPED_RESULT
             bPendingResync = true
         }
     }
