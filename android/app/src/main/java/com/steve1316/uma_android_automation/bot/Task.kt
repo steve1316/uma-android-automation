@@ -2,8 +2,10 @@ package com.steve1316.uma_android_automation.bot
 
 import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.BotHold
+import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
+import com.steve1316.automation_library.utils.FocusWatch
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandler
@@ -14,6 +16,12 @@ import com.steve1316.uma_android_automation.components.DialogUtils
 
 /** The result a run ends with when the user stops it. Its message is the one the task-end log line has always printed. */
 internal val MANUALLY_STOPPED_RESULT: TaskResult = TaskResult.Success(TaskResultCode.TASK_RESULT_MANUALLY_STOPPED, "Bot was manually stopped by the user.")
+
+/** Package names of the game. The library pauses the run when any other app takes the screen. Only the Global release is supported. */
+internal val UMA_GAME_PACKAGES: Set<String> = setOf("com.cygames.umamusume")
+
+/** Pause reason shown when the bot was resumed while another app is in front. */
+private const val GAME_NOT_IN_FRONT_REASON = "Open the game, then tap Resume"
 
 /** The possible result codes for a task's execution. */
 enum class TaskResultCode {
@@ -248,36 +256,63 @@ abstract class Task(game: Game) : DialogHandler(game) {
     /**
      * Run the task's main loop until completion or manual stop.
      *
+     * A pause can abort a step midway. The loop then waits for Resume, clears per-turn state, and carries on from whatever screen the game
+     * is on. Mid-step pause is on for the bot thread only while the loop runs, so the end-of-run cleanup below is never aborted.
+     *
      * @return The final [TaskResult] of the task's execution.
      */
     open fun start(): TaskResult {
-        var result: TaskResult =
-            TaskResult.Error(
-                TaskResultCode.TASK_RESULT_UNHANDLED_EXCEPTION,
-                "Task ended unexpectedly.",
-            )
-
-        while (true) {
+        BotHold.enableMidStepPause(UMA_GAME_PACKAGES)
+        val result =
             try {
-                // Hold here while the user has paused the bot. This sits between steps so no clock-timed loop is cut short by a pause.
-                BotHold.awaitIfPaused()
-                val tmpResult: TaskResult? = process()
-                // Stop the task if a non-null result is received.
-                if (tmpResult != null) {
-                    result = tmpResult
-                    break
-                }
-            } catch (e: InterruptedException) {
-                result =
-                    TaskResult.Success(
-                        TaskResultCode.TASK_RESULT_MANUALLY_STOPPED,
-                        "Bot was manually stopped by the user.",
-                    )
-                break
+                runTaskLoop(loopHooks())
+            } finally {
+                BotHold.disableMidStepPause()
             }
-        }
 
         handleTaskEnd(result)
         return result
+    }
+
+    /**
+     * Called after a pause landed or aborted a step, before the next step runs. Clears per-turn state so the next step decides afresh from
+     * the screen. Default no-op.
+     */
+    open fun onResumeAfterAbort() {
+        return
+    }
+
+    /**
+     * Connects the task loop to the library's pause state and to this task.
+     *
+     * @return The hooks for `runTaskLoop()`.
+     */
+    private fun loopHooks(): TaskLoopHooks =
+        object : TaskLoopHooks {
+            override fun awaitIfPaused(): Boolean = BotHold.awaitIfPaused()
+
+            override fun acknowledgeAbort(): Boolean = BotHold.acknowledgeAbort()
+
+            // A stop sets its outcome before it interrupts the bot thread, and BotService.isRunning turns false during the stop's cleanup.
+            override fun isStopRequested(): Boolean = BotStatus.snapshot().outcome != null || !BotService.isRunning
+
+            override fun onResumeAfterAbort() = this@Task.onResumeAfterAbort()
+
+            override fun ensureGameInFront(): Boolean = this@Task.ensureGameInFront()
+
+            override fun process(): TaskResult? = this@Task.process()
+        }
+
+    /**
+     * After a pause, checks that the game is the app in front. When another app is, asks for a new pause so the bot never taps over it.
+     *
+     * @return True when the game is in front or the app in front is unknown, false when a new pause was requested.
+     */
+    private fun ensureGameInFront(): Boolean {
+        val foreground = FocusWatch.foregroundPackage
+        if (foreground == null || foreground in UMA_GAME_PACKAGES) return true
+        MessageLog.i(TAG, "[PAUSE] $foreground is in front instead of the game. Pausing again until the game is open.")
+        BotHold.requestPause(GAME_NOT_IN_FRONT_REASON)
+        return false
     }
 }
