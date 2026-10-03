@@ -1135,6 +1135,15 @@ class Trackblazer(game: Game) : Campaign(game) {
         return result
     }
 
+    override fun onResumeAfterAbort() {
+        super.onResumeAfterAbort()
+        // Re-read the whole inventory, since an item use or a purchase may have been cut short or made by hand while paused.
+        bInventorySynced = false
+        bIsIrregularTraining = false
+        bHasCheckedIrregularTrainingThisTurn = false
+        bKaleJuiceQueuedThisPass = false
+    }
+
     override fun resetDailyFlags() {
         bUsedWhistleToday = false
         bUsedCharmToday = false
@@ -1150,8 +1159,9 @@ class Trackblazer(game: Game) : Campaign(game) {
             MessageLog.i(TAG, "[TRACKBLAZER] Pending shop check detected! Checking Shop for new items...")
             game.wait(0.5)
             if (openShop()) {
-                bShouldCheckShop = false
                 buyItems(bAfterRacePurchase = true)
+                // Cleared only after the purchase, so a pause that aborts it leaves the shop check pending for the next main screen.
+                bShouldCheckShop = false
             } else {
                 MessageLog.w(TAG, "[WARN] onBeforeMainScreenUpdate:: Failed to open the shop despite pending shop check.")
             }

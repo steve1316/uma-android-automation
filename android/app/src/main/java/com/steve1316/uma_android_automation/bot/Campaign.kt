@@ -2,6 +2,7 @@ package com.steve1316.uma_android_automation.bot
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
@@ -355,6 +356,9 @@ abstract class Campaign(game: Game) : Task(game) {
      * Reset to false when training, resting, racing, or other game-advancing actions complete.
      */
     protected var bHasCheckedDateThisTurn: Boolean = false
+
+    /** True after a resume, so the next main-screen pass re-reads stats and energy even though the date did not change. */
+    protected var bForceTurnStartUpdates: Boolean = false
 
     /**
      * Counts consecutive [performMiscChecks] iterations where [ButtonCancel] matched. The bot only
@@ -1079,6 +1083,28 @@ abstract class Campaign(game: Game) : Task(game) {
      */
     open fun onEndScreenEntry() {
         return
+    }
+
+    /**
+     * Clears per-turn state after a pause, since the step that was running may have been cut short or the user may have played on. The next
+     * tick re-reads the date, the stats, and the screen from scratch, and commit dialogs left open are closed until a known screen is reached.
+     */
+    override fun onResumeAfterAbort() {
+        // The turn-start reads may have been cut short while the log was muted.
+        MessageLog.disableOutput = false
+        MessageLog.i(TAG, "[RESYNC] Resumed after a pause. Re-reading the screen and the turn before acting.")
+        bHasCheckedDateThisTurn = false
+        // Force the turn-start stat reads without re-running resetDailyFlags(), which must only run when the date actually changes.
+        bForceTurnStartUpdates = true
+        bForcedWitTraining = false
+        consecutiveButtonCancelMatches = 0
+        racing.resetAfterAbort()
+        training.clearAnalysisCache()
+        if (SmartRaceSolverIntegration.discardPendingRace()) {
+            MessageLog.i(TAG, "[RESYNC] Dropped the race staged before the pause, since its result was not seen.")
+        }
+        recoveryPolicy.reset()
+        bRecovering = true
     }
 
     /**
@@ -2228,6 +2254,9 @@ abstract class Campaign(game: Game) : Task(game) {
 
                 // Reset scenario-specific daily flags.
                 resetDailyFlags()
+            }
+            if (dateChanged || !trainee.bHasUpdatedStats || bForceTurnStartUpdates) {
+                bForceTurnStartUpdates = false
 
                 // Perform parallel turn-start updates (stats, mood, energy, fans, etc.).
                 performTurnStartUpdates(sourceBitmap)
@@ -2312,74 +2341,78 @@ abstract class Campaign(game: Game) : Task(game) {
         val latch = CountDownLatch(8 + (if (includeRacingThread) 1 else 0) + (if (readStatCaps) 1 else 0))
 
         MessageLog.disableOutput = true
-
-        // Threads 1-5: Update stats.
-        trainee.updateStats(game.imageUtils, sourceBitmap, skillPointsLocation, latch)
-
-        // Thread 6: Update skill points.
-        Thread {
-            try {
-                trainee.updateSkillPoints(game.imageUtils, sourceBitmap, skillPointsLocation)
-            } catch (e: Exception) {
-                MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateSkillPoints thread: ${e.stackTraceToString()}")
-            } finally {
-                latch.countDown()
-            }
-        }.apply { isDaemon = true }.start()
-
-        // Thread 7: Update mood.
-        Thread {
-            try {
-                trainee.updateMood(game.imageUtils, sourceBitmap)
-            } catch (e: Exception) {
-                MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateMood thread: ${e.stackTraceToString()}")
-            } finally {
-                latch.countDown()
-            }
-        }.apply { isDaemon = true }.start()
-
-        // Thread 8: Update racing requirements.
-        if (includeRacingThread) {
-            Thread {
-                try {
-                    racing.checkRacingRequirements(sourceBitmap)
-                } catch (e: Exception) {
-                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in checkRacingRequirements thread: ${e.stackTraceToString()}")
-                } finally {
-                    latch.countDown()
-                }
-            }.apply { isDaemon = true }.start()
-        }
-
-        // Thread 9: Update energy.
-        Thread {
-            try {
-                trainee.updateEnergy(game.imageUtils)
-            } catch (e: Exception) {
-                MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateEnergy thread: ${e.stackTraceToString()}")
-            } finally {
-                latch.countDown()
-            }
-        }.apply { isDaemon = true }.start()
-
-        // Thread 10: Update stat caps (only shown on the main / training screen, and only when dynamic caps are on - otherwise the 5 OCR reads and the misread caps in the log are wasted).
-        if (readStatCaps) {
-            Thread {
-                try {
-                    trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
-                } catch (e: Exception) {
-                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
-                } finally {
-                    latch.countDown()
-                }
-            }.apply { isDaemon = true }.start()
-        }
-
-        // Wait for all threads to complete.
+        // Turn the log back on even when a pause aborts this step while it is starting the reads.
         try {
-            latch.await(10, TimeUnit.SECONDS)
-        } catch (_: InterruptedException) {
-            MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Date change operations threads timed out.")
+            // Threads 1-5: Update stats.
+            trainee.updateStats(game.imageUtils, sourceBitmap, skillPointsLocation, latch)
+
+            // Thread 6: Update skill points.
+            Thread {
+                try {
+                    trainee.updateSkillPoints(game.imageUtils, sourceBitmap, skillPointsLocation)
+                } catch (e: Exception) {
+                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateSkillPoints thread: ${e.stackTraceToString()}")
+                } finally {
+                    latch.countDown()
+                }
+            }.apply { isDaemon = true }.start()
+
+            // Thread 7: Update mood.
+            Thread {
+                try {
+                    trainee.updateMood(game.imageUtils, sourceBitmap)
+                } catch (e: Exception) {
+                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateMood thread: ${e.stackTraceToString()}")
+                } finally {
+                    latch.countDown()
+                }
+            }.apply { isDaemon = true }.start()
+
+            // Thread 8: Update racing requirements.
+            if (includeRacingThread) {
+                Thread {
+                    try {
+                        racing.checkRacingRequirements(sourceBitmap)
+                    } catch (e: Exception) {
+                        MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in checkRacingRequirements thread: ${e.stackTraceToString()}")
+                    } finally {
+                        latch.countDown()
+                    }
+                }.apply { isDaemon = true }.start()
+            }
+
+            // Thread 9: Update energy.
+            Thread {
+                try {
+                    trainee.updateEnergy(game.imageUtils)
+                } catch (e: Exception) {
+                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateEnergy thread: ${e.stackTraceToString()}")
+                } finally {
+                    latch.countDown()
+                }
+            }.apply { isDaemon = true }.start()
+
+            // Thread 10: Update stat caps (only shown on the main / training screen, and only when dynamic caps are on - otherwise the 5 OCR reads and the misread caps in the log are wasted).
+            if (readStatCaps) {
+                Thread {
+                    try {
+                        trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
+                    } catch (e: Exception) {
+                        MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
+                    } finally {
+                        latch.countDown()
+                    }
+                }.apply { isDaemon = true }.start()
+            }
+
+            // Wait for all threads to complete.
+            try {
+                latch.await(10, TimeUnit.SECONDS)
+            } catch (e: InterruptedException) {
+                // A pause abort interrupts this wait on purpose, so let it unwind instead of logging a false timeout.
+                if (BotHold.isAbortRaised) throw e
+                MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Date change operations threads timed out.")
+            }
         } finally {
             MessageLog.disableOutput = false
         }

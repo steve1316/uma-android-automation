@@ -225,6 +225,12 @@ class GrandLive(game: Game) : Campaign(game) {
         }
     }
 
+    override fun onResumeAfterAbort() {
+        super.onResumeAfterAbort()
+        // Re-open Lessons on the next main screen, since a purchase may have been cut short or made by hand while paused.
+        lastLessonScanDay = -1
+    }
+
     override fun checkCampaignSpecificConditions(): Boolean {
         // The concert-day screen shows only the Lessons + Concert buttons (not the main screen), so it is reached here. Handle the live flow.
         // The final concert uses a distinct "Grand Concert" button and a skip-cutscene confirmation, so check it first.

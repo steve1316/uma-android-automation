@@ -519,6 +519,18 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
+     * Clears the per-race retry and popup flags after a pause, since the race they belong to may have been cut short or finished by hand.
+     */
+    fun resetAfterAbort() {
+        encounteredRacingPopup = false
+        raceRepeatWarningCheck = false
+        bRetriedCurrentRace = false
+        retriesThisRace = 0
+        bRetryUntilFirst = false
+        bHasSetTemporaryRunningStyle = false
+    }
+
+    /**
      * Reads which race grades satisfy the active trophy goal from the criteria line above the goal's progress counter.
      *
      * Both the label order and the scale list are cached from the last successful read and retried first. A goal keeps the same wording for as long as it is active, so after the first turn this
