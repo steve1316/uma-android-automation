@@ -196,7 +196,13 @@ class TaskLoopTest {
 
     @Test
     fun aStopDuringTheAcknowledgeEndsTheRunAfterAnInterrupt() {
-        val hooks = FakeHooks(listOf<Step>({ stopDuringAck = true; abort() }, { DONE }))
+        val hooks =
+            FakeHooks(
+                listOf<Step>({
+                    stopDuringAck = true
+                    abort()
+                }, { DONE }),
+            )
         assertEquals(TaskResultCode.TASK_RESULT_MANUALLY_STOPPED, runTaskLoop(hooks).code)
         assertEquals(1, hooks.ackCalls)
         assertEquals(0, hooks.resyncCalls)
