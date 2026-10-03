@@ -15,11 +15,11 @@ internal val RECOVERY_CLOSED_DIALOGS: Set<String> =
         "exchange_complete",
     )
 
-/** Consecutive ticks without a known screen allowed while recovering after a pause, before backing out to the main screen. */
-internal const val RECOVERING_STUCK_LIMIT = 15
-
-/** Consecutive ticks without a known screen allowed in a normal run. High so long cutscenes still pass. */
-internal const val NORMAL_STUCK_LIMIT = 60
+/**
+ * Consecutive ticks without a known screen allowed before backing out to the main screen. A Grand Live post-concert stretch was measured at
+ * 41 such ticks, and the bot gets a second full limit after backing out before it stops.
+ */
+internal const val RECOVERING_STUCK_LIMIT = 40
 
 /** What one tick of `Campaign.process()` found. */
 enum class TickOutcome {
@@ -52,10 +52,9 @@ enum class RecoveryAction {
  * Decides when the bot is lost. It counts consecutive ticks that found no known screen. At the limit the bot backs out to the main screen
  * once. If it is still lost at the limit again, it stops. A known screen or a handled dialog starts the count over.
  *
- * @param recoveringLimit The tick limit while recovering after a pause.
- * @param normalLimit The tick limit in a normal run.
+ * @param limit The tick limit.
  */
-class RecoveryPolicy(private val recoveringLimit: Int = RECOVERING_STUCK_LIMIT, private val normalLimit: Int = NORMAL_STUCK_LIMIT) {
+class RecoveryPolicy(private val limit: Int = RECOVERING_STUCK_LIMIT) {
     /** Consecutive ticks without a known screen since the last progress or back-out. */
     var stuckTicks: Int = 0
         private set
@@ -67,16 +66,14 @@ class RecoveryPolicy(private val recoveringLimit: Int = RECOVERING_STUCK_LIMIT, 
      * Records one tick and says what to do next.
      *
      * @param outcome What the tick found.
-     * @param bRecovering Whether the bot is recovering after a pause, which uses the lower limit.
      * @return What the campaign should do now.
      */
-    fun onTick(outcome: TickOutcome, bRecovering: Boolean): RecoveryAction {
+    fun onTick(outcome: TickOutcome): RecoveryAction {
         if (outcome == TickOutcome.KNOWN || outcome == TickOutcome.DIALOG) {
             reset()
             return RecoveryAction.CONTINUE
         }
         stuckTicks++
-        val limit = if (bRecovering) recoveringLimit else normalLimit
         if (stuckTicks < limit) return RecoveryAction.CONTINUE
         stuckTicks = 0
         if (bTriedReturnToMain) return RecoveryAction.STOP
