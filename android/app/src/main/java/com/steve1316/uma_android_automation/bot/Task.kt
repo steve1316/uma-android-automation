@@ -192,7 +192,8 @@ abstract class Task(game: Game) : DialogHandler(game) {
      * @param timeoutMs The maximum time (in milliseconds) allowed for this operation.
      * @param sourceBitmap Optional screenshot to use for the first dialog check only. Later checks capture fresh screenshots since handling a dialog changes the screen.
      * @return True if at least one dialog was successfully handled, false otherwise.
-     * @throws IllegalStateException If an unhandled dialog is detected.
+     * @throws IllegalStateException If an unhandled dialog is detected outside a recovery.
+     * @throws CampaignBreakpointException If an unhandled dialog cannot be closed while recovering after a pause, which stops the run cleanly.
      */
     fun tryHandleAllDialogs(timeoutMs: Int = 15000, sourceBitmap: Bitmap? = null): Boolean {
         var bWasDialogHandled = false
@@ -211,7 +212,13 @@ abstract class Task(game: Game) : DialogHandler(game) {
         }
 
         if (dialogResult is DialogHandlerResult.Unhandled) {
-            throw IllegalStateException("Unhandled dialog: ${dialogResult.dialog.name}")
+            val dialog = dialogResult.dialog
+            if (!bRecovering) throw IllegalStateException("Unhandled dialog: ${dialog.name}")
+            // After a pause the user may have left any popup open. Close it, or stop with a clear reason instead of crashing.
+            if (!dialog.close(game.imageUtils)) throw CampaignBreakpointException("Unrecognized popup ${dialog.name}")
+            MessageLog.i(TAG, "[RESYNC] Closed the unrecognized \"${dialog.name}\" popup left open from before the pause.")
+            game.wait(0.5)
+            bWasDialogHandled = true
         }
 
         return bWasDialogHandled
