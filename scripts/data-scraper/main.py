@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 from datetime import date
 from typing import List, Dict, Any, Optional, Tuple, Union
-import bisect
 import requests
 from bs4 import BeautifulSoup
 
@@ -553,32 +552,31 @@ class SkillScraper(BaseScraper):
                         logging.error(f"KeyError when parsing skill: {exc}")
                     continue
 
-            # Populate the upgrade/downgrade IDs for every skill from its version chain.
+            # Populate the upgrade/downgrade IDs for every skill from its version chain, ordered from the highest level down.
+            # Gold skills go first because a gold skill can have a higher ID than its white version.
+            rarity_by_id = {s["id"]: s.get("rarity", 1) for s in skill_data if "id" in s}
+            iconid_by_id = {s["id"]: s.get("iconid", 0) for s in skill_data if "id" in s}
             for skill_name, skill in self.data.items():
                 versions = versions_by_name.get(skill_name, [])
                 if not versions:
                     continue
 
-                index = bisect.bisect_left(versions, skill["id"])
-                if index == 0:
-                    # This is the highest level of this skill.
-                    downgrade_version = versions[0]
-                    if downgrade_version in skill_id_to_name:
-                        self.data[skill_name]["downgrade"] = downgrade_version
-                elif index == len(versions):
-                    # This is the lowest level of this skill.
-                    upgrade_version = versions[-1]
-                    if upgrade_version in skill_id_to_name:
-                        self.data[skill_name]["upgrade"] = upgrade_version
-                else:
-                    # Skill has both an upgraded and downgraded variant.
-                    upgrade_version = versions[index - 1]
-                    if upgrade_version in skill_id_to_name:
-                        self.data[skill_name]["upgrade"] = upgrade_version
+                chain = sorted(set(versions) | {skill["id"]})
+                # A gold skill over two or more non-negative white versions (single and double circle) has its own price that
+                # a single upgrade link cannot express, so that chain keeps ID order.
+                bIsGoldOverWhites = any(
+                    rarity_by_id.get(gold, 1) == 2
+                    and sum(1 for i in chain if i != gold and rarity_by_id.get(i, 1) == 1 and iconid_by_id.get(i, 0) % 10 != 4) >= 2
+                    for gold in chain
+                )
+                if not bIsGoldOverWhites:
+                    chain.sort(key=lambda i: (-rarity_by_id.get(i, 1), i))
 
-                    downgrade_version = versions[index]
-                    if downgrade_version in skill_id_to_name:
-                        self.data[skill_name]["downgrade"] = downgrade_version
+                index = chain.index(skill["id"])
+                if index > 0 and chain[index - 1] in skill_id_to_name:
+                    self.data[skill_name]["upgrade"] = chain[index - 1]
+                if index < len(chain) - 1 and chain[index + 1] in skill_id_to_name:
+                    self.data[skill_name]["downgrade"] = chain[index + 1]
 
             self.save_data()
 
