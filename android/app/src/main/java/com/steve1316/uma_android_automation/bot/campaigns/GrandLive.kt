@@ -373,21 +373,9 @@ class GrandLive(game: Game) : Campaign(game) {
             LessonReturn.MAIN -> {
                 // Normal per-turn flow: return to the main screen and confirm it. A single Back can fail to escape this screen (themed Back
                 // button / a leave confirmation), so back out with the same Back/Cancel/Close combo the misc handler uses until main is detected.
-                var returnedToMain = false
-                for (attempt in 0 until 5) {
-                    if (checkMainScreen()) {
-                        returnedToMain = true
-                        if (attempt > 0) MessageLog.i(TAG, "[GRAND_LIVE] Returned to the main screen after Lessons in ${attempt + 1} back-out attempt(s).")
-                        break
-                    }
-                    // At most one of the three is on screen, so share one screenshot across them.
-                    val sourceBitmap = game.imageUtils.getSourceBitmap()
-                    ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
-                    ButtonCancel.click(game.imageUtils, sourceBitmap = sourceBitmap)
-                    ButtonClose.click(game.imageUtils, sourceBitmap = sourceBitmap)
-                    game.wait(game.waitDelay)
-                }
-                if (!returnedToMain) MessageLog.w(TAG, "[GRAND_LIVE] Could not confirm a return to the main screen after Lessons.")
+                val attempt = returnToMain(maxSteps = 5, bHandleDialogs = false)
+                if (attempt > 0) MessageLog.i(TAG, "[GRAND_LIVE] Returned to the main screen after Lessons in ${attempt + 1} back-out attempt(s).")
+                if (attempt < 0) MessageLog.w(TAG, "[GRAND_LIVE] Could not confirm a return to the main screen after Lessons.")
             }
         }
     }

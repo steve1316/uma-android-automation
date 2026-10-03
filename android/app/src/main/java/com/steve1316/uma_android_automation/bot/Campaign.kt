@@ -86,6 +86,9 @@ import org.opencv.core.Point
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+/** Stop reason when the bot cannot find a known career screen while recovering after a pause. */
+private const val STUCK_AFTER_RESUME_REASON = "Could not find a known career screen after resume"
+
 /** Defines an exception for breaking from the main loop when conditions are met.
  *
  * @param message A helpful message describing what breakpoint we hit.
@@ -363,6 +366,9 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Number of consecutive [ButtonCancel] matches required to confirm a real warning popup. */
     private val WARNING_POPUP_CONFIRM_THRESHOLD: Int = 5
+
+    /** Decides when the bot is lost and should back out to the main screen or stop. Reset when resuming after a pause. */
+    private val recoveryPolicy: RecoveryPolicy = RecoveryPolicy()
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1196,6 +1202,28 @@ abstract class Campaign(game: Game) : Task(game) {
         return ButtonHomeFullStats.check(game.imageUtils, sourceBitmap = bitmap) &&
             IconTazuna.check(game.imageUtils, sourceBitmap = bitmap) &&
             ButtonTraining.check(game.imageUtils, sourceBitmap = bitmap)
+    }
+
+    /**
+     * Backs out to the main screen. Each step checks for the main screen, handles any dialog, then taps Back, Cancel, or Close, whichever is on
+     * screen. This covers Lessons, the Unity Cup opponent and result screens, the shop, the skill list, and Close-only dialogs.
+     *
+     * @param maxSteps How many steps to try before giving up.
+     * @param bHandleDialogs Whether to run the dialog handler at each step. A caller backing out of a screen it knows can skip it.
+     * @return The step on which the main screen was found (0 when it was already showing), or -1 when it never was.
+     */
+    fun returnToMain(maxSteps: Int = 6, bHandleDialogs: Boolean = true): Int {
+        for (step in 0 until maxSteps) {
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            if (checkMainScreen(sourceBitmap)) return step
+            if (bHandleDialogs && tryHandleAllDialogs(sourceBitmap = sourceBitmap)) continue
+            // At most one of the three is on screen, so share one screenshot across them.
+            ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            ButtonCancel.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            ButtonClose.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            game.wait(game.waitDelay)
+        }
+        return -1
     }
 
     /**
@@ -2641,6 +2669,53 @@ abstract class Campaign(game: Game) : Task(game) {
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Feeds one tick's outcome to the recovery policy and acts on it. A known screen ends the recovery after a pause. The stuck limit applies only
+     * while recovering after a resume, so a normal run with a long stretch of unknown screens just keeps going as before.
+     *
+     * @param outcome What this tick found.
+     * @return True to carry on with the tick, false when the bot just backed out to the main screen instead.
+     * @throws CampaignBreakpointException If the bot is still lost a full limit after backing out, which stops the run with a clear reason.
+     */
+    private fun recordTick(outcome: TickOutcome): Boolean {
+        if (outcome == TickOutcome.KNOWN) bRecovering = false
+        // KNOWN and DIALOG ticks reset the policy so a later recovery starts clean. MISC and BLIND ticks are only counted while recovering.
+        if (!bRecovering && (outcome == TickOutcome.MISC || outcome == TickOutcome.BLIND)) return true
+        return when (recoveryPolicy.onTick(outcome)) {
+            RecoveryAction.CONTINUE -> true
+            RecoveryAction.RETURN_TO_MAIN -> {
+                MessageLog.i(TAG, "[RESYNC] No known screen for a while. Backing out to the main screen...")
+                val step = returnToMain()
+                if (step < 0) {
+                    // A long cutscene has no Back button, so keep tapping through it. The policy stops the run after another full limit.
+                    MessageLog.i(TAG, "[RESYNC] Could not back out to the main screen. Tapping on before giving up.")
+                    return true
+                }
+                MessageLog.i(TAG, "[RESYNC] Back on the main screen after $step back-out step(s).")
+                false
+            }
+            RecoveryAction.STOP -> throw CampaignBreakpointException(STUCK_AFTER_RESUME_REASON)
+        }
+    }
+
+    /**
+     * Runs a check-and-handle call with the recovery switched off, since a screen handler that acts must confirm its own dialogs. When the
+     * call handled nothing, the recovery is switched back on.
+     *
+     * @param handler The check-and-handle call.
+     * @return True if the call handled a known screen.
+     */
+    private fun handledAsKnownScreen(handler: () -> Boolean): Boolean {
+        val bWasRecovering = bRecovering
+        bRecovering = false
+        if (!handler()) {
+            bRecovering = bWasRecovering
+            return false
+        }
+        recordTick(TickOutcome.KNOWN)
+        return true
+    }
+
+    /**
      * Executes the main processing loop for the campaign task.
      *
      * @return The result of the task execution, or null if the loop should continue.
@@ -2656,12 +2731,17 @@ abstract class Campaign(game: Game) : Task(game) {
             // We always check for dialogs first. A tick with no title bar skips the dialog handler and the same search in checkMainScreen().
             val bDialogVisible = DialogUtils.check(game.imageUtils, sourceBitmap = tickBitmap)
             if (bDialogVisible && tryHandleAllDialogs(sourceBitmap = tickBitmap)) {
+                recordTick(TickOutcome.DIALOG)
                 return null
             }
 
             val bAtMainScreen = !bDialogVisible && checkMainScreen(tickBitmap, bSkipDialogCheck = true)
-            if (bAtMainScreen && handleMainScreen()) {
-                return null
+            if (bAtMainScreen) {
+                // The main screen is a known screen, so the recovery after a pause ends here and its own dialogs are confirmed as usual.
+                recordTick(TickOutcome.KNOWN)
+                if (handleMainScreen()) {
+                    return null
+                }
             }
 
             // handleMainScreen can act and still return false (e.g. it heals an injury, then reports the turn as needing re-evaluation), so the
@@ -2669,9 +2749,11 @@ abstract class Campaign(game: Game) : Task(game) {
             val screenBitmap = if (bAtMainScreen) game.imageUtils.getSourceBitmap() else tickBitmap
 
             if (checkTrainingEventScreen(screenBitmap)) {
+                recordTick(TickOutcome.KNOWN)
                 // If the bot is at the Training Event screen, that means there are selectable options for rewards.
                 handleTrainingEvent()
             } else if (checkMandatoryRacePrepScreen(screenBitmap)) {
+                recordTick(TickOutcome.KNOWN)
                 // If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
                 if (!handleRaceEvents() && racing.detectedMandatoryRaceCheck) {
                     return TaskResult.Success(
@@ -2680,9 +2762,11 @@ abstract class Campaign(game: Game) : Task(game) {
                     )
                 }
             } else if (checkRacingScreen(screenBitmap)) {
+                recordTick(TickOutcome.KNOWN)
                 // If the bot is already at the Racing screen, then complete this standalone race.
                 racing.handleStandaloneRace()
             } else if (checkEndScreen(screenBitmap)) {
+                recordTick(TickOutcome.KNOWN)
                 // Stop when the bot has reached the screen where it details the overall result of the run.
                 // Scenario end-of-career hook (e.g. Grand Live spends its leftover Performance Points in Lessons before completing).
                 onEndScreenEntry()
@@ -2739,16 +2823,19 @@ abstract class Campaign(game: Game) : Task(game) {
                     TaskResultCode.TASK_RESULT_COMPLETE,
                     "Bot has reached end of run. Stopping bot...",
                 )
-            } else if (checkCampaignSpecificConditions()) {
+            } else if (handledAsKnownScreen { checkCampaignSpecificConditions() }) {
                 MessageLog.i(TAG, "[INFO] Campaign-specific checks complete.")
-            } else if (handleInheritanceEvent(miscBitmap)) {
+            } else if (handledAsKnownScreen { handleInheritanceEvent(miscBitmap) }) {
                 // If the bot is at the Inheritance screen, then accept the inheritance.
             } else if (performMiscChecks(miscBitmap)) {
                 MessageLog.i(TAG, "[INFO] Misc checks complete.")
+                recordTick(TickOutcome.MISC)
             } else {
                 MessageLog.i(TAG, "[INFO] Did not detect the bot being at the following screens: Main, Training Event, Inheritance, Mandatory Race Preparation, Racing and Career End.")
-                // Tap to progress any intermediate screens.
-                game.tap(350.0, 450.0, taps = 1)
+                // Tap to progress any intermediate screens, unless the bot just backed out to the main screen because it was lost.
+                if (recordTick(TickOutcome.BLIND)) {
+                    game.tap(350.0, 450.0, taps = 1)
+                }
             }
         } catch (e: CampaignBreakpointException) {
             return TaskResult.Success(
