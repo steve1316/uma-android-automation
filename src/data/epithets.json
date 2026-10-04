@@ -3442,6 +3442,45 @@
         "characters": [],
         "matchers": []
     },
+    "Stalwart Silver": {
+        "name": "Stalwart Silver",
+        "bullet_points": [
+            "Wonder Acute only",
+            "Win the Tokyo Daishoten (Classic)",
+            "Win the Kashiwa Kinen",
+            "Win the Teio Sho",
+            "Win the JBC Classic (Senior)",
+            "Reach 1200 or more Guts"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Wonder Acute"
+        ],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Tokyo Daishoten",
+                "atClass": "Classic",
+                "displayLabel": "Win the Tokyo Daishoten"
+            },
+            {
+                "type": "winRace",
+                "name": "Kashiwa Kinen",
+                "displayLabel": "Win the Kashiwa Kinen"
+            },
+            {
+                "type": "winRace",
+                "name": "Teio Sho",
+                "displayLabel": "Win the Teio Sho"
+            },
+            {
+                "type": "winRace",
+                "name": "JBC Classic",
+                "atClass": "Senior",
+                "displayLabel": "Win the JBC Classic"
+            }
+        ]
+    },
     "Stamina Stockpile": {
         "name": "Stamina Stockpile",
         "bullet_points": [
@@ -3890,6 +3929,21 @@
         ],
         "scenarios": [],
         "characters": [],
+        "matchers": []
+    },
+    "Trueborn Gambler": {
+        "name": "Trueborn Gambler",
+        "bullet_points": [
+            "Nakayama Festa only",
+            "Win both the Takarazuka Kinen and the Japan Cup (Senior)",
+            "Succeed a training that has a failure rate of at least 30%",
+            "Never fail a training during the entire run",
+            "Complete the Career"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Nakayama Festa"
+        ],
         "matchers": []
     },
     "Turf Sorceress": {

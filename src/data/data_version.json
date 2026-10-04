@@ -1,13 +1,13 @@
 {
-    "version": "2026-09-07T00:00:00Z",
-    "label": "Tamamo Cross (Festival) 2026-09-06",
+    "version": "2026-10-04T21:30:11Z",
+    "label": "Daiwa Scarlet (Christmas) 2026-09-28",
     "minAppVersion": "5.8.8",
     "files": {
-        "characters.json": "d707119e487a58dda69ef8f81eec3b72",
-        "supports.json": "6e293fcc4e1179dd588f7e870ebf87bc",
-        "skills.json": "f7b94b12eda742cd3f3b33f3b0550a87",
-        "epithets.json": "14ea7ad740a66b1bbe2970083a615fc2",
-        "characterPresets.json": "384d65e3f4a84f05008e522f9cbd649c",
-        "character_objectives.json": "e67fa1abfb4a91bc78e3d451569908de"
+        "characters.json": "f97bde121dbf4731f3329731d909fdb3",
+        "supports.json": "5bc8bfb980cf74f85d4dd5a9fe9ce32f",
+        "skills.json": "496518c99be4e0003333f96ad24c907a",
+        "epithets.json": "f23c9656ee7c3a4c0851ba09c6380097",
+        "characterPresets.json": "2906aae6175b7a61e38565bc1e018a15",
+        "character_objectives.json": "032a18f68b90da1075a181de4d6ab6f2"
     }
 }
