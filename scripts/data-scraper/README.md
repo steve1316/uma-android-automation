@@ -26,6 +26,8 @@ To exit with code 1 if any scraper or card fetch failed (used by CI):
 python update.py --strict
 ```
 
+Strict mode also fails when the Game8 skill tier list or the umamusu.wiki evaluation points page parses to nothing, which usually means a bot check page was served. Set `FLARESOLVERR_URL` (e.g. `http://localhost:8191`) to load those pages through a [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) browser instead, as CI does.
+
 The script writes its output into [`src/data/`](../../src/data/) regardless of the current working directory (paths are resolved via `Path(__file__).resolve().parents[2] / "src" / "data"`).
 
 ### What this script does:

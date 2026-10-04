@@ -60,6 +60,14 @@ REQUIRED_KEYS = {
     "character_objectives.json": {"name": str, "mandatoryRaces": list},
 }
 
+# Fields a broken source page silently empties, with the value that means empty and a name for the problem message. The merge is
+# additive, so the number of entries with the field filled must never drop.
+FILLED_FIELDS = [
+    ("epithets.json", "characters", [], "character-restricted epithets"),
+    ("skills.json", "community_tier", None, "skills with a community tier"),
+    ("skills.json", "eval_pt", 0, "skills with evaluation points"),
+]
+
 # GameTora's id field for each card kind.
 ID_KEYS = {"character": "card_id", "support": "support_id"}
 
@@ -195,18 +203,20 @@ def _shape_problems(name: str, data: Dict[str, Any]) -> List[str]:
     return problems
 
 
-def _restricted_epithets(epithets: Any) -> int:
-    """Counts the epithets that are limited to specific characters.
+def _filled_count(data: Any, field: str, empty: Any) -> int:
+    """Counts the entries of a data file whose field holds a real value.
 
     Args:
-        epithets (Any): Parsed `epithets.json`, or None when it is missing.
+        data (Any): A parsed data file, or None when it is missing.
+        field (str): The field to look at.
+        empty (Any): The value that means the field was never filled in.
 
     Returns:
-        How many entries have a non-empty `characters` list.
+        How many entries have the field set to something other than `empty`.
     """
-    if not isinstance(epithets, dict):
+    if not isinstance(data, dict):
         return 0
-    return sum(1 for e in epithets.values() if isinstance(e, dict) and e.get("characters"))
+    return sum(1 for e in data.values() if isinstance(e, dict) and e.get(field, empty) not in (empty, None))
 
 
 def find_problems(old: Dict[str, Any], new: Dict[str, Any], fresh: Dict[str, List[dict]]) -> List[str]:
@@ -230,10 +240,11 @@ def find_problems(old: Dict[str, Any], new: Dict[str, Any], fresh: Dict[str, Lis
         if len(after) < len(before):
             problems.append(f"{name}: entry count dropped from {len(before)} to {len(after)}")
         problems.extend(_shape_problems(name, after))
-    restricted_before = _restricted_epithets(old.get("epithets.json"))
-    restricted_after = _restricted_epithets(new.get("epithets.json"))
-    if restricted_after < restricted_before:
-        problems.append(f"epithets.json: character-restricted epithets dropped from {restricted_before} to {restricted_after}")
+    for name, field, empty, what in FILLED_FIELDS:
+        before = _filled_count(old.get(name), field, empty)
+        after = _filled_count(new.get(name), field, empty)
+        if after < before:
+            problems.append(f"{name}: {what} dropped from {before} to {after}")
     for card in fresh["character"]:
         for name in TRAINEE_FILES:
             if card["name_en"] not in (new.get(name) or {}):

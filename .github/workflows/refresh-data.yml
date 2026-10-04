@@ -67,6 +67,12 @@ jobs:
     env:
       # Only master may publish. A run on any other branch is a dry run, so it can never merge unreviewed branch code.
       DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run == true || github.ref != 'refs/heads/master' }}
+    # Game8 serves GitHub's runners a page without its skill tier list, so the scraper loads web pages in this browser instead.
+    services:
+      flaresolverr:
+        image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+        ports:
+          - 8191:8191
     steps:
       - uses: actions/checkout@v4
         with:
@@ -83,8 +89,21 @@ jobs:
       - name: Test the refresh helpers
         run: python -m pytest scripts/data-scraper -q
 
+      - name: Wait for FlareSolverr
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:8191/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "FlareSolverr did not start within 60 seconds" >&2
+          exit 1
+
       - name: Scrape
         shell: bash
+        env:
+          FLARESOLVERR_URL: http://localhost:8191
         run: python -u update.py --strict 2>&1 | tee scrape.log
 
       - name: Upload the scrape log

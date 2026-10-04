@@ -1,3 +1,4 @@
+import pytest
 import requests
 
 import main
@@ -41,3 +42,46 @@ def test_character_presets_use_name_en(monkeypatch):
     scraper = main.CharacterPresetScraper()
     scraper.start()
     assert scraper.data["Test Girl"]["distanceAptitudes"] == {"Sprint": "F", "Mile": "C", "Medium": "A", "Long": "B"}
+
+
+class _FakeResponse:
+    def __init__(self, body):
+        self._body = body
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self._body
+
+
+def test_fetch_soup_goes_through_flaresolverr_when_configured(monkeypatch):
+    calls = []
+
+    def fake_post(url, json, timeout):
+        calls.append((url, json))
+        return _FakeResponse({"status": "ok", "solution": {"status": 200, "response": "<html><h3>SS Tier</h3></html>"}})
+
+    monkeypatch.setenv("FLARESOLVERR_URL", "http://localhost:8191/")
+    monkeypatch.setattr(main.requests, "post", fake_post)
+    soup = main.fetch_soup("https://game8.co/page")
+    assert soup.find("h3").get_text() == "SS Tier"
+    assert calls[0][0] == "http://localhost:8191/v1"
+    assert calls[0][1]["cmd"] == "request.get" and calls[0][1]["url"] == "https://game8.co/page"
+
+
+def test_fetch_soup_raises_when_flaresolverr_page_fails(monkeypatch):
+    monkeypatch.setenv("FLARESOLVERR_URL", "http://localhost:8191")
+    monkeypatch.setattr(main.requests, "post", lambda url, json, timeout: _FakeResponse({"status": "ok", "solution": {"status": 403, "response": ""}}))
+    monkeypatch.setattr(main.requests, "get", lambda *args, **kwargs: pytest.fail("fetched over plain HTTP"))
+    with pytest.raises(requests.exceptions.HTTPError):
+        main.fetch_soup("https://game8.co/page")
+
+
+def test_empty_source_page_is_recorded_as_a_failure():
+    main._run_failures.clear()
+    assert main.record_if_empty("Game8 skill tier list", {}) == {}
+    assert main._run_failures == ["Game8 skill tier list: no rows parsed"]
+    main._run_failures.clear()
+    main.record_if_empty("Game8 skill tier list", {"Skill": 0})
+    assert main._run_failures == []

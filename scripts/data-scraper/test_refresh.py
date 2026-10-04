@@ -216,3 +216,19 @@ def test_find_problems_flags_emptied_epithet_restrictions():
     }
     problems = refresh.find_problems(old, new, {"character": [], "support": []})
     assert "epithets.json: character-restricted epithets dropped from 1 to 0" in problems
+
+
+def test_find_problems_flags_lost_skill_tiers_and_evaluation_points():
+    old = json.loads(json.dumps(GOOD))
+    old["skills.json"] = {
+        "Skill A": {"id": 1, "name_en": "Skill A", "icon_id": 10011, "community_tier": 0, "eval_pt": 120},
+        "Skill B": {"id": 2, "name_en": "Skill B", "icon_id": 10012, "community_tier": 2, "eval_pt": 0},
+    }
+    new = json.loads(json.dumps(old))
+    for skill in new["skills.json"].values():
+        skill["community_tier"] = None
+        skill["eval_pt"] = 0
+    problems = refresh.find_problems(old, new, {"character": [], "support": []})
+    assert "skills.json: skills with a community tier dropped from 2 to 1" not in problems
+    assert "skills.json: skills with a community tier dropped from 2 to 0" in problems
+    assert "skills.json: skills with evaluation points dropped from 1 to 0" in problems

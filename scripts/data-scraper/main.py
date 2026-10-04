@@ -38,6 +38,9 @@ GAMETORA_SERVER_PAIR_PATTERN = re.compile(r'([a-z_]+):"(pre_[a-z0-9_]+|present)"
 # Browser-like User-Agent for the plain-HTTP scrapes (some sites reject the default requests UA).
 HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
 
+# How long FlareSolverr may take to load one page, bot check included.
+FLARESOLVERR_TIMEOUT_MS = 90_000
+
 # Module-level run state: the GameTora manifest index and per-dataset manifest data, each fetched once per run and reused across scrapers.
 _manifest_index_cache = None
 _manifest_data_cache = {}
@@ -246,8 +249,48 @@ def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     return _manifest_data_cache[manifest_name]
 
 
+def record_if_empty(source: str, rows: Dict[Any, Any]) -> Dict[Any, Any]:
+    """Records a run failure when a scraped page yielded nothing, which usually means a bot check page was served instead.
+
+    Args:
+        source (str): The page's name for the failure message.
+        rows (Dict[Any, Any]): What was parsed from the page.
+
+    Returns:
+        `rows`, unchanged.
+    """
+    if not rows:
+        logging.error(f"{source} returned no rows. The site may have served a bot check page.")
+        _run_failures.append(f"{source}: no rows parsed")
+    return rows
+
+
+def fetch_via_flaresolverr(endpoint: str, url: str) -> str:
+    """Loads a page in FlareSolverr's browser, which passes the bot checks some sites show datacenter addresses such as GitHub's runners.
+
+    Args:
+        endpoint (str): FlareSolverr's base URL, such as `http://localhost:8191`.
+        url (str): The page URL to fetch.
+
+    Raises:
+        requests.exceptions.RequestException: When FlareSolverr fails or the page does not return a 2xx status.
+
+    Returns:
+        The page HTML.
+    """
+    response = requests.post(f"{endpoint.rstrip('/')}/v1", json={"cmd": "request.get", "url": url, "maxTimeout": FLARESOLVERR_TIMEOUT_MS}, timeout=FLARESOLVERR_TIMEOUT_MS / 1000 + 30)
+    response.raise_for_status()
+    body = response.json()
+    if body.get("status") != "ok":
+        raise requests.exceptions.RequestException(f"FlareSolverr could not load {url}: {body.get('message', 'no message')}")
+    solution = body["solution"]
+    if not 200 <= solution["status"] < 300:
+        raise requests.exceptions.HTTPError(f"{solution['status']} from {url} via FlareSolverr")
+    return solution["response"]
+
+
 def fetch_soup(url: str) -> BeautifulSoup:
-    """Fetches a page over plain HTTP and returns its parsed HTML tree.
+    """Fetches a page and returns its parsed HTML tree. Goes through FlareSolverr when `FLARESOLVERR_URL` is set, else plain HTTP.
 
     Args:
         url (str): The page URL to fetch.
@@ -255,6 +298,9 @@ def fetch_soup(url: str) -> BeautifulSoup:
     Returns:
         The parsed HTML as a BeautifulSoup tree.
     """
+    flaresolverr = os.environ.get("FLARESOLVERR_URL")
+    if flaresolverr:
+        return BeautifulSoup(fetch_via_flaresolverr(flaresolverr, url), "lxml")
     response = requests.get(url, headers=HTTP_HEADERS, timeout=30)
     response.raise_for_status()
     return BeautifulSoup(response.text, "lxml")
@@ -498,8 +544,8 @@ class SkillScraper(BaseScraper):
         self.data = {}
 
         # Get supplementary data for later use.
-        skill_evaluation_points = self.scrape_skill_evaluation_points()
-        skill_to_tier_map = self.scrape_skill_tier_list()
+        skill_evaluation_points = record_if_empty("umamusu.wiki skill evaluation points", self.scrape_skill_evaluation_points())
+        skill_to_tier_map = record_if_empty("Game8 skill tier list", self.scrape_skill_tier_list())
         # Lowercase the tier-list keys for case-insensitive lookups across sources.
         skill_to_tier_map_lowercase = {k.lower(): k for k in skill_to_tier_map.keys()}
 
