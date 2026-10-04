@@ -909,6 +909,13 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "ura-avoid-max-happy-meek",
+        title: "URA Avoid Maxing Happy Meek",
+        description:
+            "For parent farming. Once Happy Meek reaches Duel Lvl 5, URA Finale training stops using her facility so she never reaches MAX and the Finals Happy Meek stays at normal strength.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "trackblazer-energy-threshold",
         title: "Trackblazer Energy Threshold",
         description: "The energy level below which the bot will attempt to use energy-restoring items in the Trackblazer scenario.",
