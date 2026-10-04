@@ -2690,8 +2690,9 @@ abstract class Campaign(game: Game) : Task(game) {
                         )
 
                     val cleanedFans = fansText.replace(Regex("[^0-9]"), "")
-                    if (cleanedFans.isNotEmpty()) {
-                        trainee.fans = cleanedFans.toInt()
+                    val fans = cleanedFans.toIntOrNull()
+                    if (fans != null) {
+                        trainee.fans = fans
                     } else {
                         MessageLog.w(TAG, "[WARN] process:: Could not detect final fan count for the end of the Career from OCR: $fansText")
                     }
