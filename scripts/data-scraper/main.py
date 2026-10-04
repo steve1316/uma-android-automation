@@ -483,6 +483,12 @@ class SkillScraper(BaseScraper):
                             continue
                         res[skill_name] = tier_name
 
+        if not res:
+            # Show what was served instead, since some networks get a different page with no tier headers.
+            title = soup.title.get_text(strip=True) if soup.title else None
+            headers = [h.get_text(strip=True) for h in soup.find_all(["h1", "h2", "h3"])][:5]
+            logging.error(f"Game8 tier list page had no tier headers. Title: {title!r}, size: {len(str(soup))} chars, first headers: {headers}")
+
         # Fix tier-list misspellings so names match GameTora. Add an entry if a skill warns as unknown.
         rename_map = {
             "Let's Pump Some Iron": "Let's Pump Some Iron!",
