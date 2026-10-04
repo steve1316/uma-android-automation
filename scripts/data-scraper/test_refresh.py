@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import refresh
@@ -135,3 +135,69 @@ def test_write_data_version_hashes_every_updatable_file(tmp_path, monkeypatch):
     assert stamp["version"] == "2026-10-04T12:00:05Z"
     assert stamp["minAppVersion"] == refresh.MIN_APP_VERSION
     assert sorted(stamp["files"]) == sorted(refresh.UPDATABLE_FILES)
+
+
+def _finalize_env(tmp_path, monkeypatch, fresh, included):
+    """Points `refresh` at tmp files so `main` runs offline.
+
+    Args:
+        tmp_path: The pytest tmp directory.
+        monkeypatch: The pytest monkeypatch fixture.
+        fresh: The cards `_fresh_cards` should return.
+        included: The starting `included_cards.json` contents.
+
+    Returns:
+        The path `GITHUB_OUTPUT` points at.
+    """
+    for name in refresh.UPDATABLE_FILES:
+        (tmp_path / name).write_text("{}\n", encoding="utf-8")
+    included_path = tmp_path / "included_cards.json"
+    included_path.write_text(json.dumps(included), encoding="utf-8")
+    out = tmp_path / "gh_output"
+    monkeypatch.setattr(refresh, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(refresh, "DATA_VERSION_PATH", tmp_path / "data_version.json")
+    monkeypatch.setattr(refresh, "INCLUDED_CARDS_PATH", included_path)
+    monkeypatch.setattr(refresh, "_fresh_cards", lambda today: fresh)
+    monkeypatch.setenv("GITHUB_OUTPUT", str(out))
+    return out
+
+
+def test_finalize_without_data_change_records_new_card_ids(tmp_path, monkeypatch):
+    out = _finalize_env(tmp_path, monkeypatch, FRESH, {"character": [1], "support": [2]})
+    assert refresh.main(["finalize", "--data-changed", "false"]) == 0
+    lines = out.read_text(encoding="utf-8").splitlines()
+    assert "commit=true" in lines
+    assert f"subject=Record cards released up to {date.today().isoformat()}" in lines
+    assert json.loads((tmp_path / "included_cards.json").read_text(encoding="utf-8")) == {"character": [1, 100846, 104901], "support": [2, 30125]}
+    assert not (tmp_path / "data_version.json").exists()
+
+
+def test_finalize_with_data_change_stamps_version(tmp_path, monkeypatch):
+    out = _finalize_env(tmp_path, monkeypatch, FRESH, {"character": [], "support": []})
+    assert refresh.main(["finalize", "--data-changed", "true"]) == 0
+    lines = out.read_text(encoding="utf-8").splitlines()
+    assert "commit=true" in lines
+    assert "subject=Update game data up to Vodka (Christmas) 2026-09-28" in lines
+    assert (tmp_path / "data_version.json").exists()
+
+
+def test_finalize_with_nothing_new_does_not_commit(tmp_path, monkeypatch):
+    none = {"character": [], "support": []}
+    out = _finalize_env(tmp_path, monkeypatch, none, {"character": [1], "support": [2]})
+    assert refresh.main(["finalize", "--data-changed", "false"]) == 0
+    assert "commit=false" in out.read_text(encoding="utf-8").splitlines()
+    assert not (tmp_path / "data_version.json").exists()
+
+
+def test_check_fails_when_head_copy_is_unreadable(monkeypatch, capsys):
+    def fake_load(at_head):
+        data = json.loads(json.dumps(GOOD))
+        data = {name: data.get(name, {}) for name in refresh.UPDATABLE_FILES}
+        if at_head:
+            data["supports.json"] = None
+        return data
+
+    monkeypatch.setattr(refresh, "_load_data", fake_load)
+    monkeypatch.setattr(refresh, "_fresh_cards", lambda today: {"character": [], "support": []})
+    assert refresh.main(["check"]) == 1
+    assert "supports.json: could not read the HEAD copy" in capsys.readouterr().out

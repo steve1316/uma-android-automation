@@ -398,7 +398,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
 
     if args.command == "check":
-        problems = find_problems(_load_data(at_head=True), _load_data(at_head=False), _fresh_cards(today))
+        old = _load_data(at_head=True)
+        problems = find_problems(old, _load_data(at_head=False), _fresh_cards(today))
+        # An unreadable HEAD copy would turn the shrink gate off for that file, so fail instead.
+        problems += [f"{name}: could not read the HEAD copy" for name in UPDATABLE_FILES if old.get(name) is None]
         for problem in problems:
             print(f"::error::{problem}")
         print(f"check: {len(problems)} problem(s)")
