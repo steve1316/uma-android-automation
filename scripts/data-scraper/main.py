@@ -4,6 +4,7 @@ import time
 import math
 import logging
 import os
+import sys
 from pathlib import Path
 from datetime import date
 from typing import List, Dict, Any, Optional, Tuple, Union
@@ -50,6 +51,9 @@ _event_char_names = None
 _event_status_names = None
 _event_race_names = None
 _event_event_names = None
+
+# Failures recorded during this run. With `--strict` any entry makes the run exit 1, so CI never commits a partial scrape.
+_run_failures: List[str] = []
 
 # Training-event reward rendering, mirroring GameTora's own English templates. A reward is {"t": code, "v": value, "d": id}.
 # `di` splits a choice into "Randomly either" outcome groups. Energy scales with a support card's Event Recovery, while
@@ -103,7 +107,7 @@ SUPPORT_CARD_NAME_OVERRIDES = {"The Throne's Assemblage": "Heirs to the Throne"}
 def run_scraper_with_retry(scraper, retries: int = 2, backoff: float = 5.0):
     """Runs a scraper's start() with retries so a transient network failure doesn't abort the whole run.
 
-    A scraper that still fails after its retries is skipped rather than fatal, so the scrapers after it continue.
+    A scraper that still fails after its retries is skipped rather than fatal, so the scrapers after it continue. The failure is recorded in `_run_failures`.
 
     Args:
         scraper: The scraper instance to run.
@@ -121,10 +125,12 @@ def run_scraper_with_retry(scraper, retries: int = 2, backoff: float = 5.0):
                 time.sleep(backoff)
             else:
                 logging.error(f"{name} failed after {retries + 1} attempts; skipping. Error: {exc}")
+                _run_failures.append(f"{name}: {exc.__class__.__name__}: {exc}")
                 return
         except Exception as exc:
             # A non-network bug won't be fixed by retrying, but it must not kill the scrapers that follow.
             logging.error(f"{name} raised a non-retryable error; skipping. Error: {exc}")
+            _run_failures.append(f"{name}: {exc.__class__.__name__}: {exc}")
             return
 
 
@@ -985,6 +991,7 @@ class CharacterScraper(TrainingEventScraper):
                 events = fetch_gametora_event_data("characters", card["url_name"])
             except (requests.exceptions.RequestException, ValueError) as exc:
                 logging.warning(f"Skipping character card {card['url_name']} ({exc.__class__.__name__}).")
+                _run_failures.append(f"character card {card['url_name']}: {exc.__class__.__name__}: {exc}")
                 continue
             char_events = self.data.setdefault(char_name, {})
             self._ingest_events(char_events, ((cat, events.get(cat) or []) for cat in self.CHOICE_CATEGORIES), char_name, 1.0, 1.0)
@@ -1047,6 +1054,7 @@ class SupportCardScraper(TrainingEventScraper):
                 events = fetch_gametora_event_data("supports", card["url_name"])
             except (requests.exceptions.RequestException, ValueError) as exc:
                 logging.warning(f"Skipping support card {card['url_name']} ({exc.__class__.__name__}).")
+                _run_failures.append(f"support card {card['url_name']}: {exc.__class__.__name__}: {exc}")
                 continue
             char_name = SUPPORT_CARD_NAME_OVERRIDES.get(card["char_name"], card["char_name"])
             energy_mult, stat_mult = self._event_multipliers(card)
@@ -2137,3 +2145,8 @@ if __name__ == "__main__":
 
     end_time = round(time.time() - start_time, 2)
     logging.info(f"Total time for processing all applications: {end_time} seconds or {round(end_time / 60, 2)} minutes.")
+
+    if _run_failures:
+        logging.error(f"{len(_run_failures)} scrape failure(s): " + "; ".join(_run_failures))
+        if "--strict" in sys.argv[1:]:
+            sys.exit(1)

@@ -5,23 +5,25 @@ This directory contains the Python scraper that produces the game-data JSON file
 ## Prerequisites
 
 - **Python 3.10+**: Ensure you have Python installed and added to your PATH.
-- **Google Chrome**: Required for scraping data via Selenium.
-- **Chrome Driver**: Selenium will attempt to manage this automatically, but ensure your Chrome is up to date.
 
-## Installation
+## Installation and Running
 
-Install the required Python dependencies using `pip`:
+Plain HTTP only. Install the required Python dependencies using `pip`:
 
 ```bash
-pip install -r scripts/data-scraper/requirements.txt
+pip install -r requirements.txt
 ```
 
-## Updating Game Data
-
-To update all game data files (`skills.json`, `characters.json`, `supports.json`, `races.json`, `epithets.json`, and `characterPresets.json`), run the following command from the repo root:
+Then update all game data files (`skills.json`, `characters.json`, `supports.json`, `races.json`, `epithets.json`, and `characterPresets.json`) by running from the repo root:
 
 ```bash
-python scripts/data-scraper/main.py
+python update.py
+```
+
+To exit with code 1 if any scraper or card fetch failed (used by CI):
+
+```bash
+python update.py --strict
 ```
 
 The script writes its output into [`src/data/`](../../src/data/) regardless of the current working directory (paths are resolved via `Path(__file__).resolve().parents[2] / "src" / "data"`).
