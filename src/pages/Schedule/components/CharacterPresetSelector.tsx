@@ -4,7 +4,7 @@ import { useTheme } from "../../../context/ThemeContext"
 import { RacingContext, defaultSettings } from "../../../context/BotStateContext"
 import { Input } from "../../../components/ui/input"
 import { APTITUDE_RANKS, CharacterPresetEntry } from "../../../lib/solver/constants"
-import characterPresetsData from "../../../data/characterPresets.json"
+import characterPresetsData from "../../../data/live/characterPresets"
 import { SPACING } from "../../../lib/spacing"
 
 /** All character presets from the bundled data, computed once. */

@@ -15,6 +15,8 @@ module.exports = {
             modulePathIgnorePatterns: ignoreKotlinJsIntermediates,
             moduleNameMapper: {
                 "^@/(.*)$": "<rootDir>/$1",
+                // expo-file-system ships ESM that this project cannot parse. The live data modules import it, so map it to a stub.
+                "^expo-file-system$": "<rootDir>/jest/expoFileSystemStub.js",
             },
             modulePaths: ["<rootDir>/src"],
             transform: {

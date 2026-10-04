@@ -129,7 +129,7 @@ export const useBootstrap = () => {
         try {
             logWithTimestamp("[Bootstrap] Starting skills data population...")
 
-            const skillsData = require("../data/skills.json")
+            const skillsData = require("../data/live/skills").default
             await yieldToFrame()
 
             // Convert skills.json data to database format.
@@ -175,7 +175,7 @@ export const useBootstrap = () => {
         try {
             logWithTimestamp("[Bootstrap] Starting solver data population...")
 
-            const epithetsData = require("../data/epithets.json")
+            const epithetsData = require("../data/live/epithets").default
             await yieldToFrame()
             await databaseManager.saveSetting("racing", "epithetsData", epithetsData, true)
             logWithTimestamp(`[Bootstrap] Successfully saved epithets data (${Object.keys(epithetsData).length} epithets) to SQLite`)
@@ -187,13 +187,13 @@ export const useBootstrap = () => {
             logWithTimestamp(`[Bootstrap] Successfully saved races data (${Object.keys(racesData).length} races) to SQLite`)
             await yieldToFrame()
 
-            const characterPresetsData = require("../data/characterPresets.json")
+            const characterPresetsData = require("../data/live/characterPresets").default
             await yieldToFrame()
             await databaseManager.saveSetting("racing", "characterPresetsData", characterPresetsData, true)
             logWithTimestamp(`[Bootstrap] Successfully saved character presets data (${Object.keys(characterPresetsData).length} presets) to SQLite`)
             await yieldToFrame()
 
-            const characterObjectivesData = require("../data/character_objectives.json")
+            const characterObjectivesData = require("../data/live/characterObjectives").default
             await yieldToFrame()
             await databaseManager.saveSetting("racing", "characterObjectivesData", characterObjectivesData, true)
             logWithTimestamp(`[Bootstrap] Successfully saved character objectives data (${Object.keys(characterObjectivesData).length} characters) to SQLite`)
@@ -215,13 +215,13 @@ export const useBootstrap = () => {
 
             // Lazy-require each large bundled JSON between yields so each parse and write
             // happens on its own frame instead of all in one main-thread block.
-            const charactersData = require("../data/characters.json")
+            const charactersData = require("../data/live/characters").default
             await yieldToFrame()
             await databaseManager.saveSetting("trainingEvent", "characterEventData", charactersData, true)
             logWithTimestamp(`[Bootstrap] Successfully saved character event data (${Object.keys(charactersData).length} characters) to SQLite`)
             await yieldToFrame()
 
-            const supportsData = require("../data/supports.json")
+            const supportsData = require("../data/live/supports").default
             await yieldToFrame()
             await databaseManager.saveSetting("trainingEvent", "supportEventData", supportsData, true)
             logWithTimestamp(`[Bootstrap] Successfully saved support event data (${Object.keys(supportsData).length} supports) to SQLite`)

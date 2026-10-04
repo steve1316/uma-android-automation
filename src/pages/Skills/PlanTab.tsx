@@ -22,7 +22,7 @@ import { ModalHeader } from "../../components/ui/modal-header"
 import CustomButton from "../../components/CustomButton"
 import CustomScrollView from "../../components/CustomScrollView"
 import WarningContainer from "../../components/WarningContainer"
-import skillsData from "../../data/skills.json"
+import skillsData from "../../data/live/skills"
 import icons from "./icons"
 
 /** Represents a skill entry from the `skills.json` data file. */

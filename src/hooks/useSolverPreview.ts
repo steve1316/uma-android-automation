@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import racesData from "../data/races.json"
-import epithetsData from "../data/epithets.json"
-import characterObjectivesData from "../data/character_objectives.json"
+import epithetsData from "../data/live/epithets"
+import characterObjectivesData from "../data/live/characterObjectives"
 import { previewSchedule, SchedulePreview, SolverConfigSnapshot } from "../lib/solver/preview"
 
 // Stringify the bundled JSON once at module load so we don't pay the serialisation cost on every preview call.
