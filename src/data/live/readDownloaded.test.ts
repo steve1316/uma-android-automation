@@ -1,28 +1,6 @@
-// In-memory stand-in for expo-file-system, keyed by uri.
-const mockFiles: Record<string, string> = {}
-
-jest.mock("expo-file-system", () => {
-    const join = (parts: any[]) => parts.map((p) => (typeof p === "string" ? p : p.uri)).join("/")
-    class Directory {
-        uri: string
-        constructor(...parts: any[]) {
-            this.uri = join(parts)
-        }
-    }
-    class File {
-        uri: string
-        constructor(...parts: any[]) {
-            this.uri = join(parts)
-        }
-        get exists() {
-            return this.uri in mockFiles
-        }
-        textSync() {
-            return mockFiles[this.uri]
-        }
-    }
-    return { Directory, File, Paths: { document: { uri: "doc" } } }
-})
+// expo-file-system maps to the shared in-memory fake in jest/expoFileSystemStub.js.
+const { mockFileSystem, resetMockFileSystem } = require("../../../jest/expoFileSystemStub")
+const mockFiles: Record<string, string> = mockFileSystem.files
 
 /**
  * Loads a fresh copy of the module so its memoized active version is reset.
@@ -38,9 +16,7 @@ const load = () => {
 
 const bundled = require("../data_version.json")
 
-beforeEach(() => {
-    for (const key of Object.keys(mockFiles)) delete mockFiles[key]
-})
+beforeEach(() => resetMockFileSystem())
 
 test("uses the bundled data when nothing was downloaded", () => {
     const mod = load()
