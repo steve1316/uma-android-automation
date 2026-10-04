@@ -33,6 +33,7 @@ import DiscordSettings from "./pages/DiscordSettings"
 import LLMSettings from "./pages/LLMSettings"
 import Chat from "./pages/Chat"
 import DrawerContent from "./components/DrawerContent"
+import DataUpdateDialog from "./components/DataUpdateDialog"
 import { NAV_THEME } from "./lib/navTheme"
 
 export const Tag = "UAA"
@@ -109,6 +110,7 @@ function AppWithBootstrap({ theme, colors }: { theme: string; colors: any }) {
             <NavigationContainer theme={NAV_THEME[theme as "light" | "dark"]}>
                 <StatusBar style={theme === "light" ? "dark" : "light"} />
                 {isFirstRun ? <FirstRunWizard onComplete={markComplete} /> : <MainDrawer />}
+                {!isFirstRun && <DataUpdateDialog />}
                 <PortalHost />
             </NavigationContainer>
         </SafeAreaView>

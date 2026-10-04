@@ -2,7 +2,7 @@ import { useContext, useMemo, useState, useCallback, useRef, useEffect } from "r
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native"
 import { CalendarDays, RefreshCw, RotateCcw } from "lucide-react-native"
 import racesData from "../../data/races.json"
-import characterObjectivesData from "../../data/character_objectives.json"
+import characterObjectivesData from "../../data/live/characterObjectives"
 import { RacingContext, GeneralMiscContext, defaultSettings } from "../../context/BotStateContext"
 import { useTheme } from "../../context/ThemeContext"
 import { SearchPageProvider } from "../../context/SearchPageContext"

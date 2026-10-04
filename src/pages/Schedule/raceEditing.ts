@@ -1,5 +1,5 @@
 import racesData from "../../data/races.json"
-import epithetsData from "../../data/epithets.json"
+import epithetsData from "../../data/live/epithets"
 import {
     isRaceEligible,
     epithetsForRace,

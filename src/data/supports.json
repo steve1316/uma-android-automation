@@ -104,6 +104,16 @@
         ],
         "(❯❯❯)\nDynamic Duo": [
             "Power +10\nWit +10\nLie in Wait hint +1\nAir Groove bond +5"
+        ],
+        "(❯)\nGreat, Another Headache": [
+            "Randomly either\n----------\nSpeed +7\nWit +7\nAir Groove bond +5\n----------\n\n----------\nSpeed +10\nWit +10\nAir Groove bond +10"
+        ],
+        "(❯❯)\nA Use for the Blaze": [
+            "Skill points +20\nStudious hint +1\nPace Strategy hint +1\nAir Groove bond +5",
+            "Energy +20\nWit +10\nAir Groove bond +5"
+        ],
+        "(❯❯❯)\nTwinkles of One Wintry Eve": [
+            "Speed +10\nWit +10\nFast & Furious hint +2\nAir Groove bond +5"
         ]
     },
     "Air Shakur": {
@@ -386,6 +396,16 @@
         ],
         "(❯❯)\nA Good Friend": [
             "Energy +20\nHomestretch Haste hint +1"
+        ],
+        "(❯)\nOne Should Give Gals Their Care": [
+            "Maximum Energy +4\nEnergy +10\nSkill points +10\nEishin Flash bond +5"
+        ],
+        "(❯❯)\nOne Should Show Umadols Their Utmost": [
+            "Speed +15\nWit +10\nPosition Pilfer hint +1\nEishin Flash bond +5",
+            "Randomly either\n----------\nEnergy +30\nPower +10\nEishin Flash bond +5\n----------\n\n----------\nEnergy +10\nPower +5\nEishin Flash bond +5"
+        ],
+        "(❯❯❯)\nOne Should Share Friends' Hometown Love": [
+            "Randomly either\n----------\nEnergy +10\nSpeed +5\nSkill points +5\nSharp Streak hint +1\nEishin Flash bond +5\n----------\n\n----------\nEnergy +20\nSpeed +10\nSkill points +10\nSharp Streak hint +3\nEishin Flash bond +5"
         ]
     },
     "El Condor Pasa": {
@@ -1363,6 +1383,16 @@
         ],
         "(❯❯❯)\nRunning for the Dream": [
             "Energy -10\nSpeed +20\nShatterproof hint +1"
+        ],
+        "(❯)\nThe Blazing Chaos of the Morning Star": [
+            "Stamina +10\nPower +10\nNarita Brian bond +5",
+            "Energy +15\nMood +1\nNarita Brian bond +5"
+        ],
+        "(❯❯)\nA Yet Unnoticed Light": [
+            "Stamina +10\nPower +10\nMy True Strength hint +1\nNarita Brian bond +5"
+        ],
+        "(❯❯❯)\nClumsy Pair": [
+            "Randomly either\n----------\nStamina +15\nPower +15\nHot Pursuit hint +3\nNarita Brian bond +5\n----------\n\n----------\nStamina +7\nPower +7\nHot Pursuit hint +1\nNarita Brian bond +5"
         ]
     },
     "Narita Taishin": {
@@ -1409,6 +1439,13 @@
         ],
         "(❯❯❯)\nRivals Know Best": [
             "Energy -10\nSpeed +15\nStamina +15\nSkill points +20\nFirm Course Menace hint +1\nNarita Top Road bond +5"
+        ],
+        "(❯)\nDon't Go Overboard!": [
+            "Energy -5\nStamina +10\nPower +10\nInner Post Proficiency ○ hint +1\nNarita Top Road bond +5",
+            "Energy +10\nSkill points +15\nNarita Top Road bond +5"
+        ],
+        "(❯❯)\nGoing Overboard for You!": [
+            "Stamina +10\nPower +10\nSkill points +15\nNarita Top Road bond +5"
         ]
     },
     "Nice Nature": {
@@ -1667,6 +1704,26 @@
         ],
         "(❯❯❯)\nI Gift You Fun and Joy!": [
             "Randomly either\n----------\nGuts +10\nWit +10\nStep on the Gas! hint +3\nSakura Chiyono O bond +5\n----------\n\n----------\nGuts +5\nWit +5\nAcceleration hint +2/+3\nSakura Chiyono O bond +5"
+        ]
+    },
+    "Sakura Laurel": {
+        "Stay Positive at All Times!": [
+            "Stamina +15\nSakura Laurel bond +5",
+            "Mood +2\nSakura Laurel bond +5"
+        ],
+        "Stay Positive in All Situations!": [
+            "Energy +10\nSakura Laurel bond +5",
+            "Subdued Pace Chasers hint +1\nSakura Laurel bond +5"
+        ],
+        "(❯)\nMarvelously Grown-Up": [
+            "Stamina +5\nGuts +5\nSakura Laurel bond +5"
+        ],
+        "(❯❯)\nThe Secret to Staying Positive": [
+            "Stamina +10\nGuts +5\nSakura Laurel bond +5",
+            "Be Still hint +2\nSakura Laurel bond +5"
+        ],
+        "(❯❯❯)\nGuess We're Trapped": [
+            "Stamina +10\nDauntless hint +1\nSakura Laurel bond +5"
         ]
     },
     "Sasami Anshinzawa": {

@@ -4,6 +4,7 @@ import time
 import math
 import logging
 import os
+import sys
 from pathlib import Path
 from datetime import date
 from typing import List, Dict, Any, Optional, Tuple, Union
@@ -37,6 +38,13 @@ GAMETORA_SERVER_PAIR_PATTERN = re.compile(r'([a-z_]+):"(pre_[a-z0-9_]+|present)"
 # Browser-like User-Agent for the plain-HTTP scrapes (some sites reject the default requests UA).
 HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
 
+# How long FlareSolverr may take to load one page, bot check included.
+FLARESOLVERR_TIMEOUT_MS = 90_000
+
+# How long FlareSolverr waits after loading before returning the page. Game8 first serves an AWS WAF JavaScript check that FlareSolverr
+# does not recognize, and the real page only loads once that script has run.
+FLARESOLVERR_WAIT_SECONDS = 10
+
 # Module-level run state: the GameTora manifest index and per-dataset manifest data, each fetched once per run and reused across scrapers.
 _manifest_index_cache = None
 _manifest_data_cache = {}
@@ -50,6 +58,9 @@ _event_char_names = None
 _event_status_names = None
 _event_race_names = None
 _event_event_names = None
+
+# Failures recorded during this run. With `--strict` any entry makes the run exit 1, so CI never commits a partial scrape.
+_run_failures: List[str] = []
 
 # Training-event reward rendering, mirroring GameTora's own English templates. A reward is {"t": code, "v": value, "d": id}.
 # `di` splits a choice into "Randomly either" outcome groups. Energy scales with a support card's Event Recovery, while
@@ -103,7 +114,7 @@ SUPPORT_CARD_NAME_OVERRIDES = {"The Throne's Assemblage": "Heirs to the Throne"}
 def run_scraper_with_retry(scraper, retries: int = 2, backoff: float = 5.0):
     """Runs a scraper's start() with retries so a transient network failure doesn't abort the whole run.
 
-    A scraper that still fails after its retries is skipped rather than fatal, so the scrapers after it continue.
+    A scraper that still fails after its retries is skipped rather than fatal, so the scrapers after it continue. The failure is recorded in `_run_failures`.
 
     Args:
         scraper: The scraper instance to run.
@@ -121,10 +132,12 @@ def run_scraper_with_retry(scraper, retries: int = 2, backoff: float = 5.0):
                 time.sleep(backoff)
             else:
                 logging.error(f"{name} failed after {retries + 1} attempts; skipping. Error: {exc}")
+                _run_failures.append(f"{name}: {exc.__class__.__name__}: {exc}")
                 return
         except Exception as exc:
             # A non-network bug won't be fixed by retrying, but it must not kill the scrapers that follow.
             logging.error(f"{name} raised a non-retryable error; skipping. Error: {exc}")
+            _run_failures.append(f"{name}: {exc.__class__.__name__}: {exc}")
             return
 
 
@@ -143,6 +156,20 @@ def download_image(url: str, out_fp: str):
             f_out.write(response.content)
     except (requests.exceptions.RequestException, OSError) as exc:
         print(f"An error occurred when downloading image: {exc}")
+
+
+def character_name(char: Dict[str, Any]) -> Optional[str]:
+    """Reads a GameTora character's English name.
+
+    GameTora renamed the field from `en_name` to `name_en`. Both are accepted so an older cached manifest still works.
+
+    Args:
+        char (Dict[str, Any]): One entry of the `characters` dataset.
+
+    Returns:
+        The English name, or None if the entry has neither field.
+    """
+    return char.get("name_en") or char.get("en_name")
 
 
 def exists_on_global(entry: Dict[str, Any]) -> bool:
@@ -179,6 +206,34 @@ def exists_on_global(entry: Dict[str, Any]) -> bool:
     return periods.index(global_period) > periods.index(did_not_exist)
 
 
+def is_global_release(card: Dict[str, Any], today: Optional[str] = None) -> bool:
+    """Returns whether a card has released on the Global (EN) server, so JP-only cards are skipped.
+
+    Args:
+        card (Dict[str, Any]): A character-cards or support-cards entry, which carries per-server release dates.
+        today (Optional[str]): ISO date to compare against. Defaults to the current date.
+
+    Returns:
+        True when the card's `release_en` date is set and not after `today`.
+    """
+    release_en = card.get("release_en")
+    return bool(release_en) and release_en <= (today or date.today().isoformat())
+
+
+def fetch_gametora_manifest_index() -> Dict[str, str]:
+    """Fetches GameTora's manifest index, cached per run.
+
+    Returns:
+        Dataset name to content id.
+    """
+    global _manifest_index_cache
+    if _manifest_index_cache is None:
+        response = requests.get(GAMETORA_MANIFESTS_URL, timeout=60)
+        response.raise_for_status()
+        _manifest_index_cache = response.json()
+    return _manifest_index_cache
+
+
 def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     """Fetches a dataset from GameTora's JSON manifest. The index and each dataset are cached per run, so repeat calls don't re-download.
 
@@ -188,15 +243,9 @@ def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     Returns:
         The dataset JSON as a dictionary.
     """
-    global _manifest_index_cache
     if manifest_name in _manifest_data_cache:
         return _manifest_data_cache[manifest_name]
-    if _manifest_index_cache is None:
-        response = requests.get(GAMETORA_MANIFESTS_URL, timeout=60)
-        response.raise_for_status()
-        _manifest_index_cache = response.json()
-
-    manifest_id = _manifest_index_cache[manifest_name]
+    manifest_id = fetch_gametora_manifest_index()[manifest_name]
     manifest_url = f"{GAMETORA_MANIFEST_DATA_BASE_URL}/{manifest_name}.{manifest_id}.json"
     response = requests.get(manifest_url)
     response.raise_for_status()
@@ -204,8 +253,52 @@ def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     return _manifest_data_cache[manifest_name]
 
 
+def record_if_empty(source: str, rows: Dict[Any, Any]) -> Dict[Any, Any]:
+    """Records a run failure when a scraped page yielded nothing, which usually means a bot check page was served instead.
+
+    Args:
+        source (str): The page's name for the failure message.
+        rows (Dict[Any, Any]): What was parsed from the page.
+
+    Returns:
+        `rows`, unchanged.
+    """
+    if not rows:
+        logging.error(f"{source} returned no rows. The site may have served a bot check page.")
+        _run_failures.append(f"{source}: no rows parsed")
+    return rows
+
+
+def fetch_via_flaresolverr(endpoint: str, url: str) -> str:
+    """Loads a page in FlareSolverr's browser, which passes the bot checks some sites show datacenter addresses such as GitHub's runners.
+
+    Args:
+        endpoint (str): FlareSolverr's base URL, such as `http://localhost:8191`.
+        url (str): The page URL to fetch.
+
+    Raises:
+        requests.exceptions.RequestException: When FlareSolverr fails or the page does not return a 2xx status.
+
+    Returns:
+        The page HTML.
+    """
+    response = requests.post(
+        f"{endpoint.rstrip('/')}/v1",
+        json={"cmd": "request.get", "url": url, "maxTimeout": FLARESOLVERR_TIMEOUT_MS, "waitInSeconds": FLARESOLVERR_WAIT_SECONDS},
+        timeout=FLARESOLVERR_TIMEOUT_MS / 1000 + FLARESOLVERR_WAIT_SECONDS + 30,
+    )
+    response.raise_for_status()
+    body = response.json()
+    if body.get("status") != "ok":
+        raise requests.exceptions.RequestException(f"FlareSolverr could not load {url}: {body.get('message', 'no message')}")
+    solution = body["solution"]
+    if not 200 <= solution["status"] < 300:
+        raise requests.exceptions.HTTPError(f"{solution['status']} from {url} via FlareSolverr")
+    return solution["response"]
+
+
 def fetch_soup(url: str) -> BeautifulSoup:
-    """Fetches a page over plain HTTP and returns its parsed HTML tree.
+    """Fetches a page and returns its parsed HTML tree. Goes through FlareSolverr when `FLARESOLVERR_URL` is set, else plain HTTP.
 
     Args:
         url (str): The page URL to fetch.
@@ -213,6 +306,9 @@ def fetch_soup(url: str) -> BeautifulSoup:
     Returns:
         The parsed HTML as a BeautifulSoup tree.
     """
+    flaresolverr = os.environ.get("FLARESOLVERR_URL")
+    if flaresolverr:
+        return BeautifulSoup(fetch_via_flaresolverr(flaresolverr, url), "lxml")
     response = requests.get(url, headers=HTTP_HEADERS, timeout=30)
     response.raise_for_status()
     return BeautifulSoup(response.text, "lxml")
@@ -395,6 +491,12 @@ class SkillScraper(BaseScraper):
                             continue
                         res[skill_name] = tier_name
 
+        if not res:
+            # Show what was served instead, since some networks get a different page with no tier headers.
+            title = soup.title.get_text(strip=True) if soup.title else None
+            headers = [h.get_text(strip=True) for h in soup.find_all(["h1", "h2", "h3"])][:5]
+            logging.error(f"Game8 tier list page had no tier headers. Title: {title!r}, size: {len(str(soup))} chars, first headers: {headers}")
+
         # Fix tier-list misspellings so names match GameTora. Add an entry if a skill warns as unknown.
         rename_map = {
             "Let's Pump Some Iron": "Let's Pump Some Iron!",
@@ -456,8 +558,8 @@ class SkillScraper(BaseScraper):
         self.data = {}
 
         # Get supplementary data for later use.
-        skill_evaluation_points = self.scrape_skill_evaluation_points()
-        skill_to_tier_map = self.scrape_skill_tier_list()
+        skill_evaluation_points = record_if_empty("umamusu.wiki skill evaluation points", self.scrape_skill_evaluation_points())
+        skill_to_tier_map = record_if_empty("Game8 skill tier list", self.scrape_skill_tier_list())
         # Lowercase the tier-list keys for case-insensitive lookups across sources.
         skill_to_tier_map_lowercase = {k.lower(): k for k in skill_to_tier_map.keys()}
 
@@ -608,7 +710,7 @@ class TrainingEventScraper(BaseScraper):
         global _event_skill_names, _event_char_names, _event_status_names, _event_race_names, _event_event_names
         if _event_skill_names is None:
             _event_skill_names = {s["id"]: (s.get("name_en") or s.get("enname")) for s in fetch_gametora_manifest_data("skills")}
-            char_names = {c["char_id"]: c.get("en_name") for c in fetch_gametora_manifest_data("characters")}
+            char_names = {c["char_id"]: character_name(c) for c in fetch_gametora_manifest_data("characters")}
             for card in fetch_gametora_manifest_data("support-cards"):
                 char_names.setdefault(card["char_id"], card["char_name"])  # Support-only characters (NPCs) aren't in `characters`.
             _event_char_names = char_names
@@ -654,19 +756,6 @@ class TrainingEventScraper(BaseScraper):
             number = int(match.group(2)) * (-1 if match.group(1) == "-" else 1)
             parts.append(f"{math.floor(number * mult):+d}")
         return "/".join(parts)
-
-    @staticmethod
-    def _is_global_release(card: Dict[str, Any]) -> bool:
-        """Returns whether a card has released on the Global (EN) server, so JP-only cards are skipped.
-
-        Args:
-            card (Dict[str, Any]): A character-cards or support-cards entry, which carries per-server release dates.
-
-        Returns:
-            True when the card's `release_en` date is set and not in the future.
-        """
-        release_en = card.get("release_en")
-        return bool(release_en) and release_en <= date.today().isoformat()
 
     @staticmethod
     def _is_unlocalized(name: str, options: List[str]) -> bool:
@@ -976,7 +1065,7 @@ class CharacterScraper(TrainingEventScraper):
         # Oldest card first so its version wins on shared events.
         cards = sorted(fetch_gametora_manifest_data("character-cards"), key=lambda c: c["card_id"])
         for index, card in enumerate(cards):
-            if not self._is_global_release(card):
+            if not is_global_release(card):
                 continue
             char_name = _event_char_names.get(card["char_id"])
             if char_name is None:
@@ -985,6 +1074,7 @@ class CharacterScraper(TrainingEventScraper):
                 events = fetch_gametora_event_data("characters", card["url_name"])
             except (requests.exceptions.RequestException, ValueError) as exc:
                 logging.warning(f"Skipping character card {card['url_name']} ({exc.__class__.__name__}).")
+                _run_failures.append(f"character card {card['url_name']}: {exc.__class__.__name__}: {exc}")
                 continue
             char_events = self.data.setdefault(char_name, {})
             self._ingest_events(char_events, ((cat, events.get(cat) or []) for cat in self.CHOICE_CATEGORIES), char_name, 1.0, 1.0)
@@ -1041,12 +1131,13 @@ class SupportCardScraper(TrainingEventScraper):
         # Oldest card first so its version wins on shared events.
         cards = sorted(fetch_gametora_manifest_data("support-cards"), key=lambda c: c["support_id"])
         for index, card in enumerate(cards):
-            if not self._is_global_release(card):
+            if not is_global_release(card):
                 continue
             try:
                 events = fetch_gametora_event_data("supports", card["url_name"])
             except (requests.exceptions.RequestException, ValueError) as exc:
                 logging.warning(f"Skipping support card {card['url_name']} ({exc.__class__.__name__}).")
+                _run_failures.append(f"support card {card['url_name']}: {exc.__class__.__name__}: {exc}")
                 continue
             char_name = SUPPORT_CARD_NAME_OVERRIDES.get(card["char_name"], card["char_name"])
             energy_mult, stat_mult = self._event_multipliers(card)
@@ -1895,7 +1986,7 @@ class EpithetScraper(BaseScraper):
         """
         nicknames = fetch_gametora_manifest_data("nicknames")
         id_to_race = {r["id"]: r.get("name_en") for r in fetch_gametora_manifest_data("races")}
-        id_to_char = {c["char_id"]: c.get("en_name") for c in fetch_gametora_manifest_data("characters")}
+        id_to_char = {c["char_id"]: character_name(c) for c in fetch_gametora_manifest_data("characters")}
         id_to_scenario = {s["id"]: s.get("name_en") for s in fetch_gametora_manifest_data("scenarios")}
         id_to_skill = {s["id"]: (s.get("name_en") or s.get("enname")) for s in fetch_gametora_manifest_data("skills")}
         id_to_nickname = {e["id"]: (e.get("name_en_gl") or e.get("name_en")) for e in nicknames}
@@ -1984,7 +2075,7 @@ class CharacterPresetScraper(BaseScraper):
             base_card_by_char.setdefault(card["char_id"], card)
 
         for char in characters:
-            name = char.get("en_name")
+            name = character_name(char)
             if not char.get("playable_en") or not name:
                 continue
             card = base_card_by_char.get(char["char_id"])
@@ -2065,8 +2156,8 @@ class CharacterObjectivesScraper(BaseScraper):
         objectives = fetch_gametora_manifest_data("ura-objectives")
         characters = fetch_gametora_manifest_data("characters")
 
-        id_to_name = {c["char_id"]: c.get("en_name") for c in characters if c.get("char_id") and c.get("en_name")}
-        en_playable = {c["char_id"] for c in characters if c.get("char_id") and c.get("playable_en") and c.get("en_name")}
+        id_to_name = {c["char_id"]: character_name(c) for c in characters if c.get("char_id") and character_name(c)}
+        en_playable = {c["char_id"] for c in characters if c.get("char_id") and c.get("playable_en") and character_name(c)}
 
         for entry in objectives:
             char_id = entry.get("char_id")
@@ -2137,3 +2228,8 @@ if __name__ == "__main__":
 
     end_time = round(time.time() - start_time, 2)
     logging.info(f"Total time for processing all applications: {end_time} seconds or {round(end_time / 60, 2)} minutes.")
+
+    if _run_failures:
+        logging.error(f"{len(_run_failures)} scrape failure(s): " + "; ".join(_run_failures))
+        if "--strict" in sys.argv[1:]:
+            sys.exit(1)

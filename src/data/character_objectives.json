@@ -4161,6 +4161,102 @@
             }
         ]
     },
+    "Nakayama Festa": {
+        "name": "Nakayama Festa",
+        "mandatoryRaces": [
+            {
+                "turn": 25,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Keisei Hai",
+                        "grade": "G3",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 3800
+                    }
+                ]
+            },
+            {
+                "turn": 31,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Satsuki Sho",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 11000
+                    }
+                ]
+            },
+            {
+                "turn": 34,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tokyo Yushun (Japanese Derby)",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 20000
+                    }
+                ]
+            },
+            {
+                "turn": 44,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Kikuka Sho",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Long",
+                        "fans": 12000
+                    }
+                ]
+            },
+            {
+                "turn": 47,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Chunichi Shimbun Hai",
+                        "grade": "G3",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 4100
+                    }
+                ]
+            },
+            {
+                "turn": 60,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Takarazuka Kinen",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 15000
+                    }
+                ]
+            },
+            {
+                "turn": 70,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Japan Cup",
+                        "grade": "G1",
+                        "surface": "Turf",
+                        "distanceType": "Medium",
+                        "fans": 30000
+                    }
+                ]
+            }
+        ]
+    },
     "Narita Brian": {
         "name": "Narita Brian",
         "mandatoryRaces": [
@@ -6707,6 +6803,135 @@
                         "surface": "Turf",
                         "distanceType": "Long",
                         "fans": 30000
+                    }
+                ]
+            }
+        ]
+    },
+    "Wonder Acute": {
+        "name": "Wonder Acute",
+        "mandatoryRaces": [
+            {
+                "turn": 37,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Japan Dirt Derby",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 4500
+                    }
+                ]
+            },
+            {
+                "turn": 42,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Sirius Stakes",
+                        "grade": "G3",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 3600
+                    }
+                ]
+            },
+            {
+                "turn": 48,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tokyo Daishoten",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 51,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Kawasaki Kinen",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 57,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Kashiwa Kinen",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 60,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Teio Sho",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 69,
+                "isChoice": true,
+                "options": [
+                    {
+                        "raceName": "JBC Classic",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
+                    },
+                    {
+                        "raceName": "JBC Classic",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 71,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Champions Cup",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 72,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tokyo Daishoten",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
                     }
                 ]
             }

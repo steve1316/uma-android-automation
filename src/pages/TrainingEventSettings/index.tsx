@@ -22,8 +22,8 @@ import CustomSlider from "../../components/CustomSlider"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 
 // Import the data files.
-import charactersData from "../../data/characters.json"
-import supportsData from "../../data/supports.json"
+import charactersData from "../../data/live/characters"
+import supportsData from "../../data/live/supports"
 import scenariosData from "../../data/scenarios.json"
 
 // List of events that are already covered in Special Event Overrides and should be excluded.

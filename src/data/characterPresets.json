@@ -506,6 +506,19 @@
             "Dirt": "G"
         }
     },
+    "Nakayama Festa": {
+        "name": "Nakayama Festa",
+        "distanceAptitudes": {
+            "Sprint": "G",
+            "Mile": "C",
+            "Medium": "A",
+            "Long": "B"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "G"
+        }
+    },
     "Narita Brian": {
         "name": "Narita Brian",
         "distanceAptitudes": {
@@ -816,6 +829,19 @@
         "surfaceAptitudes": {
             "Turf": "A",
             "Dirt": "G"
+        }
+    },
+    "Wonder Acute": {
+        "name": "Wonder Acute",
+        "distanceAptitudes": {
+            "Sprint": "D",
+            "Mile": "A",
+            "Medium": "A",
+            "Long": "E"
+        },
+        "surfaceAptitudes": {
+            "Turf": "G",
+            "Dirt": "A"
         }
     },
     "Yaeno Muteki": {
