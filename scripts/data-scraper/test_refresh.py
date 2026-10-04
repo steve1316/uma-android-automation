@@ -157,7 +157,7 @@ def _finalize_env(tmp_path, monkeypatch, fresh, included):
     monkeypatch.setattr(refresh, "DATA_DIR", tmp_path)
     monkeypatch.setattr(refresh, "DATA_VERSION_PATH", tmp_path / "data_version.json")
     monkeypatch.setattr(refresh, "INCLUDED_CARDS_PATH", included_path)
-    monkeypatch.setattr(refresh, "_fresh_cards", lambda today: fresh)
+    monkeypatch.setattr(refresh, "_fresh_cards", lambda today, included=None: fresh)
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
     return out
 
@@ -198,7 +198,7 @@ def test_check_fails_when_head_copy_is_unreadable(monkeypatch, capsys):
         return data
 
     monkeypatch.setattr(refresh, "_load_data", fake_load)
-    monkeypatch.setattr(refresh, "_fresh_cards", lambda today: {"character": [], "support": []})
+    monkeypatch.setattr(refresh, "_fresh_cards", lambda today, included=None: {"character": [], "support": []})
     assert refresh.main(["check"]) == 1
     assert "supports.json: could not read the HEAD copy" in capsys.readouterr().out
 

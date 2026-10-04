@@ -18,8 +18,6 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import requests
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import main as scraper  # noqa: E402
 
@@ -62,6 +60,9 @@ REQUIRED_KEYS = {
     "character_objectives.json": {"name": str, "mandatoryRaces": list},
 }
 
+# GameTora's id field for each card kind.
+ID_KEYS = {"character": "card_id", "support": "support_id"}
+
 # The files a new trainee and a new support card must appear in.
 TRAINEE_FILES = ["characters.json", "characterPresets.json", "character_objectives.json"]
 SUPPORT_FILES = ["supports.json"]
@@ -78,11 +79,8 @@ def released_cards(char_cards: List[dict], support_cards: List[dict], today: str
     Returns:
         A dict with `character` and `support` lists of released cards.
     """
-
-    def is_out(card: dict) -> bool:
-        return bool(card.get("release_en")) and card["release_en"] <= today
-
-    return {"character": [c for c in char_cards if is_out(c)], "support": [c for c in support_cards if is_out(c)]}
+    cards = {"character": char_cards, "support": support_cards}
+    return {kind: [c for c in cards[kind] if scraper.is_global_release(c, today)] for kind in ID_KEYS}
 
 
 def new_cards(released: Dict[str, List[dict]], included: Dict[str, List[int]]) -> Dict[str, List[dict]]:
@@ -95,12 +93,8 @@ def new_cards(released: Dict[str, List[dict]], included: Dict[str, List[int]]) -
     Returns:
         A dict with `character` and `support` lists of cards new since the last data commit.
     """
-    have_chars = set(included.get("character", []))
-    have_supports = set(included.get("support", []))
-    return {
-        "character": [c for c in released["character"] if c["card_id"] not in have_chars],
-        "support": [c for c in released["support"] if c["support_id"] not in have_supports],
-    }
+    have = {kind: set(included.get(kind, [])) for kind in ID_KEYS}
+    return {kind: [c for c in released[kind] if c[key] not in have[kind]] for kind, key in ID_KEYS.items()}
 
 
 def character_label(card: dict) -> str:
@@ -140,12 +134,10 @@ def build_label(fresh: Dict[str, List[dict]], today: str) -> str:
     Returns:
         A label such as `Tamamo Cross (Christmas) 2026-12-25` or `2026-12-25`.
     """
-    if fresh["character"]:
-        newest = max(fresh["character"], key=lambda c: (c["release_en"], c["card_id"]))
-        return f"{character_label(newest)} {newest['release_en']}"
-    if fresh["support"]:
-        newest = max(fresh["support"], key=lambda c: (c["release_en"], c["support_id"]))
-        return f"{support_label(newest)} {newest['release_en']}"
+    for kind, label in (("character", character_label), ("support", support_label)):
+        if fresh[kind]:
+            newest = max(fresh[kind], key=lambda c: (c["release_en"], c[ID_KEYS[kind]]))
+            return f"{label(newest)} {newest['release_en']}"
     return today
 
 
@@ -280,10 +272,7 @@ def merge_included(included: Dict[str, List[int]], fresh: Dict[str, List[dict]])
     Returns:
         The merged, sorted id lists.
     """
-    return {
-        "character": sorted(set(included.get("character", [])) | {c["card_id"] for c in fresh["character"]}),
-        "support": sorted(set(included.get("support", [])) | {c["support_id"] for c in fresh["support"]}),
-    }
+    return {kind: sorted(set(included.get(kind, [])) | {c[key] for c in fresh[kind]}) for kind, key in ID_KEYS.items()}
 
 
 def write_data_version(label: str, now: datetime) -> dict:
@@ -358,17 +347,29 @@ def _load_data(at_head: bool) -> Dict[str, Any]:
     return loaded
 
 
-def _fresh_cards(today: str) -> Dict[str, List[dict]]:
-    """Fetches GameTora's card lists and returns the cards new since the last data commit.
+def _released(today: str) -> Dict[str, List[dict]]:
+    """Fetches GameTora's card lists and keeps the cards released on Global by `today`.
 
     Args:
         today (str): ISO date for the Global release gate.
 
     Returns:
+        Output of `released_cards`.
+    """
+    return released_cards(scraper.fetch_gametora_manifest_data("character-cards"), scraper.fetch_gametora_manifest_data("support-cards"), today)
+
+
+def _fresh_cards(today: str, included: Optional[Dict[str, List[int]]] = None) -> Dict[str, List[dict]]:
+    """Fetches GameTora's card lists and returns the cards new since the last data commit.
+
+    Args:
+        today (str): ISO date for the Global release gate.
+        included (Optional[Dict[str, List[int]]]): The `included_cards.json` contents. Read from disk when omitted.
+
+    Returns:
         Output of `new_cards`.
     """
-    released = released_cards(scraper.fetch_gametora_manifest_data("character-cards"), scraper.fetch_gametora_manifest_data("support-cards"), today)
-    return new_cards(released, _read_json(INCLUDED_CARDS_PATH, {"character": [], "support": []}))
+    return new_cards(_released(today), included if included is not None else _read_json(INCLUDED_CARDS_PATH, {}))
 
 
 def _output(**values: str):
@@ -408,7 +409,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     today = date.today().isoformat()
 
     if args.command == "plan":
-        index = requests.get(scraper.GAMETORA_MANIFESTS_URL, timeout=60).json()
+        index = scraper.fetch_gametora_manifest_index()
         reasons = plan_work(index, _read_json(MANIFEST_IDS_PATH, {}), _fresh_cards(today))
         for reason in reasons:
             print(f"  {reason}")
@@ -426,10 +427,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 1 if problems else 0
 
     if args.command == "finalize":
-        fresh = _fresh_cards(today)
+        current = _read_json(INCLUDED_CARDS_PATH, None)
+        fresh = _fresh_cards(today, current or {})
         label = build_label(fresh, today)
-        included = merge_included(_read_json(INCLUDED_CARDS_PATH, {"character": [], "support": []}), fresh)
-        cards_changed = included != _read_json(INCLUDED_CARDS_PATH, None)
+        included = merge_included(current or {}, fresh)
+        cards_changed = included != current
         if cards_changed:
             _write_json(INCLUDED_CARDS_PATH, included)
         if args.data_changed == "true":
@@ -443,12 +445,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
 
     if args.command == "save-ids":
-        index = requests.get(scraper.GAMETORA_MANIFESTS_URL, timeout=60).json()
+        index = scraper.fetch_gametora_manifest_index()
         _write_json(MANIFEST_IDS_PATH, {name: index.get(name) for name in WATCHED_DATASETS})
         return 0
 
     if args.command == "seed":
-        released = released_cards(scraper.fetch_gametora_manifest_data("character-cards"), scraper.fetch_gametora_manifest_data("support-cards"), args.through)
+        released = _released(args.through)
         _write_json(INCLUDED_CARDS_PATH, merge_included({}, released))
         label = args.label or build_label({"character": released["character"], "support": []}, args.through)
         write_data_version(label, datetime.fromisoformat(f"{args.through}T00:00:00+00:00"))

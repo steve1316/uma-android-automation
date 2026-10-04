@@ -199,6 +199,34 @@ def exists_on_global(entry: Dict[str, Any]) -> bool:
     return periods.index(global_period) > periods.index(did_not_exist)
 
 
+def is_global_release(card: Dict[str, Any], today: Optional[str] = None) -> bool:
+    """Returns whether a card has released on the Global (EN) server, so JP-only cards are skipped.
+
+    Args:
+        card (Dict[str, Any]): A character-cards or support-cards entry, which carries per-server release dates.
+        today (Optional[str]): ISO date to compare against. Defaults to the current date.
+
+    Returns:
+        True when the card's `release_en` date is set and not after `today`.
+    """
+    release_en = card.get("release_en")
+    return bool(release_en) and release_en <= (today or date.today().isoformat())
+
+
+def fetch_gametora_manifest_index() -> Dict[str, str]:
+    """Fetches GameTora's manifest index, cached per run.
+
+    Returns:
+        Dataset name to content id.
+    """
+    global _manifest_index_cache
+    if _manifest_index_cache is None:
+        response = requests.get(GAMETORA_MANIFESTS_URL, timeout=60)
+        response.raise_for_status()
+        _manifest_index_cache = response.json()
+    return _manifest_index_cache
+
+
 def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     """Fetches a dataset from GameTora's JSON manifest. The index and each dataset are cached per run, so repeat calls don't re-download.
 
@@ -208,15 +236,9 @@ def fetch_gametora_manifest_data(manifest_name: str) -> dict:
     Returns:
         The dataset JSON as a dictionary.
     """
-    global _manifest_index_cache
     if manifest_name in _manifest_data_cache:
         return _manifest_data_cache[manifest_name]
-    if _manifest_index_cache is None:
-        response = requests.get(GAMETORA_MANIFESTS_URL, timeout=60)
-        response.raise_for_status()
-        _manifest_index_cache = response.json()
-
-    manifest_id = _manifest_index_cache[manifest_name]
+    manifest_id = fetch_gametora_manifest_index()[manifest_name]
     manifest_url = f"{GAMETORA_MANIFEST_DATA_BASE_URL}/{manifest_name}.{manifest_id}.json"
     response = requests.get(manifest_url)
     response.raise_for_status()
@@ -676,19 +698,6 @@ class TrainingEventScraper(BaseScraper):
         return "/".join(parts)
 
     @staticmethod
-    def _is_global_release(card: Dict[str, Any]) -> bool:
-        """Returns whether a card has released on the Global (EN) server, so JP-only cards are skipped.
-
-        Args:
-            card (Dict[str, Any]): A character-cards or support-cards entry, which carries per-server release dates.
-
-        Returns:
-            True when the card's `release_en` date is set and not in the future.
-        """
-        release_en = card.get("release_en")
-        return bool(release_en) and release_en <= date.today().isoformat()
-
-    @staticmethod
     def _is_unlocalized(name: str, options: List[str]) -> bool:
         """Returns whether an event still contains Japanese text, marking it as not yet localized for the Global server.
 
@@ -996,7 +1005,7 @@ class CharacterScraper(TrainingEventScraper):
         # Oldest card first so its version wins on shared events.
         cards = sorted(fetch_gametora_manifest_data("character-cards"), key=lambda c: c["card_id"])
         for index, card in enumerate(cards):
-            if not self._is_global_release(card):
+            if not is_global_release(card):
                 continue
             char_name = _event_char_names.get(card["char_id"])
             if char_name is None:
@@ -1062,7 +1071,7 @@ class SupportCardScraper(TrainingEventScraper):
         # Oldest card first so its version wins on shared events.
         cards = sorted(fetch_gametora_manifest_data("support-cards"), key=lambda c: c["support_id"])
         for index, card in enumerate(cards):
-            if not self._is_global_release(card):
+            if not is_global_release(card):
                 continue
             try:
                 events = fetch_gametora_event_data("supports", card["url_name"])
