@@ -41,6 +41,10 @@ HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe
 # How long FlareSolverr may take to load one page, bot check included.
 FLARESOLVERR_TIMEOUT_MS = 90_000
 
+# How long FlareSolverr waits after loading before returning the page. Game8 first serves an AWS WAF JavaScript check that FlareSolverr
+# does not recognize, and the real page only loads once that script has run.
+FLARESOLVERR_WAIT_SECONDS = 10
+
 # Module-level run state: the GameTora manifest index and per-dataset manifest data, each fetched once per run and reused across scrapers.
 _manifest_index_cache = None
 _manifest_data_cache = {}
@@ -278,7 +282,11 @@ def fetch_via_flaresolverr(endpoint: str, url: str) -> str:
     Returns:
         The page HTML.
     """
-    response = requests.post(f"{endpoint.rstrip('/')}/v1", json={"cmd": "request.get", "url": url, "maxTimeout": FLARESOLVERR_TIMEOUT_MS}, timeout=FLARESOLVERR_TIMEOUT_MS / 1000 + 30)
+    response = requests.post(
+        f"{endpoint.rstrip('/')}/v1",
+        json={"cmd": "request.get", "url": url, "maxTimeout": FLARESOLVERR_TIMEOUT_MS, "waitInSeconds": FLARESOLVERR_WAIT_SECONDS},
+        timeout=FLARESOLVERR_TIMEOUT_MS / 1000 + FLARESOLVERR_WAIT_SECONDS + 30,
+    )
     response.raise_for_status()
     body = response.json()
     if body.get("status") != "ok":

@@ -68,6 +68,7 @@ def test_fetch_soup_goes_through_flaresolverr_when_configured(monkeypatch):
     assert soup.find("h3").get_text() == "SS Tier"
     assert calls[0][0] == "http://localhost:8191/v1"
     assert calls[0][1]["cmd"] == "request.get" and calls[0][1]["url"] == "https://game8.co/page"
+    assert calls[0][1]["waitInSeconds"] == main.FLARESOLVERR_WAIT_SECONDS
 
 
 def test_fetch_soup_raises_when_flaresolverr_page_fails(monkeypatch):
