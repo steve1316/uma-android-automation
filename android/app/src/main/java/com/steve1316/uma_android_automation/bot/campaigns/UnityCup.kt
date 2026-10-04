@@ -21,9 +21,51 @@ import com.steve1316.uma_android_automation.components.IconDoubleCircle
 import com.steve1316.uma_android_automation.components.IconTrainingEventHorseshoe
 import com.steve1316.uma_android_automation.components.IconUnityCupRaceEndLogo
 import com.steve1316.uma_android_automation.components.IconUnityCupTutorialHeader
+import com.steve1316.uma_android_automation.components.LabelUnityCupEliteTeamBadge
 import com.steve1316.uma_android_automation.components.LabelUnityCupOpponentSelectionLaurel
 import com.steve1316.uma_android_automation.types.StatName
 import org.opencv.core.Point
+import kotlin.math.abs
+
+// How close in Y two matches must be to count as the same opponent row, at the 1080-wide baseline. The rows sit ~407px apart on a 1080x1920 screen.
+private const val OPPONENT_ROW_TOLERANCE = 80
+
+/**
+ * One opponent row on the Unity Cup selection screen.
+ *
+ * @property point The row's laurel (or Elite badge) location, used both to order rows top to bottom and as the tap target.
+ * @property isElite Whether this row is the Elite Team, which is always the S-rank, rank 2 team on a pink card.
+ */
+internal data class UnityOpponentRow(val point: Point, val isElite: Boolean)
+
+/**
+ * Build the opponent rows from what matched on screen, ordered top to bottom. The Elite Team's card is pink, so the laurel template (captured on a
+ * white card) scores below the match threshold on it while the dedicated Elite badge matches cleanly. Either anchor therefore stands for that row,
+ * and the badge only becomes a row of its own when no laurel already covers it.
+ *
+ * @param laurels The centers of every laurel match.
+ * @param eliteBadge The center of the Elite badge match, or null when it was not searched for or did not match.
+ * @param rowTolerance How close in Y two matches must be to count as the same row.
+ * @return The rows ordered top to bottom.
+ */
+internal fun buildUnityOpponentRows(laurels: List<Point>, eliteBadge: Point?, rowTolerance: Int): List<UnityOpponentRow> {
+    val rows = laurels.map { UnityOpponentRow(it, isElite = eliteBadge != null && abs(it.y - eliteBadge.y) <= rowTolerance) }
+    val badgeRow = if (eliteBadge != null && rows.none { it.isElite }) listOf(UnityOpponentRow(eliteBadge, isElite = true)) else emptyList()
+    return (rows + badgeRow).sortedBy { it.point.y }
+}
+
+/**
+ * Pick which rows may be raced, in top-to-bottom order. Every row stays eligible when the setting is off, and a set that is entirely Elite falls
+ * back to racing anyway rather than leaving the bot with nothing to select.
+ *
+ * @param rows The opponent rows.
+ * @param avoidElite Whether the "Avoid Elite Team" setting is on.
+ * @return The indices into [rows] that may be selected.
+ */
+internal fun unityOpponentCandidates(rows: List<UnityOpponentRow>, avoidElite: Boolean): List<Int> {
+    val allowed = rows.indices.filter { !avoidElite || !rows[it].isElite }
+    return allowed.ifEmpty { rows.indices.toList() }
+}
 
 /**
  * Handles the Unity Cup scenario with scenario-specific logic and handling.
@@ -39,8 +81,17 @@ class UnityCup(game: Game) : Campaign(game) {
     /** Flag indicating if the bot is currently in the finals. */
     private var bIsFinals: Boolean = false
 
-    /** The index of the currently selected opponent. */
-    private var selectedOpponentIndex: Int = 0
+    /** The index of the currently selected opponent, derived from how far the selection has walked through [opponentCandidates]. */
+    private val selectedOpponentIndex: Int get() = opponentCandidates.getOrElse(candidateCursor) { 0 }
+
+    /** Whether to avoid racing the Elite Team in the 4th race, which keeps the strengthened Team Zenith (and its "+" sparks) out of the finals. Default off. */
+    private val avoidEliteTeam: Boolean = SettingsHelper.getBooleanSetting("scenarioOverrides", "unityCupAvoidEliteTeam", false)
+
+    /** The rows that may be raced this selection, as indices into the detected rows, in top-to-bottom order. */
+    private var opponentCandidates: List<Int> = emptyList()
+
+    /** How far into [opponentCandidates] the selection has walked after rejecting opponents. */
+    private var candidateCursor: Int = 0
 
     /** Flag indicating if the opponent selection should be overridden. */
     private var bOverrideOpponentSelection: Boolean = false
@@ -75,12 +126,13 @@ class UnityCup(game: Game) : Campaign(game) {
                     result.dialog.ok(game.imageUtils)
                 } else {
                     result.dialog.close(game.imageUtils)
-                    if (selectedOpponentIndex >= 2) {
-                        MessageLog.w(TAG, "[WARN] handleDialogs:: Could not determine any opponent with sufficient double circle predictions. Selecting the 2nd opponent as a fallback.")
-                        selectedOpponentIndex = 1
+                    if (candidateCursor >= opponentCandidates.lastIndex) {
+                        // Out of candidates. Fall back to the 2nd allowed opponent (the 1st when only one is allowed), which never includes the Elite Team while the setting is on.
+                        candidateCursor = minOf(1, maxOf(opponentCandidates.lastIndex, 0))
+                        MessageLog.w(TAG, "[WARN] handleDialogs:: Could not determine any opponent with sufficient double circle predictions. Falling back to opponent #${selectedOpponentIndex + 1}.")
                         bOverrideOpponentSelection = true
                     } else {
-                        selectedOpponentIndex++
+                        candidateCursor++
                     }
                 }
                 game.wait(0.5)
@@ -208,7 +260,8 @@ class UnityCup(game: Game) : Campaign(game) {
 
                 // Go to opponent selection screen.
                 ButtonUnityCupRace.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                    selectedOpponentIndex = 0
+                    candidateCursor = 0
+                    opponentCandidates = emptyList()
                     bOverrideOpponentSelection = false
                     game.waitForLoading()
                 }
@@ -221,7 +274,11 @@ class UnityCup(game: Game) : Campaign(game) {
 
                 // Handle opponent selection.
                 ButtonSelectOpponent.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                    val opponents: ArrayList<Point> = LabelUnityCupOpponentSelectionLaurel.findAll(game.imageUtils, sourceBitmap = sourceBitmap)
+                    val laurels: ArrayList<Point> = LabelUnityCupOpponentSelectionLaurel.findAll(game.imageUtils, sourceBitmap = sourceBitmap)
+                    // The badge is only needed to avoid the Elite Team, or to stand in for the laurel that falls short on its pink card.
+                    val eliteBadge: Point? =
+                        if (avoidEliteTeam || laurels.size < 3) LabelUnityCupEliteTeamBadge.findImageWithBitmap(game.imageUtils, sourceBitmap) else null
+                    val opponents = buildUnityOpponentRows(laurels, eliteBadge, game.imageUtils.relHeight(OPPONENT_ROW_TOLERANCE))
                     if (opponents.size != 3) {
                         // A high-rank team's entrance animation (e.g. the S-rank team on Senior Late June, ~4-5s) can still be playing and briefly hide the opponent laurels. Wait and let
                         // the loop re-scan a fresh screenshot rather than bailing the whole handler; the loop's 30s timeout still bounds a genuinely stuck screen.
@@ -230,8 +287,14 @@ class UnityCup(game: Game) : Campaign(game) {
                         continue
                     }
 
-                    selectedOpponentIndex = selectedOpponentIndex.coerceIn(0, opponents.lastIndex)
-                    val opponent = opponents[selectedOpponentIndex]
+                    opponentCandidates = unityOpponentCandidates(opponents, avoidEliteTeam)
+                    candidateCursor = candidateCursor.coerceIn(0, opponentCandidates.lastIndex)
+                    val eliteIndex = opponents.indexOfFirst { it.isElite }
+                    // Logged on the first pass only, so a race that rejects opponents does not repeat it.
+                    if (eliteIndex >= 0 && candidateCursor == 0) {
+                        MessageLog.i(TAG, "[UNITY_CUP] Opponent #${eliteIndex + 1} is the Elite Team. ${if (avoidEliteTeam) "Avoiding it." else "It may still be raced."}")
+                    }
+                    val opponent = opponents[selectedOpponentIndex].point
                     game.gestureUtils.tap(opponent.x, opponent.y, LabelUnityCupOpponentSelectionLaurel.template.path)
                     // Tiny delay to allow the opponent selection click to register fully.
                     game.wait(0.1, skipWaitingForLoading = true)

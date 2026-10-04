@@ -693,7 +693,7 @@ stateDiagram-v2
 
 **How it works:**
 
-1. The bot detects 3 opponent positions via `LabelUnityCupOpponentSelectionLaurel`.
+1. The bot detects 3 opponent positions via `LabelUnityCupOpponentSelectionLaurel`, plus `LabelUnityCupEliteTeamBadge` for the Elite Team (see below).
 2. Starting with Opponent 1, it taps the opponent and then the "Select Opponent" button.
 3. A confirmation dialog opens showing race predictions. The bot counts **double circle icons** (`IconDoubleCircle`) in the middle region of the screen.
 4. If **3 or more double circles** are found → the matchup is favorable. The bot confirms the selection.
@@ -701,7 +701,15 @@ stateDiagram-v2
 6. **Fallback:** If all 3 opponents fail the threshold, the bot **forces selection of Opponent 2** as a compromise.
 
 > [!CAUTION]
-> The fallback always picks Opponent 2 regardless of prediction quality. If all opponents are unfavorable, the race may be lost.
+> The fallback picks the 2nd **allowed** opponent regardless of prediction quality. If all opponents are unfavorable, the race may be lost.
+
+**The Elite Team (4th race).** On a strong run - league rank 10 or better, team rank A or better, and at least one Extreme Spirit Burst - the 4th team race offers an **Elite Team**: always the S-rank, rank 2 team, shown on a pink card. Beating it unlocks a strengthened Team Zenith in the finals, and beating *that* is what grants the "+" versions of the Unity Cup scenario sparks.
+
+**Avoid Elite Team** (Scenario Overrides → Unity Cup, off by default) keeps the bot away from it, for parent farming where the "+" sparks are unwanted. The Elite row is dropped from the opponents the bot will try, including the fallback above, so it is never raced.
+
+Detecting that row needs its own template. The laurel template was captured on a white card, so the Elite Team's pink card only scores ~0.75 against it - below the 0.8 match threshold - which is why the bot used to report "2/3 opponents" and wait on exactly this screen. `LabelUnityCupEliteTeamBadge` matches the S badge on that pink card instead (1.00 there against ~0.75 on a normal card), and the two templates together make the row count reliable again. Re-cropping the laurel from the pink card does **not** work as a substitute: the wreath shape dominates the match, so such a template still scores 0.90 on a normal card and would flag the wrong row.
+
+The badge is only searched for when the setting is on or when fewer than 3 laurels matched, so a normal race pays nothing for it. When a row is still missing after both templates, the bot waits and rescans as before, since a high-rank team's entrance animation can legitimately hide a row for a few seconds.
 
 ### 10.3 Race Execution
 

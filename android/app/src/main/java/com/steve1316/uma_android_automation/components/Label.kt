@@ -11,11 +11,12 @@ package com.steve1316.uma_android_automation.components
  *
  * @param name Leaf filename under `components/label/` identifying the template image.
  * @param region Screen region to constrain matching to. Defaults to the whole screen.
+ * @param confidence Match threshold (0.0, 1.0]. Defaults to 0.0, which uses the global default.
  * @return A [ComponentInterface] wrapping the resolved template.
  */
-private fun label(name: String, region: IntArray = intArrayOf(0, 0, 0, 0)): ComponentInterface =
+private fun label(name: String, region: IntArray = intArrayOf(0, 0, 0, 0), confidence: Double = 0.0): ComponentInterface =
     object : ComponentInterface {
-        override val template = Template("components/label/$name", region = region)
+        override val template = Template("components/label/$name", region = region, confidence = confidence)
     }
 
 val LabelCongratulations = label("congratulations", Region.topHalf)
@@ -27,6 +28,9 @@ val LabelStatTableHeaderSkillPoints = label("stat_table_header_skill_points", Re
 val LabelTrainingFailureChance = label("training_failure_chance", Region.bottomHalf)
 val LabelWinToBecomeRank = label("win_to_become_rank")
 val LabelUnityCupOpponentSelectionLaurel = label("unitycup_opponent_selection_laurel", Region.leftHalf)
+
+// The Elite Team's S badge sits on a pink card, so a normal (white-card) row only scores ~0.75 against it. Held at 0.9 to keep that clear.
+val LabelUnityCupEliteTeamBadge = label("unitycup_elite_team_badge", Region.leftHalf, confidence = 0.9)
 val LabelDuel = label("duel", Region.bottomHalf)
 val LabelDuelSmall = label("duel_small", Region.bottomHalf)
 val LabelEnergy = label("energy")
