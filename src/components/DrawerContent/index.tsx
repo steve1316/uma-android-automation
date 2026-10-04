@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useContext, useRef, useCallback } from "react"
-import { View, Text, StyleSheet, Pressable, Linking, NativeModules } from "react-native"
+import { View, Text, StyleSheet, Pressable, Linking, NativeModules, DeviceEventEmitter } from "react-native"
 import { DrawerContentScrollView, DrawerContentComponentProps, useDrawerStatus } from "@react-navigation/drawer"
 import { CommonActions } from "@react-navigation/native"
 import Ionicons from "@react-native-vector-icons/ionicons"
@@ -12,6 +12,7 @@ import { circularPress } from "../../lib/pressSurface"
 import { SPACING } from "../../lib/spacing"
 import { TYPE } from "../../lib/type"
 import { databaseManager } from "../../lib/database"
+import { DATA_UPDATE_CHECK_EVENT } from "../../lib/dataUpdate"
 
 /** A single drawer row entry. May expand to reveal `children` rows. */
 interface DrawerItem {
@@ -502,6 +503,14 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                     }}
                 >
                     <Ionicons name="newspaper-outline" size={24} color={colors.text} />
+                </Pressable>
+                <Pressable
+                    style={styles.footerIconButton}
+                    android_ripple={{ color: colors.ripple, foreground: true }}
+                    accessibilityLabel="Check for data updates"
+                    onPress={() => DeviceEventEmitter.emit(DATA_UPDATE_CHECK_EVENT)}
+                >
+                    <Ionicons name="cloud-download-outline" size={24} color={colors.text} />
                 </Pressable>
             </View>
         </>
