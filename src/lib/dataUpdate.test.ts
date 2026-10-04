@@ -52,9 +52,7 @@ test("reports failed when the check hangs past the timeout", async () => {
     jest.useFakeTimers()
     try {
         // A dropped connection never answers, so the request only ends when it is aborted.
-        ;(global as any).fetch = jest.fn(
-            (_url: string, init: RequestInit) => new Promise((_resolve, reject) => init.signal!.addEventListener("abort", () => reject(new Error("Aborted")))),
-        )
+        ;(global as any).fetch = jest.fn((_url: string, init: RequestInit) => new Promise((_resolve, reject) => init.signal!.addEventListener("abort", () => reject(new Error("Aborted")))))
         const pending = checkForDataUpdate("5.8.8")
         jest.advanceTimersByTime(CHECK_TIMEOUT_MS)
         expect(await pending).toEqual({ status: "failed", message: "GitHub did not respond in time. Check your connection and try again." })

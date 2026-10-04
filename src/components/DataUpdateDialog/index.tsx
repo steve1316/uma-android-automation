@@ -1,16 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { DeviceEventEmitter } from "react-native"
 import * as Application from "expo-application"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "../ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog"
 import { Text } from "../ui/text"
 import { DataVersion, getActiveDataVersion } from "../../data/live/readDownloaded"
 import { applyDataUpdate, checkForDataUpdate, DATA_UPDATE_CHECK_EVENT } from "../../lib/dataUpdate"
@@ -101,9 +92,7 @@ export default function DataUpdateDialog() {
         <AlertDialog open onOpenChange={(open) => !open && !working && close()}>
             <AlertDialogContent onDismiss={working ? undefined : close}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>
-                        {phase.kind === "message" ? phase.title : TITLES[phase.kind]}
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>{phase.kind === "message" ? phase.title : TITLES[phase.kind]}</AlertDialogTitle>
                     <AlertDialogDescription>
                         {phase.kind === "checking" && "Asking GitHub for newer game data..."}
                         {phase.kind === "available" && `New game data is available, up to ${phase.remote.label}. Download it now?`}

@@ -17,11 +17,7 @@ const STAGING_DIR_NAME = "game-data-staging"
 export const CHECK_TIMEOUT_MS = 10_000
 
 /** Result of asking GitHub whether newer game data exists. */
-export type DataUpdateCheck =
-    | { status: "available"; remote: DataVersion }
-    | { status: "upToDate" }
-    | { status: "appTooOld"; minAppVersion: string }
-    | { status: "failed"; message: string }
+export type DataUpdateCheck = { status: "available"; remote: DataVersion } | { status: "upToDate" } | { status: "appTooOld"; minAppVersion: string } | { status: "failed"; message: string }
 
 /**
  * Compares two dotted app versions numerically.
