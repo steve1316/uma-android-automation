@@ -1,3 +1,5 @@
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import refresh
@@ -56,3 +58,80 @@ def test_file_md5_ignores_crlf(tmp_path: Path):
     lf.write_bytes(b'{\n    "a": 1\n}\n')
     crlf.write_bytes(b'{\r\n    "a": 1\r\n}\r\n')
     assert refresh.file_md5(lf) == refresh.file_md5(crlf) == "e7b14d5dfc9c22649d62e565e83b1256"
+
+
+GOOD = {
+    "characters.json": {"Vodka": {"Event A": ["Speed +10"]}, "Nakayama Festa": {"Event B": ["Guts +10"]}},
+    "supports.json": {"Sakura Laurel": {"Event C": ["Stamina +5"]}},
+    "skills.json": {"Skill A": {"id": 1, "name_en": "Skill A", "icon_id": 10011}},
+    "epithets.json": {"Ep": {"name": "Ep", "bullet_points": ["Win"]}},
+    "characterPresets.json": {
+        "Vodka": {"name": "Vodka", "distanceAptitudes": {}, "surfaceAptitudes": {}},
+        "Nakayama Festa": {"name": "Nakayama Festa", "distanceAptitudes": {}, "surfaceAptitudes": {}},
+    },
+    "character_objectives.json": {
+        "Vodka": {"name": "Vodka", "mandatoryRaces": []},
+        "Nakayama Festa": {"name": "Nakayama Festa", "mandatoryRaces": []},
+    },
+}
+FRESH = {"character": [CHAR_CARDS[2], CHAR_CARDS[3]], "support": [SUPPORT_CARDS[1]]}
+
+
+def test_find_problems_passes_good_data():
+    assert refresh.find_problems(GOOD, GOOD, FRESH) == []
+
+
+def test_find_problems_flags_shrink_bad_json_and_bad_shape():
+    new = dict(GOOD)
+    new["supports.json"] = {}
+    new["skills.json"] = None
+    new["epithets.json"] = {"Ep": {"name": "Ep"}}
+    problems = refresh.find_problems(GOOD, new, {"character": [], "support": []})
+    assert "supports.json: entry count dropped from 1 to 0" in problems
+    assert "skills.json: missing or not valid JSON" in problems
+    assert "epithets.json: Ep is missing bullet_points" in problems
+
+
+def test_find_problems_flags_incomplete_new_trainee_and_support():
+    new = json.loads(json.dumps(GOOD))
+    del new["characters.json"]["Nakayama Festa"]
+    del new["character_objectives.json"]["Nakayama Festa"]
+    new["supports.json"] = {"Other": {"E": ["x"]}}
+    problems = refresh.find_problems({}, new, FRESH)
+    assert "new trainee Nakayama Festa has no entry in characters.json" in problems
+    assert "new trainee Nakayama Festa has no entry in character_objectives.json" in problems
+    assert "new support card Sakura Laurel has no entry in supports.json" in problems
+
+
+def test_find_problems_flags_empty_event_lists():
+    new = json.loads(json.dumps(GOOD))
+    new["characters.json"]["Vodka"] = {}
+    assert "characters.json: Vodka has no events" in refresh.find_problems(GOOD, new, {"character": [], "support": []})
+
+
+def test_plan_work_reports_moved_ids_and_new_cards():
+    index = {name: "a" for name in refresh.WATCHED_DATASETS}
+    saved = dict(index)
+    none = {"character": [], "support": []}
+    assert refresh.plan_work(index, saved, none) == []
+    saved["support-cards"] = "old"
+    assert refresh.plan_work(index, saved, none) == ["support-cards moved"]
+    assert refresh.plan_work(index, index, FRESH) == ["new trainee Vodka (Christmas)", "new trainee Nakayama Festa", "new support card Sakura Laurel"]
+
+
+def test_merge_included_adds_fresh_ids_sorted():
+    merged = refresh.merge_included({"character": [5], "support": [9]}, FRESH)
+    assert merged == {"character": [5, 100846, 104901], "support": [9, 30125]}
+
+
+def test_write_data_version_hashes_every_updatable_file(tmp_path, monkeypatch):
+    for name in refresh.UPDATABLE_FILES:
+        (tmp_path / name).write_text("{}\n", encoding="utf-8")
+    monkeypatch.setattr(refresh, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(refresh, "DATA_VERSION_PATH", tmp_path / "data_version.json")
+    stamp = refresh.write_data_version("Vodka (Christmas) 2026-09-28", datetime(2026, 10, 4, 12, 0, 5, tzinfo=timezone.utc))
+    on_disk = json.loads((tmp_path / "data_version.json").read_text(encoding="utf-8"))
+    assert on_disk == stamp
+    assert stamp["version"] == "2026-10-04T12:00:05Z"
+    assert stamp["minAppVersion"] == refresh.MIN_APP_VERSION
+    assert sorted(stamp["files"]) == sorted(refresh.UPDATABLE_FILES)

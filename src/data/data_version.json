@@ -1,0 +1,13 @@
+{
+    "version": "2026-09-07T00:00:00Z",
+    "label": "Tamamo Cross (Festival) 2026-09-06",
+    "minAppVersion": "5.8.8",
+    "files": {
+        "characters.json": "d707119e487a58dda69ef8f81eec3b72",
+        "supports.json": "6e293fcc4e1179dd588f7e870ebf87bc",
+        "skills.json": "f7b94b12eda742cd3f3b33f3b0550a87",
+        "epithets.json": "14ea7ad740a66b1bbe2970083a615fc2",
+        "characterPresets.json": "384d65e3f4a84f05008e522f9cbd649c",
+        "character_objectives.json": "e67fa1abfb4a91bc78e3d451569908de"
+    }
+}
