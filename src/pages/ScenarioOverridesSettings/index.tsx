@@ -322,6 +322,7 @@ const ScenarioOverridesSettings = () => {
     /** Reset the Unity Cup Racing section to defaults. */
     const resetUnityCupRacingDefaults = useCallback(() => {
         updateOverrideSetting("unityCupRetryRaces", defaultSettings.scenarioOverrides.unityCupRetryRaces)
+        updateOverrideSetting("unityCupAvoidEliteTeam", defaultSettings.scenarioOverrides.unityCupAvoidEliteTeam)
     }, [updateOverrideSetting, defaultSettings])
 
     /** Reset the URA Finale Training section to defaults. */
@@ -941,6 +942,13 @@ const ScenarioOverridesSettings = () => {
                                                 description="When enabled, the bot re-runs a lost Unity Cup race, retrying until it wins or attempts are exhausted."
                                                 checked={scenarioOverrides.unityCupRetryRaces}
                                                 onCheckedChange={(checked) => updateOverrideSetting("unityCupRetryRaces", checked)}
+                                            />
+                                            <ToggleSetting
+                                                id="unity-cup-avoid-elite-team"
+                                                title="Avoid Elite Team"
+                                                description="For parent farming. Skips the Elite Team offered in the 4th team race, so the strengthened Team Zenith never appears in the finals and its + scenario sparks cannot be earned."
+                                                checked={scenarioOverrides.unityCupAvoidEliteTeam}
+                                                onCheckedChange={(checked) => updateOverrideSetting("unityCupAvoidEliteTeam", checked)}
                                             />
                                         </Section>
                                     </>

@@ -245,6 +245,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🔥 Unity Cup Extreme Burst Min Stat Gain: ${settings.scenarioOverrides?.unityCupExtremeBurstMinStatGain && settings.scenarioOverrides.unityCupExtremeBurstMinStatGain > 0 ? `${settings.scenarioOverrides.unityCupExtremeBurstMinStatGain}` : "❌"}
 🎯 Unity Cup Burst Only Top 3 Stats After Junior: ${settings.scenarioOverrides?.unityCupBurstTopStatsOnlyAfterJunior ? "✅" : "❌"}
 🔄 Unity Cup Retry Races: ${settings.scenarioOverrides?.unityCupRetryRaces ? "✅" : "❌"}
+🚫 Unity Cup Avoid Elite Team: ${settings.scenarioOverrides?.unityCupAvoidEliteTeam ? "✅" : "❌"}
 ⚔️ URA Happy Meek Duel Bias: ${settings.scenarioOverrides?.uraHappyMeekDuelBias ?? "Moderate"}
 🛑 URA Avoid Maxing Happy Meek: ${settings.scenarioOverrides?.uraAvoidMaxHappyMeek ? "✅" : "❌"}
 🎤 Grand Live Lesson Effect Priority: ${(settings.scenarioOverrides?.grandLiveLessonEffectPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveLessonEffectPriority ?? []).join(" > ")}

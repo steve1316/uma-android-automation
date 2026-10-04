@@ -256,6 +256,8 @@ export interface Settings {
         unityCupExtremeBurstMinStatGain: number
         unityCupBurstTopStatsOnlyAfterJunior: boolean
         unityCupRetryRaces: boolean
+        /** Whether Unity Cup skips the Elite Team in the 4th race, keeping the strengthened Team Zenith out of the finals. */
+        unityCupAvoidEliteTeam: boolean
         uraHappyMeekDuelBias: string
         /** Whether URA Finale training skips Happy Meek's facility once one more duel win would max her, for parent farming. */
         uraAvoidMaxHappyMeek: boolean
@@ -544,6 +546,7 @@ export const defaultSettings: Settings = {
         unityCupExtremeBurstMinStatGain: 0,
         unityCupBurstTopStatsOnlyAfterJunior: false,
         unityCupRetryRaces: true,
+        unityCupAvoidEliteTeam: false,
         uraHappyMeekDuelBias: "Moderate",
         uraAvoidMaxHappyMeek: false,
         grandLiveLessonEffectPriority: ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints"],

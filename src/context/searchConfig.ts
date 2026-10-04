@@ -902,6 +902,13 @@ const searchConfig: SearchOption[] = [
         page: "ScenarioOverridesSettings",
     },
     {
+        id: "unity-cup-avoid-elite-team",
+        title: "Unity Cup Avoid Elite Team",
+        description:
+            "For parent farming. Skips the Elite Team offered in the 4th Unity Cup team race, so the strengthened Team Zenith never appears in the finals and its + scenario sparks cannot be earned.",
+        page: "ScenarioOverridesSettings",
+    },
+    {
         id: "ura-happy-meek-duel-bias",
         title: "Happy Meek Duel Training Bias",
         description:
