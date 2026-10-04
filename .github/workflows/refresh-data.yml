@@ -65,7 +65,8 @@ jobs:
       contents: write
       pull-requests: write
     env:
-      DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run == true }}
+      # Only master may publish. A run on any other branch is a dry run, so it can never merge unreviewed branch code.
+      DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run == true || github.ref != 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v4
         with:
