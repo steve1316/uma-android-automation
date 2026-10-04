@@ -3300,8 +3300,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": null,
-        "downgrade": 201602
+        "upgrade": 201602,
+        "downgrade": null
     },
     "Guten Appetit ♪": {
         "id": 110371,
@@ -6128,8 +6128,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 1,
-        "upgrade": 201651,
-        "downgrade": null
+        "upgrade": null,
+        "downgrade": 201651
     },
     "Petrifying Gaze": {
         "id": 201511,
@@ -6170,8 +6170,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": null,
-        "downgrade": 201662
+        "upgrade": 201662,
+        "downgrade": null
     },
     "Pop & Polish": {
         "id": 100481,
@@ -7192,8 +7192,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": 201661,
-        "downgrade": null
+        "upgrade": null,
+        "downgrade": 201661
     },
     "Seirios": {
         "id": 100701,
@@ -7584,8 +7584,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": null,
-        "downgrade": 201652
+        "upgrade": 201652,
+        "downgrade": null
     },
     "Smoke Screen": {
         "id": 201232,
@@ -7668,8 +7668,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": null,
-        "upgrade": 201601,
-        "downgrade": null
+        "upgrade": null,
+        "downgrade": 201601
     },
     "Solid Steps": {
         "id": 202332,
@@ -8480,8 +8480,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": 201591,
-        "downgrade": null
+        "upgrade": null,
+        "downgrade": 201591
     },
     "Sure Shot": {
         "id": 202561,
@@ -8564,8 +8564,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": null,
-        "downgrade": 201612
+        "upgrade": 201612,
+        "downgrade": null
     },
     "Tail Nine": {
         "id": 201612,
@@ -8578,8 +8578,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": 201611,
-        "downgrade": null
+        "upgrade": null,
+        "downgrade": 201611
     },
     "Take the Chance": {
         "id": 202082,
@@ -8620,8 +8620,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 2,
-        "upgrade": 200771,
-        "downgrade": null
+        "upgrade": null,
+        "downgrade": 200771
     },
     "Target in Sight ○": {
         "id": 200292,
@@ -8914,8 +8914,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 2,
-        "upgrade": null,
-        "downgrade": 200772
+        "upgrade": 200772,
+        "downgrade": null
     },
     "Trick (Rear)": {
         "id": 200781,
@@ -9026,8 +9026,8 @@
         "precondition": "",
         "inherited": false,
         "community_tier": 0,
-        "upgrade": null,
-        "downgrade": 201592
+        "upgrade": 201592,
+        "downgrade": null
     },
     "Unchanging": {
         "id": 300021,
