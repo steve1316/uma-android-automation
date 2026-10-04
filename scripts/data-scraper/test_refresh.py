@@ -201,3 +201,18 @@ def test_check_fails_when_head_copy_is_unreadable(monkeypatch, capsys):
     monkeypatch.setattr(refresh, "_fresh_cards", lambda today: {"character": [], "support": []})
     assert refresh.main(["check"]) == 1
     assert "supports.json: could not read the HEAD copy" in capsys.readouterr().out
+
+
+def test_find_problems_flags_emptied_epithet_restrictions():
+    old = json.loads(json.dumps(GOOD))
+    old["epithets.json"] = {
+        "Ep": {"name": "Ep", "bullet_points": ["Win"], "characters": ["Vodka"]},
+        "Ep2": {"name": "Ep2", "bullet_points": ["Win"], "characters": []},
+    }
+    new = json.loads(json.dumps(GOOD))
+    new["epithets.json"] = {
+        "Ep": {"name": "Ep", "bullet_points": ["Win"], "characters": []},
+        "Ep2": {"name": "Ep2", "bullet_points": ["Win"], "characters": []},
+    }
+    problems = refresh.find_problems(old, new, {"character": [], "support": []})
+    assert "epithets.json: character-restricted epithets dropped from 1 to 0" in problems

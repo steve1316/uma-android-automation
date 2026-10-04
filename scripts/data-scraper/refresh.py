@@ -203,6 +203,20 @@ def _shape_problems(name: str, data: Dict[str, Any]) -> List[str]:
     return problems
 
 
+def _restricted_epithets(epithets: Any) -> int:
+    """Counts the epithets that are limited to specific characters.
+
+    Args:
+        epithets (Any): Parsed `epithets.json`, or None when it is missing.
+
+    Returns:
+        How many entries have a non-empty `characters` list.
+    """
+    if not isinstance(epithets, dict):
+        return 0
+    return sum(1 for e in epithets.values() if isinstance(e, dict) and e.get("characters"))
+
+
 def find_problems(old: Dict[str, Any], new: Dict[str, Any], fresh: Dict[str, List[dict]]) -> List[str]:
     """Gates a fresh scrape. The merge is additive, so any shrink or gap means the scrape broke.
 
@@ -224,6 +238,10 @@ def find_problems(old: Dict[str, Any], new: Dict[str, Any], fresh: Dict[str, Lis
         if len(after) < len(before):
             problems.append(f"{name}: entry count dropped from {len(before)} to {len(after)}")
         problems.extend(_shape_problems(name, after))
+    restricted_before = _restricted_epithets(old.get("epithets.json"))
+    restricted_after = _restricted_epithets(new.get("epithets.json"))
+    if restricted_after < restricted_before:
+        problems.append(f"epithets.json: character-restricted epithets dropped from {restricted_before} to {restricted_after}")
     for card in fresh["character"]:
         for name in TRAINEE_FILES:
             if card["name_en"] not in (new.get(name) or {}):
