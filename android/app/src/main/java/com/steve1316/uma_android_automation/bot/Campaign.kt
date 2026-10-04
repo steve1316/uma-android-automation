@@ -1569,20 +1569,14 @@ abstract class Campaign(game: Game) : Task(game) {
         // Otherwise, fall back to the regular energy recovery logic.
         return when {
             ButtonRest.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
-                // Another OK tap for the possibility of a scheduled race warning popup.
-                game.wait(game.dialogWaitDelay)
-                ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
+                confirmRestDialogs()
                 game.waitForLoading()
                 MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via rest.")
                 true
             }
 
             ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
-                // Another OK tap for the possibility of a scheduled race warning popup.
-                game.wait(game.dialogWaitDelay)
-                ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
+                confirmRestDialogs()
                 game.waitForLoading()
                 MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via Summer rest.")
                 true
@@ -1770,6 +1764,16 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Whether the final chain outing may be taken right now - only on the Pure Passion turn (or when the schedule or Pure Passion turn is off). */
     private fun allowFinalOutingNow(): Boolean = DatingSchedule.allowFinalOuting(enableDatingSchedule, purePassionTurn, date.day)
+
+    /** Taps OK on the rest dialog and again for a possible scheduled-race warning. The taps land together, so a pause waits until both are done. */
+    private fun confirmRestDialogs() {
+        BotHold.deferPause {
+            ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
+            // Another OK tap for the possibility of a scheduled race warning popup.
+            game.wait(game.dialogWaitDelay)
+            ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
+        }
+    }
 
     /** Whether the recreation schedule is actively driving decisions: enabled and not abandoned (the Pure Passion window has not passed with the chain unfinished). */
     private fun isScheduleActive(): Boolean = enableDatingSchedule && !DatingSchedule.isScheduleAbandoned(purePassionTurn, date.day, recreationDateCompleted)

@@ -2,6 +2,7 @@ package com.steve1316.uma_android_automation.bot
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SQLiteSettingsManager
 import com.steve1316.automation_library.utils.SettingsHelper
@@ -1841,10 +1842,12 @@ class Racing(private val game: Game, private val campaign: Campaign) {
     private fun handleSelectedRace(): Boolean {
         MessageLog.v(TAG, "[RACE] Starting process for a race that is already selected.")
 
-        // Confirm the selection and the resultant popup and then wait for the game to load.
-        ButtonRace.click(game.imageUtils, tries = 30)
-        game.wait(1.0)
-        ButtonRace.click(game.imageUtils, tries = 10)
+        // Confirm the selection and the resultant popup and then wait for the game to load. Both taps must land together, so a pause waits for them.
+        BotHold.deferPause {
+            ButtonRace.click(game.imageUtils, tries = 30)
+            game.wait(1.0)
+            ButtonRace.click(game.imageUtils, tries = 10)
+        }
         game.wait(2.0)
 
         game.waitForLoading()
@@ -1936,13 +1939,16 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         }
 
         MessageLog.v(TAG, "[RACE] Confirming the mandatory race selection.")
-        // This is the Race button on the race list, not the race-day button on the main screen, which the caller already tapped to get here.
-        if (!ButtonRace.click(game.imageUtils, tries = 10)) {
-            MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the Race button on the race list screen.")
+        // The race list Race button and the popup Race button must land together, so a pause waits until both are done.
+        BotHold.deferPause {
+            // This is the Race button on the race list, not the race-day button on the main screen, which the caller already tapped to get here.
+            if (!ButtonRace.click(game.imageUtils, tries = 10)) {
+                MessageLog.w(TAG, "[WARN] handleMandatoryRace:: Could not tap the Race button on the race list screen.")
+            }
+            game.wait(1.0)
+            MessageLog.i(TAG, "[RACE] Confirming any popup from the mandatory race selection.")
+            ButtonRace.click(game.imageUtils, tries = 3)
         }
-        game.wait(1.0)
-        MessageLog.i(TAG, "[RACE] Confirming any popup from the mandatory race selection.")
-        ButtonRace.click(game.imageUtils, tries = 3)
         game.wait(2.0)
 
         game.waitForLoading()
@@ -2297,16 +2303,19 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
             // Let the campaign handle any necessary logic on the scheduled race's Race Prep screen (e.g. using race items).
             campaign.onScheduledRacePrepScreen()
-
-            MessageLog.v(TAG, "[RACE] Confirming the scheduled race dialog...")
-            ButtonRace.click(game.imageUtils, tries = 30)
-            game.wait(game.dialogWaitDelay)
         }
 
-        // Confirm the selection and the resultant popup and then wait for the game to load.
-        ButtonRace.click(game.imageUtils, tries = 30)
-        game.wait(1.0)
-        ButtonRace.click(game.imageUtils, tries = 10)
+        // Confirm the selection and the resultant popup and then wait for the game to load. The taps must land together, so a pause waits for them.
+        BotHold.deferPause {
+            if (isScheduledRace) {
+                MessageLog.v(TAG, "[RACE] Confirming the scheduled race dialog...")
+                ButtonRace.click(game.imageUtils, tries = 30)
+                game.wait(game.dialogWaitDelay)
+            }
+            ButtonRace.click(game.imageUtils, tries = 30)
+            game.wait(1.0)
+            ButtonRace.click(game.imageUtils, tries = 10)
+        }
         game.wait(2.0)
 
         // Skip the race if possible, otherwise run it manually.
