@@ -1,18 +1,29 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
-import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonHomeFansInfo
 import com.steve1316.uma_android_automation.components.LabelDuel
-import com.steve1316.uma_android_automation.components.LabelDuelSmall
 import com.steve1316.uma_android_automation.types.StatName
 import kotlin.math.abs
 
 // Screen-width fractions of the five facility button centers, ordered Speed, Stamina, Power, Guts, Wit. Empirically measured so the duel badge maps to the correct facility column.
 private val FACILITY_SLOT_FRACTIONS: List<Pair<StatName, Double>> =
     listOf(StatName.SPEED to 0.145, StatName.STAMINA to 0.324, StatName.POWER to 0.499, StatName.GUTS to 0.678, StatName.WIT to 0.853)
+
+/** Happy Meek's duel level once she shows "Lvl MAX". One past the highest numbered level so a maxed read never equals [DUEL_LEVEL_BEFORE_MAX]. */
+const val DUEL_LEVEL_MAX = 6
+
+/** The duel level at which one more win maxes Happy Meek. */
+const val DUEL_LEVEL_BEFORE_MAX = DUEL_LEVEL_MAX - 1
+
+// Matches "Lvl 2" / "Lvl MAX" under Meek's support portrait, tolerating the "l" misread as "I", "1" or "|" or dropped.
+// The "Lv" prefix keeps friendship "MAX" badges out.
+private val DUEL_LEVEL_REGEX = Regex("""l\s*v\s*[l1i|]?\s*(max|[1-5])""", RegexOption.IGNORE_CASE)
+
+// The level crop holds nothing but her label, so text that is only a level (the "Lvl" dropped by a split OCR block, plus any stray marks) still reads cleanly.
+private val BARE_DUEL_LEVEL_REGEX = Regex("""^[^0-9a-z]*(max|[1-5])[^0-9a-z]*$""", RegexOption.IGNORE_CASE)
 
 /** Win-prediction tier for a Happy Meek duel contest, best to worst. WORST is the untemplated X tier - a row that matches none of the great / good / bad prediction icons. */
 enum class DuelPrediction { GREAT, GOOD, BAD, WORST }
@@ -129,6 +140,42 @@ fun duelFacilityForBadgeX(badgeX: Int, displayWidth: Int): StatName =
     FACILITY_SLOT_FRACTIONS.minByOrNull { abs(it.second * displayWidth - badgeX) }?.first ?: StatName.SPEED
 
 /**
+ * Parse Happy Meek's duel level from OCR text of the label under her support portrait, which reads "Duel Lvl N" or "Duel Lvl MAX". ML Kit sometimes
+ * returns the number alone, so a text that is nothing but a level counts too.
+ *
+ * @param text The OCR'd label text.
+ * @return The level 1-5, [DUEL_LEVEL_MAX] when maxed, or null when no level text is found.
+ */
+fun parseDuelLevel(text: String): Int? {
+    val value = (DUEL_LEVEL_REGEX.find(text) ?: BARE_DUEL_LEVEL_REGEX.find(text.trim()))?.groupValues?.get(1) ?: return null
+    return if (value.equals("max", ignoreCase = true)) DUEL_LEVEL_MAX else value.toInt()
+}
+
+/**
+ * Decide whether to skip the facility Happy Meek is on so she never reaches MAX. Winning at [DUEL_LEVEL_BEFORE_MAX] maxes her, so that level is
+ * skipped. An unknown level is skipped too, since one missed read at that level would max her. A maxed level is not skipped because there is
+ * nothing left to protect.
+ *
+ * @param level Her current duel level, or null when it is unknown.
+ * @return True when the facility should be skipped this turn.
+ */
+fun shouldAvoidDuelFacility(level: Int?): Boolean = level == null || level == DUEL_LEVEL_BEFORE_MAX
+
+/**
+ * Advance Happy Meek's tracked duel level after the bot enters a duel, since winning is the only way it rises. Capped at [DUEL_LEVEL_BEFORE_MAX]
+ * so dead reckoning never claims MAX on its own, and left alone when the level is unknown or already maxed.
+ *
+ * @param level Her tracked duel level before the duel, or null when it is unknown.
+ * @return The level to track after the duel.
+ */
+fun advanceDuelLevel(level: Int?): Int? =
+    when (level) {
+        null -> null
+        DUEL_LEVEL_MAX -> DUEL_LEVEL_MAX
+        else -> minOf(level + 1, DUEL_LEVEL_BEFORE_MAX)
+    }
+
+/**
  * Handles the URA Finale scenario with scenario-specific logic and handling.
  *
  * @property game The [Game] instance for interacting with the game state.
@@ -143,14 +190,13 @@ class UraFinale(game: Game) : Campaign(game) {
     }
 
     override fun onMainScreenEntry() {
-        // Resolve the Happy Meek duel facility once per turn here (single-threaded) so the parallel per-facility training analysis just reads it instead of re-matching the badge on all five.
-        // The duel badge sits on one facility button, so its column identifies the duel facility regardless of which facility is currently selected.
+        // The Main screen only shows that a duel is on offer, not which facility carries it.
+        // The facility is resolved from the training screen's buttons during analysis.
         training.duelFacility = null
-        val sourceBitmap = game.imageUtils.getSourceBitmap()
-        if (LabelDuel.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
-            val badge = LabelDuelSmall.findImageWithBitmap(game.imageUtils, sourceBitmap)
-            training.duelFacility = badge?.let { duelFacilityForBadgeX(it.x.toInt(), SharedData.displayWidth) }
-            MessageLog.i(TAG, "[URA] Happy Meek duel available this turn on the ${training.duelFacility?.name?.lowercase() ?: "(unresolved)"} facility. Training will be biased toward it.")
+        training.duelFacilityResolveAttempted = false
+        training.duelAvailable = LabelDuel.check(game.imageUtils)
+        if (training.duelAvailable) {
+            MessageLog.i(TAG, "[URA] Happy Meek duel available this turn. Its facility will be resolved on the training screen.")
         }
     }
 }

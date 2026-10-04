@@ -257,6 +257,8 @@ export interface Settings {
         unityCupBurstTopStatsOnlyAfterJunior: boolean
         unityCupRetryRaces: boolean
         uraHappyMeekDuelBias: string
+        /** Whether URA Finale training skips Happy Meek's facility once one more duel win would max her, for parent farming. */
+        uraAvoidMaxHappyMeek: boolean
         grandLiveLessonEffectPriority: string[]
         grandLiveLessonStatPriority: string[]
         grandLiveLessonHintPriority: string[]
@@ -543,6 +545,7 @@ export const defaultSettings: Settings = {
         unityCupBurstTopStatsOnlyAfterJunior: false,
         unityCupRetryRaces: true,
         uraHappyMeekDuelBias: "Moderate",
+        uraAvoidMaxHappyMeek: false,
         grandLiveLessonEffectPriority: ["Training Effectiveness", "Training Gain", "Support Events", "Stat Gains", "Skill Hints"],
         grandLiveLessonStatPriority: [],
         grandLiveLessonHintPriority: [],

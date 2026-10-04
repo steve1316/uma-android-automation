@@ -740,6 +740,7 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
             val duelSourceBitmap = game.imageUtils.getSourceBitmap()
             val trainingOptionLocations: ArrayList<Point> = IconTrainingEventHorseshoe.findAll(game.imageUtils, sourceBitmap = duelSourceBitmap)
             optionSelected = handleHappyMeekDuel(trainingOptionLocations, duelSourceBitmap)
+            campaign.training.onDuelEntered()
             specialEventHandled = true
             duelHandled = true
         } else if (specialEventResult != null) {

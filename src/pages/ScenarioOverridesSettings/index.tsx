@@ -327,6 +327,7 @@ const ScenarioOverridesSettings = () => {
     /** Reset the URA Finale Training section to defaults. */
     const resetUraFinaleDefaults = useCallback(() => {
         updateOverrideSetting("uraHappyMeekDuelBias", defaultSettings.scenarioOverrides.uraHappyMeekDuelBias)
+        updateOverrideSetting("uraAvoidMaxHappyMeek", defaultSettings.scenarioOverrides.uraAvoidMaxHappyMeek)
     }, [updateOverrideSetting, defaultSettings])
 
     /** Reset the Grand Live Lessons section to defaults. */
@@ -959,6 +960,13 @@ const ScenarioOverridesSettings = () => {
                                                 right={<ValuePill label={DUEL_BIAS_OPTIONS.find((o) => o.value === scenarioOverrides.uraHappyMeekDuelBias)?.value ?? "Moderate"} />}
                                             />
                                         </SearchableItem>
+                                        <ToggleSetting
+                                            id="ura-avoid-max-happy-meek"
+                                            title="Avoid Maxing Happy Meek"
+                                            description="For parent farming. Once Happy Meek reaches Duel Lvl 5, the bot stops training on her facility so she never reaches MAX and the Finals Happy Meek stays at normal strength."
+                                            checked={scenarioOverrides.uraAvoidMaxHappyMeek}
+                                            onCheckedChange={(checked) => updateOverrideSetting("uraAvoidMaxHappyMeek", checked)}
+                                        />
                                     </Section>
                                 )}
 

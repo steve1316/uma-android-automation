@@ -107,7 +107,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     var lastSelectionSource: SelectionSource? = null
         private set
 
-    /** List of training names that are restricted or unavailable. */
+    /** Training names that cannot be picked this turn: restricted by the game (cannot-perform) or ruled out by the scenario. */
     private var restrictedTrainingNames: MutableSet<StatName> = mutableSetOf()
 
     /** List of analysis results cached for reuse during the current turn. */
@@ -251,7 +251,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** List of stat trainings to ignore. */
     internal val blacklist: List<StatName?> = SettingsHelper.getStringArraySetting("training", "trainingBlacklist").map { StatName.fromName(it) }
 
-    /** Whether every training is unavailable because it is restricted (cannot-perform) or blacklisted. Resting cannot fix that, so it is not an energy problem. */
+    /** Whether every training is unavailable because it is restricted, scenario-excluded, or blacklisted. Resting cannot fix that, so it is not an energy problem. */
     private val allTrainingsRestrictedOrBlacklisted: Boolean
         get() = restrictedTrainingNames.size == StatName.entries.size || (restrictedTrainingNames.size + effectiveBlacklist().size) >= StatName.entries.size
 
@@ -310,6 +310,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         /** Scenario-specific extra data populated by [runExtraTrainingAnalysis]. */
         val extras: MutableMap<String, Any?> = mutableMapOf()
+
+        /**
+         * Why a scenario ruled this training out this turn, or null to keep it. Set from [runExtraTrainingAnalysis], so a scenario that threads its
+         * extra analysis must set it before counting down the latch. An excluded training is recorded as restricted and never analyzed further.
+         */
+        var exclusionReason: String? = null
 
         /**
          * Convert this completed analysis into a [TrainingOption] flagged as skipped for [reason]. Used only to record why a training was passed over, for the decision log.
@@ -1634,6 +1640,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // In parallel mode, this runs synchronously. In singleTraining mode, the scenario may start a thread.
             runExtraTrainingAnalysis(result, sourceBitmap, singleTraining)
 
+            // A scenario may rule this training out from its extra analysis. Treat it like a restricted training so no fallback can pick it
+            // and an empty training map is not mistaken for an energy problem.
+            val exclusionReason = if (test) null else result.exclusionReason
+            if (exclusionReason != null) {
+                MessageLog.i(TAG, "[TRAINING] Skipping $statName training: $exclusionReason.")
+                restrictedTrainingNames.add(statName)
+                continue
+            }
+
             // OCR the displayed training level (1-5) for this stat while its panel is on screen.
             // Skipped during Pre-Debut, Junior, and Summer since the level boost only fires in Year 2+ Stat Efficiency scoring,
             // and Summer forces every training to Lvl 5 (the boost would equalize across stats).
@@ -2302,6 +2317,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     open fun runExtraTrainingAnalysis(result: TrainingAnalysisResult, sourceBitmap: Bitmap, singleTraining: Boolean) {
         result.latch.countDown()
     }
+
+    /** Called when the bot enters a scenario duel, which may change state the scenario tracks across turns. Default no-op. */
+    open fun onDuelEntered() {}
 
     /**
      * Returns scenario-specific extra log lines for a training option. Override to add custom log output.
