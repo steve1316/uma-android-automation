@@ -25,6 +25,14 @@ type Phase =
     | { kind: "done"; remote: DataVersion }
     | { kind: "message"; title: string; body: string }
 
+/** Dialog titles for the phases that do not carry their own. */
+const TITLES: Record<Exclude<Phase["kind"], "hidden" | "message">, string> = {
+    checking: "Checking for Game Data Updates",
+    available: "Game Data Update",
+    downloading: "Game Data Update",
+    done: "Game Data Downloaded",
+}
+
 /**
  * Checks GitHub for newer game data on launch and when the drawer button asks, and offers to download it.
  * @returns The dialog, or nothing while hidden.
@@ -46,9 +54,11 @@ export default function DataUpdateDialog() {
         if (result.status === "available") {
             logWithTimestamp(`[DataUpdate] Newer game data available: ${result.remote.label}`)
             setPhase({ kind: "available", remote: result.remote })
-        } else if (!manual) {
-            // The launch check stays silent unless there is something to download.
-        } else if (result.status === "upToDate") {
+            return
+        }
+        // The launch check stays silent unless there is something to download.
+        if (!manual) return
+        if (result.status === "upToDate") {
             setPhase({ kind: "message", title: "Game Data Up to Date", body: `You have the latest game data (up to ${getActiveDataVersion().label}).` })
         } else if (result.status === "appTooOld") {
             setPhase({ kind: "message", title: "App Update Needed", body: `The newest game data needs app version ${result.minAppVersion} or newer.` })
@@ -92,13 +102,7 @@ export default function DataUpdateDialog() {
             <AlertDialogContent onDismiss={working ? undefined : close}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        {phase.kind === "message"
-                            ? phase.title
-                            : phase.kind === "checking"
-                              ? "Checking for Game Data Updates"
-                              : phase.kind === "done"
-                                ? "Game Data Downloaded"
-                                : "Game Data Update"}
+                        {phase.kind === "message" ? phase.title : TITLES[phase.kind]}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                         {phase.kind === "checking" && "Asking GitHub for newer game data..."}

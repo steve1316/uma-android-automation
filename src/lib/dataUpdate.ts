@@ -7,8 +7,8 @@ export const DATA_UPDATE_CHECK_EVENT = "checkDataUpdate"
 /** The data files an update replaces. races.json and scenarios.json only change with an APK. */
 export const DATA_FILES = ["characters.json", "supports.json", "skills.json", "epithets.json", "characterPresets.json", "character_objectives.json"] as const
 
-/** Where master's game data is served from. */
-const DEFAULT_DATA_URL_BASE = "https://raw.githubusercontent.com/steve1316/uma-android-automation/refs/heads/master/src/data"
+/** Where the data files are downloaded from. `EXPO_PUBLIC_DATA_URL_BASE` overrides master on GitHub at build time, for testing. */
+const DATA_URL_BASE = process.env.EXPO_PUBLIC_DATA_URL_BASE || "https://raw.githubusercontent.com/steve1316/uma-android-automation/refs/heads/master/src/data"
 
 /** Folder that downloads land in before they are verified and moved into place. */
 const STAGING_DIR_NAME = "game-data-staging"
@@ -22,14 +22,6 @@ export type DataUpdateCheck =
     | { status: "upToDate" }
     | { status: "appTooOld"; minAppVersion: string }
     | { status: "failed"; message: string }
-
-/**
- * Returns the base URL the data files are downloaded from.
- * @returns `EXPO_PUBLIC_DATA_URL_BASE` when set at build time (for testing), else master on GitHub.
- */
-export function getDataUrlBase(): string {
-    return process.env.EXPO_PUBLIC_DATA_URL_BASE || DEFAULT_DATA_URL_BASE
-}
 
 /**
  * Compares two dotted app versions numerically.
@@ -56,7 +48,7 @@ export async function checkForDataUpdate(appVersion: string): Promise<DataUpdate
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), CHECK_TIMEOUT_MS)
     try {
-        const response = await fetch(`${getDataUrlBase()}/${VERSION_FILE_NAME}?t=${Date.now()}`, { signal: controller.signal })
+        const response = await fetch(`${DATA_URL_BASE}/${VERSION_FILE_NAME}?t=${Date.now()}`, { signal: controller.signal })
         if (!response.ok) return { status: "failed", message: `GitHub returned HTTP ${response.status}.` }
         const remote = (await response.json()) as DataVersion
         if (remote.version <= getInstalledDataVersion().version) return { status: "upToDate" }
@@ -81,7 +73,7 @@ export async function applyDataUpdate(remote: DataVersion): Promise<void> {
     staging.create()
     try {
         for (const name of DATA_FILES) {
-            const url = `${getDataUrlBase()}/${name}?v=${encodeURIComponent(remote.version)}`
+            const url = `${DATA_URL_BASE}/${name}?v=${encodeURIComponent(remote.version)}`
             const file = await File.downloadFileAsync(url, new File(staging, name))
             if (!remote.files[name] || file.md5 !== remote.files[name]) {
                 throw new Error(`${name} did not match its checksum. GitHub may still be serving an older copy, so try again in a few minutes.`)

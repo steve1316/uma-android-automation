@@ -34,16 +34,25 @@ export function getGameDataDir(): Directory {
 }
 
 /**
+ * Reads and parses one JSON file from the downloaded game data folder.
+ * @param fileName The file name, e.g. "supports.json".
+ * @returns The parsed file, or null when it is missing or cannot be parsed.
+ */
+function readGameDataJson(fileName: string): unknown | null {
+    try {
+        const file = new File(getGameDataDir(), fileName)
+        return file.exists ? JSON.parse(file.textSync()) : null
+    } catch {
+        return null
+    }
+}
+
+/**
  * Reads the version stamp of the downloaded game data.
  * @returns The stamp, or null when nothing complete was downloaded or it cannot be parsed.
  */
 export function readDownloadedVersion(): DataVersion | null {
-    try {
-        const file = new File(getGameDataDir(), VERSION_FILE_NAME)
-        return file.exists ? (JSON.parse(file.textSync()) as DataVersion) : null
-    } catch {
-        return null
-    }
+    return readGameDataJson(VERSION_FILE_NAME) as DataVersion | null
 }
 
 /**
@@ -70,11 +79,5 @@ export function getActiveDataVersion(): DataVersion {
  * @returns The parsed file, or null to fall back to the bundled copy.
  */
 export function readDownloaded(fileName: string): unknown | null {
-    if (getActiveDataVersion() === BUNDLED_VERSION) return null
-    try {
-        const file = new File(getGameDataDir(), fileName)
-        return file.exists ? JSON.parse(file.textSync()) : null
-    } catch {
-        return null
-    }
+    return getActiveDataVersion() === BUNDLED_VERSION ? null : readGameDataJson(fileName)
 }
