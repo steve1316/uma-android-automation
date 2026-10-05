@@ -507,7 +507,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
                 <Pressable
                     style={styles.footerIconButton}
                     android_ripple={{ color: colors.ripple, foreground: true }}
-                    accessibilityLabel="Check for data updates"
+                    accessibilityLabel="Check for updates"
                     onPress={() => DeviceEventEmitter.emit(DATA_UPDATE_CHECK_EVENT)}
                 >
                     <Ionicons name="cloud-download-outline" size={24} color={colors.text} />

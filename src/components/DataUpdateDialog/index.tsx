@@ -4,6 +4,7 @@ import * as Application from "expo-application"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog"
 import { Text } from "../ui/text"
 import { DataVersion, getActiveDataVersion } from "../../data/live/readDownloaded"
+import { checkForAppUpdate } from "../../lib/appUpdate"
 import { applyDataUpdate, checkForDataUpdate, DATA_UPDATE_CHECK_EVENT } from "../../lib/dataUpdate"
 import { logErrorWithTimestamp, logWithTimestamp } from "../../lib/logger"
 
@@ -11,21 +12,22 @@ import { logErrorWithTimestamp, logWithTimestamp } from "../../lib/logger"
 type Phase =
     | { kind: "hidden" }
     | { kind: "checking" }
-    | { kind: "available"; remote: DataVersion }
+    | { kind: "available"; remote: DataVersion; note: string }
     | { kind: "downloading"; remote: DataVersion }
     | { kind: "done"; remote: DataVersion }
     | { kind: "message"; title: string; body: string }
 
 /** Dialog titles for the phases that do not carry their own. */
 const TITLES: Record<Exclude<Phase["kind"], "hidden" | "message">, string> = {
-    checking: "Checking for Game Data Updates",
+    checking: "Checking for Updates",
     available: "Game Data Update",
     downloading: "Game Data Update",
     done: "Game Data Downloaded",
 }
 
 /**
- * Checks GitHub for newer game data on launch and when the drawer button asks, and offers to download it.
+ * Checks GitHub for a newer app and newer game data on launch and when the drawer button asks. The app comes first: a newer app gets the
+ * native update dialog, and game data is only offered once the app is current.
  * @returns The dialog, or nothing while hidden.
  */
 export default function DataUpdateDialog() {
@@ -40,21 +42,36 @@ export default function DataUpdateDialog() {
     const runCheck = useCallback(async (manual: boolean) => {
         if (busy.current) return
         if (manual) setPhase({ kind: "checking" })
-        const result = await checkForDataUpdate(Application.nativeApplicationVersion || "0.0.0")
+        // Newer game data can need a newer app, so the app is checked first. Its dialog is native, so this one steps aside.
+        const app = await checkForAppUpdate()
+        if (busy.current) return
+        if (app.status === "available") {
+            logWithTimestamp("[AppUpdate] Newer app version available.")
+            if (manual) setPhase({ kind: "hidden" })
+            return
+        }
+        const appVersion = Application.nativeApplicationVersion || "0.0.0"
+        // Shown alongside the game data result on a manual check, since the app result has no dialog of its own here.
+        let appNote = ""
+        if (manual && app.status === "held") appNote = ` App update v${app.version} is ready. Stop the bot, then tap the cloud button to update.`
+        else if (manual && app.status === "failed") appNote = ` Could not check for app updates: ${app.message}`
+        const result = await checkForDataUpdate(appVersion)
         if (busy.current) return
         if (result.status === "available") {
             logWithTimestamp(`[DataUpdate] Newer game data available: ${result.remote.label}`)
-            setPhase({ kind: "available", remote: result.remote })
+            setPhase({ kind: "available", remote: result.remote, note: appNote })
             return
         }
         // The launch check stays silent unless there is something to download.
         if (!manual) return
-        if (result.status === "upToDate") {
-            setPhase({ kind: "message", title: "Game Data Up to Date", body: `You have the latest game data (up to ${getActiveDataVersion().label}).` })
+        if (result.status === "upToDate" && app.status === "upToDate") {
+            setPhase({ kind: "message", title: "Everything Up to Date", body: `You have the latest app (v${appVersion}) and game data (up to ${getActiveDataVersion().label}).` })
+        } else if (result.status === "upToDate") {
+            setPhase({ kind: "message", title: "Game Data Up to Date", body: `You have the latest game data (up to ${getActiveDataVersion().label}).${appNote}` })
         } else if (result.status === "appTooOld") {
             setPhase({ kind: "message", title: "App Update Needed", body: `The newest game data needs app version ${result.minAppVersion} or newer.` })
         } else {
-            setPhase({ kind: "message", title: "Could Not Check for Data Updates", body: result.message })
+            setPhase({ kind: "message", title: "Could Not Check for Updates", body: `${result.message}${appNote}` })
         }
     }, [])
 
@@ -94,8 +111,8 @@ export default function DataUpdateDialog() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>{phase.kind === "message" ? phase.title : TITLES[phase.kind]}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {phase.kind === "checking" && "Asking GitHub for newer game data..."}
-                        {phase.kind === "available" && `New game data is available, up to ${phase.remote.label}. Download it now?`}
+                        {phase.kind === "checking" && "Asking GitHub for a newer app and game data..."}
+                        {phase.kind === "available" && `New game data is available, up to ${phase.remote.label}. Download it now?${phase.note}`}
                         {phase.kind === "downloading" && `Downloading game data up to ${phase.remote.label}...`}
                         {phase.kind === "done" && `Game data up to ${phase.remote.label} is ready. Close and reopen the app to start using it.`}
                         {phase.kind === "message" && phase.body}

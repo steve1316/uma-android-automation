@@ -26,6 +26,9 @@
     <!--Enables Battery Optimization coming from the Automation Library.-->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!--Grants permission for the automation library's AppUpdater to install a downloaded app update. Android still asks the user to confirm every install.-->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
         android:name=".MainApplication"
         android:allowBackup="false"

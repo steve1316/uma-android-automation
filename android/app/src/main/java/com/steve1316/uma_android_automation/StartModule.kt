@@ -19,16 +19,20 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.steve1316.automation_library.events.ExceptionEvent
 import com.steve1316.automation_library.events.JSEvent
 import com.steve1316.automation_library.events.StartEvent
+import com.steve1316.automation_library.utils.AppUpdater
 import com.steve1316.automation_library.utils.BatteryOptimizationUtils
 import com.steve1316.automation_library.utils.MediaProjectionService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Game
-import com.steve1316.uma_android_automation.utils.AppUpdateChecker
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -554,7 +558,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
-     * Shows the changelog dialog for the currently installed app version. Reuses [AppUpdateChecker] so the dialog matches the updater UI.
+     * Shows the changelog dialog for the currently installed app version. Reuses the library's update dialog so it matches the updater UI.
      *
      * @param promise Resolves once the dialog has been dispatched on the UI thread. The dialog fetch may still happen asynchronously.
      */
@@ -566,10 +570,52 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
                 promise.reject("NO_ACTIVITY", "Cannot show the changelog because there is no current Activity.")
                 return
             }
-            AppUpdateChecker(activity).showCurrentChangelog()
+            appUpdater(activity).showCurrentChangelog()
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("CHANGELOG_ERROR", "Failed to show changelog: ${e.message}")
+        }
+    }
+
+    /**
+     * Builds the library's app updater for this app's GitHub releases.
+     *
+     * @param activity The [Activity] the update dialog is shown on.
+     * @return An [AppUpdater] for this repository and installed version.
+     */
+    private fun appUpdater(activity: Activity): AppUpdater = AppUpdater(activity, AppUpdater.Config("steve1316", "uma-android-automation", BuildConfig.VERSION_NAME))
+
+    /**
+     * Checks GitHub for a newer app release and shows the update dialog when one exists.
+     *
+     * @param promise Resolves `{ status, version }` where status is "available" (the update dialog was shown), "held" (the bot is running), or
+     *   "upToDate". Rejects when GitHub cannot be reached.
+     */
+    @ReactMethod
+    fun checkForAppUpdate(promise: Promise) {
+        val activity = this.reactApplicationContext.currentActivity
+        if (activity == null) {
+            promise.reject("NO_ACTIVITY", "Cannot check for app updates because there is no current Activity.")
+            return
+        }
+        CoroutineScope(Dispatchers.Main + SupervisorJob()).launch {
+            try {
+                val result = appUpdater(activity).checkForUpdate()
+                val status =
+                    when (result.decision) {
+                        AppUpdater.Decision.SHOW -> "available"
+                        AppUpdater.Decision.HOLD -> "held"
+                        AppUpdater.Decision.UP_TO_DATE -> "upToDate"
+                    }
+                promise.resolve(
+                    Arguments.createMap().apply {
+                        putString("status", status)
+                        putString("version", result.version)
+                    },
+                )
+            } catch (e: Exception) {
+                promise.reject("APP_UPDATE_ERROR", e.message ?: e.javaClass.simpleName)
+            }
         }
     }
 
