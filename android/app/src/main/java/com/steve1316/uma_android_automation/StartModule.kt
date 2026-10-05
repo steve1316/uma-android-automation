@@ -29,6 +29,10 @@ import com.steve1316.uma_android_automation.utils.AppUpdateChecker
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -554,7 +558,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
-     * Shows the changelog dialog for the currently installed app version. Reuses [AppUpdateChecker] so the dialog matches the updater UI.
+     * Shows the changelog dialog for the currently installed app version. Reuses [AppUpdateDialog] so the dialog matches the updater UI.
      *
      * @param promise Resolves once the dialog has been dispatched on the UI thread. The dialog fetch may still happen asynchronously.
      */
@@ -570,6 +574,40 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("CHANGELOG_ERROR", "Failed to show changelog: ${e.message}")
+        }
+    }
+
+    /**
+     * Checks GitHub for a newer app release and shows the update dialog when one exists.
+     *
+     * @param promise Resolves `{ status, version }` where status is "available" (the update dialog was shown), "held" (the bot is running), or
+     *   "upToDate". Rejects when GitHub cannot be reached.
+     */
+    @ReactMethod
+    fun checkForAppUpdate(promise: Promise) {
+        val activity = this.reactApplicationContext.currentActivity
+        if (activity == null) {
+            promise.reject("NO_ACTIVITY", "Cannot check for app updates because there is no current Activity.")
+            return
+        }
+        CoroutineScope(Dispatchers.Main + SupervisorJob()).launch {
+            try {
+                val result = AppUpdateChecker(activity).checkForUpdate()
+                val status =
+                    when (result.decision) {
+                        AppUpdateChecker.Decision.SHOW -> "available"
+                        AppUpdateChecker.Decision.HOLD -> "held"
+                        AppUpdateChecker.Decision.UP_TO_DATE -> "upToDate"
+                    }
+                promise.resolve(
+                    Arguments.createMap().apply {
+                        putString("status", status)
+                        putString("version", result.version)
+                    },
+                )
+            } catch (e: Exception) {
+                promise.reject("APP_UPDATE_ERROR", e.message ?: e.javaClass.simpleName)
+            }
         }
     }
 

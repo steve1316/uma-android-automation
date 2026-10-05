@@ -1,307 +1,191 @@
 package com.steve1316.uma_android_automation.utils
 
 import android.app.Activity
-import android.app.Dialog
-import android.content.Intent
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
-import android.net.Uri
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ReplacementSpan
-import android.util.DisplayMetrics
-import android.util.Xml
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ScrollView
-import android.widget.TextView
-import androidx.core.content.ContextCompat
+import com.steve1316.automation_library.utils.BotService
 import com.steve1316.uma_android_automation.BuildConfig
-import com.steve1316.uma_android_automation.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.xmlpull.v1.XmlPullParser
-import java.io.InputStream
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Checks for app updates by fetching and parsing the remote update.xml hosted on GitHub. If a newer version is detected, a custom dialog is
- * shown with release notes and a link to download.
+ * Checks for app updates against the latest published GitHub release. A newer release opens [AppUpdateDialog], which downloads and installs
+ * it in the app.
  *
  * @property activity The [Activity] context used to display the update dialog.
  */
 class AppUpdateChecker(private val activity: Activity) {
     companion object {
-        private const val UPDATE_XML_URL =
-            "https://raw.githubusercontent.com/steve1316/uma-android-automation/refs/heads/master/android/app/update.xml"
-        private const val MAX_SCROLL_HEIGHT_RATIO = 0.5
+        private const val RELEASES_API_URL = "https://api.github.com/repos/steve1316/uma-android-automation/releases"
+        private const val TIMEOUT_MS = 10_000
+
+        /**
+         * Reads the fields the dialog and installer need from a GitHub release.
+         *
+         * @param json The release JSON from the GitHub API.
+         * @return The parsed [UpdateInfo], or null if the tag or page link is missing.
+         */
+        internal fun parseRelease(json: String): UpdateInfo? {
+            val release = JSONObject(json)
+            val version = release.optString("tag_name").removePrefix("v")
+            val url = release.optString("html_url")
+            if (version.isBlank() || url.isBlank()) return null
+            val assetsJson = release.optJSONArray("assets") ?: JSONArray()
+            val assets =
+                (0 until assetsJson.length()).map {
+                    val asset = assetsJson.getJSONObject(it)
+                    ReleaseAsset(asset.optString("name"), asset.optLong("size"), asset.optString("browser_download_url"))
+                }
+            // GitHub's generated pull request list and changelog link come after the changelog and are not part of it.
+            val notes =
+                release
+                    .optString("body")
+                    .replace("\r\n", "\n")
+                    .lineSequence()
+                    .takeWhile { !it.startsWith("## ") && !it.startsWith("**Full Changelog**") }
+                    .joinToString("\n")
+                    .trim()
+            return UpdateInfo(version, url, notes, assets)
+        }
+
+        /**
+         * Compares two semver-style version strings segment by segment (e.g. "5.4.8" > "5.4.7").
+         *
+         * @param latest The version of the latest release.
+         * @param current The current app version string from [BuildConfig.VERSION_NAME].
+         * @return True if [latest] is strictly newer than [current].
+         */
+        internal fun isNewerVersion(latest: String, current: String): Boolean {
+            val latestParts = latest.split(".").map { it.toIntOrNull() ?: 0 }
+            val currentParts = current.split(".").map { it.toIntOrNull() ?: 0 }
+            val maxLen = maxOf(latestParts.size, currentParts.size)
+            for (i in 0 until maxLen) {
+                val l = latestParts.getOrElse(i) { 0 }
+                val c = currentParts.getOrElse(i) { 0 }
+                if (l > c) return true
+                if (l < c) return false
+            }
+            return false
+        }
+
+        /**
+         * Decides what to do with the latest release. Installing ends the app, so a running bot holds the offer back.
+         *
+         * @param latest The version of the latest release.
+         * @param current The installed app version.
+         * @param botRunning Whether the bot is running right now.
+         * @return Whether to show the update, hold it, or report the app as current.
+         */
+        internal fun decide(latest: String, current: String, botRunning: Boolean): Decision =
+            when {
+                !isNewerVersion(latest, current) -> Decision.UP_TO_DATE
+                botRunning -> Decision.HOLD
+                else -> Decision.SHOW
+            }
     }
 
+    /**
+     * One downloadable file attached to a release.
+     *
+     * @property name The file name, e.g. "v5.8.8-UmaAndroidAutomation-x86_64-release.apk".
+     * @property size The file size in bytes.
+     * @property url The direct download link.
+     */
+    data class ReleaseAsset(
+        val name: String,
+        val size: Long,
+        val url: String,
+    )
+
+    /**
+     * What the update dialog shows for one release.
+     *
+     * @property latestVersion The release version without the leading "v".
+     * @property url The release page.
+     * @property releaseNotes The release body with LF line endings.
+     * @property assets The files attached to the release.
+     */
     data class UpdateInfo(
         val latestVersion: String,
         val url: String,
         val releaseNotes: String,
+        val assets: List<ReleaseAsset> = emptyList(),
     )
 
-    /** How the dialog should present itself: as an upgrade prompt or as a read-only changelog viewer. */
-    enum class DisplayMode { UPDATE_AVAILABLE, CURRENT_CHANGELOG }
+    /** What [checkForUpdate] decided for the latest release. */
+    enum class Decision { SHOW, HOLD, UP_TO_DATE }
 
     /**
-     * Fetches the remote update XML off the main thread and shows the update/changelog dialog when [shouldShow] passes.
+     * Result of [checkForUpdate].
      *
-     * @param mode Which dialog variant to display.
-     * @param shouldShow Decides, given the parsed update info, whether the dialog should actually be shown.
+     * @property decision What was done with the latest release.
+     * @property version The latest release version.
      */
-    private fun fetchUpdateInfoAndShow(mode: DisplayMode, shouldShow: (UpdateInfo) -> Boolean) {
+    data class CheckResult(
+        val decision: Decision,
+        val version: String,
+    )
+
+    /**
+     * Fetches one GitHub release off the main thread.
+     *
+     * @param path The path under the releases API, e.g. "latest" or "tags/v5.8.8".
+     * @return The parsed release.
+     * @throws IOException When GitHub cannot be reached, answers with an error, or the release is incomplete.
+     */
+    private suspend fun fetchRelease(path: String): UpdateInfo =
+        withContext(Dispatchers.IO) {
+            val connection = URL("$RELEASES_API_URL/$path").openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = TIMEOUT_MS
+                connection.readTimeout = TIMEOUT_MS
+                connection.setRequestProperty("Accept", "application/vnd.github+json")
+                if (connection.responseCode != HttpURLConnection.HTTP_OK) throw IOException("GitHub returned HTTP ${connection.responseCode}.")
+                parseRelease(connection.inputStream.bufferedReader().use { it.readText() }) ?: throw IOException("The GitHub release is missing its version.")
+            } finally {
+                connection.disconnect()
+            }
+        }
+
+    /**
+     * Fetches the latest release and opens the update dialog when it is newer and the bot is not running. An update dialog that is already
+     * open is left alone, so a download in progress is never interrupted.
+     *
+     * @return What was decided for the latest release.
+     * @throws IOException When GitHub cannot be reached or the release cannot be read.
+     */
+    suspend fun checkForUpdate(): CheckResult {
+        AppUpdateDialog.current?.takeIf { it.isActive }?.let { return CheckResult(Decision.SHOW, it.version) }
+        AppUpdateInstaller.clearLeftovers(activity)
+        val updateInfo = fetchRelease("latest")
+        val decision = decide(updateInfo.latestVersion, BuildConfig.VERSION_NAME, BotService.isRunning)
+        if (decision == Decision.SHOW) AppUpdateDialog(activity, updateInfo, AppUpdateDialog.Mode.UPDATE_AVAILABLE).show()
+        return CheckResult(decision, updateInfo.latestVersion)
+    }
+
+    /**
+     * Shows the release notes of the installed version as a read-only changelog. Falls back to the latest release when the installed
+     * version has no release, such as a local build. Network failures are ignored.
+     */
+    fun showCurrentChangelog() {
         CoroutineScope(Dispatchers.Main + SupervisorJob()).launch {
             try {
                 val updateInfo =
-                    withContext(Dispatchers.IO) {
-                        URL(UPDATE_XML_URL).openStream().use { parseUpdateXml(it) }
-                    } ?: return@launch
-                if (shouldShow(updateInfo)) {
-                    showUpdateDialog(updateInfo, mode)
-                }
+                    try {
+                        fetchRelease("tags/v${BuildConfig.VERSION_NAME}")
+                    } catch (_: IOException) {
+                        fetchRelease("latest")
+                    }
+                AppUpdateDialog(activity, updateInfo, AppUpdateDialog.Mode.CURRENT_CHANGELOG).show()
             } catch (_: Exception) {
                 // Silently ignore network or parsing failures.
             }
         }
-    }
-
-    /**
-     * Fetches the remote update XML and shows the update dialog if a newer version is available.
-     *
-     * @param forceShow If true, always shows the dialog regardless of version comparison. Useful for testing the dialog UI.
-     */
-    fun checkForUpdate(forceShow: Boolean = false) =
-        fetchUpdateInfoAndShow(DisplayMode.UPDATE_AVAILABLE) {
-            forceShow || isNewerVersion(it.latestVersion, BuildConfig.VERSION_NAME)
-        }
-
-    /**
-     * Fetches the same remote update XML and shows the dialog as a read-only changelog for the currently installed app version. Reuses the
-     * existing dialog layout/styling but rewrites the title, subtitle, and action button to reflect that no upgrade is being offered.
-     */
-    fun showCurrentChangelog() =
-        fetchUpdateInfoAndShow(DisplayMode.CURRENT_CHANGELOG) { true }
-
-    /**
-     * Parses the update XML stream and extracts version, URL, and release notes.
-     *
-     * @param inputStream The raw XML input stream from the remote update file.
-     * @return The parsed [UpdateInfo], or null if any required fields are missing.
-     */
-    private fun parseUpdateXml(inputStream: InputStream): UpdateInfo? {
-        val parser = Xml.newPullParser()
-        parser.setInput(inputStream, null)
-
-        var latestVersion: String? = null
-        var url: String? = null
-        var releaseNotes: String? = null
-        var currentTag: String? = null
-
-        var eventType = parser.eventType
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-            when (eventType) {
-                XmlPullParser.START_TAG -> currentTag = parser.name
-                XmlPullParser.TEXT -> {
-                    val text = parser.text
-                    when (currentTag) {
-                        "latestVersion" -> latestVersion = text.trim()
-                        "url" -> url = text.trim()
-                        "releaseNotes" -> releaseNotes = text.trim()
-                    }
-                }
-                XmlPullParser.END_TAG -> currentTag = null
-            }
-            eventType = parser.next()
-        }
-
-        return if (latestVersion != null && url != null && releaseNotes != null) {
-            UpdateInfo(latestVersion, url, releaseNotes)
-        } else {
-            null
-        }
-    }
-
-    /**
-     * Compares two semver-style version strings segment by segment (e.g. "5.4.8" > "5.4.7").
-     *
-     * @param latest The latest version string from the remote update XML.
-     * @param current The current app version string from [BuildConfig.VERSION_NAME].
-     * @return True if [latest] is strictly newer than [current].
-     */
-    private fun isNewerVersion(latest: String, current: String): Boolean {
-        val latestParts = latest.split(".").map { it.toIntOrNull() ?: 0 }
-        val currentParts = current.split(".").map { it.toIntOrNull() ?: 0 }
-        val maxLen = maxOf(latestParts.size, currentParts.size)
-        for (i in 0 until maxLen) {
-            val l = latestParts.getOrElse(i) { 0 }
-            val c = currentParts.getOrElse(i) { 0 }
-            if (l > c) return true
-            if (l < c) return false
-        }
-        return false
-    }
-
-    /**
-     * A [ReplacementSpan] that draws a rounded rectangle behind the text, similar to GitHub's inline code pill.
-     *
-     * @property backgroundColor The fill color for the rounded background.
-     * @property textColor The color used to draw the text on top of the background.
-     * @property cornerRadius The corner radius in pixels for the rounded rectangle.
-     * @property horizontalPadding The horizontal padding in pixels inside the pill.
-     */
-    private class RoundedBackgroundSpan(
-        private val backgroundColor: Int,
-        private val textColor: Int,
-        private val cornerRadius: Float = 8f,
-        private val horizontalPadding: Float = 6f,
-    ) : ReplacementSpan() {
-        override fun getSize(paint: Paint, text: CharSequence, start: Int, end: Int, fm: Paint.FontMetricsInt?): Int {
-            val originalTypeface = paint.typeface
-            paint.typeface = Typeface.MONOSPACE
-            val width = (paint.measureText(text, start, end) + horizontalPadding * 2).toInt()
-            paint.typeface = originalTypeface
-            return width
-        }
-
-        override fun draw(canvas: Canvas, text: CharSequence, start: Int, end: Int, x: Float, top: Int, y: Int, bottom: Int, paint: Paint) {
-            val originalTypeface = paint.typeface
-            paint.typeface = Typeface.MONOSPACE
-            val textWidth = paint.measureText(text, start, end)
-            // Use font metrics for pill height so line spacing doesn't inflate it.
-            val fm = paint.fontMetrics
-            val pillTop = y + fm.ascent - 2f
-            val pillBottom = y + fm.descent + 2f
-            val rect = RectF(x, pillTop, x + textWidth + horizontalPadding * 2, pillBottom)
-            val bgPaint = Paint(paint)
-            bgPaint.color = backgroundColor
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint)
-            paint.color = textColor
-            canvas.drawText(text, start, end, x + horizontalPadding, y.toFloat(), paint)
-            paint.typeface = originalTypeface
-        }
-    }
-
-    /**
-     * Formats release notes text by styling backtick-wrapped segments with a code-like appearance (monospace font, rounded tinted background
-     * and text color), similar to GitHub's inline code rendering. Also replaces leading dashes with bullet points.
-     *
-     * @param text The raw release notes string potentially containing backtick-wrapped text.
-     * @return A [SpannableStringBuilder] with styled inline code spans.
-     */
-    private fun formatReleaseNotes(text: String): SpannableStringBuilder {
-        // Replace leading dashes with bullet points.
-        val bulletText = text.replace(Regex("(?m)^- "), "\u2022 ")
-
-        val builder = SpannableStringBuilder()
-        val codeBgColor = ContextCompat.getColor(activity, R.color.dialog_code_background)
-        val codeTextColor = ContextCompat.getColor(activity, R.color.dialog_code_text)
-        val density = activity.resources.displayMetrics.density
-        val cornerRadius = 6f * density
-        val horizontalPadding = 4f * density
-
-        var i = 0
-        while (i < bulletText.length) {
-            val backtickStart = bulletText.indexOf('`', i)
-            if (backtickStart == -1) {
-                builder.append(bulletText, i, bulletText.length)
-                break
-            }
-            val backtickEnd = bulletText.indexOf('`', backtickStart + 1)
-            if (backtickEnd == -1) {
-                builder.append(bulletText, i, bulletText.length)
-                break
-            }
-
-            // Append text before the backtick.
-            builder.append(bulletText, i, backtickStart)
-
-            // Append the code content with a rounded background span.
-            val codeContent = bulletText.substring(backtickStart + 1, backtickEnd)
-            val spanStart = builder.length
-            builder.append(codeContent)
-            val spanEnd = builder.length
-            builder.setSpan(RoundedBackgroundSpan(codeBgColor, codeTextColor, cornerRadius, horizontalPadding), spanStart, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-            i = backtickEnd + 1
-        }
-        return builder
-    }
-
-    /**
-     * Displays the custom dialog with release notes. In `UPDATE_AVAILABLE` mode it prompts the user to upgrade. In `CURRENT_CHANGELOG` mode
-     * it reuses the same layout but rewrites the title, subtitle, and action button to act as a read-only viewer for the currently
-     * installed version's release notes.
-     *
-     * @param updateInfo The parsed update metadata to display in the dialog.
-     * @param mode Controls the title, subtitle, and action button copy.
-     */
-    private fun showUpdateDialog(updateInfo: UpdateInfo, mode: DisplayMode) {
-        if (activity.isFinishing || activity.isDestroyed) return
-
-        val dialog = Dialog(activity)
-        dialog.setContentView(R.layout.dialog_app_update)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val title = dialog.findViewById<TextView>(R.id.dialog_title)
-        val subtitle = dialog.findViewById<TextView>(R.id.dialog_subtitle)
-        val dismissBtn = dialog.findViewById<Button>(R.id.btn_dismiss)
-        val updateBtn = dialog.findViewById<Button>(R.id.btn_update)
-
-        when (mode) {
-            DisplayMode.UPDATE_AVAILABLE -> {
-                title.text = "Update Available"
-                subtitle.text = "Version ${updateInfo.latestVersion} is available"
-                dismissBtn.text = "Dismiss"
-                updateBtn.text = "Update"
-            }
-            DisplayMode.CURRENT_CHANGELOG -> {
-                title.text = "Changelog"
-                subtitle.text = "Installed version v${BuildConfig.VERSION_NAME}"
-                dismissBtn.text = "Close"
-                updateBtn.text = "View on GitHub"
-            }
-        }
-
-        dialog.findViewById<TextView>(R.id.dialog_release_notes).text =
-            formatReleaseNotes(updateInfo.releaseNotes)
-
-        // Cap the ScrollView height to avoid the dialog filling the entire screen.
-        val scrollView = dialog.findViewById<ScrollView>(R.id.dialog_scroll)
-        scrollView.post {
-            val metrics = DisplayMetrics()
-            @Suppress("DEPRECATION")
-            activity.windowManager.defaultDisplay.getMetrics(metrics)
-            val maxHeight = (metrics.heightPixels * MAX_SCROLL_HEIGHT_RATIO).toInt()
-            if (scrollView.height > maxHeight) {
-                scrollView.layoutParams = scrollView.layoutParams.apply { height = maxHeight }
-            }
-        }
-
-        dismissBtn.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        updateBtn.setOnClickListener {
-            activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(updateInfo.url)))
-            dialog.dismiss()
-        }
-
-        dialog.show()
-
-        // Set the dialog width to 85% of the screen so the content isn't squished.
-        val metrics = DisplayMetrics()
-        @Suppress("DEPRECATION")
-        activity.windowManager.defaultDisplay.getMetrics(metrics)
-        dialog.window?.setLayout((metrics.widthPixels * 0.85).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 }
