@@ -26,7 +26,7 @@
     <!--Enables Battery Optimization coming from the Automation Library.-->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!--Grants permission to install a downloaded app update. Android still asks the user to confirm every install.-->
+    <!--Grants permission for the automation library's AppUpdater to install a downloaded app update. Android still asks the user to confirm every install.-->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
@@ -88,20 +88,6 @@
             android:name="com.steve1316.automation_library.utils.StopServiceReceiver"
             android:enabled="true"
             android:process=":remote" />
-
-        <!--Receives the result of an app update install and opens Android's Install screen when the user has to confirm.-->
-        <receiver
-            android:name=".utils.InstallResultReceiver"
-            android:exported="false" />
-
-        <!--Reopens the app after an app update replaced it.-->
-        <receiver
-            android:name=".utils.AppUpdatedReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
