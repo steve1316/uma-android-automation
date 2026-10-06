@@ -51,7 +51,6 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     companion object {
         private val TAG = "[${MainActivity.loggerTag}]StartModule"
         private var reactContext: ReactApplicationContext? = null
-        private var emitter: DeviceEventManagerModule.RCTDeviceEventEmitter? = null
     }
 
     private val context: Context = reactContext.applicationContext
@@ -60,7 +59,18 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     init {
         StartModule.reactContext = reactContext
         StartModule.reactContext?.addActivityEventListener(this)
+
+        // Listen for bot events for this module's whole life, so a React context recreated mid-run still gets them. `invalidate()` ends it.
+        EventBus.getDefault().register(this)
         Log.d(TAG, "StartModule is now initialized.")
+    }
+
+    /**
+     * Stops listening for bot events when React Native tears this module down, so a recreated context's module is the only listener.
+     */
+    override fun invalidate() {
+        EventBus.getDefault().unregister(this)
+        super.invalidate()
     }
 
     override fun getName(): String {
@@ -144,10 +154,6 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
 
     /** Register this module with EventBus in order to allow listening to certain events and then begin starting up the MediaProjection service. */
     private fun startProjection() {
-        // This extra call to unregister is to account for the user stopping the service from the notification which bypasses the call to
-        // unregister in stopProjection().
-        EventBus.getDefault().unregister(this)
-        EventBus.getDefault().register(this)
         Log.d(TAG, "Event Bus registered for StartModule")
 
         // Use the library's helper which applies MediaProjectionConfig on Android 14+ to prefer full screen capture.
@@ -155,10 +161,11 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         reactContext?.startActivityForResult(screenCaptureIntent, 100, null)
     }
 
-    /** Unregister this module with EventBus and then stops the MediaProjection service. */
+    /**
+     * Stops the MediaProjection service. This module stays registered with EventBus for its whole life, so the run-end report and the final log
+     * lines sent while the service shuts down still reach the app.
+     */
     private fun stopProjection() {
-        EventBus.getDefault().unregister(this)
-        Log.d(TAG, "Event Bus unregistered for StartModule")
         reactContext?.startService(MediaProjectionService.getStopIntent(reactContext!!))
         sendEvent("MediaProjectionService", "Not Running")
     }
@@ -620,6 +627,16 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
+     * Reports whether the overlay service is on, so Home can catch up after its screen is recreated.
+     *
+     * @param promise Resolves true when the overlay service is running.
+     */
+    @ReactMethod
+    fun isOverlayOn(promise: Promise) {
+        promise.resolve(MediaProjectionService.isRunning)
+    }
+
+    /**
      * Sends the message back to the Javascript frontend along with its event name to be listened on.
      *
      * @param eventName The name of the event to be picked up on as defined in the developer's JS frontend.
@@ -629,13 +646,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         val params = Arguments.createMap()
         params.putString("message", message)
         params.putInt("id", messageId++)
-        if (emitter == null) {
-            // Register the event emitter to send messages to JS.
-            Log.d(TAG, "Event emitter not found to be able to send messages to the frontend. Registering now.")
-            emitter = reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        }
-
-        emitter?.emit(eventName, params)
+        // React Native caches the emitter per context, so fetching it each time always targets the live context.
+        reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
     }
 
     /**
