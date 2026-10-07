@@ -7,7 +7,7 @@ import { GlassSurface } from "./glass-surface"
 export interface GlassFabProps {
     /** Triggered on press. */
     onPress: () => void
-    /** Icon node rendered inside the FAB. Use a brand-tinted lucide / Ionicons icon at ~22px. */
+    /** Icon node rendered inside the FAB. Use a brand-tinted lucide / Ionicons icon at ~20px. */
     icon: React.ReactNode
     /** Disable presses. */
     disabled?: boolean
@@ -18,7 +18,7 @@ export interface GlassFabProps {
 }
 
 /**
- * 56x56 rounded glass pill used as a floating action button. Springs into view on mount.
+ * 40x40 rounded glass button used as a floating action button, the Material small-FAB size so it stays out of the way on narrow phones. Springs into view on mount.
  * Respects theme glass tokens for backdrop and border. Replaces RecalcFab and MessageLog floating scroll buttons.
  *
  * @param props See `GlassFabProps`.
@@ -32,14 +32,15 @@ export const GlassFab = memo(({ onPress, icon, disabled, style, accessibilityLab
     }, [scale])
     return (
         <Animated.View style={[{ transform: [{ scale }] }, style]}>
-            <GlassSurface intensity={50} style={{ borderRadius: 28, overflow: "hidden" }}>
+            <GlassSurface intensity={50} style={{ borderRadius: 20, overflow: "hidden" }}>
                 <Pressable
                     onPress={onPress}
                     disabled={disabled}
                     android_ripple={{ color: colors.ripple, foreground: true }}
                     accessibilityRole="button"
                     accessibilityLabel={accessibilityLabel}
-                    style={{ width: 56, height: 56, alignItems: "center", justifyContent: "center", opacity: disabled ? 0.4 : 1 }}
+                    hitSlop={4}
+                    style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center", opacity: disabled ? 0.4 : 1 }}
                 >
                     <View>{icon}</View>
                 </Pressable>
