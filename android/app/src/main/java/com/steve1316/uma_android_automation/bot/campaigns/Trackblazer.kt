@@ -19,6 +19,7 @@ import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonCancel
 import com.steve1316.uma_android_automation.components.ButtonClose
 import com.steve1316.uma_android_automation.components.ButtonConfirmUse
+import com.steve1316.uma_android_automation.components.ButtonHomeFullStats
 import com.steve1316.uma_android_automation.components.ButtonOk
 import com.steve1316.uma_android_automation.components.ButtonRaceDayRace
 import com.steve1316.uma_android_automation.components.ButtonRaceListFullStats
@@ -506,6 +507,13 @@ class Trackblazer(game: Game) : Campaign(game) {
 
                 if (result.dialog.ok(game.imageUtils)) {
                     game.wait(game.dialogWaitDelay)
+
+                    // ButtonTrainingItems also matches the quick-access button on the Main screen, so ButtonHomeFullStats (Main screen only) rules that out.
+                    if (!ButtonTrainingItems.check(game.imageUtils, tries = 5) || ButtonHomeFullStats.check(game.imageUtils)) {
+                        MessageLog.w(TAG, "[TRACKBLAZER] The Shop did not open after tapping the Shop dialog button. The shop check stays pending for the main screen.")
+                        bShouldCheckShop = true
+                        return DialogHandlerResult.Handled(result.dialog)
+                    }
 
                     // Clear the shop check flag and counter as the shop is already being handled.
                     bShouldCheckShop = false
