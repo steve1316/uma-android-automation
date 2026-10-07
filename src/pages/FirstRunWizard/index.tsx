@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     error: { fontSize: 13 },
     migrationHint: { fontSize: 13, lineHeight: 19, marginBottom: SPACING.sm },
     migCard: { flexDirection: "row", gap: 12, padding: 12, borderWidth: 1, borderRadius: RADII.md, marginBottom: 8, alignItems: "center" },
+    migCardDisabled: { opacity: 0.5 },
     migIcon: { fontSize: 18, fontWeight: "700", width: 22, textAlign: "center" },
     migTitle: { fontSize: 14, fontWeight: "600" },
     migMeta: { fontSize: 12, marginTop: 2 },
@@ -69,6 +70,7 @@ export type MigrationChoice = "move" | "leave" | "delete"
  * @param meta Sub-text below the title.
  * @param danger When true, paints the card in the error palette.
  * @param primary When true, paints the card in the primary palette (used for the recommended choice).
+ * @param unavailable When true, dims the card and ignores taps, e.g. "Move them" before a real folder is picked.
  * @param busy The choice currently mid-flight, or `null` if none. Disables all three when non-null.
  * @param onPress Fires when the user taps an enabled card.
  * @param colors Theme palette from `useTheme()`.
@@ -81,6 +83,7 @@ const renderMigrationCard = (
     meta: string,
     danger: boolean,
     primary: boolean,
+    unavailable: boolean,
     busy: MigrationChoice | null,
     onPress: (c: MigrationChoice) => void,
     colors: ReturnType<typeof useTheme>["colors"]
@@ -88,7 +91,12 @@ const renderMigrationCard = (
     const accent = danger ? colors.error : primary ? colors.primary : colors.text
     const border = danger ? colors.error : primary ? colors.primary : colors.borderHair
     return (
-        <Pressable key={choice} onPress={() => onPress(choice)} disabled={busy !== null} style={[styles.migCard, { borderColor: border, backgroundColor: colors.surface }]}>
+        <Pressable
+            key={choice}
+            onPress={() => onPress(choice)}
+            disabled={unavailable || busy !== null}
+            style={[styles.migCard, { borderColor: border, backgroundColor: colors.surface }, unavailable && styles.migCardDisabled]}
+        >
             <Text style={[styles.migIcon, { color: accent }]}>{icon}</Text>
             <View style={{ flex: 1 }}>
                 <Text style={[styles.migTitle, { color: accent }]}>{title}</Text>
@@ -194,13 +202,22 @@ const FirstRunWizard = ({ onComplete }: Props) => {
         setAccessError(null)
     }, [])
 
+    // Moving needs a real SAF folder to copy into. With none picked, or with app default storage, the copy target is the source file itself.
+    const hasPickedFolder = picked !== null && picked.uri !== ""
+
     const handleMigrationChoice = useCallback(
         async (choice: MigrationChoice) => {
+            if (choice === "move" && !hasPickedFolder) return
             setMigrationError(null)
             setMigrationBusy(choice)
             try {
                 if (choice !== "leave") {
                     const result = await storageBridge.migrateLegacyFiles(choice)
+                    if (result.error === "NO_DESTINATION") {
+                        setMigrationError("Nothing was moved. The picked folder is no longer accessible. Pick it again or leave the files where they are.")
+                        setMigrationBusy(null)
+                        return
+                    }
                     if (result.error) {
                         const total = (counts?.logs ?? 0) + (counts?.recordings ?? 0)
                         const moved = result.movedLogs + result.movedRecordings
@@ -218,7 +235,7 @@ const FirstRunWizard = ({ onComplete }: Props) => {
                 setMigrationBusy(null)
             }
         },
-        [counts]
+        [counts, hasPickedFolder]
     )
 
     const folderComplete = picked !== null
@@ -348,9 +365,20 @@ const FirstRunWizard = ({ onComplete }: Props) => {
                                             <CustomButton onPress={() => setMigrationChoice("leave")}>Continue with partial move</CustomButton>
                                         </View>
                                     )}
-                                    {renderMigrationCard("move", "->", "Move them", "Copy to your new folder, remove originals", false, true, migrationBusy, handleMigrationChoice, colors)}
-                                    {renderMigrationCard("leave", "x", "Leave them", "Keep at old path, new files use new folder", false, false, migrationBusy, handleMigrationChoice, colors)}
-                                    {renderMigrationCard("delete", "X", "Delete them", "Permanent.", true, false, migrationBusy, handleMigrationChoice, colors)}
+                                    {renderMigrationCard(
+                                        "move",
+                                        "->",
+                                        "Move them",
+                                        hasPickedFolder ? "Copy to your new folder, remove originals" : "Pick a folder above to move them",
+                                        false,
+                                        true,
+                                        !hasPickedFolder,
+                                        migrationBusy,
+                                        handleMigrationChoice,
+                                        colors
+                                    )}
+                                    {renderMigrationCard("leave", "x", "Leave them", "Keep at old path, new files use new folder", false, false, false, migrationBusy, handleMigrationChoice, colors)}
+                                    {renderMigrationCard("delete", "X", "Delete them", "Permanent.", true, false, false, migrationBusy, handleMigrationChoice, colors)}
                                 </>
                             ) : (
                                 <View style={styles.migConfirmation}>
