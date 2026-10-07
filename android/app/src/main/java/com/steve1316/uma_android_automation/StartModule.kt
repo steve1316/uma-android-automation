@@ -21,11 +21,16 @@ import com.steve1316.automation_library.events.JSEvent
 import com.steve1316.automation_library.events.StartEvent
 import com.steve1316.automation_library.utils.AppUpdater
 import com.steve1316.automation_library.utils.BatteryOptimizationUtils
+import com.steve1316.automation_library.utils.BotService
+import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.MediaProjectionService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
+import com.steve1316.automation_library.utils.RunReport
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.RunAnalytics
+import com.steve1316.uma_android_automation.bot.UMA_GAME_PACKAGES
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -37,6 +42,7 @@ import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
+import org.json.JSONObject
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -627,6 +633,20 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
+     * Reads the report of how the last run ended, for the Home result card.
+     *
+     * @param promise Resolves the report JSON text, or null when there is none.
+     */
+    @ReactMethod
+    fun getLastRun(promise: Promise) {
+        try {
+            promise.resolve(RunReport.load(reactApplicationContext.filesDir))
+        } catch (e: Exception) {
+            promise.reject("LAST_RUN_ERROR", e.message ?: e.javaClass.simpleName)
+        }
+    }
+
+    /**
      * Reports whether the overlay service is on, so Home can catch up after its screen is recreated.
      *
      * @param promise Resolves true when the overlay service is running.
@@ -634,6 +654,52 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     @ReactMethod
     fun isOverlayOn(promise: Promise) {
         promise.resolve(MediaProjectionService.isRunning)
+    }
+
+    /**
+     * Reads where the current run stands, for the Home hero drawer while the bot is running or paused.
+     *
+     * @param promise Resolves `{ turn, totalTurns, runtimeMs, summary }` as JSON text, or null when no run is going or no turn was read yet.
+     */
+    @ReactMethod
+    fun getLiveRun(promise: Promise) {
+        try {
+            val summary = if (BotService.isRunning) RunAnalytics.buildRunSummary() else null
+            if (summary == null) {
+                promise.resolve(null)
+                return
+            }
+            val status = BotStatus.snapshot()
+            promise.resolve(JSONObject().put("turn", status.current).put("totalTurns", status.total).put("runtimeMs", status.elapsedMs).put("summary", summary).toString())
+        } catch (e: Exception) {
+            promise.reject("LIVE_RUN_ERROR", e.message ?: e.javaClass.simpleName)
+        }
+    }
+
+    /**
+     * Brings the game to the front so the user can start the next run from the overlay.
+     *
+     * @param promise Resolves true when the game was opened, or false when it is not installed.
+     */
+    @ReactMethod
+    fun openGame(promise: Promise) {
+        val packageManager = reactApplicationContext.packageManager
+        val intent = UMA_GAME_PACKAGES.firstNotNullOfOrNull { packageManager.getLaunchIntentForPackage(it) }
+        if (intent == null) {
+            promise.resolve(false)
+            return
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        reactApplicationContext.startActivity(intent)
+        promise.resolve(true)
+    }
+
+    /**
+     * Deletes the last run's report after the user dismisses the result card.
+     */
+    @ReactMethod
+    fun clearLastRun() {
+        RunReport.clear(reactApplicationContext.filesDir)
     }
 
     /**
