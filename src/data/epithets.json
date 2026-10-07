@@ -1541,6 +1541,19 @@
             }
         ]
     },
+    "Hero of Great Talent": {
+        "name": "Hero of Great Talent",
+        "bullet_points": [
+            "Zenno Rob Roy only",
+            "Win the Tenno Sho (Autumn) (Senior), Japan Cup (Senior) and Arima Kinen (Senior), all while being the most popular",
+            "Earn a total of at least 320000 fans"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Zenno Rob Roy"
+        ],
+        "matchers": []
+    },
     "Heroine": {
         "name": "Heroine",
         "bullet_points": [
