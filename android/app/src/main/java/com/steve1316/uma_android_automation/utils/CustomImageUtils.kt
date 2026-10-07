@@ -117,6 +117,30 @@ internal fun parseStatCap(text: String): Int? {
     return if (candidate in minPlausibleCap..maxPlausibleCap) candidate else null
 }
 
+/**
+ * Parse a fan count from OCR text such as "201,486". A comma-grouped number is preferred so stray digits fused onto the read are ignored, falling back to the
+ * longest plain digit run for counts under 1,000.
+ *
+ * @param text Raw OCR text of the fan count region.
+ * @return The fan count, or null if no number is found or it does not fit in an Int.
+ */
+internal fun parseFanCount(text: String): Int? {
+    val grouped = Regex("\\d{1,3}(?:[,.]\\d{3})+").find(text)?.value?.filter(Char::isDigit)
+    val number = grouped ?: Regex("\\d+").findAll(text).maxByOrNull { it.value.length }?.value
+    return number?.toIntOrNull()
+}
+
+/**
+ * Parse the turns-remaining countdown from OCR text. A read with no digits means the box shows a label like "Race Day" or "GOAL" instead, which means 0 turns remain.
+ *
+ * @param text Raw OCR text of the turns-remaining box.
+ * @return The turns remaining, 0 for a label, or null if the digits do not fit in an Int.
+ */
+internal fun parseTurnsRemaining(text: String): Int? {
+    val digits = text.filter(Char::isDigit)
+    return if (digits.isEmpty()) 0 else digits.toIntOrNull()
+}
+
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
     /** OCR threshold for text recognition. */
@@ -2408,17 +2432,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
             // Parse the result. A non-numeric readout means the box shows a label instead of a countdown - "Race Day", or "GOAL" on a
             // mandatory-race turn (Turn 12 etc.) - both meaning the race is this turn (0 turns remaining). This avoids erroring on those days.
-            val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
-            val result =
-                if (cleanedResult.isEmpty()) {
-                    MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText (mandatory race / goal turn - 0 remaining).")
-                    0
-                } else {
-                    MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
-                    cleanedResult.toInt()
-                }
+            val result = parseTurnsRemaining(detectedText)
+            when (result) {
+                null -> MessageLog.w(TAG, "[WARN] determineTurnsRemainingBeforeNextGoal:: Detected day for extra racing is too large to be valid: $detectedText")
+                0 -> MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText (mandatory race / goal turn - 0 remaining).")
+                else -> MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
+            }
 
-            return result
+            return result ?: -1
         }
 
         return -1

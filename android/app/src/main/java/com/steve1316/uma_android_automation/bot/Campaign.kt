@@ -78,6 +78,7 @@ import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
+import com.steve1316.uma_android_automation.utils.parseFanCount
 import com.steve1316.uma_scoring.RankAptitudes
 import com.steve1316.uma_scoring.SkillScoreInput
 import com.steve1316.uma_scoring.estimateRank
@@ -2689,8 +2690,7 @@ abstract class Campaign(game: Game) : Task(game) {
                             debugName = "final_fan_count",
                         )
 
-                    val cleanedFans = fansText.replace(Regex("[^0-9]"), "")
-                    val fans = cleanedFans.toIntOrNull()
+                    val fans = parseFanCount(fansText)
                     if (fans != null) {
                         trainee.fans = fans
                     } else {
