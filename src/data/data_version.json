@@ -1,13 +1,13 @@
 {
-    "version": "2026-10-04T21:30:11Z",
-    "label": "Daiwa Scarlet (Christmas) 2026-09-28",
+    "version": "2026-10-07T18:42:42Z",
+    "label": "Zenno Rob Roy 2026-10-07",
     "minAppVersion": "5.8.8",
     "files": {
-        "characters.json": "f97bde121dbf4731f3329731d909fdb3",
+        "characters.json": "de337cd4fc0de7ec97119e367b9cffee",
         "supports.json": "5bc8bfb980cf74f85d4dd5a9fe9ce32f",
         "skills.json": "496518c99be4e0003333f96ad24c907a",
-        "epithets.json": "f23c9656ee7c3a4c0851ba09c6380097",
-        "characterPresets.json": "2906aae6175b7a61e38565bc1e018a15",
-        "character_objectives.json": "032a18f68b90da1075a181de4d6ab6f2"
+        "epithets.json": "9ddca28f3c77d16c37832f6eb1cfa5b5",
+        "characterPresets.json": "751900ee7bbf8a92cd32c132b1f47f6b",
+        "character_objectives.json": "5c7a2d8628af04b76eb63158cd087985"
     }
 }

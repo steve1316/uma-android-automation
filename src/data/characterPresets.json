@@ -882,5 +882,18 @@
             "Turf": "A",
             "Dirt": "B"
         }
+    },
+    "Zenno Rob Roy": {
+        "name": "Zenno Rob Roy",
+        "distanceAptitudes": {
+            "Sprint": "G",
+            "Mile": "E",
+            "Medium": "A",
+            "Long": "A"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "G"
+        }
     }
 }
