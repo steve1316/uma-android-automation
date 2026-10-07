@@ -1180,25 +1180,32 @@ abstract class Campaign(game: Game) : Task(game) {
      *
      * This also ensures that the Main screen does not contain the option to select a race.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, one screenshot is captured and shared by every check here.
+     * @param bSkipDialogCheck Whether the caller already knows this screenshot has no dialog, so the dialog search can be skipped.
      * @return True if the bot is at the Main screen, false otherwise.
      */
-    open fun checkMainScreen(): Boolean {
+    open fun checkMainScreen(sourceBitmap: Bitmap? = null, bSkipDialogCheck: Boolean = false): Boolean {
+        val bitmap = sourceBitmap ?: game.imageUtils.getSourceBitmap()
+
         // If there is a dialog on the screen, then we are not directly on the Main screen.
-        if (DialogUtils.check(game.imageUtils)) {
+        if (!bSkipDialogCheck && DialogUtils.check(game.imageUtils, sourceBitmap = bitmap)) {
             return false
         }
 
-        return ButtonHomeFullStats.check(game.imageUtils) && IconTazuna.check(game.imageUtils) && ButtonTraining.check(game.imageUtils)
+        return ButtonHomeFullStats.check(game.imageUtils, sourceBitmap = bitmap) &&
+            IconTazuna.check(game.imageUtils, sourceBitmap = bitmap) &&
+            ButtonTraining.check(game.imageUtils, sourceBitmap = bitmap)
     }
 
     /**
      * Checks if the bot is currently at the Training Event screen with an active event.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, a new screenshot is captured.
      * @return True if the bot is at the Training Event screen, false otherwise.
      */
-    open fun checkTrainingEventScreen(): Boolean {
+    open fun checkTrainingEventScreen(sourceBitmap: Bitmap? = null): Boolean {
         MessageLog.i(TAG, "\n[INFO] Checking if the bot is sitting on the Training Event screen.")
-        return if (IconTrainingEventHorseshoe.check(game.imageUtils)) {
+        return if (IconTrainingEventHorseshoe.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.v(TAG, "[INFO] Bot is at the Training Event screen.")
             true
         } else {
@@ -1210,26 +1217,27 @@ abstract class Campaign(game: Game) : Task(game) {
     /**
      * Checks if the bot is currently at the preparation screen for a mandatory race.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, a new screenshot is captured.
      * @return True if the bot is at the Race Preparation screen for a mandatory race, false otherwise.
      */
-    open fun checkMandatoryRacePrepScreen(): Boolean {
+    open fun checkMandatoryRacePrepScreen(sourceBitmap: Bitmap? = null): Boolean {
         MessageLog.i(TAG, "\n[INFO] Checking if the bot is sitting on the Race Preparation screen for a mandatory race.")
-        val sourceBitmap = game.imageUtils.getSourceBitmap()
-        return if (IconRaceDayRibbon.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        val bitmap = sourceBitmap ?: game.imageUtils.getSourceBitmap()
+        return if (IconRaceDayRibbon.check(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.v(TAG, "[INFO] Bot is at the preparation screen with a mandatory race ready to be completed.")
             if (game.scenario == "Unity Cup") game.wait(1.0)
             refreshDateForMandatoryRace()
             true
-        } else if (IconGoalRibbon.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (IconGoalRibbon.check(game.imageUtils, sourceBitmap = bitmap)) {
             // Most likely the user started the bot here so a delay will need to be placed to allow the start banner of the Service to disappear.
             game.wait(2.0)
             MessageLog.v(TAG, "[INFO] Bot is at the Race Selection screen with a mandatory race needing to be selected.")
             // Walk back to the preparation screen.
-            ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            ButtonBack.click(game.imageUtils, sourceBitmap = bitmap)
             game.wait(1.0)
             refreshDateForMandatoryRace()
             true
-        } else if (game.scenario == "Unity Cup" && ButtonUnityCupRace.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (game.scenario == "Unity Cup" && ButtonUnityCupRace.check(game.imageUtils, sourceBitmap = bitmap)) {
             // The date is deliberately not refreshed here. The opponent-selection screen carries neither the Main screen nor the Race List anchor that the
             // date OCR needs, and the Unity Cup race handling does not look a race up by turn anyway.
             MessageLog.v(TAG, "[INFO] Bot is awaiting opponent selection for a Unity Cup race.")
@@ -1243,11 +1251,12 @@ abstract class Campaign(game: Game) : Task(game) {
     /**
      * Checks if the bot is currently at the Racing screen.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, a new screenshot is captured.
      * @return True if the bot is at the Racing screen, false otherwise.
      */
-    open fun checkRacingScreen(): Boolean {
+    open fun checkRacingScreen(sourceBitmap: Bitmap? = null): Boolean {
         MessageLog.i(TAG, "\n[INFO] Checking if the bot is sitting on the Racing screen.")
-        return if (ButtonChangeRunningStyle.check(game.imageUtils)) {
+        return if (ButtonChangeRunningStyle.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.v(TAG, "[INFO] Bot is at the Racing screen waiting to be skipped or done manually.")
             true
         } else {
@@ -1259,11 +1268,12 @@ abstract class Campaign(game: Game) : Task(game) {
     /**
      * Checks if the bot is currently at the Ending screen detailing overall results.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, a new screenshot is captured.
      * @return True if the bot is at the Ending screen, false otherwise.
      */
-    open fun checkEndScreen(): Boolean {
+    open fun checkEndScreen(sourceBitmap: Bitmap? = null): Boolean {
         MessageLog.i(TAG, "\n[INFO] Checking if the bot is sitting on the End screen.")
-        return if (ButtonCompleteCareer.check(game.imageUtils)) {
+        return if (ButtonCompleteCareer.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
             MessageLog.v(TAG, "[INFO] Bot is at the End screen.")
             true
         } else {
@@ -1459,12 +1469,13 @@ abstract class Campaign(game: Game) : Task(game) {
     /**
      * Handles the Inheritance event if detected on the screen.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, a new screenshot is captured.
      * @return True if the Inheritance event occurred and was accepted, false otherwise.
      */
-    open fun handleInheritanceEvent(): Boolean {
+    open fun handleInheritanceEvent(sourceBitmap: Bitmap? = null): Boolean {
         // Stop checking after Senior Year Early Apr.
         return if (date.day <= 56) {
-            if (ButtonInheritance.click(game.imageUtils)) {
+            if (ButtonInheritance.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
                 MessageLog.v(TAG, "\n[INFO] Claimed an inheritance on $date.")
                 trainee.bHasUpdatedAptitudes = false
                 true
@@ -2074,21 +2085,22 @@ abstract class Campaign(game: Game) : Task(game) {
     /**
      * Performs miscellaneous checks to resolve instances where the bot might be stuck.
      *
+     * @param sourceBitmap Optional screenshot to check. If null, a new screenshot is captured.
      * @return True if a misc check handled the current screen, false otherwise.
      */
-    open fun performMiscChecks(): Boolean {
+    open fun performMiscChecks(sourceBitmap: Bitmap? = null): Boolean {
         MessageLog.i(TAG, "\n[MISC] Beginning check for misc cases...")
 
-        val sourceBitmap = game.imageUtils.getSourceBitmap()
+        val bitmap = sourceBitmap ?: game.imageUtils.getSourceBitmap()
 
-        if (ButtonNext.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        if (ButtonNext.click(game.imageUtils, sourceBitmap = bitmap)) {
             // Now confirm the completion of a Training Goal popup.
             MessageLog.i(TAG, "[MISC] Popup detected that needs to be dismissed with the \"Next\" button.")
             game.wait(2.0)
             ButtonNext.click(game.imageUtils)
             game.wait(1.0)
             return true
-        } else if (ButtonClawMachine.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (ButtonClawMachine.check(game.imageUtils, sourceBitmap = bitmap)) {
             if (enableClawMachineAttempt) {
                 handleClawMachine()
                 return true
@@ -2102,34 +2114,34 @@ abstract class Campaign(game: Game) : Task(game) {
                 throw CampaignBreakpointException(game.notificationMessage)
             }
         } else if (
-            LabelOrdinaryCuties.check(game.imageUtils, sourceBitmap = sourceBitmap) &&
-            ButtonClawMachineOk.check(game.imageUtils, sourceBitmap = sourceBitmap)
+            LabelOrdinaryCuties.check(game.imageUtils, sourceBitmap = bitmap) &&
+            ButtonClawMachineOk.check(game.imageUtils, sourceBitmap = bitmap)
         ) {
-            ButtonClawMachineOk.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            ButtonClawMachineOk.click(game.imageUtils, sourceBitmap = bitmap)
             game.waitForLoading()
             MessageLog.v(TAG, "[CLAW_MACHINE] Event exited.")
             return true
-        } else if (ButtonNextRaceEnd.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (ButtonNextRaceEnd.click(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.i(TAG, "[MISC] Ended a leftover race.")
             // Clicking this button triggers connection to server.
             game.waitForLoading()
             return true
-        } else if (IconRaceNotEnoughFans.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (IconRaceNotEnoughFans.check(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.i(TAG, "[MISC] There was a popup about insufficient fans.")
             racing.encounteredRacingPopup = true
-            ButtonCancel.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            ButtonCancel.click(game.imageUtils, sourceBitmap = bitmap)
             return true
-        } else if (ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (ButtonBack.click(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.i(TAG, "[MISC] Navigating back a screen since all the other misc checks have been completed.")
             game.wait(1.0)
             return true
-        } else if (ButtonSkip.click(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (ButtonSkip.click(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.i(TAG, "[MISC] Clicked skip button.")
             return true
         } else if (!BotService.isRunning) {
             MessageLog.v(TAG, "\n[END] BotService is not running. Exiting now...")
             throw InterruptedException()
-        } else if (ButtonCancel.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+        } else if (ButtonCancel.check(game.imageUtils, sourceBitmap = bitmap)) {
             consecutiveButtonCancelMatches++
             if (consecutiveButtonCancelMatches >= WARNING_POPUP_CONFIRM_THRESHOLD) {
                 MessageLog.v(TAG, "\n[END] Bot may have encountered a warning popup. Exiting now...")
@@ -2156,13 +2168,11 @@ abstract class Campaign(game: Game) : Task(game) {
      * should take when at the main screen. It handles date changes, aptitude/fan updates,
      * race detection, mood recovery, and training.
      *
-     * @return True if the main screen was detected and handled, false otherwise.
+     * The caller confirms the bot is at the Main screen with `checkMainScreen()` before calling this.
+     *
+     * @return True if the main screen was handled, false otherwise.
      */
     open fun handleMainScreen(): Boolean {
-        if (!checkMainScreen()) {
-            return false
-        }
-
         // Scenario-specific pre-update hook.
         onBeforeMainScreenUpdate()
 
@@ -2633,20 +2643,32 @@ abstract class Campaign(game: Game) : Task(game) {
      * @return The result of the task execution, or null if the loop should continue.
      */
     override fun process(): TaskResult? {
+        // Captured lazily on first use so a tick that ends earlier never pays for it.
+        val miscBitmap: Bitmap by lazy { game.imageUtils.getSourceBitmap() }
+
         try {
-            // We always check for dialogs first.
-            if (tryHandleAllDialogs()) {
+            // Take one screenshot for the look-only checks below. Each check that returns false does nothing to the screen, so they can all share it.
+            val tickBitmap = game.imageUtils.getSourceBitmap()
+
+            // We always check for dialogs first. A tick with no title bar skips the dialog handler and the same search in checkMainScreen().
+            val bDialogVisible = DialogUtils.check(game.imageUtils, sourceBitmap = tickBitmap)
+            if (bDialogVisible && tryHandleAllDialogs(sourceBitmap = tickBitmap)) {
                 return null
             }
 
-            if (handleMainScreen()) {
+            val bAtMainScreen = !bDialogVisible && checkMainScreen(tickBitmap, bSkipDialogCheck = true)
+            if (bAtMainScreen && handleMainScreen()) {
                 return null
             }
 
-            if (checkTrainingEventScreen()) {
+            // handleMainScreen can act and still return false (e.g. it heals an injury, then reports the turn as needing re-evaluation), so the
+            // screen may no longer match the tick's screenshot. Recapture in that case. Otherwise nothing has touched the screen since.
+            val screenBitmap = if (bAtMainScreen) game.imageUtils.getSourceBitmap() else tickBitmap
+
+            if (checkTrainingEventScreen(screenBitmap)) {
                 // If the bot is at the Training Event screen, that means there are selectable options for rewards.
                 handleTrainingEvent()
-            } else if (checkMandatoryRacePrepScreen()) {
+            } else if (checkMandatoryRacePrepScreen(screenBitmap)) {
                 // If the bot is at the Main screen with the button to select a race visible, that means the bot needs to handle a mandatory race.
                 if (!handleRaceEvents() && racing.detectedMandatoryRaceCheck) {
                     return TaskResult.Success(
@@ -2654,10 +2676,10 @@ abstract class Campaign(game: Game) : Task(game) {
                         "Mandatory race detected. Stopping bot...",
                     )
                 }
-            } else if (checkRacingScreen()) {
+            } else if (checkRacingScreen(screenBitmap)) {
                 // If the bot is already at the Racing screen, then complete this standalone race.
                 racing.handleStandaloneRace()
-            } else if (checkEndScreen()) {
+            } else if (checkEndScreen(screenBitmap)) {
                 // Stop when the bot has reached the screen where it details the overall result of the run.
                 // Scenario end-of-career hook (e.g. Grand Live spends its leftover Performance Points in Lessons before completing).
                 onEndScreenEntry()
@@ -2716,9 +2738,9 @@ abstract class Campaign(game: Game) : Task(game) {
                 )
             } else if (checkCampaignSpecificConditions()) {
                 MessageLog.i(TAG, "[INFO] Campaign-specific checks complete.")
-            } else if (handleInheritanceEvent()) {
+            } else if (handleInheritanceEvent(miscBitmap)) {
                 // If the bot is at the Inheritance screen, then accept the inheritance.
-            } else if (performMiscChecks()) {
+            } else if (performMiscChecks(miscBitmap)) {
                 MessageLog.i(TAG, "[INFO] Misc checks complete.")
             } else {
                 MessageLog.i(TAG, "[INFO] Did not detect the bot being at the following screens: Main, Training Event, Inheritance, Mandatory Race Preparation, Racing and Career End.")

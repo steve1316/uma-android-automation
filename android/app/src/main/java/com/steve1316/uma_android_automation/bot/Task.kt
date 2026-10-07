@@ -1,11 +1,14 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandler
 import com.steve1316.uma_android_automation.bot.DialogHandlerResult
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.components.DialogInterface
+import com.steve1316.uma_android_automation.components.DialogUtils
 
 /** The possible result codes for a task's execution. */
 enum class TaskResultCode {
@@ -86,15 +89,19 @@ abstract class Task(game: Game) : DialogHandler(game) {
      * This method continuously handles dialogs until no more are detected or the timeout is reached.
      *
      * @param timeoutMs The maximum time (in milliseconds) allowed for this operation.
+     * @param sourceBitmap Optional screenshot to use for the first dialog check only. Later checks capture fresh screenshots since handling a dialog changes the screen.
      * @return True if at least one dialog was successfully handled, false otherwise.
      * @throws IllegalStateException If an unhandled dialog is detected.
      */
-    fun tryHandleAllDialogs(timeoutMs: Int = 15000): Boolean {
+    fun tryHandleAllDialogs(timeoutMs: Int = 15000, sourceBitmap: Bitmap? = null): Boolean {
         var bWasDialogHandled = false
         var dialogResult: DialogHandlerResult = DialogHandlerResult.NoDialogDetected
+        // Detect the first dialog on the passed screenshot so handleDialogs() does not capture again. Later dialogs are detected on fresh screenshots.
+        var pendingDialog: DialogInterface? = sourceBitmap?.let { DialogUtils.getDialog(game.imageUtils, it) ?: return false }
         val startTime = System.currentTimeMillis()
         while (System.currentTimeMillis() - startTime < timeoutMs) {
-            dialogResult = handleDialogs()
+            dialogResult = handleDialogs(pendingDialog)
+            pendingDialog = null
 
             if (dialogResult !is DialogHandlerResult.Handled) {
                 break

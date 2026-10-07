@@ -1028,11 +1028,13 @@ class ScrollList private constructor(
                 // An empty frame (after retries) is itself a no-new-content signal in swipe mode, so an empty list terminates instead of swiping to the hard cap.
                 if (swipeMode) consecutiveNoNewFrames++
             } else {
+                // Extract each entry's key once, before any callback runs. The keys find the overlap with the previous frame here and become lastFrameKeys below,
+                // and callers that cache what their keyExtractor reads (like skill titles) can then reuse it on the first frame too.
+                val currentFrameKeys: List<String>? = keyExtractor?.let { extract -> currentFrameEntries.map { extract(it) ?: entrySignature(it.bitmap) } }
+
                 // Determine the overlap with the previous frame's entries using the provided keyExtractor.
                 var skipCount = 0
-                if (keyExtractor != null && lastFrameKeys.isNotEmpty()) {
-                    val currentFrameKeys = currentFrameEntries.map { keyExtractor(it) ?: entrySignature(it.bitmap) }
-
+                if (currentFrameKeys != null && lastFrameKeys.isNotEmpty()) {
                     // Find the largest suffix of lastFrameKeys that matches a prefix of currentFrameKeys.
                     for (i in lastFrameKeys.size.coerceAtMost(currentFrameKeys.size) downTo 1) {
                         val suffix = lastFrameKeys.takeLast(i)
@@ -1063,8 +1065,8 @@ class ScrollList private constructor(
                 }
 
                 // Update the last frame's keys for the next iteration's overlap detection.
-                if (keyExtractor != null) {
-                    lastFrameKeys = currentFrameEntries.map { keyExtractor(it) ?: entrySignature(it.bitmap) }
+                if (currentFrameKeys != null) {
+                    lastFrameKeys = currentFrameKeys
                 }
             }
 

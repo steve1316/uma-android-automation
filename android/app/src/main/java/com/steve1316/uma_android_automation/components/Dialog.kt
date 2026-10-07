@@ -133,14 +133,20 @@ object DialogUtils {
      * Check if any dialog is currently displayed on the screen.
      *
      * @param imageUtils The CustomImageUtils instance used to find the dialog.
-     * @param tries The number of times to attempt to find the image.
+     * @param tries The number of times to attempt to find the image. Ignored when a bitmap is passed.
+     * @param sourceBitmap Optional screenshot to search instead of capturing new ones.
      * @return True if a dialog was detected, false otherwise.
      */
-    fun check(imageUtils: CustomImageUtils, tries: Int = 1): Boolean {
+    fun check(imageUtils: CustomImageUtils, tries: Int = 1, sourceBitmap: Bitmap? = null): Boolean {
         var loc: Point? = null
         for (template in titleGradientTemplates) {
             // Search for the dialog title gradient templates.
-            loc = imageUtils.findImage(template, tries = tries, suppressError = true).first
+            loc =
+                if (sourceBitmap != null) {
+                    imageUtils.findImageWithBitmap(template, sourceBitmap = sourceBitmap, suppressError = true)
+                } else {
+                    imageUtils.findImage(template, tries = tries, suppressError = true).first
+                }
             if (loc != null) {
                 break
             }
