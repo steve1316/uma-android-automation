@@ -30,6 +30,12 @@ object Region {
     val rightHalf: IntArray = intArrayOf(SharedData.displayWidth / 2, 0, SharedData.displayWidth / 2, SharedData.displayHeight)
     val threeQuarterRight: IntArray = intArrayOf((SharedData.displayWidth * 0.625).toInt(), 0, (SharedData.displayWidth * 0.375).toInt(), SharedData.displayHeight)
     val topRightThird: IntArray = intArrayOf(SharedData.displayWidth - (SharedData.displayWidth / 3), 0, SharedData.displayWidth / 3, SharedData.displayHeight - (SharedData.displayHeight / 3))
+
+    /** Right half of the top sixth of the screen, where the "Connecting..." text appears. */
+    val topRightSixth: IntArray = intArrayOf(SharedData.displayWidth / 2, 0, SharedData.displayWidth / 2, SharedData.displayHeight / 6)
+
+    /** Right half of the bottom quarter of the screen, where the "Now Loading..." text appears. */
+    val bottomRightQuarter: IntArray = intArrayOf(SharedData.displayWidth / 2, SharedData.displayHeight - (SharedData.displayHeight / 4), SharedData.displayWidth / 2, SharedData.displayHeight / 4)
 }
 
 /**

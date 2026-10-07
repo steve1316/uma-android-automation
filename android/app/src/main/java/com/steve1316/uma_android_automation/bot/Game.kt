@@ -197,9 +197,8 @@ class Game(val myContext: Context) {
         gestureUtils.tap(x, y, imageName, taps = taps)
 
         if (!ignoreWaiting) {
-            // Now check if the game is waiting for a server response from the tap and wait if necessary.
+            // Now check if the game is waiting for a server response from the tap and wait if necessary. wait() already runs waitForLoading() after the delay.
             wait(0.20)
-            waitForLoading()
         }
     }
 
