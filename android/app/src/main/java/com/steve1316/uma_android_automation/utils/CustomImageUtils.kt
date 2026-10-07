@@ -507,18 +507,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         // Convert the Mat directly to Bitmap and then pass it to the text reader.
         val resultBitmap = bwImage.toBitmap()
-        tessBaseAPI.setImage(resultBitmap)
 
-        var result = ""
-        try {
-            // Finally, detect text on the cropped region.
-            result = tessBaseAPI.utF8Text
-            MessageLog.i(TAG, "[INFO] Detected event title text with Tesseract: $result")
-        } catch (e: Exception) {
-            MessageLog.e(TAG, "[ERROR] Cannot perform OCR: ${e.stackTraceToString()}")
-        }
-
-        tessBaseAPI.clear()
+        var result =
+            readTextWithTesseract(resultBitmap)?.also { MessageLog.i(TAG, "[INFO] Detected event title text with Tesseract: $it") }
+                ?: "".also { MessageLog.e(TAG, "[ERROR] Cannot perform OCR on the event title with Tesseract.") }
         tempImage.release()
         cvImage.release()
         bwImage.release()
@@ -2583,17 +2575,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
         Utils.matToBitmap(bwImage, resultBitmap)
-        tessDigitsBaseAPI.setImage(resultBitmap)
 
-        var result = "empty!"
-        try {
-            // Finally, detect text on the cropped region.
-            result = tessDigitsBaseAPI.utF8Text
-        } catch (e: Exception) {
-            MessageLog.e(TAG, "[ERROR] getUmamusumeClassDialogFanCount:: Cannot perform OCR with Tesseract: ${e.stackTraceToString()}")
-        }
-
-        tessDigitsBaseAPI.clear()
+        var result = readTextWithTesseract(resultBitmap, digitsOnly = true) ?: "empty!".also { MessageLog.e(TAG, "[ERROR] getUmamusumeClassDialogFanCount:: Cannot perform OCR with Tesseract.") }
         cvImage.release()
         bwImage.release()
 
@@ -2960,17 +2943,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
             resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
             Utils.matToBitmap(bwImage, resultBitmap)
-            tessDigitsBaseAPI.setImage(resultBitmap)
 
-            var result = ""
-            try {
-                // Finally, detect text on the cropped region.
-                result = tessDigitsBaseAPI.utF8Text
-            } catch (e: Exception) {
-                MessageLog.e(TAG, "[ERROR] determineExtraRaceFans:: Cannot perform OCR with Tesseract: ${e.stackTraceToString()}")
-            }
-
-            tessDigitsBaseAPI.clear()
+            var result = readTextWithTesseract(resultBitmap, digitsOnly = true) ?: "".also { MessageLog.e(TAG, "[ERROR] determineExtraRaceFans:: Cannot perform OCR with Tesseract.") }
             cvImage.release()
             bwImage.release()
 
@@ -3128,14 +3102,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // Fallback to Tesseract if ML Kit failed.
         if (mlKitFailed || result.isEmpty()) {
             Log.d(TAG, "[DEBUG] findTextByColor:: Falling back to Tesseract.")
-            tessBaseAPI.setImage(finalBitmap)
-            try {
-                result = tessBaseAPI.utF8Text
-            } catch (e: Exception) {
-                MessageLog.e(TAG, "[ERROR] findTextByColor:: Tesseract OCR failed: ${e.message}")
-            }
-            tessBaseAPI.stop()
-            tessBaseAPI.clear()
+            result = readTextWithTesseract(finalBitmap) ?: result.also { MessageLog.e(TAG, "[ERROR] findTextByColor:: Tesseract OCR failed.") }
         }
 
         if (debugMode) {
