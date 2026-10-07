@@ -3,9 +3,11 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native"
 import { BackHandler } from "react-native"
 
 jest.mock("../../../lib/storageBridge", () => ({
+    INTERNAL_STORAGE_FOLDER: { uri: "", name: "App default (internal storage)" },
     storageBridge: {
         getCurrentFolder: jest.fn(),
         pickFolder: jest.fn(),
+        clearFolder: jest.fn(),
         validateAccess: jest.fn(),
         migrateLegacyFiles: jest.fn(),
     },
@@ -77,6 +79,7 @@ describe("FirstRunWizard", () => {
     beforeEach(() => {
         mockStorageBridge.getCurrentFolder.mockReset()
         mockStorageBridge.pickFolder.mockReset()
+        mockStorageBridge.clearFolder.mockReset()
         mockStorageBridge.validateAccess.mockReset()
         mockStorageBridge.migrateLegacyFiles.mockReset()
         mockUseLegacyFileScan.mockReset()
@@ -239,12 +242,56 @@ describe("FirstRunWizard", () => {
         mockStorageBridge.migrateLegacyFiles.mockResolvedValue({ movedLogs: 1, movedRecordings: 0, error: "OUT_OF_SPACE", remaining: 6 })
         const { findByText } = render(<FirstRunWizard onComplete={jest.fn()} />)
 
+        // Moving needs the picked folder, so wait for it to load first.
+        expect(await findByText("Test")).toBeTruthy()
         fireEvent.press(await findByText("Move them"))
         await waitFor(() => expect(mockStorageBridge.migrateLegacyFiles).toHaveBeenCalledWith("move"))
         expect(await findByText(/Moved 1 of 7 files\. Out of space on your new folder\./i)).toBeTruthy()
 
         fireEvent.press(await findByText("Continue with partial move"))
         expect(await findByText("Left at old location")).toBeTruthy()
+    })
+
+    it("does not move files before a folder is picked", async () => {
+        mockUseLegacyFileScan.mockReturnValue({ scanning: false, counts: { logs: 5, recordings: 2 }, hasLegacyFiles: true })
+        mockStorageBridge.getCurrentFolder.mockResolvedValue(null)
+        const { findByText, queryByText } = render(<FirstRunWizard onComplete={jest.fn()} />)
+
+        expect(await findByText("Pick a folder above to move them")).toBeTruthy()
+        fireEvent.press(await findByText("Move them"))
+        await Promise.resolve()
+
+        expect(mockStorageBridge.migrateLegacyFiles).not.toHaveBeenCalled()
+        expect(queryByText("Moved to new folder")).toBeNull()
+    })
+
+    it("does not move files into app default storage", async () => {
+        mockUseLegacyFileScan.mockReturnValue({ scanning: false, counts: { logs: 5, recordings: 2 }, hasLegacyFiles: true })
+        mockStorageBridge.getCurrentFolder.mockResolvedValue(null)
+        mockStorageBridge.clearFolder.mockResolvedValue(true)
+        const { findByText, queryByText } = render(<FirstRunWizard onComplete={jest.fn()} />)
+
+        fireEvent.press(await findByText("Use app default storage instead"))
+        expect(await findByText("App default (internal storage)")).toBeTruthy()
+        fireEvent.press(await findByText("Move them"))
+        await Promise.resolve()
+
+        expect(mockStorageBridge.migrateLegacyFiles).not.toHaveBeenCalled()
+        expect(queryByText("Moved to new folder")).toBeNull()
+    })
+
+    it("explains a refused move when the library reports no destination", async () => {
+        mockUseLegacyFileScan.mockReturnValue({ scanning: false, counts: { logs: 5, recordings: 2 }, hasLegacyFiles: true })
+        mockStorageBridge.getCurrentFolder.mockResolvedValue({ uri: "content://test", name: "Test" })
+        mockStorageBridge.migrateLegacyFiles.mockResolvedValue({ movedLogs: 0, movedRecordings: 0, error: "NO_DESTINATION", remaining: 7 })
+        const { findByText, queryByText } = render(<FirstRunWizard onComplete={jest.fn()} />)
+
+        expect(await findByText("Test")).toBeTruthy()
+        fireEvent.press(await findByText("Move them"))
+        await waitFor(() => expect(mockStorageBridge.migrateLegacyFiles).toHaveBeenCalledWith("move"))
+
+        expect(await findByText(/Nothing was moved\. The picked folder is no longer accessible\./i)).toBeTruthy()
+        expect(queryByText("Moved to new folder")).toBeNull()
     })
 
     it("shows 0 OF 2 on initial mount when no legacy files", async () => {

@@ -26,8 +26,8 @@ export interface MigrationResult {
     movedLogs: number
     /** Count of recording files successfully moved (or deleted) before completion or error. */
     movedRecordings: number
-    /** Failure tag, undefined when the pass completed cleanly. */
-    error?: "OUT_OF_SPACE" | "PERMISSION_DENIED"
+    /** Failure tag, undefined when the pass completed cleanly. `NO_DESTINATION` means a move was refused because no writable folder is picked. */
+    error?: "OUT_OF_SPACE" | "PERMISSION_DENIED" | "NO_DESTINATION"
     /** Files left untouched when an error aborted the pass. */
     remaining?: number
 }
