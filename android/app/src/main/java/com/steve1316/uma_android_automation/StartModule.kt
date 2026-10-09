@@ -453,12 +453,14 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
             // Reset the log stream mute to ensure logs for the new run are broadcasted.
             LogStreamServer.resetMute()
 
-            val entryPoint = Game(context)
+            // Drop the previous run's stats now, so a stop or crash before this run's first turn does not report them.
+            RunAnalytics.reset()
 
             val botThread =
                 Thread {
                     try {
-                        entryPoint.start()
+                        // Build the run on this thread, so a crash while setting it up reaches the run-end report like any other crash.
+                        Game(context).start()
                     } catch (e: Exception) {
                         EventBus.getDefault().postSticky(ExceptionEvent(e))
                     }
