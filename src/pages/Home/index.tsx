@@ -1,11 +1,13 @@
 import * as Application from "expo-application"
 import MessageLog from "../../components/MessageLog"
+import { parseRunReport, parseLiveRun, runCopyText, LiveRun, RunReport } from "../../lib/runReport"
+import { copyToClipboard } from "../../lib/utils"
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { BotMetaContext, GeneralMiscContext, DebugContext, RacingContext, SkillsContext, TrainingContext } from "../../context/BotStateContext"
 import { useNavigation, CommonActions } from "@react-navigation/native"
 import { useSettings } from "../../context/SettingsContext"
 import { logWithTimestamp, logErrorWithTimestamp } from "../../lib/logger"
-import { Animated, DeviceEventEmitter, StyleSheet, View, NativeModules } from "react-native"
+import { Animated, AppState, DeviceEventEmitter, StyleSheet, View, NativeModules } from "react-native"
 import { Snackbar } from "react-native-paper"
 import { MessageLogDispatchContext } from "../../context/MessageLogContext"
 import { useTheme } from "../../context/ThemeContext"
@@ -18,10 +20,11 @@ import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import SelectButton from "../../components/SelectButton"
 import PermissionSetupDialog from "../../components/PermissionSetupDialog"
 import { loadDeviceCapabilities, shouldSuggestX8664Variant } from "../../lib/chat/deviceCapabilities"
-import HeroStatusCard, { HeroStatus } from "../../components/HeroStatusCard"
-import HeroGlance, { HeroGlanceTarget } from "../../components/HeroStatusCard/HeroGlance"
-import HeroChips from "../../components/HeroStatusCard/HeroChips"
-import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, raceStrategyLabel, raceStrategyTargetId } from "../../components/HeroStatusCard/heroGlanceData"
+import HomeHero from "../../components/HomeHero"
+import { heroView, HeroHealth } from "../../components/HomeHero/heroView"
+import HeroGlance, { HeroGlanceTarget } from "../../components/HomeHero/HeroGlance"
+import HeroChips from "../../components/HomeHero/HeroChips"
+import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, raceStrategyLabel, raceStrategyTargetId } from "../../components/HomeHero/heroGlanceData"
 import { useProfileContext, DEFAULT_PROFILE_NAME } from "../../context/ProfileContext"
 import { SPACING } from "../../lib/spacing"
 
@@ -96,6 +99,13 @@ const Home = () => {
 
     const { colors } = useTheme()
     const [isRunning, setIsRunning] = useState<boolean>(false)
+    // The last run's result. `logInMemory` is true when it arrived this session, so View log can scroll the in-memory log.
+    const [lastRun, setLastRun] = useState<{ report: RunReport; logInMemory: boolean } | null>(null)
+    const [logJump, setLogJump] = useState<{ term: string; nonce: number } | null>(null)
+    // The current run's stats so far, read when the app comes back to the front or the drawer opens.
+    const [liveRun, setLiveRun] = useState<LiveRun | null>(null)
+    // Set when Start is pressed, so the game opens once the overlay reports it is running.
+    const openGameOnStart = useRef(false)
     const [showNotReadyDialog, setShowNotReadyDialog] = useState<boolean>(false)
     const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false)
     const [snackbarMessage, setSnackbarMessage] = useState<string>("")
@@ -146,15 +156,55 @@ const Home = () => {
         }
     }, [unsupportedReason, abiMismatch])
 
+    /** Reads the current run's stats for the drawer. Native code returns nothing when no run is going. */
+    const refreshLiveRun = useCallback(() => {
+        StartModule.getLiveRun()
+            .then((json: string | null) => setLiveRun(parseLiveRun(json)))
+            .catch(() => setLiveRun(null))
+    }, [])
+
+    /**
+     * Reads whether the overlay is on, the last run's saved result, and the current run's stats from native code, so Home matches the service after an app restart or a recreated screen.
+     */
+    const syncWithService = () => {
+        StartModule.isOverlayOn()
+            .then((on: boolean) => setIsRunning(on))
+            .catch((error: unknown) => logErrorWithTimestamp("[Home] Failed to read the overlay state:", error))
+        StartModule.getLastRun()
+            .then((json: string | null) => {
+                const report = parseRunReport(json)
+                // Keep a result that arrived live this session, since its log is still in memory for View log.
+                setLastRun((prev) => (!report ? null : prev && prev.report.endedAt === report.endedAt ? prev : { report, logInMemory: false }))
+            })
+            .catch((error: unknown) => logErrorWithTimestamp("[Home] Failed to read the last run:", error))
+        refreshLiveRun()
+    }
+
     useEffect(() => {
         const mediaProjectionSubscription = DeviceEventEmitter.addListener("MediaProjectionService", (data) => {
-            setIsRunning(data["message"] === "Running")
+            const running = data["message"] === "Running"
+            setIsRunning(running)
+            // Start turns the overlay on and then brings the game up. A cancelled screen-capture prompt never sends "Running", so the flag just clears later.
+            if (running && openGameOnStart.current) StartModule.openGame().catch(() => false)
+            openGameOnStart.current = false
         })
 
         const botServiceSubscription = DeviceEventEmitter.addListener("BotService", (data) => {
             if (data["message"] === "Running") {
                 mlc.setMessageLog([])
+                setLastRun(null)
             }
+        })
+
+        const runEndedSubscription = DeviceEventEmitter.addListener("RunEnded", (data) => {
+            const report = parseRunReport(data["message"])
+            if (report) setLastRun({ report, logInMemory: true })
+        })
+
+        // Catch up with the service on open and whenever the app comes back to the front, since events sent while Home's screen was being recreated are lost.
+        syncWithService()
+        const appStateSubscription = AppState.addEventListener("change", (state) => {
+            if (state === "active") syncWithService()
         })
 
         getVersion()
@@ -164,6 +214,8 @@ const Home = () => {
         return () => {
             mediaProjectionSubscription.remove()
             botServiceSubscription.remove()
+            runEndedSubscription.remove()
+            appStateSubscription.remove()
         }
     }, [])
 
@@ -232,17 +284,14 @@ const Home = () => {
             setSnackbarOpen(true)
             return
         }
+        openGameOnStart.current = true
         StartModule.start()
     }
 
     /**
-     * Handles the button press for starting or stopping the bot.
+     * Handles the button press for starting the bot.
      */
     const handleButtonPress = async () => {
-        if (isRunning) {
-            StartModule.stop()
-            return
-        }
         if (!readyStatus) {
             setShowNotReadyDialog(true)
             return
@@ -264,26 +313,49 @@ const Home = () => {
         await proceedToStart()
     }
 
+    /** Brings the game to the front so the next run can start from the overlay. */
+    const handleOpenGame = useCallback(async () => {
+        const opened = await StartModule.openGame().catch(() => false)
+        if (!opened) {
+            setSnackbarMessage("Could not open the game. Is it installed?")
+            setSnackbarOpen(true)
+        }
+    }, [])
+
+    // The overlay turning on or off changes whether there is a run to read.
+    useEffect(() => {
+        if (isRunning) refreshLiveRun()
+        else setLiveRun(null)
+    }, [isRunning, refreshLiveRun])
+
+    /** Turns the overlay off. */
+    const handleStopOverlay = useCallback(() => StartModule.stop(), [])
+
+    /** Dismisses the result card and deletes the saved report. */
+    const handleDismissRun = useCallback(() => {
+        StartModule.clearLastRun()
+        setLastRun(null)
+    }, [])
+
+    /** Scrolls the log to the crash line, or to the end for other outcomes. */
+    const handleViewLog = useCallback(() => {
+        const report = lastRun?.report
+        setLogJump({ term: report?.outcome === "CRASHED" && report.error ? report.error.className : "", nonce: Date.now() })
+    }, [lastRun])
+
+    /** Copies the run's error block to the clipboard. */
+    const handleCopyError = useCallback(async () => {
+        if (lastRun) await copyToClipboard(runCopyText(lastRun.report, Application.nativeApplicationVersion ?? ""))
+    }, [lastRun])
+
     /** Gets the appropriate icon name for the SelectButton based on device state. */
     const getSelectButtonIconName = (): React.ComponentProps<typeof Ionicons>["name"] | undefined => {
-        if (!isScenarioValid) {
-            return undefined
-        } else if (isRunning) {
-            return "stop-outline"
-        } else {
-            return "play-outline"
-        }
+        return isScenarioValid ? "play-outline" : undefined
     }
 
     /** Gets the SelectButton variant based on device state. */
     const getSelectButtonVariant = (): any => {
-        if (isRunning) {
-            // Not an error, but we want the button to be red to indicate that
-            // pressing it will stop the service.
-            // Must come first because we always want the button to be red
-            // if the bot is running, regardless of the other conditions.
-            return "error"
-        } else if (unsupportedReason !== null || abiMismatch) {
+        if (unsupportedReason !== null || abiMismatch) {
             return "warning"
         } else if (deviceMetrics === null) {
             return "warning"
@@ -368,7 +440,8 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
 
     // Map the existing bot state to the hero card's status pill. Running takes priority. Warnings (unsupported display
     // or ABI mismatch) surface as "error". An unselected scenario lands on "stopped". Otherwise the bot is "ready".
-    const heroStatus: HeroStatus = isRunning ? "running" : unsupportedReason !== null || abiMismatch ? "error" : readyStatus && deviceMetrics !== null ? "ready" : "stopped"
+    const heroHealth: HeroHealth = unsupportedReason !== null || abiMismatch ? "error" : readyStatus && deviceMetrics !== null ? "ready" : "notReady"
+    const hero = useMemo(() => heroView({ overlayOn: isRunning, health: heroHealth, report: lastRun?.report ?? null, live: liveRun }), [isRunning, heroHealth, lastRun, liveRun])
     const heroProfile = currentProfileName ?? DEFAULT_PROFILE_NAME
 
     // Derive the hero data from the settings slices. The SRS/Debug/Test chips and the Plans/Priority rows render only when active; the Style chip is always shown on the status line.
@@ -390,6 +463,14 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
         },
         [navigation, activeTest, raceStyleTargetId]
     )
+    const heroChips = useMemo(
+        () => <HeroChips debugMode={debug.enableDebugMode} activeTest={activeTest?.name ?? null} srs={racing.enableSmartRaceSolver} raceStyle={raceStyle} onNavigate={handleHeroNavigate} />,
+        [debug.enableDebugMode, activeTest, racing.enableSmartRaceSolver, raceStyle, handleHeroNavigate]
+    )
+    const heroGlance = useMemo(
+        () => (showGlance ? <HeroGlance planNames={planNames} spThreshold={spThreshold} priority={statPriority} onNavigate={handleHeroNavigate} /> : null),
+        [showGlance, planNames, spThreshold, statPriority, handleHeroNavigate]
+    )
 
     return (
         <View style={styles.root}>
@@ -397,15 +478,17 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
             <PageHeader title="Home" showHomeButton={false} style={{ width: "100%" }} rightComponent={renderStatus()} />
 
             <View style={styles.hero}>
-                <HeroStatusCard
-                    status={heroStatus}
+                <HomeHero
+                    view={hero}
                     profile={heroProfile}
-                    chips={
-                        <HeroChips debugMode={debug.enableDebugMode} activeTest={activeTest?.name ?? null} srs={racing.enableSmartRaceSolver} raceStyle={raceStyle} onNavigate={handleHeroNavigate} />
-                    }
-                    glance={showGlance ? <HeroGlance planNames={planNames} spThreshold={spThreshold} priority={statPriority} onNavigate={handleHeroNavigate} /> : undefined}
-                    cta={
+                    report={lastRun?.report ?? null}
+                    live={liveRun}
+                    canViewLog={lastRun?.logInMemory ?? false}
+                    chips={heroChips}
+                    glance={heroGlance}
+                    startButton={
                         <SelectButton
+                            size="sm"
                             variant={getSelectButtonVariant()}
                             iconName={getSelectButtonIconName()}
                             options={scenarios}
@@ -419,12 +502,18 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                             onPress={handleButtonPress}
                         />
                     }
+                    onOpenGame={handleOpenGame}
+                    onStopOverlay={handleStopOverlay}
+                    onViewLog={handleViewLog}
+                    onCopyError={handleCopyError}
+                    onDismiss={handleDismissRun}
+                    onDrawerOpen={refreshLiveRun}
                 />
             </View>
 
             <View style={styles.contentContainer}>
                 <View style={styles.logBody}>
-                    <MessageLog />
+                    <MessageLog jumpRequest={logJump} />
                 </View>
             </View>
 

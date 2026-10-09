@@ -192,9 +192,11 @@ const SelectButton: React.FC<SelectButtonProps> = ({
                     borderBottomLeftRadius: 0,
                     borderColor: "transparent",
                     borderWidth: 0,
+                    // The icon preset is 40 dp tall, so match the small preset's height to keep both halves even.
+                    ...(size === "sm" ? { height: 36, width: 36 } : {}),
                 },
             }),
-        [colors]
+        [colors, size]
     )
 
     /**
@@ -252,7 +254,7 @@ const SelectButton: React.FC<SelectButtonProps> = ({
                 <Separator orientation="vertical" style={{ backgroundColor: "transparent" }} />
                 <SelectPrimitive.Trigger asChild>
                     <CustomButton style={styles.buttonDropdown} variant={variant as any} size={"icon"} isLoading={false}>
-                        <Ionicons name="caret-down" size={20} color={getTextColor()} />
+                        <Ionicons name="caret-down" size={size === "sm" ? 16 : 20} color={getTextColor()} />
                     </CustomButton>
                 </SelectPrimitive.Trigger>
             </View>
