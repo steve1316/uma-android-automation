@@ -280,6 +280,7 @@ class GrandLive(game: Game) : Campaign(game) {
         var hypeMaxed = false
         // Energy cards cancelled for overflow this visit. The list is static until a purchase, so remember them to avoid re-picking the same one.
         val skippedEnergyCards = mutableSetOf<String>()
+        var dialogMismatches = 0
         for (iteration in 0 until MAX_LESSON_PURCHASES_PER_VISIT) {
             val scanned = scanLessons()
             // On a normal turn, hold tokens if a sought-after card is still locked (and Hype is maxed with time to spare) rather than spending them on lesser cards.
@@ -314,15 +315,26 @@ class GrandLive(game: Game) : Campaign(game) {
 
             val confirmSource = game.imageUtils.getSourceBitmap()
 
+            // The list can refresh under the tap and open a different card than the one scanned, so check the dialog names the chosen card.
+            // An unreadable card name cannot be checked, so it falls through to the Learn button check below.
+            if (choice.name.isNotBlank()) {
+                val dialogTitle = ocrCard(confirmSource, Point(0.0, 0.0), LESSON_DIALOG_TITLE_CROP, "grandlive_lesson_dialog_title")
+                if (!isSameLessonTitle(dialogTitle, choice.name)) {
+                    MessageLog.w(TAG, "[GRAND_LIVE] Purchase dialog reads \"$dialogTitle\", not '${choice.name}'. Cancelling and rescanning.")
+                    cancelPurchaseDialog(confirmSource)
+                    if (++dialogMismatches >= MAX_LESSON_DIALOG_MISMATCHES) break
+                    continue
+                }
+            }
+
             // For an Energy card away from the final concert, read the dialog's printed "<new> / <cap>" and cancel if it would cap out (wasted energy).
             // Reading the dialog avoids relying on the trainee's energy, which is unknown when the bot is started straight on a concert screen.
             if (!isFinalConcert && parseEnergyGain(choice.effectText) != null) {
                 val projected = readDialogProjectedEnergy(confirmSource)
                 if (projected != null && projected.first >= projected.second) {
                     MessageLog.i(TAG, "[GRAND_LIVE] Skipping '${choice.name}': projected energy ${projected.first}/${projected.second} would overflow.")
-                    ButtonCancel.click(game.imageUtils, sourceBitmap = confirmSource, tries = 5)
+                    cancelPurchaseDialog(confirmSource)
                     skippedEnergyCards.add(choice.name)
-                    game.wait(game.dialogWaitDelay)
                     continue
                 }
             }
@@ -332,13 +344,17 @@ class GrandLive(game: Game) : Campaign(game) {
                 hypeMaxed = true
                 MessageLog.i(TAG, "[GRAND_LIVE] This purchase maxes the Hype gauge.")
             }
-            // The Lessons purchase confirmation uses a "Learn" button (not the generic Confirm).
-            ButtonLearn.click(game.imageUtils, sourceBitmap = confirmSource, tries = 5)
-            // Buying syncs to the server ("Connecting") and repaints the list over a couple of transitions. Clear loading, then wait a
-            // fixed few seconds so the next findAll runs on a settled Lessons list instead of a mid-transition frame that reads zero cards.
-            // A purchase that maxes Hype plays an extra gauge animation, so give it longer to settle.
+            // The Lessons purchase confirmation uses a "Learn" button (not the generic Confirm). Without one the game refused the purchase
+            // (e.g. "Not enough performance points"), so close the dialog rather than leave it covering the screen.
+            if (!ButtonLearn.click(game.imageUtils, sourceBitmap = confirmSource, tries = 5)) {
+                MessageLog.w(TAG, "[GRAND_LIVE] No Learn button on the purchase dialog for '${choice.name}'. Cancelling and leaving the Lessons screen.")
+                cancelPurchaseDialog(confirmSource)
+                break
+            }
+            // Buying syncs to the server ("Connecting") and repaints the list over a couple of transitions. Clear loading, then wait until the
+            // bought card is gone so the next scan reads the new list. A fixed wait was sometimes too short and tapped a card that had just changed.
             game.waitForLoading()
-            game.wait(if (maxesHype) 5.0 else 3.0)
+            waitForLessonsRefresh(choice)
         }
 
         // Record the day to pace the next re-open.
@@ -391,7 +407,8 @@ class GrandLive(game: Game) : Campaign(game) {
                 game.wait(2.0)
                 return
             }
-            ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            // A leftover dialog has no Back button, so fall back to Cancel to close it.
+            if (!ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)) ButtonCancel.click(game.imageUtils, sourceBitmap = sourceBitmap)
             game.waitForLoading()
             game.wait(game.waitDelay)
         }
@@ -467,10 +484,49 @@ class GrandLive(game: Game) : Campaign(game) {
     }
 
     /**
+     * Wait for the Lessons list to replace a just-bought card, polling its row until a different card (or none) is there. Gives up after
+     * [LESSON_REFRESH_TIMEOUT_SECONDS] and lets the purchase dialog title check catch any stale tap.
+     *
+     * @param bought The card that was just bought.
+     */
+    private fun waitForLessonsRefresh(bought: LessonOption) {
+        if (bought.name.isBlank()) {
+            game.wait(3.0)
+            return
+        }
+        val deadline = System.currentTimeMillis() + (LESSON_REFRESH_TIMEOUT_SECONDS * 1000).toLong()
+        while (System.currentTimeMillis() < deadline) {
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            val anchors = LabelGrandLiveLessonCost.findAll(game.imageUtils, sourceBitmap = sourceBitmap).sortedBy { it.y }
+            // No cards found means the list is mid-transition, so keep waiting.
+            if (anchors.size > bought.rowIndex) {
+                val name = ocrCard(sourceBitmap, anchors[bought.rowIndex], LESSON_CARD_CROPS.name, "grandlive_lesson_refresh_name")
+                if (!isSameLessonTitle(name, bought.name)) {
+                    // The new cards slide in, so let them settle before the next scan reads tap points.
+                    game.wait(1.0)
+                    return
+                }
+            }
+            game.wait(0.5)
+        }
+        MessageLog.w(TAG, "[GRAND_LIVE] '${bought.name}' still shows on the Lessons list after ${LESSON_REFRESH_TIMEOUT_SECONDS}s. Rescanning anyway.")
+    }
+
+    /**
+     * Close a Lessons purchase dialog with Cancel and let it fade before the next screenshot.
+     *
+     * @param sourceBitmap The purchase-dialog screenshot.
+     */
+    private fun cancelPurchaseDialog(sourceBitmap: Bitmap) {
+        ButtonCancel.click(game.imageUtils, sourceBitmap = sourceBitmap, tries = 5)
+        game.wait(game.dialogWaitDelay)
+    }
+
+    /**
      * OCR a text region on a Lessons card, relative to the matched cost-pill anchor.
      *
      * @param sourceBitmap The Lessons-screen screenshot.
-     * @param anchor The matched `grandlive_lesson_cost` pill center for this card.
+     * @param anchor The point the crop is offset from: a card's `grandlive_lesson_cost` pill center, or the screen origin for the purchase dialog.
      * @param crop The crop offsets from [LESSON_CARD_CROPS].
      * @param debugName Debug label for the OCR crop dump.
      * @return The trimmed OCR text (empty when nothing was read).
