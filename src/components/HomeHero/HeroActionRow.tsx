@@ -44,7 +44,7 @@ const HeroActionRow = ({ view, chips, button }: HeroActionRowProps) => {
         <View style={styles.row}>
             <View style={styles.left}>
                 {!view.hasResult ? (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} fadingEdgeLength={24} contentContainerStyle={styles.chips}>
                         {chips}
                     </ScrollView>
                 ) : (

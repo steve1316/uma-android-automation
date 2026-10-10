@@ -132,11 +132,12 @@ const HeroDrawer = ({ view, report, live, canViewLog, glance, onViewLog, onCopyE
 
     let details: React.ReactNode = null
     if (view.details === "error" && error) {
+        const message = error.message.length > MESSAGE_LIMIT ? `${error.message.slice(0, MESSAGE_LIMIT)}...` : error.message
         details = (
             <>
                 <View style={styles.error}>
                     <Text style={styles.errorClass}>{error.className}</Text>
-                    {error.message ? <Text style={styles.errorText}>{error.message.slice(0, MESSAGE_LIMIT)}</Text> : null}
+                    {message ? <Text style={styles.errorText}>{message}</Text> : null}
                     {error.frames.length > 0 ? (
                         <Text style={styles.frames}>
                             {error.frames

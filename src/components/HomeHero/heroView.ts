@@ -17,7 +17,7 @@ export interface HeroView {
     pillLabel: string
     /** Status or result pill color family. */
     pillTone: HeroTone
-    /** Header facts such as "Turn 41/72 · 0:52:07", or empty. */
+    /** Header facts such as "Turn 41/72 - 0:52:07", or empty. */
     facts: string
     /** Row 2 title after a run, or empty when the chips show. */
     title: string
