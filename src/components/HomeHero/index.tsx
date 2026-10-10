@@ -35,8 +35,8 @@ interface HomeHeroProps {
     report: RunReport | null
     /** The current run's stats so far, shown in the drawer while the overlay is on, or null. */
     live: LiveRun | null
-    /** Whether View log is offered, only when the run's log is still in memory. */
-    canViewLog: boolean
+    /** Whether the result arrived live this session. Its log is still in memory for View log, and the drawer opens to the result's default. */
+    arrivedLive: boolean
     /** Nav chips (SRS, debug, race style) for row 2. */
     chips: React.ReactNode
     /** Plans and priority chips for the drawer, or null when there are none. */
@@ -64,7 +64,7 @@ interface HomeHeroProps {
  * @param profile Active profile name.
  * @param report The last run's report, or null.
  * @param live The current run's stats so far, or null.
- * @param canViewLog Whether View log is offered.
+ * @param arrivedLive Whether the result arrived live this session.
  * @param chips Nav chips for row 2.
  * @param glance Plans and priority chips, or null.
  * @param startButton Home's scenario `SelectButton`.
@@ -76,7 +76,7 @@ interface HomeHeroProps {
  * @param onDrawerOpen Called when the drawer opens.
  * @returns The hero card.
  */
-const HomeHero = ({ view, profile, report, live, canViewLog, chips, glance, startButton, onOpenGame, onStopOverlay, onViewLog, onCopyError, onDismiss, onDrawerOpen }: HomeHeroProps) => {
+const HomeHero = ({ view, profile, report, live, arrivedLive, chips, glance, startButton, onOpenGame, onStopOverlay, onViewLog, onCopyError, onDismiss, onDrawerOpen }: HomeHeroProps) => {
     const { colors } = useTheme()
     const styles = useMemo(() => createStyles(colors, view.cardTone), [colors, view.cardTone])
     const [open, setOpen] = useState(false)
@@ -88,9 +88,9 @@ const HomeHero = ({ view, profile, report, live, canViewLog, chips, glance, star
         setOpen((v) => !v)
     }, [open, onDrawerOpen])
 
-    // A new result resets the drawer to that result's default. Otherwise the user's last choice sticks.
+    // A result that just arrived resets the drawer to that result's default. One loaded when the app opens leaves it closed.
     useEffect(() => {
-        if (report) setOpen(view.drawerDefaultOpen)
+        if (report && arrivedLive) setOpen(view.drawerDefaultOpen)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [report?.endedAt])
 
@@ -98,7 +98,7 @@ const HomeHero = ({ view, profile, report, live, canViewLog, chips, glance, star
         <View style={styles.card}>
             <HeroHeader view={view} profile={profile} open={open} hasDrawer={hasDrawer} onToggle={toggle} onDismiss={onDismiss} />
             <HeroActionRow view={view} chips={chips} button={<HeroButton mode={view.buttonMode} startButton={startButton} onOpenGame={onOpenGame} onStopOverlay={onStopOverlay} />} />
-            {open && hasDrawer ? <HeroDrawer view={view} report={report} live={live} canViewLog={canViewLog} glance={glance} onViewLog={onViewLog} onCopyError={onCopyError} /> : null}
+            {open && hasDrawer ? <HeroDrawer view={view} report={report} live={live} canViewLog={arrivedLive} glance={glance} onViewLog={onViewLog} onCopyError={onCopyError} /> : null}
         </View>
     )
 }

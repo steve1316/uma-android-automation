@@ -199,6 +199,7 @@ const Home = () => {
         const runEndedSubscription = DeviceEventEmitter.addListener("RunEnded", (data) => {
             const report = parseRunReport(data["message"])
             if (report) setLastRun({ report, logInMemory: true })
+            setLiveRun(null)
         })
 
         // Catch up with the service on open and whenever the app comes back to the front, since events sent while Home's screen was being recreated are lost.
@@ -483,7 +484,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                     profile={heroProfile}
                     report={lastRun?.report ?? null}
                     live={liveRun}
-                    canViewLog={lastRun?.logInMemory ?? false}
+                    arrivedLive={lastRun?.logInMemory ?? false}
                     chips={heroChips}
                     glance={heroGlance}
                     startButton={
