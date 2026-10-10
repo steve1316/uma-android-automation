@@ -23,6 +23,7 @@ import com.steve1316.automation_library.utils.AppUpdater
 import com.steve1316.automation_library.utils.BatteryOptimizationUtils
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.BotStatus
+import com.steve1316.automation_library.utils.GameTarget
 import com.steve1316.automation_library.utils.MediaProjectionService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
@@ -30,7 +31,6 @@ import com.steve1316.automation_library.utils.RunReport
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.RunAnalytics
-import com.steve1316.uma_android_automation.bot.UMA_GAME_PACKAGES
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -687,19 +687,11 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     /**
      * Brings the game to the front so the user can start the next run from the overlay.
      *
-     * @param promise Resolves true when the game was opened, or false when it is not installed.
+     * @param promise Resolves true when the game was opened, or rejects with the library's not-installed message.
      */
     @ReactMethod
     fun openGame(promise: Promise) {
-        val packageManager = reactApplicationContext.packageManager
-        val intent = UMA_GAME_PACKAGES.firstNotNullOfOrNull { packageManager.getLaunchIntentForPackage(it) }
-        if (intent == null) {
-            promise.resolve(false)
-            return
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        reactApplicationContext.startActivity(intent)
-        promise.resolve(true)
+        if (GameTarget.launch(reactApplicationContext)) promise.resolve(true) else promise.reject("NOT_INSTALLED", GameTarget.notInstalledMessage())
     }
 
     /**

@@ -163,6 +163,14 @@ const Home = () => {
             .catch(() => setLiveRun(null))
     }, [])
 
+    /** Brings the game to the front so the next run can start from the overlay. Shows why when the game is not installed. */
+    const handleOpenGame = useCallback(() => {
+        StartModule.openGame().catch((error: { message: string }) => {
+            setSnackbarMessage(error.message)
+            setSnackbarOpen(true)
+        })
+    }, [])
+
     /**
      * Reads whether the overlay is on, the last run's saved result, and the current run's stats from native code, so Home matches the service after an app restart or a recreated screen.
      */
@@ -185,7 +193,7 @@ const Home = () => {
             const running = data["message"] === "Running"
             setIsRunning(running)
             // Start turns the overlay on and then brings the game up. A cancelled screen-capture prompt never sends "Running", so the flag just clears later.
-            if (running && openGameOnStart.current) StartModule.openGame().catch(() => false)
+            if (running && openGameOnStart.current) handleOpenGame()
             openGameOnStart.current = false
         })
 
@@ -313,15 +321,6 @@ const Home = () => {
 
         await proceedToStart()
     }
-
-    /** Brings the game to the front so the next run can start from the overlay. */
-    const handleOpenGame = useCallback(async () => {
-        const opened = await StartModule.openGame().catch(() => false)
-        if (!opened) {
-            setSnackbarMessage("Could not open the game. Is it installed?")
-            setSnackbarOpen(true)
-        }
-    }, [])
 
     // The overlay turning on or off changes whether there is a run to read.
     useEffect(() => {
