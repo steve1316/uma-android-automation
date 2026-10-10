@@ -8,6 +8,9 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
+import com.steve1316.automation_library.utils.GameTarget
+import com.steve1316.uma_android_automation.bot.UMA_GAME_NAME
+import com.steve1316.uma_android_automation.bot.UMA_GAME_PACKAGES
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ExpoReactHostFactory
 
@@ -25,6 +28,8 @@ class MainApplication : Application(), ReactApplication {
 
     override fun onCreate() {
         super.onCreate()
+        // Tell the library which game this app plays, so a run never starts while the game is missing or another app is in front.
+        GameTarget.configure(UMA_GAME_NAME, UMA_GAME_PACKAGES)
         DefaultNewArchitectureEntryPoint.releaseLevel =
             try {
                 ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())

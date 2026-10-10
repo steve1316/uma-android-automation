@@ -2,8 +2,10 @@ package com.steve1316.uma_android_automation.bot
 
 import android.content.Context
 import com.steve1316.automation_library.utils.MessageLog
+import com.steve1316.automation_library.utils.RunReport
 import com.steve1316.automation_library.utils.UserStorageManager
 import com.steve1316.uma_android_automation.types.GameDate
+import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import org.json.JSONArray
@@ -49,6 +51,9 @@ object RunAnalytics {
 
     /** Latest trainee block (stats, aptitudes, mood, etc.) captured at the last recorded turn. Null until the first turn. */
     private var traineeJson: JSONObject? = null
+
+    /** Stat caps from the latest trainee snapshot, keyed like the stats block. Falls back to the scenario's cap for any stat not read yet. */
+    private var statCapsJson: JSONObject? = null
 
     /** Turn number of the most recent record, surfaced as the viewer's "current turn". */
     private var currentTurn: Int = 0
@@ -162,6 +167,7 @@ object RunAnalytics {
         startTimeMs = 0L
         lastRecordedTurn = -1
         traineeJson = null
+        statCapsJson = null
         currentTurn = 0
         currentDate = ""
         perTurn.clear()
@@ -185,6 +191,8 @@ object RunAnalytics {
         this.scenarioName = scenario
         this.startTimeMs = startTimeMs
         this.appContext = context?.applicationContext
+        // The library calls this when the run ends, even on a crash that never reaches onRunEnd().
+        RunReport.setSummaryProvider(::buildRunSummary)
         loadCandidate()
         val candidate = pendingCandidate
         MessageLog.i(
@@ -214,6 +222,7 @@ object RunAnalytics {
         currentTurn = date.day
         currentDate = formatDate(date)
         traineeJson = buildTraineeJson(trainee)
+        statCapsJson = buildStatCapsJson(trainee)
     }
 
     /**
@@ -547,6 +556,37 @@ object RunAnalytics {
             .put("totals", buildTotalsJson())
             .put("perYear", buildPerYearArray())
             .toString()
+    }
+
+    /**
+     * Build the stat caps block from the trainee's live caps, keeping only plausible reads and falling back to the scenario's cap, as the scorer does.
+     *
+     * @param trainee The live trainee.
+     * @return The caps JSON keyed like the stats block.
+     */
+    private fun buildStatCapsJson(trainee: Trainee): JSONObject {
+        val json = JSONObject()
+        for (stat in StatName.entries) json.put(stat.name.lowercase(), Training.plausibleStatCap(Training.getScenarioStatCap(scenarioName, stat), trainee.statCaps[stat]))
+        return json
+    }
+
+    /**
+     * Build the run summary for the library's run-end report: final stats and caps, fans, skill points, and race tallies.
+     *
+     * @return The summary, or null before the first trainee snapshot.
+     */
+    internal fun buildRunSummary(): JSONObject? {
+        val trainee = traineeJson ?: return null
+        val raceList = races.toList()
+        return JSONObject()
+            .put("trainee", trainee.optString("name").ifEmpty { rememberedName })
+            .put("scenario", scenarioName)
+            .put("stats", trainee.optJSONObject("stats") ?: JSONObject())
+            .put("statCaps", statCapsJson ?: JSONObject())
+            .put("fans", trainee.optInt("fans"))
+            .put("skillPoints", trainee.optInt("skillPoints"))
+            .put("racesWon", raceList.count { it.won })
+            .put("racesRun", raceList.size)
     }
 
     /**

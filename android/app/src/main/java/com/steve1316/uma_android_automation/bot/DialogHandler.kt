@@ -4,6 +4,7 @@ import android.util.Log
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.components.ButtonClose
 import com.steve1316.uma_android_automation.components.ButtonRaceRecommendationsCenterStage
 import com.steve1316.uma_android_automation.components.Checkbox
 import com.steve1316.uma_android_automation.components.DialogInterface
@@ -51,6 +52,9 @@ open class DialogHandler(val game: Game) {
         private val TAG: String = "[${MainActivity.loggerTag}]${this::class.simpleName}"
     }
 
+    /** True after a pause until the bot reaches a known screen. While set, commit dialogs left open are closed instead of confirmed. */
+    var bRecovering: Boolean = false
+
     /**
      * Detects and handles any dialog popups.
      *
@@ -97,6 +101,16 @@ open class DialogHandler(val game: Game) {
         if (bShouldDefer) {
             Log.d(TAG, "[DEBUG] handleDialogs:: Dialog handling deferred to calling function.")
             return DialogHandlerResult.Deferred(dialog)
+        }
+
+        // After a pause, close a commit dialog left open instead of confirming it, so the bot decides again with its bookkeeping intact.
+        if (closesDuringRecovery(dialog.name, bRecovering)) {
+            if (dialog.close(game.imageUtils) || ButtonClose.click(game.imageUtils)) {
+                MessageLog.i(TAG, "[RESYNC] Closed the \"${dialog.name}\" dialog left open from before the pause.")
+                game.wait(0.5)
+                return DialogHandlerResult.Handled(dialog)
+            }
+            MessageLog.w(TAG, "[RESYNC] Could not close the \"${dialog.name}\" dialog left open from before the pause. Handling it as usual.")
         }
 
         when (dialog.name) {

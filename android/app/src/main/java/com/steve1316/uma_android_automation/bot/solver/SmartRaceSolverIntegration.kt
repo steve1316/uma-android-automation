@@ -267,6 +267,17 @@ object SmartRaceSolverIntegration {
     }
 
     /**
+     * Drops the staged race without recording it. Called after a pause aborted a step, since the bot never saw that race's result.
+     *
+     * @return True if a race was staged.
+     */
+    fun discardPendingRace(): Boolean {
+        val bHadPending = pendingRace != null
+        pendingRace = null
+        return bHadPending
+    }
+
+    /**
      * Logs the epithets the just-confirmed race progresses, with each epithet's aggregated
      * `(satisfied / required)` count both before and after the win so the contribution of
      * this race is obvious. Aggregation matches the frontend popover (sums per-matcher `(current, required)` across non-dependency matchers).

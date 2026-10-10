@@ -119,6 +119,10 @@ export interface Settings {
         formattedSettingsString: string
         currentProfileName: string
         messageLogFontSize: number
+        /** Floating overlay style. "tray" opens a mini tray with the status, Pause, and Stop. "simple" starts and stops with one tap. */
+        overlayStyle: "tray" | "simple"
+        /** Floating overlay size in dp, 30 to 60. The automation library reads it from the misc category. */
+        overlayButtonSizeDP: number
     }
 
     // Training settings
@@ -209,7 +213,6 @@ export interface Settings {
         enableRemoteLogViewer: boolean
         remoteLogViewerPort: number
         enableMessageIdDisplay: boolean
-        overlayButtonSizeDP: number
     }
 
     // Discord settings
@@ -428,6 +431,8 @@ export const defaultSettings: Settings = {
         formattedSettingsString: "",
         currentProfileName: "",
         messageLogFontSize: 8,
+        overlayStyle: "tray",
+        overlayButtonSizeDP: 40,
     },
     training: {
         trainingBlacklist: [],
@@ -505,7 +510,6 @@ export const defaultSettings: Settings = {
         enableRemoteLogViewer: false,
         remoteLogViewerPort: 9000,
         enableMessageIdDisplay: false,
-        overlayButtonSizeDP: 40,
     },
     discord: {
         enableDiscordNotifications: false,

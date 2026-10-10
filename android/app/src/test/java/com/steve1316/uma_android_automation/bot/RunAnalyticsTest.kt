@@ -220,4 +220,31 @@ class RunAnalyticsTest {
         val runtimeMs = snapshot(false).getLong("runtimeMs")
         assertTrue(runtimeMs in 60_000L until 600_000L, "Expected resumed runtime to continue from ~60s, got $runtimeMs")
     }
+
+    @Test
+    @DisplayName("run summary is null before the first trainee snapshot")
+    fun `summary null before first turn`() {
+        assertEquals(null, RunAnalytics.buildRunSummary())
+    }
+
+    @Test
+    @DisplayName("run summary carries final stats, caps with scenario fallback, fans, and race tallies")
+    fun `summary from latest snapshot`() {
+        val t = trainee("Sakura Chiyono O", 1246, 521, 983, 461, 824, 50, 125671).apply { skillPoints = 40 }
+        t.statCaps[StatName.SPEED] = 1700
+        RunAnalytics.onTurnStart(t, gameDate(DateYear.SENIOR, DateMonth.DECEMBER, DatePhase.LATE, 72))
+        RunAnalytics.recordRace(10, "Japanese Derby", "G1", "TURF", "MEDIUM", 5000, true, false)
+        RunAnalytics.recordRace(20, "Arima Kinen", "G1", "TURF", "LONG", 0, false, false)
+
+        val summary = RunAnalytics.buildRunSummary()!!
+        assertEquals("Sakura Chiyono O", summary.getString("trainee"))
+        assertEquals("URA Finale", summary.getString("scenario"))
+        assertEquals(1246, summary.getJSONObject("stats").getInt("speed"))
+        assertEquals(1700, summary.getJSONObject("statCaps").getInt("speed"))
+        assertEquals(Training.getScenarioStatCap("URA Finale", StatName.STAMINA), summary.getJSONObject("statCaps").getInt("stamina"))
+        assertEquals(125671, summary.getInt("fans"))
+        assertEquals(40, summary.getInt("skillPoints"))
+        assertEquals(1, summary.getInt("racesWon"))
+        assertEquals(2, summary.getInt("racesRun"))
+    }
 }

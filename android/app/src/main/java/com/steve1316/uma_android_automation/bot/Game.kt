@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.steve1316.automation_library.data.SharedData
+import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
@@ -120,6 +121,9 @@ class Game(val myContext: Context) {
             if (!BotService.isRunning) {
                 throw InterruptedException()
             }
+
+            // Let a pause abort the step here, so a long wait never delays it by more than one interval.
+            BotHold.checkpoint()
 
             val sleepTime = minOf(checkInterval, remainingMillis)
             runBlocking {

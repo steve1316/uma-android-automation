@@ -144,17 +144,22 @@ export const applyMigrations = (settings: any, rawSettings?: any): { settings: a
         markMigrated("Migrated ocrThreshold to debug category.")
     }
 
-    // Migration: Move enableMessageIdDisplay and overlayButtonSizeDP from misc to debug category.
+    // Migration: Move enableMessageIdDisplay from misc to debug category.
     const misc = (migratedSettings as any).misc
     if (misc?.enableMessageIdDisplay !== undefined) {
         migratedSettings.debug.enableMessageIdDisplay = misc.enableMessageIdDisplay
         delete misc.enableMessageIdDisplay
         markMigrated("Migrated enableMessageIdDisplay to debug category.")
     }
-    if (misc?.overlayButtonSizeDP !== undefined) {
-        migratedSettings.debug.overlayButtonSizeDP = misc.overlayButtonSizeDP
-        delete misc.overlayButtonSizeDP
-        markMigrated("Migrated overlayButtonSizeDP to debug category.")
+
+    // Migration: Move overlayButtonSizeDP back from debug to misc, which is where the automation library reads it. Only copy when misc has no saved
+    // value, since the old debug row is never deleted and would otherwise overwrite the user's choice on every launch.
+    if (debug?.overlayButtonSizeDP !== undefined) {
+        if (rawSettings?.misc?.overlayButtonSizeDP === undefined) {
+            migratedSettings.misc.overlayButtonSizeDP = debug.overlayButtonSizeDP
+            markMigrated("Migrated overlayButtonSizeDP to misc category.")
+        }
+        delete debug.overlayButtonSizeDP
     }
 
     // After moving all OCR settings, delete the empty ocr object.

@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--Lets the Home result card open the game. Android 11+ hides other apps' launch intents unless they are listed here.-->
+    <queries>
+        <package android:name="com.cygames.umamusume" />
+    </queries>
+
     <!--Grants permission for MediaProjection to display a Notification that tells users that it is currently running.-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 

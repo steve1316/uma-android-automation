@@ -23,7 +23,7 @@ export interface HeroGlanceProps {
 }
 
 /**
- * The "at a glance" zone below the hero header: an enabled skill-plans row and the stat priority row. Each renders only when it has something to show, and both are
+ * The "at a glance" rows in the hero drawer: an enabled skill-plans row and the stat priority row. Each renders only when it has something to show, and both are
  * tappable shortcuts that deep-link into their settings screens via `onNavigate`. The status chips (SRS / Debug / Test / Style) live on the header status line, not here.
  * @param planNames Enabled skill-plan titles.
  * @param spThreshold Skill-point threshold, or null to omit the pill.
@@ -36,9 +36,9 @@ const HeroGlanceImpl = ({ planNames, spThreshold, priority, onNavigate }: HeroGl
     const styles = useMemo(
         () =>
             StyleSheet.create({
-                container: { padding: SPACING.md, gap: SPACING.sm },
+                container: { gap: SPACING.xs },
                 row: { flexDirection: "row", alignItems: "center", gap: SPACING.md, marginHorizontal: -SPACING.xs, paddingHorizontal: SPACING.xs, paddingVertical: 2, borderRadius: RADII.sm },
-                rowLabel: { ...TYPE.monoLabel, color: colors.textMuted, width: 68 },
+                rowLabel: { ...TYPE.monoLabel, color: colors.textMuted, width: 60 },
                 rowVal: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" },
             }),
         [colors]

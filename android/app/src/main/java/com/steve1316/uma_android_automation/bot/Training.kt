@@ -2,6 +2,7 @@ package com.steve1316.uma_android_automation.bot
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
@@ -2963,11 +2964,14 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // These values are hardcoded and exhaustive. A KeyError would be a programmer error.
             val trainingButton: ComponentInterface = trainingButtons[trainingSelected]!!
-            trainingButton.click(game.imageUtils, taps = 3)
-            game.wait(game.dialogWaitDelay)
+            // The triple tap and the scheduled-race OK must land together, so a pause waits until both are done.
+            BotHold.deferPause {
+                trainingButton.click(game.imageUtils, taps = 3)
+                game.wait(game.dialogWaitDelay)
 
-            // Dismiss any popup warning about a scheduled race.
-            ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
+                // Dismiss any popup warning about a scheduled race.
+                ButtonOk.click(game.imageUtils, region = game.imageUtils.regionMiddle)
+            }
             game.waitForLoading()
 
             MessageLog.v(TAG, "[TRAINING] Process to execute training completed.")

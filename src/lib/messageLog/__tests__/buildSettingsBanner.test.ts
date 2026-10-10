@@ -50,6 +50,11 @@ describe("buildSettingsBanner", () => {
         expect(banner).toContain("---------- Discord Options ----------")
     })
 
+    it("includes the overlay style and size", () => {
+        const banner = buildSettingsBanner(makeStubSettings())
+        expect(banner).toContain("🕹️ Overlay: Tray (")
+    })
+
     it("includes the disable schedule re-plan on race loss line", () => {
         const banner = buildSettingsBanner(makeStubSettings())
         expect(banner).toContain("Disable Schedule Re-Plan Upon Race Loss")

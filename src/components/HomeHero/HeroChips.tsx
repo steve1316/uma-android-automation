@@ -75,8 +75,8 @@ const NavChip = ({ icon, label, tint, onPress }: NavChipProps) => {
 }
 
 /**
- * The hero status-line chip cluster: the active flag chips (SRS / Debug / Test) plus the always-present Style chip. Returned as a fragment (not a wrapping view)
- * so the chips are direct siblings of the status pill and wrap alongside it. SRS tints brand, Debug warning, Test info; Style is neutral-bright with a muted walk icon.
+ * The hero chip cluster: the active flag chips (SRS / Debug / Test) plus the always-present Style chip. Returned as a fragment so the caller lays the chips out,
+ * which in the hero is a single sideways-scrolling row. SRS tints brand, Debug warning, Test info. Style is neutral-bright with a muted walk icon.
  * @param debugMode Whether Debug Mode is on.
  * @param activeTest The armed debug test's display name, or null.
  * @param srs Whether the Smart Race Solver is on.

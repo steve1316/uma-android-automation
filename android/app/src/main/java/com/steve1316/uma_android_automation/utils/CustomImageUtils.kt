@@ -2805,6 +2805,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val refinedResult = detectedText.replace(Regex("""\s*/\s*"""), " / ").trim()
             MessageLog.i(TAG, "[INFO] Extracted race name: \"$refinedResult\"")
             return refinedResult
+        } catch (e: InterruptedException) {
+            // A stop or a pause abort must unwind, not turn into an empty race name.
+            throw e
         } catch (e: Exception) {
             MessageLog.e(TAG, "[ERROR] extractRaceName:: Exception during race name extraction: ${e.message}")
             return ""

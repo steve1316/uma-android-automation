@@ -181,13 +181,21 @@ const LogItem = memo(({ item, fontSize, onLongPress, enableMessageIdDisplay }: {
     )
 })
 
+/** Props for `MessageLog`. */
+interface MessageLogProps {
+    /** Scroll request from the run result card. Each new `nonce` scrolls to the first line containing `term`, or to the bottom when it is empty or not found. */
+    jumpRequest?: { term: string; nonce: number } | null
+}
+
 /**
  * A full-featured message log display component with search, sort, copy, and font size controls.
  * Uses virtualized rendering via `FlashList` for performant display of large log volumes.
  * Supports color-coded messages (normal, warning, error), floating scroll buttons,
  * and a formatted settings summary as the intro message.
+ * @param jumpRequest Scroll request from the run result card.
+ * @returns The log view.
  */
-const MessageLog = () => {
+const MessageLog = ({ jumpRequest }: MessageLogProps) => {
     const { colors } = useTheme()
     const styles = useMemo(() => createStyles(colors), [colors])
     const mlc = useContext(MessageLogDataContext)
@@ -425,6 +433,23 @@ const MessageLog = () => {
             }
         }
     }, [filteredMessages.length])
+
+    // Jump to the requested line when the run result card asks for it.
+    useEffect(() => {
+        if (!jumpRequest) return
+        const index = jumpRequest.term ? filteredMessages.findIndex((m) => m.text.includes(jumpRequest.term)) : -1
+        if (index < 0) {
+            scrollToBottom()
+            return
+        }
+        try {
+            scrollViewRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0 })
+        } catch {
+            scrollToBottom()
+        }
+        // Only a new request should scroll, not every new log line.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [jumpRequest?.nonce])
 
     /**
      * Handle scroll events to track position.
@@ -721,4 +746,4 @@ const MessageLog = () => {
     )
 }
 
-export default MessageLog
+export default memo(MessageLog)

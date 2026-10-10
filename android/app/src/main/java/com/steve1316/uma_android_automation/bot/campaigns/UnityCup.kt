@@ -179,6 +179,13 @@ class UnityCup(game: Game) : Campaign(game) {
         return super.handleRaceEvents(isScheduledRace)
     }
 
+    override fun onResumeAfterAbort() {
+        super.onResumeAfterAbort()
+        // Start the opponent walk over and drop a pending Try Again, since the race screens may have changed while paused.
+        candidateCursor = 0
+        bAwaitingSkipRetryConfirm = false
+    }
+
     override fun checkCampaignSpecificConditions(): Boolean {
         return handleRaceEventsUnityCup()
     }
