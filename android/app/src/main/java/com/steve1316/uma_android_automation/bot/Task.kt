@@ -6,6 +6,7 @@ import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.FocusWatch
+import com.steve1316.automation_library.utils.GameTarget
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandler
@@ -19,6 +20,9 @@ internal val MANUALLY_STOPPED_RESULT: TaskResult = TaskResult.Success(TaskResult
 
 /** Package names of the game. The library pauses the run when any other app takes the screen. Only the Global release is supported. */
 internal val UMA_GAME_PACKAGES: Set<String> = setOf("com.cygames.umamusume")
+
+/** The game's display name, used in messages such as the one shown when it is not installed. */
+internal const val UMA_GAME_NAME = "Umamusume Pretty Derby"
 
 /** Pause reason shown when the bot was resumed while another app is in front. */
 private const val GAME_NOT_IN_FRONT_REASON = "Open the game, then tap Resume"
@@ -316,9 +320,8 @@ abstract class Task(game: Game) : DialogHandler(game) {
      * @return True when the game is in front or the app in front is unknown, false when a new pause was requested.
      */
     private fun ensureGameInFront(): Boolean {
-        val foreground = FocusWatch.foregroundPackage
-        if (foreground == null || foreground in UMA_GAME_PACKAGES) return true
-        MessageLog.i(TAG, "[PAUSE] $foreground is in front instead of the game. Pausing again until the game is open.")
+        if (!GameTarget.otherAppInFront()) return true
+        MessageLog.i(TAG, "[PAUSE] ${FocusWatch.foregroundPackage} is in front instead of the game. Pausing again until the game is open.")
         BotHold.requestPause(GAME_NOT_IN_FRONT_REASON)
         return false
     }
