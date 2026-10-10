@@ -549,4 +549,23 @@ class GrandLiveLessonPolicyTest {
             assertNull(matchSongRank(title, others), "'$title' matched another shipped title")
         }
     }
+
+    @Test
+    @DisplayName("A purchase dialog title matches the card it was opened from, despite OCR noise")
+    fun dialogTitleMatchesItsCard() {
+        assertTrue(isSameLessonTitle("Group Lesson Basics", "Group Lesson Basics"))
+        assertTrue(isSameLessonTitle("Run for Our Dream", "Run for Our Dream!"))
+        assertTrue(isSameLessonTitle("Beven Colors Scenery", "Seven Colors Scenery"))
+    }
+
+    @Test
+    @DisplayName("A purchase dialog for a different card is rejected")
+    fun dialogTitleRejectsAnotherCard() {
+        // The stuck run: the list refreshed under the tap, so the Song's tap point opened a Technique the trainee could not afford.
+        assertFalse(isSameLessonTitle("Group Lesson Basics", "Run for Our Dream!"))
+        assertFalse(isSameLessonTitle("Group Lesson Basics", "Idol History Basics"))
+        assertFalse(isSameLessonTitle("Makeup Intermediate Class", "Makeup Basics"))
+        assertFalse(isSameLessonTitle("Group Lesson Basics", "Group Lesson Intermediate Class"))
+        assertFalse(isSameLessonTitle("", "Group Lesson Basics"))
+    }
 }

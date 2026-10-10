@@ -5,6 +5,8 @@ import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.fuzzyBestMatchIndex
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import net.ricecode.similarity.LevenshteinDistanceStrategy
+import net.ricecode.similarity.StringSimilarityServiceImpl
 import org.opencv.core.Point
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,12 +112,21 @@ val LESSON_CARD_CROPS =
         effect2 = TokenCrop(180, -150, 680, 95),
     )
 
+/** Crop of the card name at the top of a Lessons purchase dialog, relative to the screen's top-left at 1080p. */
+val LESSON_DIALOG_TITLE_CROP = TokenCrop(90, 150, 655, 75)
+
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Lessons purchase policy
 
 /** Upper bound on purchases per Lessons visit, as a runaway guard on the buy-and-rescan loop. */
 const val MAX_LESSON_PURCHASES_PER_VISIT = 20
+
+/** Purchase dialogs that may open on the wrong card before the visit is abandoned, so a broken title crop cannot loop the rescan. */
+const val MAX_LESSON_DIALOG_MISMATCHES = 2
+
+/** Longest wait, in seconds, for the Lessons list to replace a bought card before rescanning anyway. */
+const val LESSON_REFRESH_TIMEOUT_SECONDS = 10.0
 
 /** A locked card counts as "sought after" (worth holding tokens for) when it matches a category, or is a Song, ranked within this many top spots. */
 private const val SOUGHT_AFTER_TOP_RANKS = 2
@@ -162,6 +173,15 @@ private val SONG_NAME_NOISE_REGEX = Regex("[^a-z0-9]")
  * between the two, so it tolerates unseen OCR noise without letting one song stand in for another.
  */
 private const val SONG_MATCH_THRESHOLD = 0.85
+
+/**
+ * Lowest edit-distance similarity accepted between a purchase dialog's title and the chosen card's name. Edit distance rather than Jaro-Winkler,
+ * because Jaro-Winkler rewards a shared prefix and rates "Group Lesson Basics" against "Group Lesson Intermediate Class" as a match.
+ */
+private const val DIALOG_TITLE_MATCH_THRESHOLD = 0.8
+
+/** Edit-distance similarity (1 - distance / longer length) for comparing a dialog title against a card name. */
+private val TITLE_SIMILARITY = StringSimilarityServiceImpl(LevenshteinDistanceStrategy())
 
 /** The stat names as a regex alternation, derived from [StatName] so the gain patterns below cannot drift from the enum. */
 private val STAT_ALTERNATION = StatName.entries.joinToString("|") { it.name.lowercase() }
@@ -539,6 +559,21 @@ fun matchSongRank(name: String, songPriority: List<String>): Int? {
     val normalized = normalizeSongName(name)
     if (normalized.isEmpty() || songPriority.isEmpty()) return null
     return fuzzyBestMatchIndex(normalized, songPriority.map { normalizeSongName(it) }, SONG_MATCH_THRESHOLD)
+}
+
+/**
+ * Whether a purchase dialog's OCR'd title names the card the bot meant to buy. Guards against a tap that landed on a different card because the list
+ * refreshed under it. Both reads are normalized like song titles, so punctuation and a stray misread letter still pass.
+ *
+ * @param dialogTitle The title OCR'd off the purchase dialog.
+ * @param cardName The name OCR'd off the chosen card during the scan.
+ * @return True when both name the same card. False when they differ or either read is empty.
+ */
+fun isSameLessonTitle(dialogTitle: String, cardName: String): Boolean {
+    val title = normalizeSongName(dialogTitle)
+    val card = normalizeSongName(cardName)
+    if (title.isEmpty() || card.isEmpty()) return false
+    return TITLE_SIMILARITY.score(title, card) >= DIALOG_TITLE_MATCH_THRESHOLD
 }
 
 /**
