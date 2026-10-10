@@ -57,10 +57,16 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     companion object {
         private val TAG = "[${MainActivity.loggerTag}]StartModule"
         private var reactContext: ReactApplicationContext? = null
+
+        /** How long after the screen-capture prompt is accepted the overlay counts as on, while its service is still starting. */
+        private const val OVERLAY_START_GRACE_MS = 5000L
     }
 
     private val context: Context = reactContext.applicationContext
     private var messageId = 1
+
+    /** When the overlay service was last asked to start, or 0 after a stop. */
+    @Volatile private var overlayStartSentAtMs = 0L
 
     init {
         StartModule.reactContext = reactContext
@@ -90,6 +96,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
             // Start up the MediaProjection service after the user accepts the onscreen prompt.
+            overlayStartSentAtMs = System.currentTimeMillis()
             reactContext?.startService(
                 MediaProjectionService.getStartIntent(reactContext!!, resultCode, data!!),
             )
@@ -158,10 +165,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         }
     }
 
-    /** Register this module with EventBus in order to allow listening to certain events and then begin starting up the MediaProjection service. */
+    /** Shows the screen-capture prompt. Accepting it starts the MediaProjection service in `onActivityResult()`. */
     private fun startProjection() {
-        Log.d(TAG, "Event Bus registered for StartModule")
-
         // Use the library's helper which applies MediaProjectionConfig on Android 14+ to prefer full screen capture.
         val screenCaptureIntent = MediaProjectionService.getScreenCaptureIntent(reactContext!!)
         reactContext?.startActivityForResult(screenCaptureIntent, 100, null)
@@ -172,6 +177,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
      * lines sent while the service shuts down still reach the app.
      */
     private fun stopProjection() {
+        overlayStartSentAtMs = 0L
         reactContext?.startService(MediaProjectionService.getStopIntent(reactContext!!))
         sendEvent("MediaProjectionService", "Not Running")
     }
@@ -649,13 +655,13 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
-     * Reports whether the overlay service is on, so Home can catch up after its screen is recreated.
+     * Reports whether the overlay service is on, so Home can catch up after its screen is recreated. A service that was just asked to start counts as on.
      *
-     * @param promise Resolves true when the overlay service is running.
+     * @param promise Resolves true when the overlay service is running or starting.
      */
     @ReactMethod
     fun isOverlayOn(promise: Promise) {
-        promise.resolve(MediaProjectionService.isRunning)
+        promise.resolve(MediaProjectionService.isRunning || System.currentTimeMillis() - overlayStartSentAtMs < OVERLAY_START_GRACE_MS)
     }
 
     /**
