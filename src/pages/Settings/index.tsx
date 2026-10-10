@@ -21,6 +21,20 @@ import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
+import { ValuePill } from "../../components/ui/value-pill"
+import { SheetModal } from "../../components/ui/sheet-modal"
+import { ModalHeader } from "../../components/ui/modal-header"
+import { ModalRadioRow } from "../../components/ui/modal-list"
+import { useModalShellStyles } from "../../components/ui/modal-shell-styles"
+
+/** Overlay styles in picker order, with the stored setting value, display label, and picker description of each. */
+const OVERLAY_STYLE_OPTIONS = [
+    { value: "tray", label: "Tray", description: "Tap opens a small tray with the turn, timer, Pause, and Stop." },
+    { value: "simple", label: "Simple", description: "Tap starts or stops the bot. Pause stays in the notification." },
+] as const
+
+/** Help text for the Overlay Style setting, shown in the row and in settings search. */
+const OVERLAY_STYLE_HELP = "Tray opens a small tray with the turn, timer, Pause, and Stop. Simple starts and stops with one tap."
 
 /**
  * The main Settings page of the application.
@@ -35,6 +49,8 @@ const Settings = () => {
     const { general, misc, updateGeneral, updateMisc } = useContext(GeneralMiscContext)
     const { colors } = useTheme()
     const navigation = useNavigation()
+    const modalShellStyles = useModalShellStyles()
+    const [overlayStylePickerOpen, setOverlayStylePickerOpen] = useState(false)
 
     const { openDataDirectory, resetSettings } = useSettings()
     const { handleImportSettings, handleExportSettings, showImportDialog, setShowImportDialog, showResetDialog, setShowResetDialog } = useSettingsFileManager()
@@ -185,6 +201,33 @@ const Settings = () => {
                         checked={misc.enableSettingsDisplay}
                         onCheckedChange={(checked) => updateMisc({ enableSettingsDisplay: checked })}
                     />
+
+                    <SearchableItem id="settings-overlay-style" title="Overlay Style" description={OVERLAY_STYLE_HELP}>
+                        <Row
+                            title="Overlay Style"
+                            description={OVERLAY_STYLE_HELP}
+                            onPress={() => setOverlayStylePickerOpen(true)}
+                            right={<ValuePill label={OVERLAY_STYLE_OPTIONS.find((option) => option.value === misc.overlayStyle)?.label ?? "Tray"} />}
+                        />
+                    </SearchableItem>
+
+                    <View style={{ padding: SPACING.md }}>
+                        <CustomSlider
+                            searchId="settings-overlay-button-size"
+                            value={misc.overlayButtonSizeDP}
+                            placeholder={defaultSettings.misc.overlayButtonSizeDP}
+                            onValueChange={(value) => updateMisc({ overlayButtonSizeDP: value })}
+                            onSlidingComplete={(value) => updateMisc({ overlayButtonSizeDP: value })}
+                            min={30}
+                            max={60}
+                            step={5}
+                            label="Overlay Button Size"
+                            labelUnit=" dp"
+                            showValue={true}
+                            showLabels={true}
+                            description="Sets the size of the floating overlay button in density-independent pixels (dp). Higher values make the button easier to tap."
+                        />
+                    </View>
                 </Section>
 
                 <Section label="WAIT DELAY">
@@ -282,6 +325,28 @@ const Settings = () => {
                     </View>
                 </ScrollView>
             </SearchPageProvider>
+
+            <SheetModal
+                visible={overlayStylePickerOpen}
+                onRequestClose={() => setOverlayStylePickerOpen(false)}
+                header={<ModalHeader title="OVERLAY STYLE" onClose={() => setOverlayStylePickerOpen(false)} />}
+                footer={null}
+            >
+                <View style={modalShellStyles.modalBodyList}>
+                    {OVERLAY_STYLE_OPTIONS.map((option) => (
+                        <ModalRadioRow
+                            key={option.value}
+                            label={option.label}
+                            description={option.description}
+                            selected={option.value === misc.overlayStyle}
+                            onPress={() => {
+                                updateMisc({ overlayStyle: option.value })
+                                setOverlayStylePickerOpen(false)
+                            }}
+                        />
+                    ))}
+                </View>
+            </SheetModal>
 
             {/* Restart Dialog */}
             <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>

@@ -2,6 +2,7 @@ package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
 import com.steve1316.automation_library.data.SharedData
+import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
@@ -225,6 +226,12 @@ class GrandLive(game: Game) : Campaign(game) {
         }
     }
 
+    override fun onResumeAfterAbort() {
+        super.onResumeAfterAbort()
+        // Re-open Lessons on the next main screen, since a purchase may have been cut short or made by hand while paused.
+        lastLessonScanDay = -1
+    }
+
     override fun checkCampaignSpecificConditions(): Boolean {
         // The concert-day screen shows only the Lessons + Concert buttons (not the main screen), so it is reached here. Handle the live flow.
         // The final concert uses a distinct "Grand Concert" button and a skip-cutscene confirmation, so check it first.
@@ -373,21 +380,9 @@ class GrandLive(game: Game) : Campaign(game) {
             LessonReturn.MAIN -> {
                 // Normal per-turn flow: return to the main screen and confirm it. A single Back can fail to escape this screen (themed Back
                 // button / a leave confirmation), so back out with the same Back/Cancel/Close combo the misc handler uses until main is detected.
-                var returnedToMain = false
-                for (attempt in 0 until 5) {
-                    if (checkMainScreen()) {
-                        returnedToMain = true
-                        if (attempt > 0) MessageLog.i(TAG, "[GRAND_LIVE] Returned to the main screen after Lessons in ${attempt + 1} back-out attempt(s).")
-                        break
-                    }
-                    // At most one of the three is on screen, so share one screenshot across them.
-                    val sourceBitmap = game.imageUtils.getSourceBitmap()
-                    ButtonBack.click(game.imageUtils, sourceBitmap = sourceBitmap)
-                    ButtonCancel.click(game.imageUtils, sourceBitmap = sourceBitmap)
-                    ButtonClose.click(game.imageUtils, sourceBitmap = sourceBitmap)
-                    game.wait(game.waitDelay)
-                }
-                if (!returnedToMain) MessageLog.w(TAG, "[GRAND_LIVE] Could not confirm a return to the main screen after Lessons.")
+                val attempt = returnToMain(maxSteps = 5, bHandleDialogs = false)
+                if (attempt > 0) MessageLog.i(TAG, "[GRAND_LIVE] Returned to the main screen after Lessons in ${attempt + 1} back-out attempt(s).")
+                if (attempt < 0) MessageLog.w(TAG, "[GRAND_LIVE] Could not confirm a return to the main screen after Lessons.")
             }
         }
     }
@@ -613,13 +608,19 @@ class GrandLive(game: Game) : Campaign(game) {
         MessageLog.i(TAG, "[GRAND_LIVE] Concert day detected. Maxing Hype via Lessons, then performing.")
         runLessonPurchases(forceMaxHype = true, returnTo = LessonReturn.CONCERT)
 
-        if (!ButtonGrandLiveConcert.click(game.imageUtils, tries = 10)) {
+        // The Concert tap and its Start confirmation must land together, so a pause waits until both are done.
+        val bConcertStarted =
+            BotHold.deferPause {
+                if (!ButtonGrandLiveConcert.click(game.imageUtils, tries = 10)) return@deferPause false
+                game.wait(game.dialogWaitDelay)
+                // Confirmation dialog -> Start.
+                ButtonGrandLiveStart.click(game.imageUtils, tries = 10)
+                true
+            }
+        if (!bConcertStarted) {
             MessageLog.w(TAG, "[GRAND_LIVE] Could not tap the Concert button.")
             return
         }
-        game.wait(game.dialogWaitDelay)
-        // Confirmation dialog -> Start.
-        ButtonGrandLiveStart.click(game.imageUtils, tries = 10)
         game.wait(2.0)
 
         // Skip the performance (bottom-right, like the Unity Cup race path), then advance the results.

@@ -182,6 +182,38 @@ describe("applyMigrations", () => {
         expect((migrated.general as any).enableCraneGameAttempt).toBeUndefined()
     })
 
+    it("moves overlayButtonSizeDP from debug back to misc, where the automation library reads it", () => {
+        const settings = {
+            debug: { overlayButtonSizeDP: 55 },
+            misc: { overlayButtonSizeDP: 40 },
+        } as any
+
+        const { settings: migrated, anyMigrated } = applyMigrations(settings)
+        expect(anyMigrated).toBe(true)
+        expect(migrated.misc.overlayButtonSizeDP).toBe(55)
+        expect(migrated.debug.overlayButtonSizeDP).toBeUndefined()
+    })
+
+    it("leaves misc.overlayButtonSizeDP alone when debug has none", () => {
+        const settings = {
+            debug: {},
+            misc: { overlayButtonSizeDP: 50 },
+        } as any
+
+        const { settings: migrated } = applyMigrations(settings)
+        expect(migrated.misc.overlayButtonSizeDP).toBe(50)
+        expect(migrated.debug.overlayButtonSizeDP).toBeUndefined()
+    })
+
+    it("keeps the user's misc overlayButtonSizeDP when a stale debug value is still stored", () => {
+        const raw = { debug: { overlayButtonSizeDP: 55 }, misc: { overlayButtonSizeDP: 30 } }
+        const settings = structuredClone(raw) as any
+
+        const { settings: migrated } = applyMigrations(settings, raw)
+        expect(migrated.misc.overlayButtonSizeDP).toBe(30)
+        expect(migrated.debug.overlayButtonSizeDP).toBeUndefined()
+    })
+
     it("migrates stopAtDate string to stopAtDates array", () => {
         const settings = {
             general: { stopAtDate: "Senior January Early", stopAtDates: [] },

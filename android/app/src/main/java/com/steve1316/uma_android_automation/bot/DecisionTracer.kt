@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.Mood
@@ -183,6 +184,46 @@ class DecisionTracer {
     companion object {
         /** Log tag prepended to every Decision Report block emitted via `MessageLog.i`. */
         private const val TAG: String = "[DECISION]"
+
+        /** Main-career turns before the Finale. The overlay's progress ring is full at this turn. */
+        private const val CAREER_TURNS: Int = 72
+
+        /** Finale turns after `CAREER_TURNS`. */
+        private const val FINALE_TURNS: Int = 3
+
+        /**
+         * Builds the overlay's progress label for a turn.
+         *
+         * @param day The turn number, 1 to 72, or 73 to 75 in the Finale.
+         * @return A label such as "Turn 34/72" or "Finale 2/3".
+         */
+        fun statusLabelFor(day: Int): String = if (day > CAREER_TURNS) "Finale ${(day - CAREER_TURNS).coerceAtMost(FINALE_TURNS)}/$FINALE_TURNS" else "Turn $day/$CAREER_TURNS"
+
+        /**
+         * Shows a turn on the overlay and in the notification.
+         *
+         * @param day The turn number, 1 to 72, or 73 to 75 in the Finale.
+         */
+        fun pushProgress(day: Int) {
+            BotStatus.setProgress(day, CAREER_TURNS, statusLabelFor(day))
+        }
+
+        /**
+         * Builds the overlay's short description of the action taken this turn.
+         *
+         * @param chosen The main-screen action the bot chose, or null when none was recorded.
+         * @param trainedStat The stat trained this turn, or null when unknown.
+         * @return A short phrase such as "Trained Speed", or an empty string when there is nothing to show.
+         */
+        fun statusDetailFor(chosen: MainScreenAction?, trainedStat: StatName?): String =
+            when (chosen) {
+                MainScreenAction.TRAIN -> if (trainedStat != null) "Trained ${trainedStat.name.lowercase().replaceFirstChar { it.uppercase() }}" else "Trained"
+                MainScreenAction.RACE -> "Raced"
+                MainScreenAction.REST -> "Rested"
+                MainScreenAction.RECOVER_MOOD -> "Recovered mood"
+                MainScreenAction.DATE -> "Went on a date"
+                MainScreenAction.NONE, null -> ""
+            }
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,6 +259,9 @@ class DecisionTracer {
         settingsSnapshot = settings
         events.clear()
         hasEmitted = false
+
+        // Show the new turn on the overlay and in the notification.
+        pushProgress(date.day)
     }
 
     /**
@@ -228,6 +272,11 @@ class DecisionTracer {
         if (hasEmitted || stateSnapshot == null) return
         MessageLog.i(TAG, formatReport())
         hasEmitted = true
+
+        // Show what the bot did this turn on the overlay and in the notification.
+        val chosen = events.filterIsInstance<DecisionEvent.ActionChoice>().lastOrNull()?.chosen
+        val detail = statusDetailFor(chosen, lastTrainingSelection()?.selected)
+        if (detail.isNotEmpty()) BotStatus.setDetail(detail)
     }
 
     /**

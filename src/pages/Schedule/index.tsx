@@ -264,7 +264,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                 </ScrollView>
 
                 <View style={{ position: "absolute", right: SPACING.lg, bottom: SPACING.lg }}>
-                    <GlassFab onPress={() => setCalendarOpen(true)} accessibilityLabel="Open schedule calendar" icon={<CalendarDays size={22} color={colors.brand} />} />
+                    <GlassFab onPress={() => setCalendarOpen(true)} accessibilityLabel="Open schedule calendar" icon={<CalendarDays size={20} color={colors.brand} />} />
                     {dirty && (
                         <View
                             pointerEvents="none"

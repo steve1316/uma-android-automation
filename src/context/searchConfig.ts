@@ -102,10 +102,16 @@ const searchConfig: SearchOption[] = [
         page: "SettingsMain",
     },
     {
+        id: "settings-overlay-style",
+        title: "Overlay Style",
+        description: "Tray opens a small tray with the turn, timer, Pause, and Stop. Simple starts and stops with one tap.",
+        page: "SettingsMain",
+    },
+    {
         id: "settings-overlay-button-size",
         title: "Overlay Button Size",
         description: "Sets the size of the floating overlay button in density-independent pixels (dp). Higher values make the button easier to tap.",
-        page: "DebugSettings",
+        page: "SettingsMain",
     },
     {
         id: "settings-management-title",

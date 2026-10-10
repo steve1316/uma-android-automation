@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Overrides the automation library's generic notification icon with a horseshoe. Keep the library's resource name so the override applies.-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M5,3h3.5v8.5a3.5,3.5 0,0 0,7 0V3H19v8.5a7,7 0,0 1,-14 0Z" />
+</vector>

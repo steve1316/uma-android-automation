@@ -325,24 +325,6 @@ const DebugSettings = () => {
                         </Section>
 
                         <Section label="DEBUG SETTINGS">
-                            <View style={{ padding: SPACING.md }}>
-                                <CustomSlider
-                                    searchId="settings-overlay-button-size"
-                                    value={debug.overlayButtonSizeDP}
-                                    placeholder={defaultSettings.debug.overlayButtonSizeDP}
-                                    onValueChange={(value) => updateDebug({ overlayButtonSizeDP: value })}
-                                    onSlidingComplete={(value) => updateDebug({ overlayButtonSizeDP: value })}
-                                    min={30}
-                                    max={60}
-                                    step={5}
-                                    label="Overlay Button Size"
-                                    labelUnit=" dp"
-                                    showValue={true}
-                                    showLabels={true}
-                                    description="Sets the size of the floating overlay button in density-independent pixels (dp). Higher values make the button easier to tap."
-                                />
-                            </View>
-
                             <ToggleSetting
                                 id="settings-enable-message-id-display"
                                 title="Enable Message ID Display"

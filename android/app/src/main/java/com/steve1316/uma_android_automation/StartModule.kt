@@ -21,11 +21,16 @@ import com.steve1316.automation_library.events.JSEvent
 import com.steve1316.automation_library.events.StartEvent
 import com.steve1316.automation_library.utils.AppUpdater
 import com.steve1316.automation_library.utils.BatteryOptimizationUtils
+import com.steve1316.automation_library.utils.BotService
+import com.steve1316.automation_library.utils.BotStatus
+import com.steve1316.automation_library.utils.GameTarget
 import com.steve1316.automation_library.utils.MediaProjectionService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
+import com.steve1316.automation_library.utils.RunReport
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.RunAnalytics
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -37,6 +42,7 @@ import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
+import org.json.JSONObject
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -51,16 +57,32 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     companion object {
         private val TAG = "[${MainActivity.loggerTag}]StartModule"
         private var reactContext: ReactApplicationContext? = null
-        private var emitter: DeviceEventManagerModule.RCTDeviceEventEmitter? = null
+
+        /** How long after the screen-capture prompt is accepted the overlay counts as on, while its service is still starting. */
+        private const val OVERLAY_START_GRACE_MS = 5000L
     }
 
     private val context: Context = reactContext.applicationContext
     private var messageId = 1
 
+    /** When the overlay service was last asked to start, or 0 after a stop. */
+    @Volatile private var overlayStartSentAtMs = 0L
+
     init {
         StartModule.reactContext = reactContext
         StartModule.reactContext?.addActivityEventListener(this)
+
+        // Listen for bot events for this module's whole life, so a React context recreated mid-run still gets them. `invalidate()` ends it.
+        EventBus.getDefault().register(this)
         Log.d(TAG, "StartModule is now initialized.")
+    }
+
+    /**
+     * Stops listening for bot events when React Native tears this module down, so a recreated context's module is the only listener.
+     */
+    override fun invalidate() {
+        EventBus.getDefault().unregister(this)
+        super.invalidate()
     }
 
     override fun getName(): String {
@@ -74,6 +96,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
             // Start up the MediaProjection service after the user accepts the onscreen prompt.
+            overlayStartSentAtMs = System.currentTimeMillis()
             reactContext?.startService(
                 MediaProjectionService.getStartIntent(reactContext!!, resultCode, data!!),
             )
@@ -142,23 +165,19 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         }
     }
 
-    /** Register this module with EventBus in order to allow listening to certain events and then begin starting up the MediaProjection service. */
+    /** Shows the screen-capture prompt. Accepting it starts the MediaProjection service in `onActivityResult()`. */
     private fun startProjection() {
-        // This extra call to unregister is to account for the user stopping the service from the notification which bypasses the call to
-        // unregister in stopProjection().
-        EventBus.getDefault().unregister(this)
-        EventBus.getDefault().register(this)
-        Log.d(TAG, "Event Bus registered for StartModule")
-
         // Use the library's helper which applies MediaProjectionConfig on Android 14+ to prefer full screen capture.
         val screenCaptureIntent = MediaProjectionService.getScreenCaptureIntent(reactContext!!)
         reactContext?.startActivityForResult(screenCaptureIntent, 100, null)
     }
 
-    /** Unregister this module with EventBus and then stops the MediaProjection service. */
+    /**
+     * Stops the MediaProjection service. This module stays registered with EventBus for its whole life, so the run-end report and the final log
+     * lines sent while the service shuts down still reach the app.
+     */
     private fun stopProjection() {
-        EventBus.getDefault().unregister(this)
-        Log.d(TAG, "Event Bus unregistered for StartModule")
+        overlayStartSentAtMs = 0L
         reactContext?.startService(MediaProjectionService.getStopIntent(reactContext!!))
         sendEvent("MediaProjectionService", "Not Running")
     }
@@ -440,12 +459,14 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
             // Reset the log stream mute to ensure logs for the new run are broadcasted.
             LogStreamServer.resetMute()
 
-            val entryPoint = Game(context)
+            // Drop the previous run's stats now, so a stop or crash before this run's first turn does not report them.
+            RunAnalytics.reset()
 
             val botThread =
                 Thread {
                     try {
-                        entryPoint.start()
+                        // Build the run on this thread, so a crash while setting it up reaches the run-end report like any other crash.
+                        Game(context).start()
                     } catch (e: Exception) {
                         EventBus.getDefault().postSticky(ExceptionEvent(e))
                     }
@@ -620,6 +641,68 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
+     * Reads the report of how the last run ended, for the Home result card.
+     *
+     * @param promise Resolves the report JSON text, or null when there is none.
+     */
+    @ReactMethod
+    fun getLastRun(promise: Promise) {
+        try {
+            promise.resolve(RunReport.load(reactApplicationContext.filesDir))
+        } catch (e: Exception) {
+            promise.reject("LAST_RUN_ERROR", e.message ?: e.javaClass.simpleName)
+        }
+    }
+
+    /**
+     * Reports whether the overlay service is on, so Home can catch up after its screen is recreated. A service that was just asked to start counts as on.
+     *
+     * @param promise Resolves true when the overlay service is running or starting.
+     */
+    @ReactMethod
+    fun isOverlayOn(promise: Promise) {
+        promise.resolve(MediaProjectionService.isRunning || System.currentTimeMillis() - overlayStartSentAtMs < OVERLAY_START_GRACE_MS)
+    }
+
+    /**
+     * Reads where the current run stands, for the Home hero drawer while the bot is running or paused.
+     *
+     * @param promise Resolves `{ turn, totalTurns, runtimeMs, summary }` as JSON text, or null when no run is going or no turn was read yet.
+     */
+    @ReactMethod
+    fun getLiveRun(promise: Promise) {
+        try {
+            val summary = if (BotService.isRunning) RunAnalytics.buildRunSummary() else null
+            if (summary == null) {
+                promise.resolve(null)
+                return
+            }
+            val status = BotStatus.snapshot()
+            promise.resolve(JSONObject().put("turn", status.current).put("totalTurns", status.total).put("runtimeMs", status.elapsedMs).put("summary", summary).toString())
+        } catch (e: Exception) {
+            promise.reject("LIVE_RUN_ERROR", e.message ?: e.javaClass.simpleName)
+        }
+    }
+
+    /**
+     * Brings the game to the front so the user can start the next run from the overlay.
+     *
+     * @param promise Resolves true when the game was opened, or rejects with the library's not-installed message.
+     */
+    @ReactMethod
+    fun openGame(promise: Promise) {
+        if (GameTarget.launch(reactApplicationContext)) promise.resolve(true) else promise.reject("NOT_INSTALLED", GameTarget.notInstalledMessage())
+    }
+
+    /**
+     * Deletes the last run's report after the user dismisses the result card.
+     */
+    @ReactMethod
+    fun clearLastRun() {
+        RunReport.clear(reactApplicationContext.filesDir)
+    }
+
+    /**
      * Sends the message back to the Javascript frontend along with its event name to be listened on.
      *
      * @param eventName The name of the event to be picked up on as defined in the developer's JS frontend.
@@ -629,13 +712,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         val params = Arguments.createMap()
         params.putString("message", message)
         params.putInt("id", messageId++)
-        if (emitter == null) {
-            // Register the event emitter to send messages to JS.
-            Log.d(TAG, "Event emitter not found to be able to send messages to the frontend. Registering now.")
-            emitter = reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        }
-
-        emitter?.emit(eventName, params)
+        // React Native caches the emitter per context, so fetching it each time always targets the live context.
+        reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
     }
 
     /**
