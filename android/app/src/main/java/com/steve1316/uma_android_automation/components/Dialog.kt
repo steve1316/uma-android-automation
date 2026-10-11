@@ -356,6 +356,7 @@ object DialogObjects {
             DialogLog,
             DialogMenu,
             DialogMoodEffect,
+            DialogMultiRace,
             DialogMyAgendas,
             DialogNoRetries,
             DialogNotices,
@@ -661,6 +662,9 @@ val DialogPerks = dialog("perks", "Perks", buttons = listOf(ButtonClose))
 
 /** Career -> DialogTryAgain */
 val DialogPlacing = dialog("placing", "Placing", buttons = listOf(ButtonClose))
+
+/** Daily Races (Dailies). */
+val DialogMultiRace = dialog("multi_race", "Multi-Race", buttons = listOf(ButtonCancel, ButtonRaceExclamationShiftedUp), okButton = ButtonRaceExclamationShiftedUp)
 
 /** Main Screen (I think?). */
 val DialogPresents = dialog("presents", "Presents", buttons = listOf(ButtonClose, ButtonCollectAll), okButton = ButtonCollectAll)

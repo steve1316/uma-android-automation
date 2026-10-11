@@ -580,6 +580,7 @@ class Dailies(game: Game) : Task(game) {
     private val parts: List<DailyPart> =
         listOf(
             TeamTrials(game, flags, enableTeamTrials, teamTrialsUseParfait),
+            DailyRaces(game, flags, enableDailyRaces, dailyRaceType),
         )
 
     /** Runs the parts and records their results. */

@@ -76,6 +76,7 @@ val LabelGrandLiveLessonCost = label("grandlive_performance_point_cost", Region.
 // Dailies
 
 val LabelDailyPrograms = label("daily_programs", Region.middle)
+val LabelDailyRacesHeader = label("daily_races_header", Region.topQuarter, confidence = 0.9)
 val LabelDoneForToday = label("done_for_today", Region.bottomHalf)
 val LabelMainRewards = label("main_rewards", Region.middle)
 val LabelRunnerSelection = label("runner_selection", Region.topQuarter)

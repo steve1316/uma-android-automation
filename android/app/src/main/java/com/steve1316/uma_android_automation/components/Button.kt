@@ -195,9 +195,12 @@ val ButtonConditions = button("conditions", Region.middle)
 val ButtonEventProgressChevron = button("event_progress_chevron")
 
 // Dailies
+val ButtonComplete = button("complete", Region.bottomHalf)
 val ButtonDailyProgram = button("daily_program", Region.bottomHalf)
+val ButtonDailyRacesCard = button("daily_races_card", Region.bottomHalf)
 val ButtonHomeMissionsIcon = button("home_missions_icon", Region.rightHalf)
 val ButtonHomePresentsIcon = button("home_presents_icon", Region.rightHalf)
+val ButtonMultiRaceOff = button("multi_race_off", Region.bottomHalf)
 val ButtonPleasingParfait = button("pleasing_parfait", Region.middle)
 val ButtonQuickModeOff = button("quick_mode_off", Region.bottomHalf)
 val ButtonRadioRating = button("radio_rating", Region.topHalf, confidence = 0.9)
