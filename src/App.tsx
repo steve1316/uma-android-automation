@@ -30,6 +30,7 @@ import ImportSettingsPreview from "./pages/ImportSettingsPreview"
 import ScenarioOverridesSettings from "./pages/ScenarioOverridesSettings"
 import DebugSettings from "./pages/DebugSettings"
 import DiscordSettings from "./pages/DiscordSettings"
+import DailiesSettings from "./pages/DailiesSettings"
 import LLMSettings from "./pages/LLMSettings"
 import Chat from "./pages/Chat"
 import DrawerContent from "./components/DrawerContent"
@@ -64,6 +65,7 @@ function SettingsStack() {
             <Stack.Screen name="ScenarioOverridesSettings" component={ScenarioOverridesSettings} />
             <Stack.Screen name="DebugSettings" component={DebugSettings} />
             <Stack.Screen name="DiscordSettings" component={DiscordSettings} />
+            <Stack.Screen name="DailiesSettings" component={DailiesSettings} />
             <Stack.Screen name="LLMSettings" component={LLMSettings} />
         </Stack.Navigator>
     )

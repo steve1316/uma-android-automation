@@ -1,4 +1,5 @@
 import { Settings } from "../../context/BotStateContext"
+import { DEBUG_TESTS } from "../../pages/DebugSettings/debugTests"
 import { SCORING_CONSTANTS_CATALOG } from "../training/scoringConstantsCatalog"
 import { formatCareerTurn } from "../solver/constants"
 import { DATING_SCHEDULE_PRESETS } from "../datingSchedule"
@@ -74,6 +75,47 @@ const formatOverrideCount = (overrides: Record<string, unknown>, emptyLabel: str
 }
 
 /**
+ * Formats a switch for the banner.
+ * @param on Whether the setting is on.
+ * @returns A check or a cross.
+ */
+const tick = (on: boolean): string => (on ? "✅" : "❌")
+
+/** The banner text that marks a Dailies run, also read by the event log parser. */
+export const DAILIES_RUN_MODE_LABEL = "Run Mode: Dailies"
+
+/**
+ * Builds the banner for a Dailies run, listing only the settings that run reads.
+ * @param settings Snapshot of all bot settings.
+ * @returns Multi-line banner string.
+ */
+function buildDailiesBanner(settings: Settings): string {
+    const d = settings.dailies
+    const dailiesTests = DEBUG_TESTS.filter((test) => test.runMode === "dailies")
+        .map((test) => `🔍 ${test.title}: ${tick(settings.debug[test.key])}`)
+        .join("\n")
+    return `🗓️ ${DAILIES_RUN_MODE_LABEL}
+👤 Profile Selected: ${settings.misc.currentProfileName ? `${settings.misc.currentProfileName}` : "Default Profile"}
+
+---------- Dailies Options ----------
+🏟️ Team Trials: ${tick(d.enableTeamTrials)}
+	🍨 Use Pleasing Parfait in Team Trials: ${tick(d.teamTrialsUseParfait)}
+🏁 Daily Races: ${d.enableDailyRaces ? `✅ (${d.dailyRaceType})` : "❌"}
+🏆 Legend Race: ${tick(d.enableLegendRace)}
+🏆 Legend to Race: ${d.legendRaceCharacter}
+	🍨 Use Pleasing Parfait in Legend Race: ${tick(d.legendRaceUseParfait)}
+🎁 Club Item Request: ${tick(d.clubRequestEnabled)}
+🎁 Club Item to Request: ${d.clubRequestItem}
+🤝 Club Donate to All: ${tick(d.clubDonateEnabled)}
+📋 Collect Mission Rewards: ${tick(d.enableMissions)}
+📦 Collect Presents: ${tick(d.enablePresents)}
+
+---------- Debug Options ----------
+🐛 Debug Mode: ${tick(settings.debug.enableDebugMode)}
+${dailiesTests}`
+}
+
+/**
  * Build the welcome / startup banner that summarizes the current bot configuration. Pure function of the
  * settings snapshot. The output is rendered at the top of the in-app message log and persisted to SQLite
  * so the Kotlin runtime (`SettingsHelper.getStringSetting`) can read the same string the user sees.
@@ -82,6 +124,8 @@ const formatOverrideCount = (overrides: Record<string, unknown>, emptyLabel: str
  * @returns Multi-line banner string with one line per logged setting.
  */
 export function buildSettingsBanner(settings: Settings): string {
+    if (settings.general.runMode === "dailies") return buildDailiesBanner(settings)
+
     // Training stat targets by distance.
     const sprintTargetsString = `Sprint: \n\t\tSpeed: ${settings.trainingStatTarget.trainingSprintStatTarget_speedStatTarget}\t\tStamina: ${settings.trainingStatTarget.trainingSprintStatTarget_staminaStatTarget}\t\tPower: ${settings.trainingStatTarget.trainingSprintStatTarget_powerStatTarget}\n\t\tGuts: ${settings.trainingStatTarget.trainingSprintStatTarget_gutsStatTarget}\t\t\tWit: ${settings.trainingStatTarget.trainingSprintStatTarget_witStatTarget}`
     const mileTargetsString = `Mile: \n\t\tSpeed: ${settings.trainingStatTarget.trainingMileStatTarget_speedStatTarget}\t\tStamina: ${settings.trainingStatTarget.trainingMileStatTarget_staminaStatTarget}\t\tPower: ${settings.trainingStatTarget.trainingMileStatTarget_powerStatTarget}\n\t\tGuts: ${settings.trainingStatTarget.trainingMileStatTarget_gutsStatTarget}\t\t\tWit: ${settings.trainingStatTarget.trainingMileStatTarget_witStatTarget}`
@@ -97,7 +141,8 @@ export function buildSettingsBanner(settings: Settings): string {
     const smartRaceSolverOptimizeMode = smartRaceSolverFanWeight > 0 ? "Fans + Epitaphs" : "Stat Epitaphs"
     const smartRaceSolverAptitudesObj = safeJsonParse<Record<string, string>>(settings.racing.smartRaceSolverAptitudes, {})
 
-    return `🏁 Campaign Selected: ${settings.general.scenario !== "" ? `${settings.general.scenario}` : "Please select one in the Select Campaign option"}
+    return `🗓️ Run Mode: Career
+🏁 Campaign Selected: ${settings.general.scenario !== "" ? `${settings.general.scenario}` : "Please select one in the Select Campaign option"}
 👤 Profile Selected: ${settings.misc.currentProfileName ? `${settings.misc.currentProfileName}` : "Default Profile"}
 
 ---------- Training Event Options ----------

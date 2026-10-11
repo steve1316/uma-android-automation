@@ -25,7 +25,62 @@ const makeStubSettings = (): Settings => {
     return new Proxy({}, handler) as unknown as Settings
 }
 
+/** Dailies values used by the Dailies-mode banner test. */
+const DAILIES: Settings["dailies"] = {
+    enableTeamTrials: true,
+    teamTrialsUseParfait: false,
+    enableDailyRaces: true,
+    dailyRaceType: "Jupiter Cup",
+    enableLegendRace: true,
+    legendRaceCharacter: "El Condor Pasa",
+    legendRaceUseParfait: false,
+    clubRequestEnabled: true,
+    clubRequestItem: "Dirt Racing Shoes",
+    clubDonateEnabled: true,
+    enableMissions: true,
+    enablePresents: true,
+}
+
+/**
+ * Wraps the stub so the given top-level slices return real values.
+ * @param overrides Slices to return as given.
+ * @returns A `Settings`-shaped stub with those slices replaced.
+ */
+const withSlices = (overrides: Partial<Record<keyof Settings, unknown>>): Settings => {
+    const stub = makeStubSettings()
+    return new Proxy(stub as object, { get: (target, prop) => (prop in overrides ? overrides[prop as keyof Settings] : (target as any)[prop]) }) as Settings
+}
+
 describe("buildSettingsBanner", () => {
+    it("shows the Dailies options instead of the career options in Dailies mode", () => {
+        const banner = buildSettingsBanner(withSlices({ general: { runMode: "dailies", scenario: "" }, dailies: DAILIES }))
+        expect(banner).toContain("🗓️ Run Mode: Dailies")
+        expect(banner).toContain("---------- Dailies Options ----------")
+        expect(banner).toContain("🏆 Legend to Race: El Condor Pasa")
+        expect(banner).toContain("🎁 Club Item to Request: Dirt Racing Shoes")
+        expect(banner).not.toContain("---------- Training Options ----------")
+    })
+
+    it("lists only the Dailies debug tests in Dailies mode", () => {
+        const debug = { enableDebugMode: false, debugMode_startDailiesPresentsTest: true }
+        const banner = buildSettingsBanner(withSlices({ general: { runMode: "dailies", scenario: "" }, dailies: DAILIES, debug }))
+        expect(banner).toContain("🔍 Start Dailies Presents Test: ✅")
+        expect(banner).toContain("🔍 Start Dailies Team Trials Test: ❌")
+        expect(banner).not.toContain("Start Template Matching Test")
+    })
+
+    it("leaves the Dailies debug tests out of the career banner", () => {
+        const banner = buildSettingsBanner(makeStubSettings())
+        expect(banner).toContain("Start Template Matching Test")
+        expect(banner).not.toContain("Start Dailies")
+    })
+
+    it("names the career run mode", () => {
+        const banner = buildSettingsBanner(withSlices({ dailies: DAILIES }))
+        expect(banner).toContain("🗓️ Run Mode: Career")
+        expect(banner).not.toContain("---------- Dailies Options ----------")
+    })
+
     it("includes the three keys added during the audit", () => {
         const banner = buildSettingsBanner(makeStubSettings())
         expect(banner).toMatch(/Classic Year Milestone: .+%/)

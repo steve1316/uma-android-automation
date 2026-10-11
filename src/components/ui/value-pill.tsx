@@ -11,20 +11,25 @@ export interface ValuePillProps {
     label: string
     /** Color treatment: "brand" (cyan, default) for picker values, "neutral" (muted, hairline-bordered) for read-only tags. */
     tone?: "brand" | "neutral"
+    /** Widest the pill may grow before its label is cut with "...". Unlimited when omitted. */
+    maxWidth?: number
 }
 
 /**
  * A small pill showing a picker's current value or a read-only tag. Used in the `right` slot of a `Row` (or a `Pressable` cell) that opens a selector modal.
  * @param label The value text rendered inside the pill.
  * @param tone Color treatment: "brand" (default) or "neutral".
+ * @param maxWidth Widest the pill may grow before its label is cut with "...".
  * @returns A styled `Text` node sized to fit the value.
  */
-const ValuePillImpl = ({ label, tone = "brand" }: ValuePillProps) => {
+const ValuePillImpl = ({ label, tone = "brand", maxWidth }: ValuePillProps) => {
     const { colors } = useTheme()
     const neutral = tone === "neutral"
     return (
         <Text
+            numberOfLines={maxWidth ? 1 : undefined}
             style={{
+                maxWidth,
                 ...TYPE.monoLabel,
                 color: neutral ? colors.textMuted : colors.brand,
                 paddingHorizontal: SPACING.sm,

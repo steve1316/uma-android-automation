@@ -27,6 +27,9 @@ interface SkillPlanSettingsConfig {
     excludeDoubleCircleSkills: boolean
 }
 
+/** Whether a run plays a career or clears the dailies. */
+export type RunMode = "career" | "dailies"
+
 /**
  * The complete application settings interface.
  * Organized into category-specific sub-objects for general, racing, skills,
@@ -36,6 +39,7 @@ export interface Settings {
     // General settings
     general: {
         scenario: string
+        runMode: RunMode
         enableClawMachineAttempt: boolean
         enableSwipeBasedScrolling: boolean
         enableStopBeforeFinals: boolean
@@ -49,6 +53,22 @@ export interface Settings {
         recreationTotalOutings: number
         waitDelay: number
         dialogWaitDelay: number
+    }
+
+    // Dailies settings
+    dailies: {
+        enableTeamTrials: boolean
+        teamTrialsUseParfait: boolean
+        enableDailyRaces: boolean
+        dailyRaceType: string
+        enableLegendRace: boolean
+        legendRaceCharacter: string
+        legendRaceUseParfait: boolean
+        clubRequestEnabled: boolean
+        clubRequestItem: string
+        clubDonateEnabled: boolean
+        enableMissions: boolean
+        enablePresents: boolean
     }
 
     // Racing settings
@@ -206,6 +226,12 @@ export interface Settings {
         debugMode_startTrackblazerInventorySyncTest: boolean
         debugMode_startTrackblazerBuyItemsTest: boolean
         debugMode_startGrandLiveTokenGainTest: boolean
+        debugMode_startDailiesTeamTrialsTest: boolean
+        debugMode_startDailiesDailyRacesTest: boolean
+        debugMode_startDailiesLegendRaceTest: boolean
+        debugMode_startDailiesClubTest: boolean
+        debugMode_startDailiesMissionsTest: boolean
+        debugMode_startDailiesPresentsTest: boolean
         enableScreenRecording: boolean
         recordingBitRate: number
         recordingFrameRate: number
@@ -276,6 +302,7 @@ export interface Settings {
 export const defaultSettings: Settings = {
     general: {
         scenario: "",
+        runMode: "career",
         enableClawMachineAttempt: false,
         enableSwipeBasedScrolling: false,
         enableStopBeforeFinals: false,
@@ -289,6 +316,20 @@ export const defaultSettings: Settings = {
         recreationTotalOutings: DATING_SCHEDULE_PRESETS.siriusSenior.totalOutings,
         waitDelay: 0.5,
         dialogWaitDelay: 0.5,
+    },
+    dailies: {
+        enableTeamTrials: true,
+        teamTrialsUseParfait: false,
+        enableDailyRaces: true,
+        dailyRaceType: "Jupiter Cup",
+        enableLegendRace: true,
+        legendRaceCharacter: "El Condor Pasa",
+        legendRaceUseParfait: false,
+        clubRequestEnabled: true,
+        clubRequestItem: "Dirt Racing Shoes",
+        clubDonateEnabled: true,
+        enableMissions: true,
+        enablePresents: true,
     },
     racing: {
         ignoreConsecutiveRaceWarning: false,
@@ -503,6 +544,12 @@ export const defaultSettings: Settings = {
         debugMode_startTrackblazerInventorySyncTest: false,
         debugMode_startTrackblazerBuyItemsTest: false,
         debugMode_startGrandLiveTokenGainTest: false,
+        debugMode_startDailiesTeamTrialsTest: false,
+        debugMode_startDailiesDailyRacesTest: false,
+        debugMode_startDailiesLegendRaceTest: false,
+        debugMode_startDailiesClubTest: false,
+        debugMode_startDailiesMissionsTest: false,
+        debugMode_startDailiesPresentsTest: false,
         enableScreenRecording: false,
         recordingBitRate: 6,
         recordingFrameRate: 30,
@@ -610,8 +657,10 @@ export interface TrainingEventContextValue {
 export interface GeneralMiscContextValue {
     general: Settings["general"]
     misc: Settings["misc"]
+    dailies: Settings["dailies"]
     updateGeneral: SliceUpdater<Settings["general"]>
     updateMisc: SliceUpdater<Settings["misc"]>
+    updateDailies: SliceUpdater<Settings["dailies"]>
 }
 
 export interface DebugContextValue {
@@ -707,6 +756,7 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     const updateTrainingEvent = useMemo(() => makeSliceUpdater("trainingEvent"), [makeSliceUpdater])
     const updateGeneral = useMemo(() => makeSliceUpdater("general"), [makeSliceUpdater])
     const updateMisc = useMemo(() => makeSliceUpdater("misc"), [makeSliceUpdater])
+    const updateDailies = useMemo(() => makeSliceUpdater("dailies"), [makeSliceUpdater])
     const updateDebug = useMemo(() => makeSliceUpdater("debug"), [makeSliceUpdater])
     const updateDiscord = useMemo(() => makeSliceUpdater("discord"), [makeSliceUpdater])
     const updateChat = useMemo(() => makeSliceUpdater("chat"), [makeSliceUpdater])
@@ -727,8 +777,8 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     )
     const trainingEventValue = useMemo<TrainingEventContextValue>(() => ({ trainingEvent: settings.trainingEvent, updateTrainingEvent }), [settings.trainingEvent, updateTrainingEvent])
     const generalMiscValue = useMemo<GeneralMiscContextValue>(
-        () => ({ general: settings.general, misc: settings.misc, updateGeneral, updateMisc }),
-        [settings.general, settings.misc, updateGeneral, updateMisc]
+        () => ({ general: settings.general, misc: settings.misc, dailies: settings.dailies, updateGeneral, updateMisc, updateDailies }),
+        [settings.general, settings.misc, settings.dailies, updateGeneral, updateMisc, updateDailies]
     )
     const debugValue = useMemo<DebugContextValue>(() => ({ debug: settings.debug, updateDebug }), [settings.debug, updateDebug])
     const discordValue = useMemo<DiscordContextValue>(() => ({ discord: settings.discord, updateDiscord }), [settings.discord, updateDiscord])
@@ -774,7 +824,7 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
  * @returns A `Settings` object assembled from every slice context's current value.
  */
 export const useSettingsSnapshot = (): Settings => {
-    const { general, misc } = useContext(GeneralMiscContext)
+    const { general, misc, dailies } = useContext(GeneralMiscContext)
     const { racing } = useContext(RacingContext)
     const { skills } = useContext(SkillsContext)
     const { training, trainingStatTarget } = useContext(TrainingContext)
@@ -784,8 +834,8 @@ export const useSettingsSnapshot = (): Settings => {
     const { chat } = useContext(ChatContext)
     const { scenarioOverrides } = useContext(ScenarioOverridesContext)
     return useMemo(
-        () => ({ general, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides }),
-        [general, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides]
+        () => ({ general, dailies, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides }),
+        [general, dailies, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides]
     )
 }
 
