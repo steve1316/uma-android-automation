@@ -74,6 +74,7 @@ val LabelGrandLivePerformancePoints = label("grandlive_performance_points", Regi
 val LabelGrandLiveLessonCost = label("grandlive_performance_point_cost", Region.leftHalf)
 
 // Dailies
+val LabelClubMenu = label("club_menu", Region.topQuarter)
 
 /** Name logos on the Daily Legend Races cards, keyed by the legend's name as stored in settings. Pass the grid's region when finding one. */
 val LabelDailyLegendLogos: Map<String, ComponentInterface> =
@@ -112,6 +113,9 @@ val LabelDailyLegendRacesHeader = label("daily_legend_races_header", Region.topQ
 val LabelDailyPrograms = label("daily_programs", Region.middle)
 val LabelDailyRacesHeader = label("daily_races_header", Region.topQuarter, confidence = 0.9)
 val LabelDoneForToday = label("done_for_today", Region.bottomHalf)
+val LabelItemRequestExpired = label("item_request_expired", Region.bottomHalf)
+val LabelItemRequestHeld = label("item_request_held")
+val LabelItemRequestSelectPrompt = label("item_request_select_prompt", Region.bottomHalf)
 val LabelMainRewards = label("main_rewards", Region.middle)
 val LabelRunnerSelection = label("runner_selection", Region.topQuarter)
 val LabelRunnerSpeedHeader = label("runner_speed_header", Region.middle)

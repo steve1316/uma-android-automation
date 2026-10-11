@@ -328,6 +328,7 @@ object DialogObjects {
             DialogConcertSkipConfirmation,
             DialogConfirmAutoSelect,
             DialogConfirmExchange,
+            DialogConfirmDonations,
             DialogConfirmRestoreRP,
             DialogConfirmUse,
             DialogConnectionError,
@@ -352,6 +353,7 @@ object DialogObjects {
             DialogInfirmary,
             DialogInsufficientFans,
             DialogInsufficientGoalRaceResultPts,
+            DialogItemRequest,
             DialogItemsSelected,
             DialogLog,
             DialogMenu,
@@ -558,6 +560,9 @@ val DialogConsecutiveRaceWarning = dialog("consecutive_race_warning", "Warning",
 /** Main Screen */
 val DialogContinueCareer = dialog("continue_career", "Continue Career", buttons = listOf(ButtonCancel, ButtonResume), okButton = ButtonResume)
 
+/** Club (Dailies). */
+val DialogConfirmDonations = dialog("confirm_donations", "Confirm Donations", buttons = listOf(ButtonCancel, ButtonDonateToAllConfirm), okButton = ButtonDonateToAllConfirm)
+
 /** Team Trials */
 val DialogConfirmRestoreRP = dialog("confirm_restore_rp", "Confirm", buttons = listOf(ButtonNo, ButtonRestore), okButton = ButtonRestore)
 
@@ -620,6 +625,19 @@ val DialogInsufficientFans = dialog("insufficient_fans", "Insufficient Fans", bu
 /** Career (Trackblazer) */
 val DialogInsufficientGoalRaceResultPts =
     dialog("insufficient_goal_race_result_pts", "Insufficient Goal Race Result Pts", buttons = listOf(ButtonCancel, ButtonRace), closeButton = ButtonCancel, okButton = ButtonRace)
+
+/**
+ * Club (Dailies). The request status and the donation list close with Close, while the item picker closes with Cancel.
+ */
+object DialogItemRequest : DialogInterface {
+    override val name: String = "item_request"
+    override val title: String = "Item Request"
+    override val closeButton = null
+    override val okButton = null
+    override val buttons: List<BaseComponentInterface> = listOf(ButtonClose, ButtonCancel)
+
+    override fun close(imageUtils: CustomImageUtils, tries: Int): Boolean = ButtonClose.click(imageUtils, tries = tries) || ButtonCancel.click(imageUtils, tries = tries)
+}
 
 /** Team Trials, Special Events, Daily Races. */
 val DialogItemsSelected = dialog("items_selected", "Items Selected", buttons = listOf(ButtonCancel, ButtonRaceExclamationShiftedUp), okButton = ButtonRaceExclamationShiftedUp)
