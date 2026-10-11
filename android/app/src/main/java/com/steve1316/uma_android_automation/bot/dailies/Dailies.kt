@@ -581,6 +581,7 @@ class Dailies(game: Game) : Task(game) {
         listOf(
             TeamTrials(game, flags, enableTeamTrials, teamTrialsUseParfait),
             DailyRaces(game, flags, enableDailyRaces, dailyRaceType),
+            DailyLegendRaces(game, flags, enableLegendRace, legendRaceCharacter, legendRaceUseParfait),
         )
 
     /** Runs the parts and records their results. */
