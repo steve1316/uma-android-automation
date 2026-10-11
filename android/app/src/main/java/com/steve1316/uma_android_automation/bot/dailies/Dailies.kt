@@ -583,6 +583,8 @@ class Dailies(game: Game) : Task(game) {
             DailyRaces(game, flags, enableDailyRaces, dailyRaceType),
             DailyLegendRaces(game, flags, enableLegendRace, legendRaceCharacter, legendRaceUseParfait),
             Club(game, clubRequestEnabled, clubRequestItem, clubDonateEnabled),
+            Missions(game, enableMissions),
+            Presents(game, enablePresents),
         )
 
     /** Runs the parts and records their results. */
