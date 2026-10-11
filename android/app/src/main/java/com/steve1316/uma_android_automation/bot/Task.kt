@@ -6,8 +6,8 @@ import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
-import com.steve1316.automation_library.utils.FocusWatch
 import com.steve1316.automation_library.utils.GameTarget
+import com.steve1316.automation_library.utils.MyAccessibilityService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandler
@@ -349,7 +349,7 @@ abstract class Task(game: Game) : DialogHandler(game) {
      */
     private fun ensureGameInFront(): Boolean {
         if (!GameTarget.otherAppInFront()) return true
-        MessageLog.i(TAG, "[PAUSE] ${FocusWatch.foregroundPackage} is in front instead of the game. Pausing again until the game is open.")
+        MessageLog.i(TAG, "[PAUSE] ${MyAccessibilityService.currentForeground()} is in front instead of the game. Pausing again until the game is open.")
         BotHold.requestPause(GAME_NOT_IN_FRONT_REASON)
         return false
     }
