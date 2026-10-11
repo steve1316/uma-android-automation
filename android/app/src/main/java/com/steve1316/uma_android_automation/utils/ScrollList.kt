@@ -945,6 +945,19 @@ class ScrollList private constructor(
         MessageLog.w(TAG, "[WARN] ensureAtBottom:: Gave up after $MAX_SCROLL_TO_END_SWIPES swipes without the scrollbar thumb reaching the bottom of its track.")
     }
 
+    /**
+     * Whether the list is scrolled to its bottom, read from the scrollbar thumb the same way [ensureAtBottom] reads it.
+     *
+     * @param bitmap Optional bitmap to read the scrollbar from instead of taking a new screenshot.
+     * @return True when the thumb sits at the bottom of its track, or when there is no scrollbar and so nothing below the fold. False under swipe-based scrolling
+     *    when no scrollbar can be read, since the position is then unknown.
+     */
+    fun isAtBottom(bitmap: Bitmap? = null): Boolean {
+        val (bboxBar: BoundingBox?, bboxThumb: BoundingBox?) = getListScrollBarBoundingRegion(bitmap)
+        if (bboxBar == null || bboxThumb == null) return !swipeMode
+        return (bboxBar.y + bboxBar.h) - (bboxThumb.y + bboxThumb.h) <= SCROLL_END_TOLERANCE
+    }
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 

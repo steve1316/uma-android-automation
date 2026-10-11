@@ -18,6 +18,7 @@ import com.steve1316.uma_android_automation.bot.campaigns.GrandLive
 import com.steve1316.uma_android_automation.bot.campaigns.Trackblazer
 import com.steve1316.uma_android_automation.bot.campaigns.UnityCup
 import com.steve1316.uma_android_automation.bot.campaigns.UraFinale
+import com.steve1316.uma_android_automation.components.BaseComponentInterface
 import com.steve1316.uma_android_automation.components.LabelConnecting
 import com.steve1316.uma_android_automation.components.LabelNowLoading
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
@@ -227,6 +228,45 @@ class Game(val myContext: Context) {
             false
         }
     }
+
+    /**
+     * Waits until one of the components appears, handling any dialog that pops up in the meantime.
+     *
+     * @param components The components to look for, in priority order.
+     * @param timeoutSec How long to wait before giving up.
+     * @param bHandleDialogs Whether to let the task handle dialogs between checks. Turn off while a dialog the caller handles itself is open.
+     * @param stopIf Checked after each miss. When it turns true the wait ends early.
+     * @param onMiss Runs after each miss, before the next check.
+     * @return The component that appeared and its location, or null on timeout or when `stopIf` ended the wait.
+     */
+    fun waitForAny(
+        vararg components: BaseComponentInterface,
+        timeoutSec: Double = 10.0,
+        bHandleDialogs: Boolean = true,
+        stopIf: () -> Boolean = { false },
+        onMiss: () -> Unit = {},
+    ): Pair<BaseComponentInterface, Point>? {
+        val deadline = System.currentTimeMillis() + (timeoutSec * 1000).toLong()
+        while (true) {
+            val sourceBitmap = imageUtils.getSourceBitmap()
+            components.firstNotNullOfOrNull { component -> component.findImageWithBitmap(imageUtils, sourceBitmap)?.let { component to it } }?.let { return it }
+            if (System.currentTimeMillis() > deadline) return null
+            if (bHandleDialogs) task.tryHandleAllDialogs(timeoutMs = 3000, sourceBitmap = sourceBitmap)
+            if (stopIf()) return null
+            onMiss()
+            wait(0.5)
+        }
+    }
+
+    /**
+     * Taps a neutral spot on the screen until one of the components appears. Used to skip race and reward animations.
+     *
+     * @param components The components that end the tapping, in priority order.
+     * @param timeoutSec How long to keep tapping before giving up.
+     * @return The component that appeared and its location, or null on timeout.
+     */
+    fun tapUntil(vararg components: BaseComponentInterface, timeoutSec: Double = 45.0): Pair<BaseComponentInterface, Point>? =
+        waitForAny(*components, timeoutSec = timeoutSec, onMiss = { tap(SharedData.displayWidth / 2.0, SharedData.displayHeight * 0.4, ignoreWaiting = true) })
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -3210,6 +3210,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @param scale The scaling factor to apply. Defaults to 1.0.
      * @param ocrEngine The OCR engine to use. Defaults to "tesseract".
      * @param debugName Optional name for debug image logging.
+     * @param bitmap Optional screenshot to read instead of taking a new one.
      * @return The detected text, or an empty string if OCR fails.
      */
     fun performOCRFromReference(
@@ -3223,8 +3224,9 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         scale: Double = 1.0,
         ocrEngine: String = "tesseract",
         debugName: String = "",
+        bitmap: Bitmap? = null,
     ): String {
-        val sourceBitmap = getSourceBitmap()
+        val sourceBitmap = bitmap ?: getSourceBitmap()
         val finalX = relX(referencePoint.x, offsetX)
         val finalY = relY(referencePoint.y, offsetY)
 
