@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.steve1316.automation_library.utils.BotHold
@@ -377,6 +378,17 @@ abstract class Campaign(game: Game) : Task(game) {
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Debug Tests
+
+    // Begin (or resume) analytics after startup logging so its resume/persistence messages print after the bot version.
+    override fun onRunStart(startTimeMs: Long, context: Context) {
+        RunAnalytics.onRunStart(game.scenario, startTimeMs, context)
+    }
+
+    override fun completeReason(result: TaskResult): String = CAREER_COMPLETE_REASON
+
+    override fun onRunEnd() {
+        RunAnalytics.onRunEnd()
+    }
 
     /**
      * Starts the automated tests for the campaign.

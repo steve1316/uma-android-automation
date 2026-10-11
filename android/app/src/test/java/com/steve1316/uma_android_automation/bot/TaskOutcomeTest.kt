@@ -14,6 +14,11 @@ class TaskOutcomeTest {
     }
 
     @Test
+    fun completeUsesTheGivenReason() {
+        assertEquals(BotStatus.Outcome.FINISHED to "Dailies complete", outcomeFor(TaskResult.Success(), "Dailies complete"))
+    }
+
+    @Test
     fun breakpointKeepsItsMessage() {
         val result = TaskResult.Success(TaskResultCode.TASK_RESULT_BREAKPOINT_REACHED, "Stopping bot at the specified date: Senior Year Early Jun (Turn 59)")
         assertEquals(BotStatus.Outcome.STOPPED_BY_BOT to "Stopping bot at the specified date: Senior Year Early Jun (Turn 59)", outcomeFor(result))

@@ -459,7 +459,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
             // Reset the log stream mute to ensure logs for the new run are broadcasted.
             LogStreamServer.resetMute()
 
-            // Drop the previous run's stats now, so a stop or crash before this run's first turn does not report them.
+            // Drop the previous run's stats and summary hook now, so a stop or crash before this run's first turn does not report them.
+            RunReport.setSummaryProvider(null)
             RunAnalytics.reset()
 
             val botThread =

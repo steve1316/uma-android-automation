@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.content.Context
 import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
@@ -23,6 +24,9 @@ internal val UMA_GAME_PACKAGES: Set<String> = setOf("com.cygames.umamusume")
 
 /** The game's display name, used in messages such as the one shown when it is not installed. */
 internal const val UMA_GAME_NAME = "Umamusume Pretty Derby"
+
+/** Run-end reason for a career that ran to the end. */
+internal const val CAREER_COMPLETE_REASON = "Career complete"
 
 /** Pause reason shown when the bot was resumed while another app is in front. */
 private const val GAME_NOT_IN_FRONT_REASON = "Open the game, then tap Resume"
@@ -71,11 +75,12 @@ sealed interface TaskResult {
  * Maps a task's result to the outcome the overlay and the notification show.
  *
  * @param result The result the task ended with.
+ * @param completeReason The reason shown when the task completed normally.
  * @return The outcome and the reason text shown with it.
  */
-fun outcomeFor(result: TaskResult): Pair<BotStatus.Outcome, String> =
+fun outcomeFor(result: TaskResult, completeReason: String = CAREER_COMPLETE_REASON): Pair<BotStatus.Outcome, String> =
     when (result.code) {
-        TaskResultCode.TASK_RESULT_COMPLETE -> BotStatus.Outcome.FINISHED to "Career complete"
+        TaskResultCode.TASK_RESULT_COMPLETE -> BotStatus.Outcome.FINISHED to completeReason
         TaskResultCode.TASK_RESULT_BREAKPOINT_REACHED -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
         TaskResultCode.TASK_RESULT_MANUALLY_STOPPED -> BotStatus.Outcome.STOPPED_BY_USER to "You stopped the bot"
         TaskResultCode.TASK_RESULT_UNHANDLED_EXCEPTION -> BotStatus.Outcome.CRASHED to result.message
@@ -236,7 +241,7 @@ abstract class Task(game: Game) : DialogHandler(game) {
      * @param result The [TaskResult] that caused the task to end.
      */
     private fun handleTaskEnd(result: TaskResult) {
-        val (outcome, reason) = outcomeFor(result)
+        val (outcome, reason) = outcomeFor(result, completeReason(result))
         BotStatus.setOutcome(outcome, reason)
         val logMessage = "${result.javaClass.simpleName} (${result.code}): ${result.message}"
         game.notificationMessage = logMessage
@@ -283,6 +288,29 @@ abstract class Task(game: Game) : DialogHandler(game) {
 
         handleTaskEnd(result)
         return result
+    }
+
+    /**
+     * The reason shown on the run-end card when this task completes normally.
+     *
+     * @param result The completed result.
+     * @return The reason text, the result's own message by default.
+     */
+    open fun completeReason(result: TaskResult): String = result.message
+
+    /**
+     * Called once when the run starts, after the startup banner is logged. Default no-op.
+     *
+     * @param startTimeMs Wall-clock run start in millis.
+     * @param context Application context.
+     */
+    open fun onRunStart(startTimeMs: Long, context: Context) {
+        return
+    }
+
+    /** Called once when the run ends, after the task loop returns. Default no-op. */
+    open fun onRunEnd() {
+        return
     }
 
     /**

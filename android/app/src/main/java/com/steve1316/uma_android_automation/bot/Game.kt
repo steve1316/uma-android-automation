@@ -324,8 +324,7 @@ class Game(val myContext: Context) {
         val packageInfo = myContext.packageManager.getPackageInfo(myContext.packageName, 0)
         MessageLog.i(TAG, "[INFO] Bot version: ${packageInfo.versionName} (${packageInfo.versionCode})\n\n")
 
-        // Begin (or resume) analytics after startup logging so its resume/persistence messages print after the bot version.
-        RunAnalytics.onRunStart(scenario, startTime, myContext)
+        task.onRunStart(startTime, myContext)
 
         // Start debug tests here if enabled. Otherwise, proceed with regular bot operations.
         // A small delay here to ensure any notifications are out of the way.
@@ -347,7 +346,7 @@ class Game(val myContext: Context) {
             task.start()
         }
 
-        RunAnalytics.onRunEnd()
+        task.onRunEnd()
         MessageLog.i(TAG, "[INFO] Total runtime of ${MessageLog.formatElapsedTime(startTime, System.currentTimeMillis())} and stopped at ${MessageLog.getSystemTimeString()}.")
 
         // Wait to make sure Discord webhook message queue gets fully processed before terminating Bot Thread.
