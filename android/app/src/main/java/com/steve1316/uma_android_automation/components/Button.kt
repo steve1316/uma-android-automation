@@ -15,11 +15,12 @@ package com.steve1316.uma_android_automation.components
  *
  * @param name Leaf filename under `components/button/` identifying the template image.
  * @param region Screen region to constrain matching to. Defaults to the whole screen.
+ * @param confidence Match threshold (0.0, 1.0]. Defaults to 0.0, which uses the global default.
  * @return A [ButtonInterface] wrapping the resolved template.
  */
-private fun button(name: String, region: IntArray = intArrayOf(0, 0, 0, 0)): ButtonInterface =
+private fun button(name: String, region: IntArray = intArrayOf(0, 0, 0, 0), confidence: Double = 0.0): ButtonInterface =
     object : ButtonInterface {
-        override val template = Template("components/button/$name", region = region)
+        override val template = Template("components/button/$name", region = region, confidence = confidence)
     }
 
 val ButtonAgenda = button("agenda", Region.bottomHalf)
@@ -192,3 +193,15 @@ val ButtonConfirmUse = button("confirm_use", Region.bottomHalf)
 val ButtonUseTrainingItems = button("use_training_items", Region.bottomHalf)
 val ButtonConditions = button("conditions", Region.middle)
 val ButtonEventProgressChevron = button("event_progress_chevron")
+
+// Dailies
+val ButtonDailyProgram = button("daily_program", Region.bottomHalf)
+val ButtonHomeMissionsIcon = button("home_missions_icon", Region.rightHalf)
+val ButtonHomePresentsIcon = button("home_presents_icon", Region.rightHalf)
+val ButtonPleasingParfait = button("pleasing_parfait", Region.middle)
+val ButtonQuickModeOff = button("quick_mode_off", Region.bottomHalf)
+val ButtonRadioRating = button("radio_rating", Region.topHalf, confidence = 0.9)
+val ButtonSeeAllRaceResults = button("see_all_race_results", Region.bottomHalf)
+val ButtonSortAsc = button("sort_asc", Region.bottomHalf, confidence = 0.9)
+val ButtonSortRating = button("sort_rating", Region.bottomHalf, confidence = 0.9)
+val ButtonSortToggle = button("sort_toggle", Region.bottomHalf, confidence = 0.9)

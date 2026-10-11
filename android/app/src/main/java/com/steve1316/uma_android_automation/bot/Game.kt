@@ -6,6 +6,7 @@ import android.util.Log
 import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
+import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
@@ -18,6 +19,8 @@ import com.steve1316.uma_android_automation.bot.campaigns.GrandLive
 import com.steve1316.uma_android_automation.bot.campaigns.Trackblazer
 import com.steve1316.uma_android_automation.bot.campaigns.UnityCup
 import com.steve1316.uma_android_automation.bot.campaigns.UraFinale
+import com.steve1316.uma_android_automation.bot.dailies.DAILIES_DEBUG_TEST_KEYS
+import com.steve1316.uma_android_automation.bot.dailies.Dailies
 import com.steve1316.uma_android_automation.components.BaseComponentInterface
 import com.steve1316.uma_android_automation.components.LabelConnecting
 import com.steve1316.uma_android_automation.components.LabelNowLoading
@@ -52,6 +55,9 @@ class Game(val myContext: Context) {
     /** The current campaign scenario (e.g., "URA Finale", "Unity Cup", "Trackblazer"). */
     val scenario: String = SettingsHelper.getStringSetting("general", "scenario")
 
+    /** Whether this run plays a career ("career") or clears the dailies ("dailies"). */
+    val runMode: String = SettingsHelper.getStringSetting("general", "runMode", "career")
+
     /** Whether debug mode is enabled for additional logging and saving debugging images to storage. */
     val debugMode: Boolean = SettingsHelper.getBooleanSetting("debug", "enableDebugMode")
 
@@ -63,12 +69,16 @@ class Game(val myContext: Context) {
 
     /** Holds the task instance corresponding to the selected scenario. */
     val task: Task =
-        when (scenario) {
-            "URA Finale" -> UraFinale(this)
-            "Unity Cup" -> UnityCup(this)
-            "Trackblazer" -> Trackblazer(this)
-            "Grand Live" -> GrandLive(this)
-            else -> throw InterruptedException("Invalid scenario: $scenario")
+        if (runMode == "dailies") {
+            Dailies(this)
+        } else {
+            when (scenario) {
+                "URA Finale" -> UraFinale(this)
+                "Unity Cup" -> UnityCup(this)
+                "Trackblazer" -> Trackblazer(this)
+                "Grand Live" -> GrandLive(this)
+                else -> throw InterruptedException("Invalid scenario: $scenario")
+            }
         }
 
     /** The maximum number of connection error retry attempts allowed. */
@@ -326,6 +336,17 @@ class Game(val myContext: Context) {
 
         task.onRunStart(startTime, myContext)
 
+        // A debug test armed for the other run mode would be skipped and a full run would start in its place, so stop with the reason instead.
+        val otherModeTest = otherModeDebugTest()
+        if (otherModeTest != null) {
+            val (mode, otherMode) = if (runMode == "dailies") "Dailies" to "Career" else "Career" to "Dailies"
+            val reason = "$otherModeTest is armed, but Run Mode is $mode. Switch to $otherMode or turn the test off"
+            MessageLog.w(TAG, "[WARN] $reason.")
+            BotStatus.setOutcome(BotStatus.Outcome.STOPPED_BY_BOT, reason)
+            task.onRunEnd()
+            return true
+        }
+
         // Start debug tests here if enabled. Otherwise, proceed with regular bot operations.
         // A small delay here to ensure any notifications are out of the way.
         wait(3.0)
@@ -341,7 +362,8 @@ class Game(val myContext: Context) {
                     val finalIpAddress = if (ipAddress == "10.0.2.15") "localhost" else ipAddress
                     logViewerString = "Remote Log Viewer is enabled at http://$finalIpAddress:$port"
                 }
-                DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! Scenario: $scenario```$logViewerString")
+                val runName = if (runMode == "dailies") "Dailies" else "Scenario: $scenario"
+                DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! $runName```$logViewerString")
             }
             task.start()
         }
@@ -355,5 +377,16 @@ class Game(val myContext: Context) {
         }
 
         return true
+    }
+
+    /**
+     * Finds an armed debug test that belongs to the other run mode.
+     *
+     * @return The test's readable name, such as "Dailies Presents Test", or null when none is armed.
+     */
+    private fun otherModeDebugTest(): String? {
+        val otherModeKeys = if (runMode == "dailies") CAREER_DEBUG_TEST_KEYS else DAILIES_DEBUG_TEST_KEYS.keys
+        val key = otherModeKeys.firstOrNull { SettingsHelper.getBooleanSetting("debug", it) } ?: return null
+        return key.removePrefix("debugMode_start").replace(Regex("([a-z])([A-Z])"), "$1 $2").replace(Regex("([A-Z]+)([A-Z][a-z])"), "$1 $2")
     }
 }

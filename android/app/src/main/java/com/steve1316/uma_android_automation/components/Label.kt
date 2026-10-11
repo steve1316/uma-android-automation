@@ -72,3 +72,14 @@ val LabelGrandLiveLearnable = label("grandlive_learnable", Region.rightHalf)
 val LabelGrandLiveMaxHype = label("grandlive_max_hype")
 val LabelGrandLivePerformancePoints = label("grandlive_performance_points", Region.leftHalf)
 val LabelGrandLiveLessonCost = label("grandlive_performance_point_cost", Region.leftHalf)
+
+// Dailies
+
+val LabelDailyPrograms = label("daily_programs", Region.middle)
+val LabelDoneForToday = label("done_for_today", Region.bottomHalf)
+val LabelMainRewards = label("main_rewards", Region.middle)
+val LabelRunnerSelection = label("runner_selection", Region.topQuarter)
+val LabelRunnerSpeedHeader = label("runner_speed_header", Region.middle)
+val LabelSelectOpponent = label("select_opponent", Region.topQuarter)
+val LabelTeamRankBadge = label("team_rank_badge", Region.leftHalf)
+val LabelTopBarRp = label("top_bar_rp", Region.topQuarter)
