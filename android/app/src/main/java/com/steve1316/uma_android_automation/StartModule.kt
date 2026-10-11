@@ -656,6 +656,16 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
+     * Reports whether a run is in progress, so Home can lock the run mode switch again after its screen is recreated mid-run.
+     *
+     * @param promise Resolves true while the bot is running a task.
+     */
+    @ReactMethod
+    fun isRunActive(promise: Promise) {
+        promise.resolve(BotService.isRunning)
+    }
+
+    /**
      * Reports whether the overlay service is on, so Home can catch up after its screen is recreated. A service that was just asked to start counts as on.
      *
      * @param promise Resolves true when the overlay service is running or starting.

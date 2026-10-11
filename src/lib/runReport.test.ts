@@ -19,8 +19,20 @@ const base = (over: Partial<RunReport> = {}): RunReport => ({
         racesWon: 9,
         racesRun: 11,
     },
+    dailies: null,
     ...over,
 })
+
+/** A finished Dailies run report with the given part statuses. */
+const dailiesReport = (statuses: Array<"done" | "skipped" | "failed">): RunReport =>
+    base({
+        reason: statuses.includes("failed") ? "Dailies finished with errors" : "Dailies complete",
+        turn: 0,
+        totalTurns: 0,
+        runtimeMs: 754000,
+        summary: null,
+        dailies: { parts: statuses.map((status, i) => ({ name: ["Team Trials", "Daily Races", "Legend Race", "Club", "Missions", "Presents"][i], status, detail: "x" })) },
+    })
 
 describe("parseRunReport", () => {
     it("parses a full report", () => {
@@ -39,7 +51,35 @@ describe("parseRunReport", () => {
 
     it("defaults missing fields", () => {
         const r = parseRunReport(JSON.stringify({ schemaVersion: 1, outcome: "STOPPED_BY_USER" }))
-        expect(r).toEqual({ outcome: "STOPPED_BY_USER", reason: "", turn: 0, totalTurns: 0, runtimeMs: 0, endedAt: 0, logFile: "", error: null, summary: null })
+        expect(r).toEqual({ outcome: "STOPPED_BY_USER", reason: "", turn: 0, totalTurns: 0, runtimeMs: 0, endedAt: 0, logFile: "", error: null, summary: null, dailies: null })
+    })
+
+    it("parses a Dailies summary into dailies, not the career summary", () => {
+        const parts = [
+            { name: "Team Trials", status: "done", detail: "4 races" },
+            { name: "Club", status: "failed", detail: "Club button did not appear" },
+        ]
+        const r = parseRunReport(JSON.stringify({ schemaVersion: 1, outcome: "FINISHED", reason: "Dailies finished with errors", summary: { kind: "dailies", parts } }))
+        expect(r?.summary).toBeNull()
+        expect(r?.dailies?.parts).toEqual(parts)
+    })
+
+    it("still parses a career summary without a kind as career", () => {
+        const r = parseRunReport(JSON.stringify({ schemaVersion: 1, ...base(), dailies: undefined }))
+        expect(r?.summary?.trainee).toBe("Sakura Chiyono O")
+        expect(r?.dailies).toBeNull()
+    })
+})
+
+describe("formatRunReport for a Dailies run", () => {
+    it("counts done and skipped parts in green when nothing failed", () => {
+        const v = formatRunReport(dailiesReport(["done", "done", "done", "done", "done", "skipped"]))
+        expect(v).toMatchObject({ tone: "success", pill: "✓ FINISHED", title: "Dailies complete", sub: "5 done · 1 skipped", facts: ["0:12:34"] })
+    })
+
+    it("turns amber and names the failed parts", () => {
+        const v = formatRunReport(dailiesReport(["done", "done", "done", "failed", "done", "done"]))
+        expect(v).toMatchObject({ tone: "warning", title: "Dailies finished with errors", sub: "Club failed · 5 done" })
     })
 })
 

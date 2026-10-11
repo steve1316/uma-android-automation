@@ -20,6 +20,7 @@ const report = (over: Partial<RunReport> = {}): RunReport => ({
         racesWon: 9,
         racesRun: 11,
     },
+    dailies: null,
     ...over,
 })
 const crash = { className: "IllegalStateException", message: "m", frames: ["a"] }
@@ -34,6 +35,17 @@ describe("heroView without a result", () => {
         const v = heroView({ overlayOn, health, report: null })
         expect(v).toMatchObject({ pillLabel, pillTone, cardTone: "brand", facts: "", hasResult: false, details: "none", drawerDefaultOpen: false })
         expect(v.buttonMode).toBe(overlayOn ? "openGame" : "start")
+    })
+})
+
+describe("heroView with a Dailies result", () => {
+    it("shows the Dailies parts in the drawer", () => {
+        const v = heroView({
+            overlayOn: false,
+            health: "ready",
+            report: report({ reason: "Dailies complete", summary: null, dailies: { parts: [{ name: "Missions", status: "done", detail: "x" }] } }),
+        })
+        expect(v).toMatchObject({ details: "dailies", hasResult: true, title: "Dailies complete" })
     })
 })
 
@@ -104,5 +116,19 @@ describe("heroView with a live run", () => {
     it("ignores live stats with the overlay off or once a result is showing", () => {
         expect(heroView({ overlayOn: false, health: "ready", report: null, live }).details).toBe("none")
         expect(heroView({ overlayOn: true, health: "ready", report: report(), live }).details).toBe("stats")
+    })
+})
+
+describe("heroView run mode switch", () => {
+    it("stays unlocked while the overlay is on but no run is going", () => {
+        expect(heroView({ overlayOn: true, health: "ready", report: null }).switchLocked).toBe(false)
+    })
+
+    it("stays unlocked while a past result is showing", () => {
+        expect(heroView({ overlayOn: true, health: "ready", report: report() }).switchLocked).toBe(false)
+    })
+
+    it("locks only while a run is in progress", () => {
+        expect(heroView({ overlayOn: true, health: "ready", report: null, runActive: true }).switchLocked).toBe(true)
     })
 })

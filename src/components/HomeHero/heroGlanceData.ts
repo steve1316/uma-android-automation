@@ -27,10 +27,12 @@ type RacingLike = Partial<Pick<Settings["racing"], "enablePerDistanceStrategy" |
 
 /** The armed debug test's readable name plus the search id of its row, used to deep-link and highlight it from the hero's Test chip. */
 export interface ActiveDebugTest {
-    /** Readable name derived from the setting key (e.g. "Rainbow Detection"). */
+    /** Readable name derived from the setting key (e.g. "Rainbow Detection Test"). */
     name: string
     /** Search id of the test's row for a deep-link highlight, or null if the key is not in `DEBUG_TESTS`. */
     searchId: string | null
+    /** Whether it is a Dailies test, which only runs in the Dailies run mode. Every other test only runs in Career. */
+    dailies: boolean
 }
 
 /** Enabled skill plans plus the skill-point threshold, ready for the hero's Plans row. */
@@ -50,20 +52,24 @@ export interface ActiveSkillPlans {
 export function findActiveDebugTest(debug: DebugLike): ActiveDebugTest | null {
     const activeKey = Object.keys(debug).find((key) => /^debugMode_start.+Test$/.test(key) && debug[key] === true)
     if (!activeKey) return null
-    return { name: prettifyDebugTestKey(activeKey), searchId: DEBUG_TESTS.find((test) => test.key === activeKey)?.searchId ?? null }
+    const test = DEBUG_TESTS.find((t) => t.key === activeKey)
+    return { name: prettifyDebugTestKey(activeKey), searchId: test?.searchId ?? null, dailies: test?.runMode === "dailies" }
 }
 
 /**
- * Turn a debug-test setting key into a readable name: strip the `debugMode_start` prefix and `Test` suffix, then split camelCase.
+ * Turn a debug-test setting key into its full readable name: strip the `debugMode_start` prefix, then split camelCase.
  * @param key The debug-test setting key (e.g. "debugMode_startRainbowDetectionTest").
- * @returns The readable name (e.g. "Rainbow Detection").
+ * @returns The readable name (e.g. "Rainbow Detection Test").
  */
 function prettifyDebugTestKey(key: string): string {
-    return key
-        .replace(/^debugMode_start/, "")
-        .replace(/Test$/, "")
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .trim()
+    return (
+        key
+            .replace(/^debugMode_start/, "")
+            .replace(/([a-z])([A-Z])/g, "$1 $2")
+            // Split an acronym from the word after it, so "OCRTest" reads "OCR Test".
+            .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+            .trim()
+    )
 }
 
 /**
