@@ -23,6 +23,7 @@ A comprehensive guide to the inner workings of the app. This document explains w
 - [15. Ask the Docs Chatbot](#15-ask-the-docs-chatbot)
 - [16. Decision Tracer](#16-decision-tracer)
 - [17. Remote Log Viewer & Run Analytics](#17-remote-log-viewer--run-analytics)
+- [18. Dailies Run](#18-dailies-run)
 
 ---
 
@@ -1747,3 +1748,26 @@ The dashboard groups roughly twenty charts into four areas:
 | **Per-year & cadence** | Action mix by year, overall action distribution, mood distribution, energy & mood over time |
 
 Every chart has an info button explaining what it shows and a button to export its data as CSV. On a restart the dashboard resumes a matching saved run (same scenario and trainee, same-or-later turn) and keeps the elapsed-runtime timer running rather than starting over.
+
+---
+
+## 18. Dailies Run
+
+A Dailies run clears the game's daily chores instead of playing a career. Flip the `Career | Dailies` switch on the Home card to `Dailies`, then tap
+`Dailies`. Your scenario choice is kept for when you switch back. The run does these parts in order, each one starting from the Home screen, then stops:
+
+| Part | What it does |
+| --- | --- |
+| Team Trials | Races the weakest of the three opponents until RP runs out. Turns Quick Mode on and skips each race. |
+| Daily Races | Spends every Daily Race ticket on Moonlight Sho or Jupiter Cup at the hardest difficulty, using Multi-Race. Skipped, along with the Legend Race, when the Daily Program card already says "Done for today!". |
+| Legend Race | Spends the daily Legend Race ticket on your chosen legend. If that legend is maxed, it races the first legend that can still unlock a star. |
+| Club | Collects an expired item request, asks for your chosen shoes or Winner's Sash, and donates to everyone else's requests. |
+| Missions | Collects finished mission rewards. |
+| Presents | Collects everything in the Presents box. |
+
+Each part can be turned off on the `Dailies Settings` page, which also holds the race, legend and item choices and the two Pleasing Parfait switches.
+
+The run never spends anything: it declines the Daily Sale, restoring RP, and buying Daily Race tickets. Runners are picked by sorting Runner Selection by
+Rating, highest first. If one part gets stuck, the bot logs it, goes back Home, and carries on with the next part. The run-end card lists every part as done,
+skipped (with the reason, such as "no RP"), or failed. Pausing mid-part restarts that part from Home when you resume, and each part checks its own tickets
+or RP first, so nothing runs twice.
