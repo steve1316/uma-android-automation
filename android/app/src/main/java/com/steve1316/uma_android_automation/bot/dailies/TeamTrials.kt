@@ -81,7 +81,14 @@ class TeamTrials(private val game: Game, private val flags: DailiesFlags, overri
         if (!ButtonTeamTrials.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Team Trials button not found")
         game.wait(2.0)
         game.waitForLoading()
-        game.waitForAny(ButtonTeamRace, timeoutSec = 15.0) ?: throw DailyStepFailed("Team Trials screen did not appear")
+        val (screen, next) = game.waitForAny(ButtonTeamRace, ButtonNext, timeoutSec = 15.0) ?: throw DailyStepFailed("Team Trials screen did not appear")
+        // Once a week, entering Team Trials first shows the Class Retention rewards, which close with Next.
+        if (screen == ButtonNext) {
+            MessageLog.i(TAG, "[DAILIES] Closing the weekly Class Retention rewards.")
+            game.tap(next.x, next.y)
+            game.wait(1.0)
+            game.waitForAny(ButtonTeamRace, timeoutSec = 15.0) ?: throw DailyStepFailed("Team Trials screen did not appear after the Class Retention rewards")
+        }
         if (!ButtonTeamRace.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Team Race button not found")
         game.wait(1.0)
         game.waitForLoading()
