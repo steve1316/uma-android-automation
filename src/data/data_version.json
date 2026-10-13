@@ -1,11 +1,11 @@
 {
-    "version": "2026-10-07T18:42:42Z",
-    "label": "Zenno Rob Roy 2026-10-07",
+    "version": "2026-10-13T19:07:01Z",
+    "label": "2026-10-13",
     "minAppVersion": "5.8.8",
     "files": {
         "characters.json": "de337cd4fc0de7ec97119e367b9cffee",
         "supports.json": "5bc8bfb980cf74f85d4dd5a9fe9ce32f",
-        "skills.json": "496518c99be4e0003333f96ad24c907a",
+        "skills.json": "84360cf657f1c207d16018e0fbf5292e",
         "epithets.json": "9ddca28f3c77d16c37832f6eb1cfa5b5",
         "characterPresets.json": "751900ee7bbf8a92cd32c132b1f47f6b",
         "character_objectives.json": "5c7a2d8628af04b76eb63158cd087985"
