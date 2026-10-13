@@ -65,6 +65,20 @@ describe("parseLogs", () => {
         expect(days[0].year).toBe("Junior")
     })
 
+    it("explains that a Dailies run log has no career days", () => {
+        const content = [
+            "🗓️ Run Mode: Dailies",
+            withTimestamp(0, 0, 1, 0, "[INFO] [DAILIES] Starting Team Trials."),
+            withTimestamp(0, 2, 30, 0, "[INFO] [DAILIES] Team Trials done: 4 races"),
+            withTimestamp(0, 2, 31, 0, "[ERROR] [DAILIES] Club failed: Club button did not appear"),
+            withTimestamp(0, 3, 0, 0, "[INFO] [DAILIES] Summary: 4 done, 1 skipped, 1 failed"),
+        ].join("\n")
+        const result = parseLogs([file("dailies.txt", content)])
+
+        expect(result.errors).toEqual([{ fileName: "dailies.txt", message: "dailies.txt is a Dailies run, which has no career days to show." }])
+        expect(dayRecords(result)).toHaveLength(0)
+    })
+
     it("parses multiple sequential days", () => {
         const content = [dateLine(1, "Junior Year Early Jan"), dateLine(2, "Junior Year Late Jan"), dateLine(3, "Junior Year Early Feb")].join("\n")
 

@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.steve1316.automation_library.utils.BotHold
@@ -89,6 +90,25 @@ import java.util.concurrent.TimeUnit
 
 /** Stop reason when the bot cannot find a known career screen while recovering after a pause. */
 private const val STUCK_AFTER_RESUME_REASON = "Could not find a known career screen after resume"
+
+/** Every career debug test's setting key, across Campaign and the scenarios, so a Dailies run can tell when one is armed for the wrong run mode. */
+val CAREER_DEBUG_TEST_KEYS: Set<String> =
+    setOf(
+        "debugMode_startTemplateMatchingTest",
+        "debugMode_startSingleTrainingOCRTest",
+        "debugMode_startComprehensiveTrainingOCRTest",
+        "debugMode_startRaceListDetectionTest",
+        "debugMode_startMainScreenUpdateTest",
+        "debugMode_startScrollBarDetectionTest",
+        "debugMode_startUmamusumeDetailsReadTest",
+        "debugMode_startSkillListBuyTest",
+        "debugMode_startRainbowDetectionTest",
+        "debugMode_startSpiritGaugeDetectionTest",
+        "debugMode_startTrackblazerRaceSelectionTest",
+        "debugMode_startTrackblazerInventorySyncTest",
+        "debugMode_startTrackblazerBuyItemsTest",
+        "debugMode_startGrandLiveTokenGainTest",
+    )
 
 /** Defines an exception for breaking from the main loop when conditions are met.
  *
@@ -377,6 +397,17 @@ abstract class Campaign(game: Game) : Task(game) {
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Debug Tests
+
+    // Begin (or resume) analytics after startup logging so its resume/persistence messages print after the bot version.
+    override fun onRunStart(startTimeMs: Long, context: Context) {
+        RunAnalytics.onRunStart(game.scenario, startTimeMs, context)
+    }
+
+    override fun completeReason(result: TaskResult): String = CAREER_COMPLETE_REASON
+
+    override fun onRunEnd() {
+        RunAnalytics.onRunEnd()
+    }
 
     /**
      * Starts the automated tests for the campaign.

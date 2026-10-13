@@ -4,9 +4,10 @@ import { useTheme } from "../../context/ThemeContext"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
 import CustomButton from "../CustomButton"
-import { formatRuntime, LiveRun, RunReport, RunStats, RunSummary, statFill } from "../../lib/runReport"
+import { DailiesPartResult, formatRuntime, LiveRun, RunReport, RunStats, RunSummary, statFill } from "../../lib/runReport"
 import { HeroView } from "./heroView"
 import type { ThemeColors } from "../../lib/theme"
+import { GlanceRow } from "./HeroGlance"
 
 /** How long the Copy error button says "Copied". */
 const COPIED_MS = 2000
@@ -25,6 +26,9 @@ const STAT_TILES: { key: keyof RunStats; label: string }[] = [
     { key: "guts", label: "Gut" },
     { key: "wit", label: "Wit" },
 ]
+
+/** Glyph shown before each Dailies part by how it ended. */
+const PART_GLYPH: Record<DailiesPartResult["status"], string> = { done: "✓", skipped: "–", failed: "!" }
 
 /**
  * Builds the drawer styles.
@@ -48,6 +52,13 @@ const createStyles = (colors: ThemeColors) =>
         reason: { ...TYPE.caption, color: colors.text },
         liveHead: { ...TYPE.monoLabel, color: colors.textMuted, marginBottom: 6 },
         actions: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: SPACING.sm },
+        profileName: { ...TYPE.body, color: colors.text, flex: 1 },
+        part: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 3 },
+        partGlyph: { ...TYPE.monoValue, width: 14, color: colors.textMuted },
+        partGlyphDone: { color: colors.success },
+        partGlyphFailed: { color: colors.warning },
+        partText: { ...TYPE.caption, color: colors.text, flex: 1 },
+        partDetail: { color: colors.textMuted },
     })
 
 /** Props for `HeroDrawer`. */
@@ -62,6 +73,8 @@ interface HeroDrawerProps {
     canViewLog: boolean
     /** Plans and priority chips, or null when there are none. */
     glance: React.ReactNode | null
+    /** Active profile name, shown first in the drawer. */
+    profile: string
     /** Scrolls the Home log to the error or the end. */
     onViewLog: () => void
     /** Copies the error block to the clipboard. */
@@ -69,17 +82,19 @@ interface HeroDrawerProps {
 }
 
 /**
- * The hero drawer: the last run's details (the error, the final stats, or the stop reason), or the current run's stats, above the plans and priority chips.
+ * The hero drawer: the active profile, then the last run's details (the error, the final stats, the Dailies parts, or the stop reason) or the current
+ * run's stats, above the plans and priority chips.
  * @param view What the hero shows for the current state.
  * @param report The last run's report, or null.
  * @param live The current run's stats so far, or null.
  * @param canViewLog Whether View log is offered.
  * @param glance Plans and priority chips, or null.
+ * @param profile Active profile name.
  * @param onViewLog Scrolls the Home log.
  * @param onCopyError Copies the error text.
  * @returns The drawer content.
  */
-const HeroDrawer = ({ view, report, live, canViewLog, glance, onViewLog, onCopyError }: HeroDrawerProps) => {
+const HeroDrawer = ({ view, report, live, canViewLog, glance, profile, onViewLog, onCopyError }: HeroDrawerProps) => {
     const { colors } = useTheme()
     const styles = useMemo(() => createStyles(colors), [colors])
     const [copied, setCopied] = useState(false)
@@ -171,6 +186,21 @@ const HeroDrawer = ({ view, report, live, canViewLog, glance, onViewLog, onCopyE
                 {renderStats(live.summary)}
             </>
         )
+    } else if (view.details === "dailies" && report?.dailies) {
+        details = (
+            <>
+                {report.dailies.parts.map((part) => (
+                    <View key={part.name} style={styles.part}>
+                        <Text style={[styles.partGlyph, part.status === "done" && styles.partGlyphDone, part.status === "failed" && styles.partGlyphFailed]}>{PART_GLYPH[part.status]}</Text>
+                        <Text style={styles.partText}>
+                            {part.name}
+                            <Text style={styles.partDetail}>{` · ${part.detail}`}</Text>
+                        </Text>
+                    </View>
+                ))}
+                {viewLog ? <View style={styles.actions}>{viewLog}</View> : null}
+            </>
+        )
     } else if (view.details === "reason" && report) {
         details = (
             <>
@@ -183,6 +213,10 @@ const HeroDrawer = ({ view, report, live, canViewLog, glance, onViewLog, onCopyE
     return (
         <View>
             <View style={styles.hair} />
+            <GlanceRow label="Profile">
+                <Text style={styles.profileName}>{profile}</Text>
+            </GlanceRow>
+            {details || glance ? <View style={styles.hair} /> : null}
             {details}
             {details && glance ? <View style={styles.hair} /> : null}
             {glance}

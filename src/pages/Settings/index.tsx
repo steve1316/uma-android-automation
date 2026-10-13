@@ -136,6 +136,12 @@ const Settings = () => {
                     <Row title="Racing" description="Racing behavior, retries, and mandatory race handling." right={chevron} onPress={() => navigation.navigate("RacingSettings" as never)} />
                     <Row title="Schedule" description="Race solver, recreation, and the unified career calendar." right={chevron} onPress={() => navigation.navigate("ScheduleScreen" as never)} />
                     <Row title="Skills" description="Skill purchasing behavior." right={chevron} onPress={() => navigation.navigate("Skills" as never)} />
+                    <Row
+                        title="Dailies"
+                        description="Team Trials, Daily Races, Legend Race, Club, and rewards for the Dailies run."
+                        right={chevron}
+                        onPress={() => navigation.navigate("DailiesSettings" as never)}
+                    />
                 </Section>
 
                 <Section label="SCENARIO">

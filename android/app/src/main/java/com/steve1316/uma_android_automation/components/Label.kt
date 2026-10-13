@@ -72,3 +72,55 @@ val LabelGrandLiveLearnable = label("grandlive_learnable", Region.rightHalf)
 val LabelGrandLiveMaxHype = label("grandlive_max_hype")
 val LabelGrandLivePerformancePoints = label("grandlive_performance_points", Region.leftHalf)
 val LabelGrandLiveLessonCost = label("grandlive_performance_point_cost", Region.leftHalf)
+
+// Dailies
+val LabelClubMenu = label("club_menu", Region.topQuarter)
+
+/** Name logos on the Daily Legend Races cards, keyed by the legend's name as stored in settings. Pass the grid's region when finding one. */
+val LabelDailyLegendLogos: Map<String, ComponentInterface> =
+    mapOf(
+        "Agnes Digital" to label("daily_legend_agnes_digital", confidence = 0.8),
+        "Air Groove" to label("daily_legend_air_groove", confidence = 0.8),
+        "Biwa Hayahide" to label("daily_legend_biwa_hayahide", confidence = 0.8),
+        "Curren Chan" to label("daily_legend_curren_chan", confidence = 0.8),
+        "Eishin Flash" to label("daily_legend_eishin_flash", confidence = 0.8),
+        "El Condor Pasa" to label("daily_legend_el_condor_pasa", confidence = 0.8),
+        "Fuji Kiseki" to label("daily_legend_fuji_kiseki", confidence = 0.8),
+        "Gold Ship" to label("daily_legend_gold_ship", confidence = 0.8),
+        "Grass Wonder" to label("daily_legend_grass_wonder", confidence = 0.8),
+        "King Halo" to label("daily_legend_king_halo", confidence = 0.8),
+        "Maruzensky" to label("daily_legend_maruzensky", confidence = 0.8),
+        "Matikanefukukitaru" to label("daily_legend_matikanefukukitaru", confidence = 0.8),
+        "Mayano Top Gun" to label("daily_legend_mayano_top_gun", confidence = 0.8),
+        "Mejiro McQueen" to label("daily_legend_mejiro_mcqueen", confidence = 0.8),
+        "Mejiro Ryan" to label("daily_legend_mejiro_ryan", confidence = 0.8),
+        "Mihono Bourbon" to label("daily_legend_mihono_bourbon", confidence = 0.8),
+        "Nice Nature" to label("daily_legend_nice_nature", confidence = 0.8),
+        "Oguri Cap" to label("daily_legend_oguri_cap", confidence = 0.8),
+        "Sakura Bakushin O" to label("daily_legend_sakura_bakushin_o", confidence = 0.8),
+        "Seiun Sky" to label("daily_legend_seiun_sky", confidence = 0.8),
+        "Silence Suzuka" to label("daily_legend_silence_suzuka", confidence = 0.8),
+        "Special Week" to label("daily_legend_special_week", confidence = 0.8),
+        "Super Creek" to label("daily_legend_super_creek", confidence = 0.8),
+        "Symboli Rudolf" to label("daily_legend_symboli_rudolf", confidence = 0.8),
+        "T.M. Opera O" to label("daily_legend_t_m_opera_o", confidence = 0.8),
+        "Taiki Shuttle" to label("daily_legend_taiki_shuttle", confidence = 0.8),
+        "Tokai Teio" to label("daily_legend_tokai_teio", confidence = 0.8),
+        "Vodka" to label("daily_legend_vodka", confidence = 0.8),
+        "Winning Ticket" to label("daily_legend_winning_ticket", confidence = 0.8),
+    )
+val LabelDailyLegendRacesHeader = label("daily_legend_races_header", Region.topQuarter, confidence = 0.9)
+val LabelDailyPrograms = label("daily_programs", Region.middle)
+val LabelDailyRacesHeader = label("daily_races_header", Region.topQuarter, confidence = 0.9)
+val LabelDoneForToday = label("done_for_today", Region.bottomHalf)
+val LabelItemRequestExpired = label("item_request_expired", Region.bottomHalf)
+val LabelItemRequestHeld = label("item_request_held")
+val LabelItemRequestSelectPrompt = label("item_request_select_prompt", Region.bottomHalf)
+val LabelMainRewards = label("main_rewards", Region.middle)
+val LabelMissionsHeader = label("missions_header", Region.topQuarter)
+val LabelRunnerSelection = label("runner_selection", Region.topQuarter)
+val LabelRunnerSpeedHeader = label("runner_speed_header", Region.middle)
+val LabelSelectOpponent = label("select_opponent", Region.topQuarter)
+val LabelStarUnlockText = label("star_unlock_text", confidence = 0.85)
+val LabelTeamRankBadge = label("team_rank_badge", Region.leftHalf)
+val LabelTopBarRp = label("top_bar_rp", Region.topQuarter)

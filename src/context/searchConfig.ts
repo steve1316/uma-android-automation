@@ -1110,6 +1110,87 @@ const searchConfig: SearchOption[] = [
     },
 
     // ============================================================
+    // Dailies Settings (DailiesSettings)
+    // ============================================================
+    {
+        id: "dailies-team-trials",
+        title: "Team Trials",
+        description: "Spends all RP racing the weakest of the three opponents.",
+        page: "DailiesSettings",
+    },
+    {
+        id: "dailies-team-trials-parfait",
+        title: "Use Pleasing Parfait in Team Trials",
+        description: "Raises your team's mood to Great before each Team Trials race. Uses one Parfait per race.",
+        page: "DailiesSettings",
+        parentId: "dailies-team-trials",
+    },
+    {
+        id: "dailies-daily-races",
+        title: "Daily Races",
+        description: "Spends every Daily Race ticket at the hardest difficulty, using Multi-Race.",
+        page: "DailiesSettings",
+    },
+    {
+        id: "dailies-daily-race-type",
+        title: "Daily Race",
+        description: "Moonlight Sho earns Monies. Jupiter Cup earns Support Points.",
+        page: "DailiesSettings",
+        parentId: "dailies-daily-races",
+    },
+    {
+        id: "dailies-legend-race",
+        title: "Daily Legend Race",
+        description: "Spends the daily Legend Race ticket.",
+        page: "DailiesSettings",
+    },
+    {
+        id: "dailies-legend-character",
+        title: "Legend to Race",
+        description: "If this legend is already maxed, the bot races the first legend that can still unlock a star.",
+        page: "DailiesSettings",
+        parentId: "dailies-legend-race",
+    },
+    {
+        id: "dailies-legend-parfait",
+        title: "Use Pleasing Parfait in Legend Race",
+        description: "Raises your runner's mood to Great before the Legend Race.",
+        page: "DailiesSettings",
+        parentId: "dailies-legend-race",
+    },
+    {
+        id: "dailies-club-request",
+        title: "Request an Item",
+        description: "Collects an expired item request, then asks the Club for a new one. Skipped while a request is still running.",
+        page: "DailiesSettings",
+    },
+    {
+        id: "dailies-club-item",
+        title: "Item to Request",
+        description: "The shoes or Winner's Sash to ask the Club for.",
+        page: "DailiesSettings",
+        parentId: "dailies-club-request",
+    },
+    {
+        id: "dailies-club-donate",
+        title: "Donate to All",
+        description: "Donates to every Club member's item request the game allows today.",
+        page: "DailiesSettings",
+    },
+    {
+        id: "dailies-missions",
+        title: "Mission Rewards",
+        description: "Collects finished mission rewards from the Missions screen.",
+        page: "DailiesSettings",
+    },
+    {
+        id: "dailies-presents",
+        title: "Presents",
+        description: "Collects everything in the Presents box.",
+        page: "DailiesSettings",
+    },
+
+    // ============================================================
     // Discord Settings
     // ============================================================
     {
@@ -1268,6 +1349,42 @@ const searchConfig: SearchOption[] = [
         title: "Start Rainbow Detection Test",
         description:
             "Disables normal bot operations and starts the Rainbow detection test. Run this on the Training screen: it detects the rainbow glow ring on each support face circle for a few seconds, logs the per-support metrics and the derived rainbow count, and saves an annotated crop to help calibrate the detector.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-dailies-team-trials-test",
+        title: "Start Dailies Team Trials Test",
+        description: "Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Team Trials part: spends RP on the weakest opponent and logs each step.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-dailies-daily-races-test",
+        title: "Start Dailies Daily Races Test",
+        description: "Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Daily Races part with the race type from Dailies Settings.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-dailies-legend-race-test",
+        title: "Start Dailies Legend Race Test",
+        description: "Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Legend Race part with the legend from Dailies Settings.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-dailies-club-test",
+        title: "Start Dailies Club Test",
+        description: "Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Club part: the item request and Donate to All.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-dailies-missions-test",
+        title: "Start Dailies Missions Test",
+        description: "Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Missions part: Collect All on the Missions screen.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-dailies-presents-test",
+        title: "Start Dailies Presents Test",
+        description: "Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Presents part: Collect All in the Presents box.",
         page: "DebugSettings",
     },
     {

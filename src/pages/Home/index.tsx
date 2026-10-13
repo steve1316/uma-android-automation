@@ -3,7 +3,7 @@ import MessageLog from "../../components/MessageLog"
 import { parseRunReport, parseLiveRun, runCopyText, LiveRun, RunReport } from "../../lib/runReport"
 import { copyToClipboard } from "../../lib/utils"
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { BotMetaContext, GeneralMiscContext, DebugContext, RacingContext, SkillsContext, TrainingContext } from "../../context/BotStateContext"
+import { BotMetaContext, GeneralMiscContext, DebugContext, RacingContext, SkillsContext, TrainingContext, type RunMode } from "../../context/BotStateContext"
 import { useNavigation, CommonActions } from "@react-navigation/native"
 import { useSettings } from "../../context/SettingsContext"
 import { logWithTimestamp, logErrorWithTimestamp } from "../../lib/logger"
@@ -23,7 +23,9 @@ import { loadDeviceCapabilities, shouldSuggestX8664Variant } from "../../lib/cha
 import HomeHero from "../../components/HomeHero"
 import { heroView, HeroHealth } from "../../components/HomeHero/heroView"
 import HeroGlance, { HeroGlanceTarget } from "../../components/HomeHero/HeroGlance"
-import HeroChips from "../../components/HomeHero/HeroChips"
+import HeroChips, { HeroDailiesChips, HeroDailiesGlance, HeroDebugChips } from "../../components/HomeHero/HeroChips"
+import { dailiesChips } from "../../components/HomeHero/heroDailiesData"
+import CustomButton from "../../components/CustomButton"
 import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, raceStrategyLabel, raceStrategyTargetId } from "../../components/HomeHero/heroGlanceData"
 import { useProfileContext, DEFAULT_PROFILE_NAME } from "../../context/ProfileContext"
 import { SPACING } from "../../lib/spacing"
@@ -104,6 +106,8 @@ const Home = () => {
     const [logJump, setLogJump] = useState<{ term: string; nonce: number } | null>(null)
     // The current run's stats so far, read when the app comes back to the front or the drawer opens.
     const [liveRun, setLiveRun] = useState<LiveRun | null>(null)
+    // Whether a run is in progress, from the bot's start until its run-end report. The overlay alone does not count, so the run mode can change between runs.
+    const [runActive, setRunActive] = useState<boolean>(false)
     // Set when Start is pressed, so the game opens once the overlay reports it is running.
     const openGameOnStart = useRef(false)
     const [showNotReadyDialog, setShowNotReadyDialog] = useState<boolean>(false)
@@ -115,7 +119,10 @@ const Home = () => {
     const [abiMismatch, setAbiMismatch] = useState<boolean>(false)
 
     const { readyStatus, setReadyStatus, setAppName, setAppVersion } = useContext(BotMetaContext)
-    const { general, updateGeneral } = useContext(GeneralMiscContext)
+    const { general, dailies, updateGeneral } = useContext(GeneralMiscContext)
+    const isDailies = general.runMode === "dailies"
+    // A Dailies run needs no scenario, so it is ready as soon as the device is.
+    const canStart = isDailies || readyStatus
     const { debug } = useContext(DebugContext)
     const { racing } = useContext(RacingContext)
     const { skills } = useContext(SkillsContext)
@@ -178,6 +185,9 @@ const Home = () => {
         StartModule.isOverlayOn()
             .then((on: boolean) => setIsRunning(on))
             .catch((error: unknown) => logErrorWithTimestamp("[Home] Failed to read the overlay state:", error))
+        StartModule.isRunActive()
+            .then((active: boolean) => setRunActive(active))
+            .catch((error: unknown) => logErrorWithTimestamp("[Home] Failed to read whether a run is in progress:", error))
         StartModule.getLastRun()
             .then((json: string | null) => {
                 const report = parseRunReport(json)
@@ -201,6 +211,7 @@ const Home = () => {
             if (data["message"] === "Running") {
                 mlc.setMessageLog([])
                 setLastRun(null)
+                setRunActive(true)
             }
         })
 
@@ -208,6 +219,7 @@ const Home = () => {
             const report = parseRunReport(data["message"])
             if (report) setLastRun({ report, logInMemory: true })
             setLiveRun(null)
+            setRunActive(false)
         })
 
         // Catch up with the service on open and whenever the app comes back to the front, since events sent while Home's screen was being recreated are lost.
@@ -301,7 +313,7 @@ const Home = () => {
      * Handles the button press for starting the bot.
      */
     const handleButtonPress = async () => {
-        if (!readyStatus) {
+        if (!canStart) {
             setShowNotReadyDialog(true)
             return
         }
@@ -409,7 +421,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
             )
         }
 
-        if (!readyStatus && !isRunning) {
+        if (!canStart && !isRunning) {
             return (
                 <Tooltip delayDuration={150}>
                     <TooltipTrigger>
@@ -440,12 +452,14 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
 
     // Map the existing bot state to the hero card's status pill. Running takes priority. Warnings (unsupported display
     // or ABI mismatch) surface as "error". An unselected scenario lands on "stopped". Otherwise the bot is "ready".
-    const heroHealth: HeroHealth = unsupportedReason !== null || abiMismatch ? "error" : readyStatus && deviceMetrics !== null ? "ready" : "notReady"
-    const hero = useMemo(() => heroView({ overlayOn: isRunning, health: heroHealth, report: lastRun?.report ?? null, live: liveRun }), [isRunning, heroHealth, lastRun, liveRun])
+    const heroHealth: HeroHealth = unsupportedReason !== null || abiMismatch ? "error" : canStart && deviceMetrics !== null ? "ready" : "notReady"
+    const hero = useMemo(() => heroView({ overlayOn: isRunning, health: heroHealth, report: lastRun?.report ?? null, live: liveRun, runActive }), [isRunning, heroHealth, lastRun, liveRun, runActive])
     const heroProfile = currentProfileName ?? DEFAULT_PROFILE_NAME
 
     // Derive the hero data from the settings slices. The SRS/Debug/Test chips and the Plans/Priority rows render only when active; the Style chip is always shown on the status line.
     const activeTest = useMemo(() => findActiveDebugTest(debug), [debug])
+    // A test armed for the other run mode is not run. The bot stops instead, so the Test chip names the mode it needs.
+    const testNeedsMode = activeTest && activeTest.dailies !== isDailies ? (activeTest.dailies ? "Dailies" : "Career") : null
     const { names: planNames, spThreshold } = useMemo(() => activeSkillPlans(skills), [skills])
     const statPriority = useMemo(() => abbreviateStatPriority(training.statPrioritization ?? []), [training.statPrioritization])
     const raceStyle = raceStrategyLabel(racing)
@@ -463,14 +477,38 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
         },
         [navigation, activeTest, raceStyleTargetId]
     )
+    /** Opens Dailies Settings at the given row. */
+    const handleDailiesNavigate = useCallback(
+        (targetId: string) => navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen: "DailiesSettings", params: { targetId }, initial: false } })),
+        [navigation]
+    )
+    const enabledDailies = useMemo(() => dailiesChips(dailies), [dailies])
+    /** Saves the run mode picked on the hero switch. */
+    const handleRunModeChange = useCallback((mode: RunMode) => updateGeneral({ runMode: mode }), [updateGeneral])
     const heroChips = useMemo(
-        () => <HeroChips debugMode={debug.enableDebugMode} activeTest={activeTest?.name ?? null} srs={racing.enableSmartRaceSolver} raceStyle={raceStyle} onNavigate={handleHeroNavigate} />,
-        [debug.enableDebugMode, activeTest, racing.enableSmartRaceSolver, raceStyle, handleHeroNavigate]
+        () =>
+            isDailies ? (
+                <>
+                    <HeroDebugChips debugMode={debug.enableDebugMode} activeTest={activeTest?.name ?? null} testNeedsMode={testNeedsMode} onNavigate={handleHeroNavigate} />
+                    <HeroDailiesChips chips={enabledDailies} onNavigate={handleDailiesNavigate} />
+                </>
+            ) : (
+                <HeroChips
+                    debugMode={debug.enableDebugMode}
+                    activeTest={activeTest?.name ?? null}
+                    testNeedsMode={testNeedsMode}
+                    srs={racing.enableSmartRaceSolver}
+                    raceStyle={raceStyle}
+                    planNames={planNames}
+                    onNavigate={handleHeroNavigate}
+                />
+            ),
+        [isDailies, enabledDailies, handleDailiesNavigate, debug.enableDebugMode, activeTest, testNeedsMode, racing.enableSmartRaceSolver, raceStyle, planNames, handleHeroNavigate]
     )
-    const heroGlance = useMemo(
-        () => (showGlance ? <HeroGlance planNames={planNames} spThreshold={spThreshold} priority={statPriority} onNavigate={handleHeroNavigate} /> : null),
-        [showGlance, planNames, spThreshold, statPriority, handleHeroNavigate]
-    )
+    const heroGlance = useMemo(() => {
+        if (isDailies) return <HeroDailiesGlance chips={enabledDailies} onNavigate={handleDailiesNavigate} />
+        return showGlance ? <HeroGlance planNames={planNames} spThreshold={spThreshold} priority={statPriority} onNavigate={handleHeroNavigate} /> : null
+    }, [isDailies, enabledDailies, handleDailiesNavigate, showGlance, planNames, spThreshold, statPriority, handleHeroNavigate])
 
     return (
         <View style={styles.root}>
@@ -481,26 +519,39 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                 <HomeHero
                     view={hero}
                     profile={heroProfile}
+                    runMode={general.runMode}
+                    onRunModeChange={handleRunModeChange}
                     report={lastRun?.report ?? null}
                     live={liveRun}
                     arrivedLive={lastRun?.logInMemory ?? false}
                     chips={heroChips}
                     glance={heroGlance}
                     startButton={
-                        <SelectButton
-                            size="sm"
-                            variant={getSelectButtonVariant()}
-                            iconName={getSelectButtonIconName()}
-                            options={scenarios}
-                            placeholder={deviceMetrics ? "Select a Scenario" : "Not Ready"}
-                            value={general.scenario}
-                            onValueChange={(value) => {
-                                const newScenario = value || ""
-                                updateGeneral({ scenario: newScenario })
-                                setReadyStatus(newScenario !== "")
-                            }}
-                            onPress={handleButtonPress}
-                        />
+                        isDailies ? (
+                            <CustomButton
+                                size="sm"
+                                variant={heroHealth === "ready" ? "success" : "warning"}
+                                icon={<Ionicons name="play-outline" size={20} color={colors.successContent} />}
+                                onPress={handleButtonPress}
+                            >
+                                Dailies
+                            </CustomButton>
+                        ) : (
+                            <SelectButton
+                                size="sm"
+                                variant={getSelectButtonVariant()}
+                                iconName={getSelectButtonIconName()}
+                                options={scenarios}
+                                placeholder={deviceMetrics ? "Select a Scenario" : "Not Ready"}
+                                value={general.scenario}
+                                onValueChange={(value) => {
+                                    const newScenario = value || ""
+                                    updateGeneral({ scenario: newScenario })
+                                    setReadyStatus(newScenario !== "")
+                                }}
+                                onPress={handleButtonPress}
+                            />
+                        )
                     }
                     onOpenGame={handleOpenGame}
                     onStopOverlay={handleStopOverlay}

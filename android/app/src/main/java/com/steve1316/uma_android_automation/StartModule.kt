@@ -459,7 +459,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
             // Reset the log stream mute to ensure logs for the new run are broadcasted.
             LogStreamServer.resetMute()
 
-            // Drop the previous run's stats now, so a stop or crash before this run's first turn does not report them.
+            // Drop the previous run's stats and summary hook now, so a stop or crash before this run's first turn does not report them.
+            RunReport.setSummaryProvider(null)
             RunAnalytics.reset()
 
             val botThread =
@@ -652,6 +653,16 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         } catch (e: Exception) {
             promise.reject("LAST_RUN_ERROR", e.message ?: e.javaClass.simpleName)
         }
+    }
+
+    /**
+     * Reports whether a run is in progress, so Home can lock the run mode switch again after its screen is recreated mid-run.
+     *
+     * @param promise Resolves true while the bot is running a task.
+     */
+    @ReactMethod
+    fun isRunActive(promise: Promise) {
+        promise.resolve(BotService.isRunning)
     }
 
     /**

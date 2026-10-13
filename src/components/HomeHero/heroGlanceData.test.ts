@@ -6,10 +6,15 @@ describe("findActiveDebugTest", () => {
     })
 
     it("returns the readable name and search id of the armed test", () => {
-        expect(findActiveDebugTest({ debugMode_startRainbowDetectionTest: true })).toEqual({ name: "Rainbow Detection", searchId: "debug-rainbow-detection-test" })
-        expect(findActiveDebugTest({ debugMode_startTrackblazerRaceSelectionTest: true })).toEqual({ name: "Trackblazer Race Selection", searchId: "debug-trackblazer-race-selection-test" })
-        expect(findActiveDebugTest({ debugMode_startSingleTrainingOCRTest: true })).toEqual({ name: "Single Training OCR", searchId: "debug-single-training-ocr-test" })
-        expect(findActiveDebugTest({ debugMode_startScrollBarDetectionTest: true })).toEqual({ name: "Scroll Bar Detection", searchId: "debug-scrollbar-detection-test" })
+        expect(findActiveDebugTest({ debugMode_startRainbowDetectionTest: true })).toEqual({ name: "Rainbow Detection Test", searchId: "debug-rainbow-detection-test", dailies: false })
+        expect(findActiveDebugTest({ debugMode_startTrackblazerRaceSelectionTest: true })).toEqual({
+            name: "Trackblazer Race Selection Test",
+            searchId: "debug-trackblazer-race-selection-test",
+            dailies: false,
+        })
+        expect(findActiveDebugTest({ debugMode_startSingleTrainingOCRTest: true })).toEqual({ name: "Single Training OCR Test", searchId: "debug-single-training-ocr-test", dailies: false })
+        expect(findActiveDebugTest({ debugMode_startScrollBarDetectionTest: true })).toEqual({ name: "Scroll Bar Detection Test", searchId: "debug-scrollbar-detection-test", dailies: false })
+        expect(findActiveDebugTest({ debugMode_startDailiesTeamTrialsTest: true })).toEqual({ name: "Dailies Team Trials Test", searchId: "debug-dailies-team-trials-test", dailies: true })
     })
 
     it("ignores non-test keys and non-true values", () => {

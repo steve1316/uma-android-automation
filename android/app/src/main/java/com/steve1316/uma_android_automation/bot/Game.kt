@@ -6,6 +6,7 @@ import android.util.Log
 import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
+import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
@@ -18,6 +19,9 @@ import com.steve1316.uma_android_automation.bot.campaigns.GrandLive
 import com.steve1316.uma_android_automation.bot.campaigns.Trackblazer
 import com.steve1316.uma_android_automation.bot.campaigns.UnityCup
 import com.steve1316.uma_android_automation.bot.campaigns.UraFinale
+import com.steve1316.uma_android_automation.bot.dailies.DAILIES_DEBUG_TEST_KEYS
+import com.steve1316.uma_android_automation.bot.dailies.Dailies
+import com.steve1316.uma_android_automation.components.BaseComponentInterface
 import com.steve1316.uma_android_automation.components.LabelConnecting
 import com.steve1316.uma_android_automation.components.LabelNowLoading
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
@@ -51,6 +55,9 @@ class Game(val myContext: Context) {
     /** The current campaign scenario (e.g., "URA Finale", "Unity Cup", "Trackblazer"). */
     val scenario: String = SettingsHelper.getStringSetting("general", "scenario")
 
+    /** Whether this run plays a career ("career") or clears the dailies ("dailies"). */
+    val runMode: String = SettingsHelper.getStringSetting("general", "runMode", "career")
+
     /** Whether debug mode is enabled for additional logging and saving debugging images to storage. */
     val debugMode: Boolean = SettingsHelper.getBooleanSetting("debug", "enableDebugMode")
 
@@ -62,12 +69,16 @@ class Game(val myContext: Context) {
 
     /** Holds the task instance corresponding to the selected scenario. */
     val task: Task =
-        when (scenario) {
-            "URA Finale" -> UraFinale(this)
-            "Unity Cup" -> UnityCup(this)
-            "Trackblazer" -> Trackblazer(this)
-            "Grand Live" -> GrandLive(this)
-            else -> throw InterruptedException("Invalid scenario: $scenario")
+        if (runMode == "dailies") {
+            Dailies(this)
+        } else {
+            when (scenario) {
+                "URA Finale" -> UraFinale(this)
+                "Unity Cup" -> UnityCup(this)
+                "Trackblazer" -> Trackblazer(this)
+                "Grand Live" -> GrandLive(this)
+                else -> throw InterruptedException("Invalid scenario: $scenario")
+            }
         }
 
     /** The maximum number of connection error retry attempts allowed. */
@@ -228,6 +239,45 @@ class Game(val myContext: Context) {
         }
     }
 
+    /**
+     * Waits until one of the components appears, handling any dialog that pops up in the meantime.
+     *
+     * @param components The components to look for, in priority order.
+     * @param timeoutSec How long to wait before giving up.
+     * @param bHandleDialogs Whether to let the task handle dialogs between checks. Turn off while a dialog the caller handles itself is open.
+     * @param stopIf Checked after each miss. When it turns true the wait ends early.
+     * @param onMiss Runs after each miss, before the next check.
+     * @return The component that appeared and its location, or null on timeout or when `stopIf` ended the wait.
+     */
+    fun waitForAny(
+        vararg components: BaseComponentInterface,
+        timeoutSec: Double = 10.0,
+        bHandleDialogs: Boolean = true,
+        stopIf: () -> Boolean = { false },
+        onMiss: () -> Unit = {},
+    ): Pair<BaseComponentInterface, Point>? {
+        val deadline = System.currentTimeMillis() + (timeoutSec * 1000).toLong()
+        while (true) {
+            val sourceBitmap = imageUtils.getSourceBitmap()
+            components.firstNotNullOfOrNull { component -> component.findImageWithBitmap(imageUtils, sourceBitmap)?.let { component to it } }?.let { return it }
+            if (System.currentTimeMillis() > deadline) return null
+            if (bHandleDialogs) task.tryHandleAllDialogs(timeoutMs = 3000, sourceBitmap = sourceBitmap)
+            if (stopIf()) return null
+            onMiss()
+            wait(0.5)
+        }
+    }
+
+    /**
+     * Taps a neutral spot on the screen until one of the components appears. Used to skip race and reward animations.
+     *
+     * @param components The components that end the tapping, in priority order.
+     * @param timeoutSec How long to keep tapping before giving up.
+     * @return The component that appeared and its location, or null on timeout.
+     */
+    fun tapUntil(vararg components: BaseComponentInterface, timeoutSec: Double = 45.0): Pair<BaseComponentInterface, Point>? =
+        waitForAny(*components, timeoutSec = timeoutSec, onMiss = { tap(SharedData.displayWidth / 2.0, SharedData.displayHeight * 0.4, ignoreWaiting = true) })
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -284,8 +334,18 @@ class Game(val myContext: Context) {
         val packageInfo = myContext.packageManager.getPackageInfo(myContext.packageName, 0)
         MessageLog.i(TAG, "[INFO] Bot version: ${packageInfo.versionName} (${packageInfo.versionCode})\n\n")
 
-        // Begin (or resume) analytics after startup logging so its resume/persistence messages print after the bot version.
-        RunAnalytics.onRunStart(scenario, startTime, myContext)
+        task.onRunStart(startTime, myContext)
+
+        // A debug test armed for the other run mode would be skipped and a full run would start in its place, so stop with the reason instead.
+        val otherModeTest = otherModeDebugTest()
+        if (otherModeTest != null) {
+            val (mode, otherMode) = if (runMode == "dailies") "Dailies" to "Career" else "Career" to "Dailies"
+            val reason = "$otherModeTest is armed, but Run Mode is $mode. Switch to $otherMode or turn the test off"
+            MessageLog.w(TAG, "[WARN] $reason.")
+            BotStatus.setOutcome(BotStatus.Outcome.STOPPED_BY_BOT, reason)
+            task.onRunEnd()
+            return true
+        }
 
         // Start debug tests here if enabled. Otherwise, proceed with regular bot operations.
         // A small delay here to ensure any notifications are out of the way.
@@ -302,12 +362,13 @@ class Game(val myContext: Context) {
                     val finalIpAddress = if (ipAddress == "10.0.2.15") "localhost" else ipAddress
                     logViewerString = "Remote Log Viewer is enabled at http://$finalIpAddress:$port"
                 }
-                DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! Scenario: $scenario```$logViewerString")
+                val runName = if (runMode == "dailies") "Dailies" else "Scenario: $scenario"
+                DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! $runName```$logViewerString")
             }
             task.start()
         }
 
-        RunAnalytics.onRunEnd()
+        task.onRunEnd()
         MessageLog.i(TAG, "[INFO] Total runtime of ${MessageLog.formatElapsedTime(startTime, System.currentTimeMillis())} and stopped at ${MessageLog.getSystemTimeString()}.")
 
         // Wait to make sure Discord webhook message queue gets fully processed before terminating Bot Thread.
@@ -316,5 +377,16 @@ class Game(val myContext: Context) {
         }
 
         return true
+    }
+
+    /**
+     * Finds an armed debug test that belongs to the other run mode.
+     *
+     * @return The test's readable name, such as "Dailies Presents Test", or null when none is armed.
+     */
+    private fun otherModeDebugTest(): String? {
+        val otherModeKeys = if (runMode == "dailies") CAREER_DEBUG_TEST_KEYS else DAILIES_DEBUG_TEST_KEYS.keys
+        val key = otherModeKeys.firstOrNull { SettingsHelper.getBooleanSetting("debug", it) } ?: return null
+        return key.removePrefix("debugMode_start").replace(Regex("([a-z])([A-Z])"), "$1 $2").replace(Regex("([A-Z]+)([A-Z][a-z])"), "$1 $2")
     }
 }

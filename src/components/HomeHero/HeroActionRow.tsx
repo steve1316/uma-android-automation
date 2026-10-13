@@ -16,7 +16,9 @@ const createStyles = (colors: ThemeColors) =>
         row: { flexDirection: "row", alignItems: "center", gap: SPACING.sm, marginTop: SPACING.sm },
         left: { flex: 1, minWidth: 0 },
         chips: { gap: 6, alignItems: "center" },
-        title: { ...TYPE.h2, fontSize: 14, color: colors.text },
+        titleLine: { flexDirection: "row", alignItems: "baseline", gap: SPACING.sm },
+        title: { ...TYPE.h2, fontSize: 14, color: colors.text, flexShrink: 1 },
+        facts: { ...TYPE.monoLabel, textTransform: "none", color: colors.textMuted },
         sub: { ...TYPE.caption, color: colors.textMuted },
     })
 
@@ -31,7 +33,7 @@ interface HeroActionRowProps {
 }
 
 /**
- * Row 2 of the hero: the nav chips, or the run's title and one line after a run, beside the main action button.
+ * Row 2 of the hero: the nav chips, or the run's title with its turn and runtime and one line under it after a run, beside the main action button.
  * @param view What the hero shows for the current state.
  * @param chips Nav chips for the scrolling line.
  * @param button The main action button.
@@ -49,9 +51,12 @@ const HeroActionRow = ({ view, chips, button }: HeroActionRowProps) => {
                     </ScrollView>
                 ) : (
                     <>
-                        <Text style={styles.title} numberOfLines={1}>
-                            {view.title}
-                        </Text>
+                        <View style={styles.titleLine}>
+                            <Text style={styles.title} numberOfLines={1}>
+                                {view.title}
+                            </Text>
+                            {view.facts ? <Text style={styles.facts}>{view.facts}</Text> : null}
+                        </View>
                         {view.sub ? (
                             <Text style={styles.sub} numberOfLines={1}>
                                 {view.sub}

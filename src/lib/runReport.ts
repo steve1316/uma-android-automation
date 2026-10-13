@@ -51,6 +51,25 @@ export interface RunSummary {
     racesRun: number
 }
 
+/** Statuses a Dailies part can end with. */
+const PART_STATUSES = ["done", "skipped", "failed"] as const
+
+/** How one Dailies part ended. */
+export interface DailiesPartResult {
+    /** Part name, such as "Team Trials". */
+    name: string
+    /** How it ended. */
+    status: (typeof PART_STATUSES)[number]
+    /** What it did, why it was skipped, or why it failed. */
+    detail: string
+}
+
+/** The Dailies run's summary, added to the report by the Dailies task. */
+export interface DailiesSummary {
+    /** Each part that ran, in run order. */
+    parts: DailiesPartResult[]
+}
+
 /** The report of how the last run ended. */
 export interface RunReport {
     /** How the run ended. */
@@ -69,8 +88,10 @@ export interface RunReport {
     logFile: string
     /** Crash details, or null when the run did not crash. */
     error: RunError | null
-    /** Run summary, or null when the run ended before the first turn. */
+    /** Run summary, or null when the run ended before the first turn or was a Dailies run. */
     summary: RunSummary | null
+    /** Dailies summary, or null when the run was a career. */
+    dailies: DailiesSummary | null
 }
 
 /** Where the current run stands, read while it is still going. */
@@ -142,12 +163,12 @@ const strs = (obj: any, key: string): string[] => (Array.isArray(obj?.[key]) ? o
 const stats = (obj: any): RunStats => ({ speed: num(obj, "speed"), stamina: num(obj, "stamina"), power: num(obj, "power"), guts: num(obj, "guts"), wit: num(obj, "wit") })
 
 /**
- * Reads a run summary object.
+ * Reads a career run summary object.
  * @param s The summary object from native code.
- * @returns The summary, or null when it is missing.
+ * @returns The summary, or null when it is missing or is a Dailies summary.
  */
 const parseSummary = (s: any): RunSummary | null =>
-    s && typeof s === "object"
+    s && typeof s === "object" && s.kind !== "dailies"
         ? {
               trainee: str(s, "trainee"),
               scenario: str(s, "scenario"),
@@ -157,6 +178,18 @@ const parseSummary = (s: any): RunSummary | null =>
               skillPoints: num(s, "skillPoints"),
               racesWon: num(s, "racesWon"),
               racesRun: num(s, "racesRun"),
+          }
+        : null
+
+/**
+ * Reads the Dailies summary object.
+ * @param s The summary object from native code.
+ * @returns The Dailies summary, or null when the summary is a career one or missing.
+ */
+const parseDailies = (s: any): DailiesSummary | null =>
+    s?.kind === "dailies" && Array.isArray(s.parts)
+        ? {
+              parts: s.parts.filter((p: any) => PART_STATUSES.includes(p?.status)).map((p: any) => ({ name: str(p, "name"), status: p.status, detail: str(p, "detail") })),
           }
         : null
 
@@ -185,6 +218,7 @@ export function parseRunReport(json: string | null | undefined): RunReport | nul
         logFile: str(raw, "logFile"),
         error: e && typeof e === "object" ? { className: str(e, "className"), message: str(e, "message"), frames: strs(e, "frames") } : null,
         summary: parseSummary(raw.summary),
+        dailies: parseDailies(raw.summary),
     }
 }
 
@@ -244,12 +278,22 @@ export function formatRunReport(report: RunReport): RunReportView {
     if (outcome === "CRASHED") sub = error ? (turn > 0 ? `${error.className} on turn ${turn}` : error.className) : report.reason
     else if (outcome === "STOPPED_BY_BOT") sub = report.reason
     else if (outcome === "STOPPED_BY_USER" && !paused) sub = "No career turn was reached"
+    let tone = look.tone
+    if (report.dailies) {
+        const parts = report.dailies.parts
+        const count = (status: DailiesPartResult["status"]) => parts.filter((p) => p.status === status).length
+        const failed = parts.filter((p) => p.status === "failed").map((p) => p.name)
+        const progress = [`${count("done")} done`, count("skipped") > 0 ? `${count("skipped")} skipped` : ""].filter(Boolean).join(" · ")
+        if (outcome === "FINISHED" || outcome === "STOPPED_BY_USER") sub = failed.length > 0 ? `${failed.join(", ")} failed · ${progress}` : progress
+        if (outcome === "FINISHED" && failed.length > 0) tone = "warning"
+    }
 
     const turnFact = turn > 0 ? (totalTurns > 0 ? `Turn ${turn}/${totalTurns}` : `Turn ${turn}`) : ""
     const facts = [turnFact, runtimeMs >= 1000 ? formatRuntime(runtimeMs) : ""].filter(Boolean)
 
     return {
         ...look,
+        tone,
         // A finished run is titled by its reason ("Career complete"), since debug tests also finish with "Run ended".
         title: outcome === "FINISHED" && report.reason ? report.reason : look.title,
         ...(paused ? { pill: "■ PAUSED", title: "Career paused" } : {}),

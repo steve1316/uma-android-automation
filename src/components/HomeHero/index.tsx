@@ -5,6 +5,7 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 import { LiveRun, RunReport } from "../../lib/runReport"
 import type { ThemeColors } from "../../lib/theme"
+import type { RunMode } from "../../context/BotStateContext"
 import { HeroTone, HeroView } from "./heroView"
 import { toneColors } from "./heroTone"
 import HeroHeader from "./HeroHeader"
@@ -29,8 +30,12 @@ const createStyles = (colors: ThemeColors, cardTone: HeroTone) => {
 interface HomeHeroProps {
     /** What the hero shows for the current state, from `heroView()`. */
     view: HeroView
-    /** Active profile name. */
+    /** Active profile name, shown at the top of the drawer. */
     profile: string
+    /** Whether the next run is a career or the dailies. */
+    runMode: RunMode
+    /** Switches the run mode. */
+    onRunModeChange: (mode: RunMode) => void
     /** The last run's report, or null when there is no result. */
     report: RunReport | null
     /** The current run's stats so far, shown in the drawer while the overlay is on, or null. */
@@ -58,10 +63,12 @@ interface HomeHeroProps {
 }
 
 /**
- * Compact two-row Home hero. Row 1 is the status or result pill with the profile or the run's turn and runtime. Row 2 is the nav chips or the run's title,
- * beside the main action. A drawer below holds the run details and the plans and priority chips.
+ * Compact two-row Home hero. Row 1 is the status or result pill with the Career / Dailies switch. Row 2 is the nav chips or
+ * the run's title, beside the main action. A drawer below holds the profile, the run details, and the plans and priority chips.
  * @param view What the hero shows for the current state.
  * @param profile Active profile name.
+ * @param runMode Whether the next run is a career or the dailies.
+ * @param onRunModeChange Switches the run mode.
  * @param report The last run's report, or null.
  * @param live The current run's stats so far, or null.
  * @param arrivedLive Whether the result arrived live this session.
@@ -76,11 +83,27 @@ interface HomeHeroProps {
  * @param onDrawerOpen Called when the drawer opens.
  * @returns The hero card.
  */
-const HomeHero = ({ view, profile, report, live, arrivedLive, chips, glance, startButton, onOpenGame, onStopOverlay, onViewLog, onCopyError, onDismiss, onDrawerOpen }: HomeHeroProps) => {
+const HomeHero = ({
+    view,
+    profile,
+    runMode,
+    onRunModeChange,
+    report,
+    live,
+    arrivedLive,
+    chips,
+    glance,
+    startButton,
+    onOpenGame,
+    onStopOverlay,
+    onViewLog,
+    onCopyError,
+    onDismiss,
+    onDrawerOpen,
+}: HomeHeroProps) => {
     const { colors } = useTheme()
     const styles = useMemo(() => createStyles(colors, view.cardTone), [colors, view.cardTone])
     const [open, setOpen] = useState(false)
-    const hasDrawer = view.details !== "none" || glance != null
 
     /** Opens or closes the drawer, refreshing the live stats when it opens. */
     const toggle = useCallback(() => {
@@ -96,9 +119,9 @@ const HomeHero = ({ view, profile, report, live, arrivedLive, chips, glance, sta
 
     return (
         <View style={styles.card}>
-            <HeroHeader view={view} profile={profile} open={open} hasDrawer={hasDrawer} onToggle={toggle} onDismiss={onDismiss} />
+            <HeroHeader view={view} runMode={runMode} onRunModeChange={onRunModeChange} open={open} onToggle={toggle} onDismiss={onDismiss} />
             <HeroActionRow view={view} chips={chips} button={<HeroButton mode={view.buttonMode} startButton={startButton} onOpenGame={onOpenGame} onStopOverlay={onStopOverlay} />} />
-            {open && hasDrawer ? <HeroDrawer view={view} report={report} live={live} canViewLog={arrivedLive} glance={glance} onViewLog={onViewLog} onCopyError={onCopyError} /> : null}
+            {open ? <HeroDrawer view={view} report={report} live={live} canViewLog={arrivedLive} glance={glance} profile={profile} onViewLog={onViewLog} onCopyError={onCopyError} /> : null}
         </View>
     )
 }

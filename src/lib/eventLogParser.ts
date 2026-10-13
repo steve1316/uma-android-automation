@@ -1,3 +1,5 @@
+import { DAILIES_RUN_MODE_LABEL } from "./messageLog/buildSettingsBanner"
+
 export type LogFileInput = {
     /** The name of the file. */
     name: string
@@ -591,8 +593,10 @@ export function parseLogs(files: LogFileInput[]): ParseResult {
         }
 
         if (!foundAnyDay) {
+            // A Dailies run has no career turns, so say so instead of reporting the log as broken.
+            const isDailies = file.content.includes(DAILIES_RUN_MODE_LABEL)
             errors.push({
-                message: `No days found in ${file.name}.`,
+                message: isDailies ? `${file.name} is a Dailies run, which has no career days to show.` : `No days found in ${file.name}.`,
                 fileName: file.name,
             })
         }

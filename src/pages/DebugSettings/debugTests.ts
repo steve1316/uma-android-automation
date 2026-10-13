@@ -16,12 +16,20 @@ export interface DebugTestDescriptor {
         | "debugMode_startTrackblazerInventorySyncTest"
         | "debugMode_startTrackblazerBuyItemsTest"
         | "debugMode_startGrandLiveTokenGainTest"
+        | "debugMode_startDailiesTeamTrialsTest"
+        | "debugMode_startDailiesDailyRacesTest"
+        | "debugMode_startDailiesLegendRaceTest"
+        | "debugMode_startDailiesClubTest"
+        | "debugMode_startDailiesMissionsTest"
+        | "debugMode_startDailiesPresentsTest"
     /** Stable id used for search registration and hero-chip deep-link highlighting. */
     searchId: string
     /** Visible Row title. */
     title: string
     /** Row description. */
     description: string
+    /** The run mode the test runs in. Tests without one are career tests. */
+    runMode?: "career" | "dailies"
 }
 
 export const DEBUG_TESTS: DebugTestDescriptor[] = [
@@ -120,5 +128,50 @@ export const DEBUG_TESTS: DebugTestDescriptor[] = [
         title: "Start Grand Live Token Gain Test",
         description:
             "Disables normal bot operations and starts the Grand Live token gain test. Run this on the Training screen: it reads the five Performance-Point token totals once, then selects each of the five facilities in turn and logs their per-token gains (using the same digit detector as training stat gains).",
+    },
+    {
+        key: "debugMode_startDailiesTeamTrialsTest",
+        runMode: "dailies",
+        searchId: "debug-dailies-team-trials-test",
+        title: "Start Dailies Team Trials Test",
+        description:
+            "Disables normal bot operations. Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Team Trials part: spends RP on the weakest opponent and logs each step.",
+    },
+    {
+        key: "debugMode_startDailiesDailyRacesTest",
+        runMode: "dailies",
+        searchId: "debug-dailies-daily-races-test",
+        title: "Start Dailies Daily Races Test",
+        description:
+            "Disables normal bot operations. Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Daily Races part with the race type from Dailies Settings.",
+    },
+    {
+        key: "debugMode_startDailiesLegendRaceTest",
+        runMode: "dailies",
+        searchId: "debug-dailies-legend-race-test",
+        title: "Start Dailies Legend Race Test",
+        description:
+            "Disables normal bot operations. Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Legend Race part with the legend from Dailies Settings.",
+    },
+    {
+        key: "debugMode_startDailiesClubTest",
+        runMode: "dailies",
+        searchId: "debug-dailies-club-test",
+        title: "Start Dailies Club Test",
+        description: "Disables normal bot operations. Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Club part: the item request and Donate to All.",
+    },
+    {
+        key: "debugMode_startDailiesMissionsTest",
+        runMode: "dailies",
+        searchId: "debug-dailies-missions-test",
+        title: "Start Dailies Missions Test",
+        description: "Disables normal bot operations. Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Missions part: Collect All on the Missions screen.",
+    },
+    {
+        key: "debugMode_startDailiesPresentsTest",
+        runMode: "dailies",
+        searchId: "debug-dailies-presents-test",
+        title: "Start Dailies Presents Test",
+        description: "Disables normal bot operations. Switch the Home card to Dailies and open the game's Home screen first. Runs only the Dailies Presents part: Collect All in the Presents box.",
     },
 ]
