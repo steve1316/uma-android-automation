@@ -508,8 +508,7 @@ class Trackblazer(game: Game) : Campaign(game) {
                 if (result.dialog.ok(game.imageUtils)) {
                     game.wait(game.dialogWaitDelay)
 
-                    // ButtonTrainingItems also matches the quick-access button on the Main screen, so ButtonHomeFullStats (Main screen only) rules that out.
-                    if (!ButtonTrainingItems.check(game.imageUtils, tries = 5) || ButtonHomeFullStats.check(game.imageUtils)) {
+                    if (!isInShop()) {
                         MessageLog.w(TAG, "[TRACKBLAZER] The Shop did not open after tapping the Shop dialog button. The shop check stays pending for the main screen.")
                         bShouldCheckShop = true
                         return DialogHandlerResult.Handled(result.dialog)
@@ -1531,6 +1530,22 @@ class Trackblazer(game: Game) : Campaign(game) {
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Checks whether the Shop screen is open, retrying to give a slow screen transition time to finish.
+     *
+     * @param tries The number of checks to perform before giving up.
+     * @return True if the Shop screen is open, false otherwise.
+     */
+    private fun isInShop(tries: Int = 5): Boolean {
+        repeat(tries) { attempt ->
+            // ButtonTrainingItems also matches the quick-access button on the Main screen, so ButtonHomeFullStats (Main screen only) rules that out.
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            if (ButtonTrainingItems.check(game.imageUtils, sourceBitmap = sourceBitmap) && !ButtonHomeFullStats.check(game.imageUtils, sourceBitmap = sourceBitmap)) return true
+            if (attempt < tries - 1) game.wait(0.5)
+        }
+        return false
+    }
+
+    /**
      * Opens the Shop UI.
      *
      * @param tries The number of scan attempts to perform to find the shop button.
@@ -1547,7 +1562,7 @@ class Trackblazer(game: Game) : Campaign(game) {
             MessageLog.i(TAG, "[TRACKBLAZER] Shop dialog detected while trying to open the shop. Entering via dialog...")
             if (detectedDialog.ok(game.imageUtils)) {
                 game.wait(game.dialogWaitDelay)
-                return ButtonTrainingItems.check(game.imageUtils)
+                return isInShop()
             }
         }
 
