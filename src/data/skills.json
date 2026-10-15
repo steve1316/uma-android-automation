@@ -513,7 +513,7 @@
         "condition": "distance_type==4&running_style==2&phase==2",
         "precondition": "distance_diff_top<=10&distance_rate>=60&phase==1",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202482
     },
@@ -2701,9 +2701,9 @@
         "upgrade": 201681,
         "downgrade": null
     },
-    "Free From the Ashes": {
+    "Free from the Ashes": {
         "id": 110161,
-        "name_en": "Free From the Ashes",
+        "name_en": "Free from the Ashes",
         "desc_en": "Slightly increase velocity when positioned in the front part of the pack on the latter half of the final corner late-race.",
         "icon_id": 20011,
         "cost": 200,
@@ -2711,7 +2711,7 @@
         "condition": "phase>=2&is_finalcorner_laterhalf==1&order_rate<=40",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -5371,7 +5371,7 @@
         "condition": "distance_type==4&running_style==2&phase==2",
         "precondition": "distance_diff_top<=10&distance_rate>=60&phase==1",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 202481,
         "downgrade": null
     },

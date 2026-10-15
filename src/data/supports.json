@@ -2132,6 +2132,13 @@
         "Beyond Our Limited Time": [
             "Energy +10\nSkill points +15\nTM Opera O bond +5",
             "Non-Standard Distance ○ hint +1\nTM Opera O bond +5"
+        ],
+        "(❯)\nThe Ever-Prepared T.M. Opera O": [
+            "Stamina +10\nSkill points +10\nTM Opera O bond +5"
+        ],
+        "(❯❯)\nEveryone's T.M. Opera O": [
+            "Mood +1\nTM Opera O bond +15",
+            "Stamina +15\nPreferred Position hint +1\nTM Opera O bond +5"
         ]
     },
     "Taiki Shuttle": {
@@ -2568,6 +2575,26 @@
         ],
         "(❯❯❯)\nThird, Show Thy Spirit": [
             "Randomly either\n----------\nSpeed +7\nPower +7\nGuts +7\nSkill points +15\nKiller Tunes hint +3\n----------\n\n----------\nSpeed +7\nSkill points +15\nKiller Tunes hint +2\n----------\n\n----------\nSkill points +15\nKiller Tunes hint +1"
+        ]
+    },
+    "Yamanin Zephyr": {
+        "Free and Unconstrained": [
+            "Speed +10\nGuts +5\nYamanin Zephyr bond +5",
+            "Maximum Energy +4\nYamanin Zephyr bond +5"
+        ],
+        "A Gale that Blows Endlessly": [
+            "Speed +3\nPower +3\nGuts +3\nYamanin Zephyr bond +5",
+            "Aspire hint +1\nYamanin Zephyr bond +5"
+        ],
+        "(❯)\nWhere the Wind Calls": [
+            "Randomly either\n----------\nGuts +10\nYamanin Zephyr bond +5\n----------\n\n----------\nSpeed +5\nGuts +15\nYamanin Zephyr bond +10"
+        ],
+        "(❯❯)\nAn Evocative Flavor": [
+            "Energy +20\nYamanin Zephyr bond +5",
+            "Speed +5\nGuts +5\nSlipstream hint +1\nYamanin Zephyr bond +5"
+        ],
+        "(❯❯❯)\nThe Dream I Saw": [
+            "Randomly either\n----------\nSpeed +3\nPower +3\nGuts +10\nAmbitious Breeze hint +1\nYamanin Zephyr bond +5\n----------\n\n----------\nSpeed +7\nPower +7\nGuts +15\nAmbitious Breeze hint +3\nYamanin Zephyr bond +5"
         ]
     },
     "Yukino Bijin": {

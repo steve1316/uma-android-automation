@@ -6962,6 +6962,17 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Mochi-vation": [
+            "Stamina +20\nGuts +10\nStamina to Spare hint +2"
+        ],
+        "Forever by Your Side": [
+            "Speed +20",
+            "Power +20"
+        ],
+        "Not-So-Lone Wolf": [
+            "Energy +15\n(random) Get Fast Learner status",
+            "Feature Act hint +2\n(random) Get Fast Learner status"
         ]
     },
     "Narita Taishin": {
