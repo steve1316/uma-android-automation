@@ -231,6 +231,17 @@ export const useBootstrap = () => {
             await yieldToFrame()
             await databaseManager.saveSetting("trainingEvent", "scenarioEventData", scenariosData, true)
             logWithTimestamp(`[Bootstrap] Successfully saved scenario-specific event data (${Object.keys(scenariosData).length} scenarios) to SQLite`)
+            await yieldToFrame()
+
+            // Career Setup reads these to match outfits and cards on screen and to derive its smart picks.
+            const traineeCardsData = require("../data/live/traineeCards").default
+            await databaseManager.saveSetting("careerSetup", "traineeCardData", traineeCardsData, true)
+            await yieldToFrame()
+            const supportCardsData = require("../data/live/supportCards").default
+            await databaseManager.saveSetting("careerSetup", "supportCardData", supportCardsData, true)
+            await yieldToFrame()
+            await databaseManager.saveSetting("careerSetup", "friendFavoritesData", require("../data/careerFriendFavorites.json"), true)
+            logWithTimestamp(`[Bootstrap] Saved Career Setup catalogs (${Object.keys(traineeCardsData).length} outfits, ${Object.keys(supportCardsData).length} support cards) to SQLite`)
 
             logWithTimestamp("[Bootstrap] Event data population complete")
         } catch (error) {

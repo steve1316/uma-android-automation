@@ -40,6 +40,7 @@ export const deepMerge = <T extends Record<string, any>>(target: T, source: Part
  *   only consumed by Kotlin via `SettingsHelper.getStringSetting`.
  * - `trainingEvent.{characterEventData,supportEventData,scenarioEventData}` — bundled JSON event data
  *   written once at bootstrap by `populateEventData`; only consumed by Kotlin.
+ * - `careerSetup.{traineeCardData,supportCardData,friendFavoritesData}` — Career Setup catalogs, written the same way.
  */
 export const DB_OWNED_KEYS: ReadonlyArray<readonly [string, string]> = [
     ["misc", "formattedSettingsString"],
@@ -51,6 +52,9 @@ export const DB_OWNED_KEYS: ReadonlyArray<readonly [string, string]> = [
     ["trainingEvent", "characterEventData"],
     ["trainingEvent", "supportEventData"],
     ["trainingEvent", "scenarioEventData"],
+    ["careerSetup", "traineeCardData"],
+    ["careerSetup", "supportCardData"],
+    ["careerSetup", "friendFavoritesData"],
 ]
 
 const isDbOwned = (category: string, key: string): boolean => DB_OWNED_KEYS.some(([c, k]) => c === category && k === key)
