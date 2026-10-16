@@ -83,6 +83,9 @@ class GameDate {
     companion object {
         const val TAG: String = "[${MainActivity.loggerTag}]GameDate"
 
+        /** Turns in Pre-Debut. The debut race is on the last one, Junior Year Late June. */
+        private const val PRE_DEBUT_TURNS = 12
+
         /** Candidate year names that an OCR'd date string is fuzzy matched against. */
         private val YEAR_NAMES: List<String> = DateYear.entries.map { it.name }
 
@@ -177,23 +180,21 @@ class GameDate {
                 return null
             }
 
-            // Special case for Pre-Debut where year/month aren't explicitly shown.
+            // Special case for Pre-Debut where year/month aren't explicitly shown, so the turn comes from the countdown to the debut race.
             if (dayString.lowercase().contains("debut")) {
-                val remainingTurns: Int = turnsLeft ?: imageUtils.determineTurnsRemainingBeforeNextGoal()
-                if (remainingTurns == null) {
-                    MessageLog.e(TAG, "[ERROR] fromDateString:: In Pre-Debut but received turnsLeft=null. Cannot calculate date without turnsLeft.")
-                    return null
+                if (turnsLeft != null) return fromDay((PRE_DEBUT_TURNS - turnsLeft).coerceIn(1, PRE_DEBUT_TURNS))
+                // The countdown is sometimes misread (an 8 as 38, a 6 as 0), so a count the box never shows gets one more read before the date is left unchanged.
+                repeat(2) {
+                    val countdownText = imageUtils.determineTurnsRemainingText() ?: return@repeat
+                    preDebutTurnFromCountdown(countdownText)?.let { turn ->
+                        // Same line the countdown read logs elsewhere, which the Remote Log Viewer reads the turns remaining from.
+                        val goalNote = if (turn == PRE_DEBUT_TURNS) " (mandatory race / goal turn - 0 remaining)." else ""
+                        MessageLog.i(TAG, "[INFO] Detected day for extra racing: $countdownText$goalNote")
+                        return fromDay(turn)
+                    }
+                    MessageLog.w(TAG, "[WARN] fromDateString:: Pre-Debut countdown read as \"$countdownText\", which the box never shows.")
                 }
-
-                if (remainingTurns <= 0) {
-                    // Turn 12 is the Debut race (Junior Year Late June).
-                    return GameDate(DateYear.JUNIOR, DateMonth.JUNE, DatePhase.LATE)
-                }
-
-                // Calculate the day number in Pre-Debut (Turns 1-11).
-                val turnsInPreDebut = 12
-                val currTurn = (turnsInPreDebut - remainingTurns).coerceIn(1, 11)
-                return fromDay(currTurn)
+                return null
             }
 
             // Special case for Finale season (Turns 73-75) and for date strings that indicate it is the Finale season.
@@ -208,6 +209,21 @@ class GameDate {
             }
 
             return parseDateString(dayString)
+        }
+
+        /**
+         * Works out the Pre-Debut turn from the countdown box, which shows 11 down to 1 and then the "GOAL" label on the debut race turn.
+         *
+         * @param countdownText The OCR text of the countdown box.
+         * @return The turn, 1 to 12, or null when the read is not something the box can show.
+         */
+        fun preDebutTurnFromCountdown(countdownText: String): Int? {
+            val text = countdownText.trim()
+            if (text.isEmpty()) return null
+            val digits = text.filter(Char::isDigit)
+            if (digits.isEmpty()) return PRE_DEBUT_TURNS
+            val remaining = digits.toIntOrNull() ?: return null
+            return if (remaining in 1 until PRE_DEBUT_TURNS) PRE_DEBUT_TURNS - remaining else null
         }
 
         /**

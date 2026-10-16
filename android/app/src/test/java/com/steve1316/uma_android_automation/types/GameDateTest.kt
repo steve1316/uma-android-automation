@@ -482,4 +482,34 @@ class GameDateTest {
             assertNull(GameDate.parseDateString("hello there my friend"))
         }
     }
+
+    @Nested
+    @DisplayName("preDebutTurnFromCountdown")
+    inner class PreDebutCountdownTests {
+        @Test
+        fun `turns a countdown of 11 to 1 into turns 1 to 11`() {
+            assertEquals(1, GameDate.preDebutTurnFromCountdown("11"))
+            assertEquals(4, GameDate.preDebutTurnFromCountdown("8"))
+            assertEquals(11, GameDate.preDebutTurnFromCountdown("1"))
+        }
+
+        @Test
+        fun `reads the GOAL label as the debut race on turn 12`() {
+            assertEquals(12, GameDate.preDebutTurnFromCountdown("GOAL"))
+            assertEquals(12, GameDate.preDebutTurnFromCountdown("GO"))
+        }
+
+        @Test
+        fun `rejects counts Pre-Debut never shows`() {
+            // Seen on device: an 8 read as 38 and a 6 read as 0, which jumped the date to turn 1 and turn 12.
+            assertNull(GameDate.preDebutTurnFromCountdown("38"))
+            assertNull(GameDate.preDebutTurnFromCountdown("0"))
+            assertNull(GameDate.preDebutTurnFromCountdown("12"))
+        }
+
+        @Test
+        fun `rejects an empty read`() {
+            assertNull(GameDate.preDebutTurnFromCountdown(""))
+        }
+    }
 }

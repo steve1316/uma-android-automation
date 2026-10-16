@@ -2396,6 +2396,24 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @return The number of turns remaining, or -1 if detection fails.
      */
     fun determineTurnsRemainingBeforeNextGoal(): Int {
+        val detectedText = determineTurnsRemainingText() ?: return -1
+        // Parse the result. A non-numeric readout means the box shows a label instead of a countdown - "Race Day", or "GOAL" on a
+        // mandatory-race turn (Turn 12 etc.) - both meaning the race is this turn (0 turns remaining). This avoids erroring on those days.
+        val result = parseTurnsRemaining(detectedText)
+        when (result) {
+            null -> MessageLog.w(TAG, "[WARN] determineTurnsRemainingBeforeNextGoal:: Detected day for extra racing is too large to be valid: $detectedText")
+            0 -> MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText (mandatory race / goal turn - 0 remaining).")
+            else -> MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
+        }
+        return result ?: -1
+    }
+
+    /**
+     * Reads the text of the turns-remaining box before the next scenario goal, a countdown or a label such as "GOAL".
+     *
+     * @return The OCR text, or null if the box could not be located.
+     */
+    fun determineTurnsRemainingText(): String? {
         val (energyTextLocation, sourceBitmap) = LabelEnergy.find(this)
 
         if (energyTextLocation != null) {
@@ -2422,19 +2440,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     debugName = "DayForExtraRace",
                 )
 
-            // Parse the result. A non-numeric readout means the box shows a label instead of a countdown - "Race Day", or "GOAL" on a
-            // mandatory-race turn (Turn 12 etc.) - both meaning the race is this turn (0 turns remaining). This avoids erroring on those days.
-            val result = parseTurnsRemaining(detectedText)
-            when (result) {
-                null -> MessageLog.w(TAG, "[WARN] determineTurnsRemainingBeforeNextGoal:: Detected day for extra racing is too large to be valid: $detectedText")
-                0 -> MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText (mandatory race / goal turn - 0 remaining).")
-                else -> MessageLog.i(TAG, "[INFO] Detected day for extra racing: $detectedText")
-            }
-
-            return result ?: -1
+            return detectedText
         }
 
-        return -1
+        return null
     }
 
     /**
