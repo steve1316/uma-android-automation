@@ -10,6 +10,7 @@ import androidx.core.graphics.scale
 import com.google.mlkit.vision.common.InputImage
 import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.BotService
+import com.steve1316.automation_library.utils.DebugCapture
 import com.steve1316.automation_library.utils.ImageUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
@@ -48,7 +49,6 @@ import com.steve1316.uma_android_automation.types.BoundingBox
 import com.steve1316.uma_android_automation.types.StatName
 import org.opencv.android.Utils
 import org.opencv.core.*
-import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.lang.Integer.max
@@ -438,7 +438,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
 
         if (templateBitmap != null) {
-            val matchLocations = matchAll(sourceBitmap, templateBitmap, region = region, customConfidence = customConfidence)
+            val matchLocations = matchAll(sourceBitmap, templateBitmap, region = region, customConfidence = customConfidence, templateName = templateName)
 
             // Sort the match locations by ascending x and y coordinates.
             matchLocations.sortBy { it.x }
@@ -591,7 +591,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
 
         val tempImage = croppedBitmap.toMat()
-        if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText.png", tempImage)
+        if (debugMode) DebugCapture.save("debugEventTitleText", tempImage)
 
         // Now see if it is necessary to shift the cropped region over by 70 pixels or not to account for certain events.
         croppedBitmap =
@@ -608,12 +608,12 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
 
         // Save the cropped image before converting it to black and white in order to troubleshoot issues related to differing device sizes and cropping.
-        if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterCrop.png", cvImage)
+        if (debugMode) DebugCapture.save("debugEventTitleText_afterCrop", cvImage)
 
         // Thresh the grayscale cropped image to make it black and white.
         val bwImage = Mat()
         Imgproc.threshold(cvImage, bwImage, threshold.toDouble() + increment, 255.0, Imgproc.THRESH_BINARY)
-        if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugEventTitleText_afterThreshold.png", bwImage)
+        if (debugMode) DebugCapture.save("debugEventTitleText_afterThreshold", bwImage)
 
         // Convert the Mat directly to Bitmap and then pass it to the text reader.
         val resultBitmap = bwImage.toBitmap()
@@ -920,7 +920,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             // Convert to RGB and then to HSV for better color detection.
             val rgbMat = Mat()
             Imgproc.cvtColor(barMat, rgbMat, Imgproc.COLOR_BGR2RGB)
-            if (debugMode) Imgcodecs.imwrite("$matchFilePath/debug_relationshipBar${index + 1}AfterRGB.png", rgbMat)
+            if (debugMode) DebugCapture.save("debug_relationshipBar${index + 1}AfterRGB", rgbMat)
             val hsvMat = Mat()
             Imgproc.cvtColor(rgbMat, hsvMat, Imgproc.COLOR_RGB2HSV)
 
@@ -1168,7 +1168,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
         sb.appendLine("Derived numRainbow (support circles with a ring): $rainbowCount")
         if (annotated != null) {
-            Imgcodecs.imwrite("$matchFilePath/debugRainbowDetection.png", annotated)
+            DebugCapture.save("debugRainbowDetection", annotated)
             annotated.release()
         }
         // Also persist the metrics as text so they can be retrieved without the in-app log (the annotated PNG shows geometry; the text shows the exact fractions).
@@ -1182,20 +1182,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
-     * Saves a bitmap to the temp folder for offline debugging (e.g. calibrating the spirit gauge detection against a known screen or crop). No-op unless debug mode is on.
+     * Saves a bitmap as a numbered debug image for offline debugging (e.g. calibrating the spirit gauge detection against a known screen or crop).
+     * No-op unless debug mode is on.
      *
      * @param bitmap The bitmap to save.
-     * @param name The file name (without extension) under the temp folder.
+     * @param name A short label for the file name.
      */
     fun saveDebugScreenshot(bitmap: Bitmap, name: String) {
-        if (!debugMode) return
-        // toMat() yields an RGBA Mat but imwrite writes it as BGRA, so convert first or the saved PNG has red and blue swapped.
-        val rgba = bitmap.toMat()
-        val bgr = Mat()
-        Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR)
-        Imgcodecs.imwrite("$matchFilePath/$name.png", bgr)
-        rgba.release()
-        bgr.release()
+        DebugCapture.save(name, bitmap)
     }
 
     /**
@@ -2157,7 +2151,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                                     } else {
                                         ""
                                     }
-                                Imgcodecs.imwrite("$matchFilePath/debug_${trainingName}TrainingStatGain_${statName}$rowSuffix.png", resultMat)
+                                DebugCapture.save("debug_${trainingName}TrainingStatGain_${statName}$rowSuffix", resultMat)
                                 resultMat.release()
                             }
                         }
@@ -2727,7 +2721,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val cvImage = bitmap.toMat()
         // Convert to grayscale.
         Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-        if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugGetUmamusumeClassDialogFanCount_afterCrop.png", cvImage)
+        if (debugMode) DebugCapture.save("debugGetUmamusumeClassDialogFanCount_afterCrop", cvImage)
 
         // Convert the Mat directly to Bitmap and then pass it to the text reader.
         var resultBitmap = cvImage.toBitmap()
@@ -2735,7 +2729,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // Thresh the grayscale cropped image to make it black and white.
         val bwImage = Mat()
         Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
-        if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugGetUmamusumeClassDialogFanCount_afterThreshold.png", bwImage)
+        if (debugMode) DebugCapture.save("debugGetUmamusumeClassDialogFanCount_afterThreshold", bwImage)
 
         resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
         Utils.matToBitmap(bwImage, resultBitmap)
@@ -3059,7 +3053,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
 
         val cvImage = croppedBitmap.toMat()
-        if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRacePrediction.png", cvImage)
+        if (debugMode) DebugCapture.save("debugExtraRacePrediction", cvImage)
 
         // Determine if the extra race has double star prediction.
         val predictionCheck = IconRaceListPredictionDoubleStar.check(this, sourceBitmap = croppedBitmap, region = intArrayOf(0, 0, 0, 0))
@@ -3098,7 +3092,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             // Make the cropped screenshot grayscale.
             Utils.bitmapToMat(croppedBitmap2, cvImage)
             Imgproc.cvtColor(cvImage, cvImage, Imgproc.COLOR_BGR2GRAY)
-            if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterCrop.png", cvImage)
+            if (debugMode) DebugCapture.save("debugExtraRaceFans_afterCrop", cvImage)
 
             // Convert the Mat directly to Bitmap and then pass it to the text reader.
             var resultBitmap = cvImage.toBitmap()
@@ -3106,7 +3100,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             // Thresh the grayscale cropped image to make it black and white.
             val bwImage = Mat()
             Imgproc.threshold(cvImage, bwImage, threshold.toDouble(), 255.0, Imgproc.THRESH_BINARY)
-            if (debugMode) Imgcodecs.imwrite("$matchFilePath/debugExtraRaceFans_afterThreshold.png", bwImage)
+            if (debugMode) DebugCapture.save("debugExtraRaceFans_afterThreshold", bwImage)
 
             resultBitmap = createBitmap(bwImage.cols(), bwImage.rows())
             Utils.matToBitmap(bwImage, resultBitmap)
@@ -3195,7 +3189,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         // Save the cropped image for debugging.
         if (debugMode) {
-            Imgcodecs.imwrite("$matchFilePath/debug_${debugName}_cropped.png", cvImage)
+            DebugCapture.save("debug_${debugName}_cropped", cvImage)
         }
 
         // Convert from RGBA to RGB for consistent color processing.
@@ -3227,7 +3221,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         // Save the filtered image for debugging.
         if (debugMode) {
-            Imgcodecs.imwrite("$matchFilePath/debug_${debugName}_colorFiltered.png", invertedMask)
+            DebugCapture.save("debug_${debugName}_colorFiltered", invertedMask)
         }
 
         // Convert the processed Mat to Bitmap and apply scaling.
@@ -3426,23 +3420,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     // Misc Helper Functions
 
     /**
-     * Saves a bitmap for debugging purposes.
+     * Saves a bitmap as a numbered debug image. No-op unless debug mode is on.
      *
      * @param bitmap The bitmap to save. If null, a new screenshot is taken.
-     * @param filename The name of the file to save (without extension).
-     * @param fullRes Whether to save at full JPEG quality (100). Defaults to false.
+     * @param filename A short label for the file name.
      */
-    fun saveBitmap(bitmap: Bitmap? = null, filename: String, fullRes: Boolean = false) {
-        val bitmap = bitmap ?: getSourceBitmap()
-        val tempImage = bitmap.toMat()
-        if (fullRes) {
-            val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 100)
-            Imgcodecs.imwrite("$matchFilePath/$filename.png", tempImage, params)
-            params.release()
-        } else {
-            Imgcodecs.imwrite("$matchFilePath/$filename.png", tempImage)
-        }
-        tempImage.release()
+    fun saveBitmap(bitmap: Bitmap? = null, filename: String) {
+        if (!DebugCapture.enabled) return
+        DebugCapture.save(filename, bitmap ?: getSourceBitmap())
     }
 
     /**
@@ -3453,17 +3438,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @param filename The output filename.
      */
     fun saveDebugImageWithBboxes(bitmap: Bitmap, bboxes: List<BoundingBox>, filename: String) {
-        val mat = bitmap.toMat()
-
-        for (bbox in bboxes) {
-            val pt1 = Point(bbox.x.toDouble(), bbox.y.toDouble())
-            val pt2 = Point((bbox.x + bbox.w).toDouble(), (bbox.y + bbox.h).toDouble())
-            // Draw a green rectangle.
-            Imgproc.rectangle(mat, pt1, pt2, Scalar(0.0, 255.0, 0.0), 5)
+        DebugCapture.save(filename, bitmap) { mat ->
+            for (bbox in bboxes) {
+                DebugCapture.drawBox(mat, Rect(bbox.x, bbox.y, bbox.w, bbox.h), DebugCapture.GREEN)
+            }
         }
-
-        Imgcodecs.imwrite("$matchFilePath/$filename.png", mat)
-        mat.release()
     }
 
     /**
@@ -3474,6 +3453,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @param bbox The region to crop.
      */
     fun saveBitmapWithBbox(bitmap: Bitmap? = null, filename: String, bbox: BoundingBox) {
+        if (!DebugCapture.enabled) return
         val bitmap = bitmap ?: getSourceBitmap()
         val croppedBitmap = createSafeBitmap(bitmap, bbox.x, bbox.y, bbox.w, bbox.h, "saveBitmapWithBbox(filename=$filename, bbox=$bbox)")
         saveBitmap(bitmap = croppedBitmap, filename = filename)
@@ -3713,7 +3693,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (debugMode) {
             val resultBitmap = image.toBitmap()
-            saveBitmap(resultBitmap, "detectRoundedRectangles_canny", fullRes = true)
+            saveBitmap(resultBitmap, "detectRoundedRectangles_canny")
         }
 
         for (rect in findQuadRects(image, minArea, maxArea, epsilonScalar)) {
@@ -3727,7 +3707,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val resultBitmap = createBitmap(srcImage.cols(), srcImage.rows())
             Imgproc.cvtColor(srcImage, srcImage, Imgproc.COLOR_BGR2RGB)
             Utils.matToBitmap(srcImage, resultBitmap)
-            saveBitmap(resultBitmap, "detectRoundedRectangles", fullRes = true)
+            saveBitmap(resultBitmap, "detectRoundedRectangles")
         }
 
         // Free memory for each mat.
@@ -3833,7 +3813,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (debugMode) {
             val resultBitmap = image.toBitmap()
-            saveBitmap(resultBitmap, "detectRectanglesGeneric_floodFill", fullRes = true)
+            saveBitmap(resultBitmap, "detectRectanglesGeneric_floodFill")
         }
 
         // Set all non-black pixels to white.
@@ -3847,14 +3827,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (debugMode) {
             val resultBitmap = image.toBitmap()
-            saveBitmap(resultBitmap, "detectRectanglesGeneric_masked", fullRes = true)
+            saveBitmap(resultBitmap, "detectRectanglesGeneric_masked")
         }
 
         Imgproc.morphologyEx(image, image, Imgproc.MORPH_OPEN, morphKernel)
 
         if (debugMode) {
             val resultBitmap = image.toBitmap()
-            saveBitmap(resultBitmap, "detectRectanglesGeneric_opened", fullRes = true)
+            saveBitmap(resultBitmap, "detectRectanglesGeneric_opened")
         }
 
         // Invert binary image.
@@ -3884,7 +3864,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val resultBitmap = createBitmap(srcImage.cols(), srcImage.rows())
             Imgproc.cvtColor(srcImage, srcImage, Imgproc.COLOR_BGR2RGB)
             Utils.matToBitmap(srcImage, resultBitmap)
-            saveBitmap(resultBitmap, "detectRectanglesGeneric_result", fullRes = true)
+            saveBitmap(resultBitmap, "detectRectanglesGeneric_result")
         }
 
         // Free memory for each mat.
@@ -3988,7 +3968,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (debugMode) {
             val resultBitmap = hsvImage.toBitmap()
-            saveBitmap(resultBitmap, "detectScrollBar_hsvImage", fullRes = true)
+            saveBitmap(resultBitmap, "detectScrollBar_hsvImage")
         }
 
         // The rail and the thumb are both near-greys, and hue on a near-grey is numerically unstable - it is a ratio over a channel spread of only 10-22, so a single unit of difference swings it
@@ -4047,7 +4027,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
         if (debugMode) {
             val resultBitmap = barMask.toBitmap()
-            saveBitmap(resultBitmap, "detectScrollBar_barMask", fullRes = true)
+            saveBitmap(resultBitmap, "detectScrollBar_barMask")
         }
 
         val thumbMask: Mat =
@@ -4057,7 +4037,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
         if (debugMode) {
             val resultBitmap = thumbMask.toBitmap()
-            saveBitmap(resultBitmap, "detectScrollBar_thumbMask", fullRes = true)
+            saveBitmap(resultBitmap, "detectScrollBar_thumbMask")
         }
 
         /**
@@ -4124,7 +4104,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 val resultBitmap = createBitmap(debugImage.cols(), debugImage.rows())
                 Imgproc.cvtColor(debugImage, debugImage, Imgproc.COLOR_BGR2RGB)
                 Utils.matToBitmap(debugImage, resultBitmap)
-                saveBitmap(resultBitmap, "detectScrollBar_$debugString", fullRes = true)
+                saveBitmap(resultBitmap, "detectScrollBar_$debugString")
             }
 
             contours.forEach { it.release() }
@@ -4147,7 +4127,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val resultBitmap = createBitmap(srcImage.cols(), srcImage.rows())
             Imgproc.cvtColor(srcImage, srcImage, Imgproc.COLOR_BGR2RGB)
             Utils.matToBitmap(srcImage, resultBitmap)
-            saveBitmap(resultBitmap, "detectScrollBar_FAILED", fullRes = true)
+            saveBitmap(resultBitmap, "detectScrollBar_FAILED")
         }
 
         val bboxThumb: BoundingBox? =
@@ -4162,7 +4142,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             val resultBitmap = createBitmap(srcImage.cols(), srcImage.rows())
             Imgproc.cvtColor(srcImage, srcImage, Imgproc.COLOR_BGR2RGB)
             Utils.matToBitmap(srcImage, resultBitmap)
-            saveBitmap(resultBitmap, "detectScrollBar_thumb_FAILED", fullRes = true)
+            saveBitmap(resultBitmap, "detectScrollBar_thumb_FAILED")
         }
 
         // Free memory for each mat.
