@@ -86,6 +86,80 @@ internal fun rainbowHuesPresent(greenFraction: Double, cyanFraction: Double, pin
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
+// Main screen number reuse
+
+/** How far a gray pixel must move, 0-255, to count as changed between two number crops. */
+private const val NUMBER_CROP_DIFF_LEVEL = 40
+
+/** The share of a picture's pixels that may change and still count as the same. Measured: an unchanged number moves 0-1 pixels, the two most alike digits 200. */
+private const val PICTURE_MAX_CHANGED_FRACTION = 0.002
+
+/** The lowest contrast scale between two pictures that still counts as the same, for one read while its digits were fading in. */
+private const val CONTRAST_FIT_MIN_SCALE = 0.4
+
+/** The highest contrast scale between two pictures that still counts as the same. Measured: a cached crop read mid fade-in needed 1.89. */
+private const val CONTRAST_FIT_MAX_SCALE = 2.5
+
+/** Turns a cached number may be reused before it is read again anyway, so a misread cannot stick for the rest of the career. */
+private const val NUMBER_CACHE_MAX_REUSES = 5
+
+/**
+ * Converts an ARGB pixel to its gray level.
+ *
+ * @param argb The pixel.
+ * @return The gray level, 0-255.
+ */
+internal fun grayOf(argb: Int): Int = (((argb shr 16) and 0xFF) * 299 + ((argb shr 8) and 0xFF) * 587 + (argb and 0xFF) * 114) / 1000
+
+/**
+ * Whether two same-size gray pictures match, meaning few enough of their pixels moved by more than a gray level. Pure so it is unit-testable.
+ *
+ * With `fitContrast`, the contrast and brightness change between the pictures is fitted first and only pixels that still differ after it count.
+ * A fade scales and shifts brightness, while a different digit sits in different pixels, so no scale can fit it away.
+ *
+ * @param previous The earlier picture's gray pixels.
+ * @param current The same picture's gray pixels now.
+ * @param diffLevel How far a pixel must move, 0-255, to count as changed.
+ * @param fitContrast Whether to fit the contrast change first.
+ * @return True if at most 0.2% of the pixels changed.
+ */
+internal fun isSameGrayPicture(previous: IntArray, current: IntArray, diffLevel: Int, fitContrast: Boolean): Boolean {
+    if (previous.size != current.size || previous.isEmpty()) return false
+    var scale = 1.0
+    var offset = 0.0
+    if (fitContrast) {
+        val n = previous.size.toDouble()
+        val meanPrevious = previous.sum() / n
+        val meanCurrent = current.sum() / n
+        var covariance = 0.0
+        var variance = 0.0
+        for (i in previous.indices) {
+            covariance += (previous[i] - meanPrevious) * (current[i] - meanCurrent)
+            variance += (previous[i] - meanPrevious) * (previous[i] - meanPrevious)
+        }
+        if (variance > 0) scale = (covariance / variance).coerceIn(CONTRAST_FIT_MIN_SCALE, CONTRAST_FIT_MAX_SCALE)
+        offset = meanCurrent - scale * meanPrevious
+    }
+    val maxChanged = (previous.size * PICTURE_MAX_CHANGED_FRACTION).toInt()
+    var changed = 0
+    for (i in previous.indices) {
+        if (abs(current[i] - (scale * previous[i] + offset)) > diffLevel && ++changed > maxChanged) return false
+    }
+    return true
+}
+
+/**
+ * Whether two gray crops of a Main screen number show the same number. Some turns are read while the digits are still fading in, so the contrast
+ * change between the crops is fitted first.
+ *
+ * @param previous The gray pixels of the crop the cached number was read from.
+ * @param current The gray pixels of the same crop now.
+ * @return True if few enough pixels changed for the number to be the same.
+ */
+internal fun isSameNumberCrop(previous: IntArray, current: IntArray): Boolean = isSameGrayPicture(previous, current, NUMBER_CROP_DIFF_LEVEL, fitContrast = true)
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
 // Template argmax helper
 
 /**
@@ -164,6 +238,18 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios.
      * Lazy because this class is constructed before `game.scenario` is initialized, so an eager read would cache an empty scenario. */
     private val scenarioHasCompactTopLeftBox: Boolean by lazy { game.scenario == "Unity Cup" || game.scenario == "Grand Live" }
+
+    /**
+     * The last good read of each Main screen number and the crop it came from.
+     *
+     * @property pixels The gray pixels of the compared part of the crop.
+     * @property value The number read from it.
+     * @property reuses How many turns the number has been reused without a fresh read.
+     */
+    private data class CachedNumber(val pixels: IntArray, val value: Int, val reuses: Int)
+
+    /** Cached Main screen numbers keyed like "SPEED value" or "SPEED cap". Each text read takes about 0.5s and they run one at a time, so unchanged numbers are not read again. */
+    private val numberCache = ConcurrentHashMap<String, CachedNumber>()
 
     /**
      * Defines the details of a race.
@@ -1406,22 +1492,38 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             height = 50
         }
 
+        val x = relX(finalLocation.x, offsetX)
+        val y = relY(finalLocation.y, offsetY)
         // Perform OCR with no thresholding (stats are on solid background).
-        val text =
-            performOCROnRegion(
-                finalSourceBitmap,
-                relX(finalLocation.x, offsetX),
-                relY(finalLocation.y, offsetY),
-                relWidth(width),
-                relHeight(height),
-                useThreshold = false,
-                useGrayscale = true,
-                scale = 2.0,
-                ocrEngine = "tesseract_digits",
-                debugName = "${statName}StatValue",
-            )
+        val readValue = {
+            val text =
+                performOCROnRegion(
+                    finalSourceBitmap,
+                    x,
+                    y,
+                    relWidth(width),
+                    relHeight(height),
+                    useThreshold = false,
+                    useGrayscale = true,
+                    scale = 2.0,
+                    ocrEngine = "tesseract_digits",
+                    debugName = "${statName}StatValue",
+                )
+            parseStatValueText(statName, text)
+        }
+        if (isAptitudeDialog) return readValue()
+        // The crop's last 12px are the panel border, which the animated background shows through, so they are left out of the comparison.
+        return readNumberCached("$statName value", finalSourceBitmap, x, y, relWidth(width - 12), relHeight(height), readValue)
+    }
 
-        // Parse the text.
+    /**
+     * Parses the OCR text of a stat value.
+     *
+     * @param statName The stat that was read, for the log.
+     * @param text The OCR text.
+     * @return The stat value, or -1 if it could not be parsed or is above the manual stat cap.
+     */
+    private fun parseStatValueText(statName: StatName, text: String): Int {
         Log.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
         if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
             Log.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
@@ -1644,22 +1746,54 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val width = 110
         val height = 44
 
-        val text =
-            performOCROnRegion(
-                finalSourceBitmap,
-                relX(finalLocation.x, offsetX),
-                relY(finalLocation.y, offsetY),
-                relWidth(width),
-                relHeight(height),
-                useThreshold = false,
-                useGrayscale = true,
-                scale = 2.0,
-                ocrEngine = "tesseract_digits",
-                debugName = "${statName}StatCap",
-            )
+        val x = relX(finalLocation.x, offsetX)
+        val y = relY(finalLocation.y, offsetY)
+        // Only the top 28px of the 110px wide crop hold the digits. Below them and past 92px the animated background shows through, so those parts are left out of the comparison.
+        return readNumberCached("$statName cap", finalSourceBitmap, x, y, relWidth(92), relHeight(28)) {
+            val text =
+                performOCROnRegion(
+                    finalSourceBitmap,
+                    x,
+                    y,
+                    relWidth(width),
+                    relHeight(height),
+                    useThreshold = false,
+                    useGrayscale = true,
+                    scale = 2.0,
+                    ocrEngine = "tesseract_digits",
+                    debugName = "${statName}StatCap",
+                )
+            Log.d(TAG, "[DEBUG] determineSingleStatCap:: Raw OCR text for $statName cap: '$text'")
+            parseStatCap(text) ?: -1
+        }
+    }
 
-        Log.d(TAG, "[DEBUG] determineSingleStatCap:: Raw OCR text for $statName cap: '$text'")
-        return parseStatCap(text) ?: -1
+    /**
+     * Reads a Main screen number, reusing the last read when its crop has not changed. A turn usually changes only a stat or two and caps rarely change, so most reads are skipped.
+     *
+     * @param key Which number this is, such as "SPEED value".
+     * @param sourceBitmap The screenshot.
+     * @param x Left edge of the number's crop.
+     * @param y Top edge of the number's crop.
+     * @param compareW Width of the part of the crop that is compared.
+     * @param compareH Height of the part of the crop that is compared.
+     * @param read Reads the number fresh. A negative result is a failed read and is not cached.
+     * @return The number.
+     */
+    private fun readNumberCached(key: String, sourceBitmap: Bitmap, x: Int, y: Int, compareW: Int, compareH: Int, read: () -> Int): Int {
+        val crop = createSafeBitmap(sourceBitmap, x, y, compareW, compareH, key) ?: return read()
+        val argb = IntArray(crop.width * crop.height)
+        crop.getPixels(argb, 0, crop.width, 0, 0, crop.width, crop.height)
+        val pixels = IntArray(argb.size) { grayOf(argb[it]) }
+        val cached = numberCache[key]
+        if (cached != null && cached.reuses < NUMBER_CACHE_MAX_REUSES && isSameNumberCrop(cached.pixels, pixels)) {
+            numberCache[key] = cached.copy(reuses = cached.reuses + 1)
+            Log.d(TAG, "[DEBUG] readNumberCached:: $key is unchanged, reusing ${cached.value}.")
+            return cached.value
+        }
+        val value = read()
+        if (value >= 0) numberCache[key] = CachedNumber(pixels, value, reuses = 0) else numberCache.remove(key)
+        return value
     }
 
     /**

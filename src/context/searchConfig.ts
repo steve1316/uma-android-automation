@@ -241,7 +241,8 @@ const searchConfig: SearchOption[] = [
     {
         id: "enable-long-goal-stamina-floor",
         title: "Stamina Before Long Goal Races",
-        description: "When a Long goal race is close and Stamina is below 500, trains Stamina first, aims its target at the Long distance, and keeps Stamina training even when its gain is low for its risk. Skipped when the trainee's Long aptitude is below C.",
+        description:
+            "When a Long goal race is close and Stamina is below 500, trains Stamina first, aims its target at the Long distance, and keeps Stamina training even when its gain is low for its risk. Skipped when the trainee's Long aptitude is below C.",
         page: "TrainingSettings",
     },
     {
@@ -1110,8 +1111,9 @@ const searchConfig: SearchOption[] = [
     },
     {
         id: "grand-live-lesson-rescan-interval",
-        title: "Grand Live Lessons Re-check Interval",
-        description: "How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time.",
+        title: "Grand Live Lessons Fallback Re-check",
+        description:
+            'How many turns without a Lessons visit before the bot opens Lessons even without its "!" badge. The badge normally shows when a purchase is affordable, so this only covers a missed badge.',
         page: "ScenarioOverridesSettings",
     },
 

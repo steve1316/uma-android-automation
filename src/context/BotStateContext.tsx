@@ -606,7 +606,7 @@ export const defaultSettings: Settings = {
         grandLiveLessonStatPriority: [],
         grandLiveLessonHintPriority: [],
         grandLiveSongPriority: [],
-        grandLiveLessonRescanInterval: 2,
+        grandLiveLessonRescanInterval: 6,
     },
 }
 

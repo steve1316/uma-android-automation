@@ -84,8 +84,8 @@ const GRAND_LIVE_SONGS = [
     { id: "Sky-Blue Spring", label: "Sky-Blue Spring", description: "Guts +22, Friendship Training Effectiveness +5%" },
 ]
 
-/** Options for the Grand Live Lessons re-check interval picker, in turns. */
-const GRAND_LIVE_INTERVAL_OPTIONS = [1, 2, 3, 4, 5] as const
+/** Options for the Grand Live Lessons fallback re-check picker, in turns. */
+const GRAND_LIVE_INTERVAL_OPTIONS = [2, 4, 6, 8, 10] as const
 
 /**
  * Resolves the bot's active scenario to a campaign this page can render overrides for.
@@ -1038,14 +1038,14 @@ const ScenarioOverridesSettings = () => {
                                         </SearchableItem>
                                         <SearchableItem
                                             id="grand-live-lesson-rescan-interval"
-                                            title="Lessons Re-check Interval"
-                                            description="How many turns to wait between Lessons re-checks for newly learnable cards. The list only refreshes after a purchase, so checking every turn wastes time."
+                                            title="Lessons Fallback Re-check"
+                                            description='How many turns without a Lessons visit before the bot opens Lessons even without its "!" badge. The badge normally shows when a purchase is affordable, so this only covers a missed badge.'
                                         >
                                             <Row
-                                                title="Lessons Re-check Interval"
-                                                description="Turns between polls of the Lessons list for newly learnable cards."
+                                                title="Lessons Fallback Re-check"
+                                                description='Turns without a visit before Lessons opens even without its "!" badge.'
                                                 onPress={() => setLessonIntervalPickerOpen(true)}
-                                                right={<ValuePill label={`Every ${scenarioOverrides.grandLiveLessonRescanInterval} turn(s)`} />}
+                                                right={<ValuePill label={`After ${scenarioOverrides.grandLiveLessonRescanInterval} turns`} />}
                                             />
                                         </SearchableItem>
                                     </Section>
@@ -1183,14 +1183,14 @@ const ScenarioOverridesSettings = () => {
             <SheetModal
                 visible={lessonIntervalPickerOpen}
                 onRequestClose={() => setLessonIntervalPickerOpen(false)}
-                header={<ModalHeader title="LESSONS RE-CHECK INTERVAL" onClose={() => setLessonIntervalPickerOpen(false)} />}
+                header={<ModalHeader title="LESSONS FALLBACK RE-CHECK" onClose={() => setLessonIntervalPickerOpen(false)} />}
                 footer={null}
             >
                 <View style={modalShellStyles.modalBodyList}>
                     {GRAND_LIVE_INTERVAL_OPTIONS.map((n) => (
                         <ModalRadioRow
                             key={n}
-                            label={n === 1 ? "Every turn" : `Every ${n} turns`}
+                            label={`After ${n} turns`}
                             selected={n === scenarioOverrides.grandLiveLessonRescanInterval}
                             onPress={() => {
                                 updateOverrideSetting("grandLiveLessonRescanInterval", n)
