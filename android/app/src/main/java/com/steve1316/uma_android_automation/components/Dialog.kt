@@ -302,6 +302,20 @@ object DialogUtils {
         MessageLog.e(TAG, "[ERROR] getDialog:: Multiple dialogs match the detected title ($title). However, we failed to match any of them to the buttons in the dialog on the screen.")
         return null
     }
+
+    /**
+     * Like [getDialog], but a title that matches no known dialog reads as no dialog instead of throwing.
+     *
+     * @param imageUtils The CustomImageUtils instance used to find the dialog.
+     * @param bitmap Optional bitmap to use when looking for a dialog. If not specified, a screenshot will be taken and used instead.
+     * @return The [DialogInterface] if a known one was found, else NULL.
+     */
+    fun getDialogOrNull(imageUtils: CustomImageUtils, bitmap: Bitmap? = null): DialogInterface? =
+        try {
+            getDialog(imageUtils, bitmap)
+        } catch (e: IllegalStateException) {
+            null
+        }
 }
 
 /** Store the list of all dialog objects and a mapping of them for easy access. */
@@ -339,6 +353,7 @@ object DialogObjects {
             DialogDisplaySettings,
             DialogDownloadError,
             DialogEpithet,
+            DialogEventHome,
             DialogEpithets,
             DialogExchangeComplete,
             DialogExternalLink,
@@ -350,6 +365,7 @@ object DialogObjects {
             DialogGoalNotReached,
             DialogGoals,
             DialogHelpAndGlossary,
+            DialogIndependentTraining,
             DialogInfirmary,
             DialogInsufficientFans,
             DialogInsufficientGoalRaceResultPts,
@@ -371,6 +387,7 @@ object DialogObjects {
             DialogPurchaseAlarmClock,
             DialogPurchaseCarats,
             DialogPurchaseDailyRaceTicket,
+            DialogQuickModeSettings,
             DialogRaceDetails,
             DialogRacePlayback,
             DialogRaceRecommendations,
@@ -389,6 +406,7 @@ object DialogObjects {
             DialogSessionError,
             DialogShop,
             DialogSkillDetails,
+            DialogSparksConfirmation,
             DialogSkillListConfirmation,
             DialogSkillListConfirmExit,
             DialogSkillsLearned,
@@ -478,7 +496,6 @@ val DialogBonusUmamusumeDetails = dialog("bonus_umamusume_details", "Bonus Umamu
 /** Career Selection */
 val DialogBorrowCard = dialog("borrow_card", "Borrow Card", buttons = listOf(ButtonClose))
 
-/** Career Selection */
 val DialogBorrowCardConfirmation = dialog("borrow_card_confirmation", "Confirmation", buttons = listOf(ButtonClose, ButtonOk), okButton = ButtonOk)
 
 /** Career */
@@ -613,6 +630,13 @@ val DialogGoalNotReached = dialog("goal_not_reached", "Goal Not Reached", button
 /** Career */
 val DialogGoals = dialog("goals", "Goals", buttons = listOf(ButtonClose))
 
+/** Home, after completing a career during an event. Cancel stays on Home. */
+val DialogEventHome = dialog("event_home", "Event Home", buttons = listOf(ButtonCancel))
+
+/** Home, opening Career while an Independent Training is running or finished. */
+val DialogIndependentTraining =
+    dialog("independent_training", "Independent Training", buttons = listOf(ButtonCancel, ButtonCareerStartIndependentCareer), okButton = ButtonCareerStartIndependentCareer)
+
 /** Anywhere (from options dialog). */
 val DialogHelpAndGlossary = dialog("help_and_glossary", "Help & Glossary", buttons = listOf(ButtonClose))
 
@@ -701,6 +725,7 @@ val DialogPurchaseAlarmClock = dialog("purchase_alarm_clock", "Purchase Alarm Cl
 val DialogPurchaseCarats = dialog("purchase_carats", "Purchase Carats", buttons = listOf(ButtonClose))
 
 /** Daily Races */
+val DialogQuickModeSettings = dialog("quick_mode_settings", "Quick Mode Settings", buttons = listOf(ButtonConfirm), okButton = ButtonConfirm)
 val DialogPurchaseDailyRaceTicket = dialog("purchase_daily_race_ticket", "Purchase Daily Race Ticket", buttons = listOf(ButtonCancel, ButtonOk), okButton = ButtonOk)
 
 /** Daily Races, Special Events, and Career. */
@@ -791,6 +816,9 @@ val DialogShop = dialog("shop", "Shop", buttons = listOf(ButtonClose, ButtonShop
 val DialogSkillDetails = dialog("skill_details", "Skill Details", buttons = listOf(ButtonClose))
 
 /** Career */
+/** Career End, after confirming the Sparks: "Keep this set of Sparks?". */
+val DialogSparksConfirmation = dialog("sparks_confirmation", "Confirmation", buttons = listOf(ButtonCancel, ButtonConfirm), okButton = ButtonConfirm)
+
 val DialogSkillListConfirmation = dialog("skill_list_confirmation", "Confirmation", buttons = listOf(ButtonCancel, ButtonLearn), okButton = ButtonLearn)
 
 /** Career */
