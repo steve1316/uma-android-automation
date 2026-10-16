@@ -113,3 +113,71 @@ object NameMatching {
      */
     private fun normalize(text: String): String = text.lowercase().filter { it.isLetterOrDigit() }
 }
+
+/** Matches text read off the screen against the Career Setup catalogs. */
+object CareerCatalog {
+    /**
+     * Finds the card shown on screen, such as the outfit on Trainee Select or a Borrow Card row.
+     *
+     * @param ocrTitle The title line read off the screen.
+     * @param ocrName The name line read off the screen.
+     * @param cards The catalog to search.
+     * @returns The card, or null if none has that name and title.
+     */
+    fun <T : CatalogCard> match(ocrTitle: String, ocrName: String, cards: Collection<T>): T? =
+        cards.filter { NameMatching.matches(ocrName, it.name) }.maxByOrNull { NameMatching.similarity(ocrTitle, it.title) }?.takeIf { NameMatching.matches(ocrTitle, it.title) }
+
+    /**
+     * Picks the card type a borrowed friend card should be, from the types the scenario wants and the types the deck already holds.
+     *
+     * @param wantedTypes The scenario's wanted types, most wanted first.
+     * @param deckCounts How many cards of each type the deck holds. A missing type counts as zero.
+     * @returns The wanted type the deck holds the fewest of, or null if the scenario lists no types.
+     */
+    fun deckGapType(wantedTypes: List<String>, deckCounts: Map<String, Int>): String? = wantedTypes.minByOrNull { deckCounts[it] ?: 0 }
+
+    /** The order of the game's Name sort: plain alphabetical by character name, ignoring case. */
+    val gameNameOrder: Comparator<String> = Comparator { a, b -> a.lowercase().compareTo(b.lowercase()) }
+
+    /**
+     * Decides which end of the Name-sorted trainee list to search from, so the search covers at most about half the list.
+     *
+     * @param target The wanted trainee's character name.
+     * @param names Every trainee name in the catalog, used to estimate where the target sits in the list.
+     * @returns True to sort descending, because the target is in the later half of the alphabet.
+     */
+    fun searchDescending(target: String, names: Collection<String>): Boolean {
+        val sorted = names.distinct().sortedWith(gameNameOrder)
+        val before = sorted.count { gameNameOrder.compare(it, target) < 0 }
+        return before * 2 > sorted.size
+    }
+
+    /**
+     * Checks whether the Smart Race Solver plans for a different trainee than the one picked.
+     *
+     * @param outfit The picked outfit, or null if it could not be read.
+     * @param solverCharacter The solver's character preset, or null while the solver is off.
+     * @returns The solver's character when it differs from the picked trainee, else null.
+     */
+    fun solverMismatch(outfit: TraineeCard?, solverCharacter: String?): String? =
+        solverCharacter?.takeIf { outfit != null && !it.equals(outfit.name, ignoreCase = true) }
+
+    /**
+     * Decides which way to scroll a Name-sorted list from the names at the edges of the visible page.
+     *
+     * @param firstName The name of the first card on the page.
+     * @param lastName The name of the last card on the page.
+     * @param target The wanted trainee's name.
+     * @param descending True when the list is sorted Z to A.
+     * @returns Whether the target is above the page, below it, or on it.
+     */
+    fun pageMove(firstName: String, lastName: String, target: String, descending: Boolean): PageMove {
+        // Distance along the list: negative means the name comes before the target in the list's order.
+        val along = { name: String -> gameNameOrder.compare(name, target).let { if (descending) -it else it } }
+        return when {
+            along(firstName) > 0 -> PageMove.UP
+            along(lastName) < 0 -> PageMove.DOWN
+            else -> PageMove.HERE
+        }
+    }
+}
