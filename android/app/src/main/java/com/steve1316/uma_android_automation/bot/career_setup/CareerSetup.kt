@@ -434,6 +434,27 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         game.wait(2.0)
     }
 
+    /**
+     * Sets the deck, opens the friend slot when it is empty, and taps Start Career! once a friend is borrowed.
+     *
+     * @param bitmap The current screenshot.
+     */
+    private fun handleSupportFormation(bitmap: Bitmap) {
+        if (!bDeckDone) {
+            selectDeck()
+            bDeckDone = true
+            return
+        }
+        val borrow = ButtonBorrowSupportCard.findImageWithBitmap(game.imageUtils, bitmap)
+        if (borrow != null) {
+            deckCounts = readDeckCounts(bitmap, borrow)
+            ButtonBorrowSupportCard.click(game.imageUtils, sourceBitmap = bitmap)
+            game.wait(1.5)
+            return
+        }
+        if (ButtonStartCareer.click(game.imageUtils, sourceBitmap = bitmap)) game.wait(1.5)
+    }
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Helpers
@@ -625,6 +646,38 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
     private fun anchorOf(component: ComponentInterface, bitmap: Bitmap): Point =
         component.findImageWithBitmap(game.imageUtils, bitmap) ?: throw CampaignBreakpointException("Could not find the ${component.template.path} template to locate the rest of the screen from.")
 
+    /**
+     * Reads the "xN" count under each card type icon on Support Formation.
+     *
+     * @param bitmap The current screenshot.
+     * @param borrow The Borrow button's center, which the counts are measured from.
+     * @returns The count of each type the deck holds. Types with no count shown are left out.
+     */
+    private fun readDeckCounts(bitmap: Bitmap, borrow: Point): Map<String, Int> =
+        DECK_TYPE_COLUMNS.mapNotNull { (type, dx) ->
+            val text = ocr(bitmap, borrow, intArrayOf(dx - DECK_COUNT_W / 2, DECK_COUNT_DY, DECK_COUNT_W, DECK_COUNT_H), "deckCount$type")
+            // Read the digit next to the "x" rather than every digit, in case the icon edge reads as a number.
+            Regex("""[xX]\s*(\d)""").find(text)?.groupValues?.get(1)?.toInt()?.let { type to it }
+        }.toMap()
+
+    /** Taps the deck arrows until the "Deck N" title shows the chosen deck. */
+    private fun selectDeck() {
+        val target = settings.deckNumber
+        if (target !in 1..10) return
+        val header = anchorOf(LabelCareerStartSupportFormationHeader, game.imageUtils.getSourceBitmap())
+        repeat(MAX_CAROUSEL_TAPS) {
+            val current = Regex("""\d+""").find(ocr(game.imageUtils.getSourceBitmap(), header, DECK_TITLE, "deckTitle"))?.value?.toIntOrNull()
+            if (current == target) {
+                MessageLog.i(TAG, "[CAREER SETUP] Using Deck $target.")
+                return
+            }
+            // The carousel wraps from Deck 10 back to Deck 1, so go the short way around.
+            val forward = current == null || (target - current + 10) % 10 <= 5
+            (if (forward) ButtonCareerStartDeckArrowRight else ButtonCareerStartDeckArrowLeft).click(game.imageUtils, tries = 3)
+            game.wait(1.0)
+        }
+        throw CampaignBreakpointException("Could not switch to Deck $target on Support Formation.")
+    }
 
     /**
      * OCRs a region measured at 1080x1920 from a template.
