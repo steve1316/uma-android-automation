@@ -455,6 +455,113 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         if (ButtonStartCareer.click(game.imageUtils, sourceBitmap = bitmap)) game.wait(1.5)
     }
 
+    /** Claims a finished Independent Training from its dialog, or stops while it is still running. */
+    private fun handleIndependentTraining() {
+        if (!LabelCareerStartIndependentTrainingComplete.check(game.imageUtils)) {
+            DialogIndependentTraining.close(game.imageUtils, tries = 3)
+            throw CampaignBreakpointException("An Independent Training is still running. Start the bot again once it finishes.")
+        }
+        // Claiming completes that career, which cannot be undone, so a dry run stops here.
+        if (bDryRun) throw CampaignBreakpointException("Career Setup Test: an Independent Training is finished and ready to claim. Stopping before claiming it.")
+        MessageLog.i(TAG, "[CAREER SETUP] The Independent Training is complete. Claiming its results.")
+        bClaimingIndependentTraining = true
+        DialogIndependentTraining.ok(game.imageUtils, tries = 3)
+        game.wait(3.0)
+    }
+
+    /**
+     * Handles the dialogs owned by the setup and passes every other dialog to the task.
+     *
+     * @param dialog The dialog on screen.
+     */
+    private fun handleDialog(dialog: DialogInterface) {
+        when (dialog.name) {
+            DialogFinalConfirmation.name -> handleFinalConfirmation()
+
+            DialogBorrowCard.name -> {
+                if (!FriendPicker(game, settings).pick(deckCounts)) throw CampaignBreakpointException("Could not borrow a friend support card.")
+                game.wait(1.5)
+            }
+
+            DialogConfirmAutoSelect.name -> confirmAutoSelect()
+
+            DialogIndependentTraining.name -> handleIndependentTraining()
+
+            // Starting a career with too little TP asks to restore it, which shares its title and buttons with the RP prompt. TP is never restored.
+            DialogConfirmRestoreRP.name -> {
+                ButtonNo.click(game.imageUtils, tries = 3)
+                throw CampaignBreakpointException("Out of TP to start the next career. Stopping bot...")
+            }
+
+            else -> {
+                val result = game.task.handleDialogs(dialog)
+                if (result is DialogHandlerResult.Unhandled) {
+                    MessageLog.i(TAG, "[CAREER SETUP] Closing the \"${dialog.name}\" dialog.")
+                    dialog.close(game.imageUtils)
+                }
+            }
+        }
+        game.wait(1.0)
+    }
+
+    /** Makes sure the Normal Career tab is active, then taps Start Career! and checks the career actually starts. */
+    private fun handleFinalConfirmation() {
+        if (ButtonCareerStartIndependentStart.check(game.imageUtils) && !ButtonStartCareer.check(game.imageUtils)) {
+            MessageLog.i(TAG, "[CAREER SETUP] Switching Final Confirmation to the Normal Career tab.")
+            tapAnchored(game, anchorOf(ButtonCancel, game.imageUtils.getSourceBitmap()), NORMAL_CAREER_TAB_DX, NORMAL_CAREER_TAB_DY)
+            game.wait(1.0)
+        }
+        if (bDryRun) {
+            if (!ButtonStartCareer.check(game.imageUtils, tries = 5)) throw CampaignBreakpointException("Could not find Start Career! on Final Confirmation.")
+            throw CampaignBreakpointException("Career Setup Test reached Final Confirmation on the Normal Career tab. Stopping before Start Career!.")
+        }
+        if (!ButtonStartCareer.click(game.imageUtils, tries = 5)) throw CampaignBreakpointException("Could not find Start Career! on Final Confirmation.")
+        MessageLog.i(TAG, "[CAREER SETUP] Tapped Start Career!.")
+        bStartTapped = true
+        game.wait(3.0)
+    }
+
+    /** Accepts the Confirm Auto-Select dialog with "Include guests" unticked, since a guest the game picks may cost monies. */
+    private fun confirmAutoSelect() {
+        val bitmap = game.imageUtils.getSourceBitmap()
+        val checkbox = Checkbox.findImageWithBitmap(game.imageUtils, bitmap)
+        if (checkbox != null) {
+            // A ticked box has a green checkmark and an unticked one a grey checkmark.
+            val boxSize = game.imageUtils.relWidth(44)
+            if (game.imageUtils.isRegionGreen(bitmap, checkbox.x.toInt() - boxSize / 2, checkbox.y.toInt() - boxSize / 2, boxSize, boxSize)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Unticking \"Include guests\" so Auto-Select never pays for a borrow.")
+                game.tap(checkbox.x, checkbox.y)
+                game.wait(0.5)
+            }
+        }
+        DialogConfirmAutoSelect.ok(game.imageUtils)
+    }
+
+    /**
+     * Summarizes what the setup will do, so a pick the user did not expect can be traced to its setting.
+     *
+     * @returns The plan, such as "keep the selected trainee, keep the last parents, ...".
+     */
+    private fun describePlan(): String {
+        val trainee = if (settings.usePreselectedTrainee) "keep the selected trainee" else "pick ${wantedOutfit?.label ?: "no trainee set"}"
+        val parents =
+            when (settings.legacyMode) {
+                "smart" -> "pick parents by the trainee's smart sparks"
+                "custom" -> "pick parents by sparks (${settings.sparkWishList.joinToString(", ")})"
+                else -> "keep the last parents (Smart pick for an empty slot)"
+            }
+        val deck = if (settings.deckNumber in 1..10) "use Deck ${settings.deckNumber}" else "keep the current deck"
+        val friend = settings.supportCards[settings.friendCard]?.let { "borrow ${it.label}" } ?: "borrow a smart friend card"
+        return "$trainee, $parents, $deck, $friend"
+    }
+
+    /** Taps the story skip button once and lets its animation finish, moving it one step toward full speed. */
+    private fun stepUpStorySkip() {
+        MessageLog.i(TAG, "[CAREER SETUP] Raising the story skip speed.")
+        ButtonCareerStartStorySkipOff.click(game.imageUtils) || ButtonCareerStartStorySkipOne.click(game.imageUtils)
+        game.wait(1.0, skipWaitingForLoading = true)
+    }
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Helpers
