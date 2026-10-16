@@ -294,3 +294,264 @@ data class CareerSetupSettings(
         private fun JSONArray.toStringList(): List<String> = (0 until length()).map { getString(it) }
     }
 }
+
+/**
+ * Starts a new career from the Home screen: scenario, trainee, legacy parents, support deck, friend card, Final Confirmation, the opening
+ * narration, Quick Mode, and the story skip speed. It then hands back to the normal career loop.
+ *
+ * Each tick reads which setup screen is showing and runs that step, so it picks up from wherever the game is.
+ *
+ * @property game Reference to the bot's [Game] instance.
+ * @property bDryRun True to stop on Final Confirmation instead of starting the career, as the Career Setup Test does to test the setup without spending TP.
+ */
+class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) {
+    companion object {
+        private val TAG: String = "[${MainActivity.loggerTag}]CareerSetup"
+
+        /**
+         * Whether the game is outside a career, on Home or one of the career setup screens.
+         *
+         * @param game Reference to the bot's [Game] instance.
+         * @param bitmap The screenshot to check.
+         * @returns True when the bottom menu bar or the Final Confirmation dialog is showing.
+         */
+        fun isOutsideCareer(game: Game, bitmap: Bitmap): Boolean =
+            ButtonMenuBarHome.check(game.imageUtils, sourceBitmap = bitmap) || DialogUtils.getDialogOrNull(game.imageUtils, bitmap)?.name == DialogFinalConfirmation.name
+    }
+
+    private val settings = CareerSetupSettings.load()
+
+    /** Whether the legacy parents were picked during this setup. */
+    private var bLegacyDone = false
+
+    /** Whether the support deck was set during this setup. */
+    private var bDeckDone = false
+
+    /** Whether Start Career! was tapped on Final Confirmation. */
+    private var bStartTapped = false
+
+    /** How many cards of each type the deck holds, read before the friend slot is opened. */
+    private var deckCounts: Map<String, Int> = emptyMap()
+
+    /** The outfit chosen in settings, or null when the preselected trainee is kept. */
+    private val wantedOutfit: TraineeCard? = settings.trainee.takeIf { !settings.usePreselectedTrainee }?.let { settings.traineeCards[it] }
+
+    /** The outfit the career starts with, read on Trainee Select. Smart Auto-Select derives its sparks from it. */
+    private var selectedOutfit: TraineeCard? = wantedOutfit
+
+    /** The Trainee Select header's center, which the selected outfit's name lines are measured from. It never moves, so it is found once. */
+    private var traineeHeader: Point? = null
+
+    /** Whether a finished Independent Training is being claimed, which ends on its end-of-career screen instead of starting a career. */
+    private var bClaimingIndependentTraining = false
+
+    /** The Smart sparks for the outfit picked on Trainee Select, worked out once when the first parent is picked. */
+    private val smartWishList: List<String> by lazy {
+        val outfit = selectedOutfit
+        if (outfit == null) {
+            MessageLog.w(TAG, "[CAREER SETUP] Could not tell which outfit was picked, so Smart Auto-Select uses ${CareerSetupSettings.FALLBACK_WISH_LIST.joinToString(", ")}.")
+            CareerSetupSettings.FALLBACK_WISH_LIST
+        } else {
+            SmartSparks.wishList(outfit.aptitudes, outfit.growth, outfit.name in settings.longGoalCharacters).also {
+                MessageLog.i(TAG, "[CAREER SETUP] Smart sparks for ${outfit.label}: ${it.joinToString(", ")}.")
+            }
+        }
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Steps
+
+    /** Taps the right arrow on Scenario Select until the description names the chosen scenario, then taps Next. */
+    private fun handleScenarioSelect() {
+        val keyword = SCENARIO_KEYWORDS[settings.scenario] ?: throw CampaignBreakpointException("Career Setup does not know the scenario \"${settings.scenario}\".")
+        val next = anchorOf(ButtonNext, game.imageUtils.getSourceBitmap())
+        repeat(MAX_CAROUSEL_TAPS) {
+            val text = ocr(game.imageUtils.getSourceBitmap(), next, SCENARIO_DESCRIPTION, "scenarioDescription").lowercase().filter { it.isLetter() }
+            if (text.contains(keyword)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Selected the ${settings.scenario} scenario.")
+                ButtonNext.click(game.imageUtils, tries = 5)
+                game.wait(2.0)
+                return
+            }
+            ButtonCareerStartArrowRight.click(game.imageUtils, tries = 3)
+            game.wait(1.5)
+        }
+        throw CampaignBreakpointException("Could not find the ${settings.scenario} scenario on Scenario Select.")
+    }
+
+    /** Picks the trainee on Trainee Select, or keeps the preselected one, then taps Next. */
+    private fun handleTraineeSelect() {
+        val current = readSelectedOutfit()
+        selectedOutfit =
+            if (settings.usePreselectedTrainee) {
+                current ?: selectedOutfit
+            } else {
+                val wanted = wantedOutfit ?: throw CampaignBreakpointException("No trainee is set in Career Setup. Pick one or turn on \"Use Preselected Trainee\".")
+                current?.takeIf { it.id == wanted.id } ?: findTrainee(wanted) ?: throw CampaignBreakpointException("Could not find ${wanted.label} on Trainee Select.")
+            }
+        MessageLog.i(TAG, "[CAREER SETUP] Trainee chosen: ${selectedOutfit?.label ?: "an outfit not in the catalog"}.")
+        // The solver plans races from its own character preset, so a different trainee would race to the wrong objectives and aptitudes.
+        CareerCatalog.solverMismatch(selectedOutfit, settings.solverCharacter)?.let {
+            throw CampaignBreakpointException(
+                "${selectedOutfit?.label} does not match the Smart Race Solver's character ($it). Set the solver's character on the Schedule page or turn the solver off.",
+            )
+        }
+        ButtonNext.click(game.imageUtils, tries = 5)
+        game.wait(2.0)
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Helpers
+
+    /**
+     * Reads which outfit is selected at the top of Trainee Select.
+     *
+     * @returns The outfit, or null if the text matched no outfit in the catalog.
+     */
+    private fun readSelectedOutfit(): TraineeCard? {
+        val bitmap = game.imageUtils.getSourceBitmap()
+        val header = traineeHeader ?: anchorOf(LabelCareerStartTraineeSelectHeader, bitmap).also { traineeHeader = it }
+        val name = ocr(bitmap, header, TRAINEE_NAME_LINE, "traineeName")
+        val title = ocr(bitmap, header, TRAINEE_OUTFIT_LINE, "traineeOutfit")
+        return CareerCatalog.match(title, name, settings.traineeCards.values).also { MessageLog.d(TAG, "[DEBUG] readSelectedOutfit:: \"$title $name\" -> ${it?.id}") }
+    }
+
+    /**
+     * Finds the wanted outfit on Trainee Select. The grid is sorted by Name from whichever end is nearer the trainee. Each page's first and last
+     * cards are read to decide whether to scroll up, scroll down, or search that page, so the search works from wherever the list starts.
+     *
+     * @param wanted The outfit to select.
+     * @returns The wanted outfit once it is selected, or null if it is not owned.
+     */
+    private fun findTrainee(wanted: TraineeCard): TraineeCard? {
+        val descending = CareerCatalog.searchDescending(wanted.name, settings.traineeCards.values.map { it.name })
+        val next = sortTraineesByName(descending)
+        // Like the Legacy grid, the scrollbar is painted over the cards and is not a handle.
+        val list = ScrollList.create(game, bThumbIsHandle = false) ?: return null
+        list.readBottom = game.imageUtils.relY(next.y, TRAINEE_GRID_READ_BOTTOM_DY)
+        MessageLog.i(TAG, "[CAREER SETUP] Searching the Name-sorted trainee list ${if (descending) "descending" else "ascending"} for ${wanted.label}.")
+
+        var lastMove: PageMove? = null
+        repeat(MAX_TRAINEE_PAGES) {
+            val cards = visibleTraineeCards(list)
+            if (cards.isEmpty()) {
+                if (!list.scrollDownTracked()) return null
+                return@repeat
+            }
+            val first = selectTraineeCard(cards.first())
+            if (first?.id == wanted.id) return wanted
+            val last = if (cards.size > 1) selectTraineeCard(cards.last()) else first
+            if (last?.id == wanted.id) return wanted
+
+            // An unreadable edge card cannot steer the search, so the page is searched and the list stepped down.
+            var move = if (first == null || last == null) PageMove.HERE else CareerCatalog.pageMove(first.name, last.name, wanted.name, descending)
+            MessageLog.i(TAG, "[CAREER SETUP] Page shows ${first?.label ?: "an unreadable trainee"} to ${last?.label ?: "an unreadable trainee"}: ${move.name.lowercase()}.")
+            if (move == PageMove.HERE) {
+                if (cards.drop(1).dropLast(1).any { selectTraineeCard(it)?.id == wanted.id }) return wanted
+                // Other outfits of the same trainee can carry on past either edge. Otherwise the outfit is not owned.
+                move =
+                    when {
+                        first == null || last == null -> PageMove.DOWN
+                        first.name == wanted.name && lastMove != PageMove.DOWN -> PageMove.UP
+                        last.name == wanted.name && lastMove != PageMove.UP -> PageMove.DOWN
+                        else -> return null
+                    }
+            }
+            // Turning back means the wanted name falls between two pages already read, so the outfit is not owned.
+            if (lastMove != null && move != lastMove) return null
+            lastMove = move
+            if (!(if (move == PageMove.UP) list.scrollUpTracked() else list.scrollDownTracked())) return null
+        }
+        return null
+    }
+
+    /**
+     * Sorts the trainee grid by Name in the given direction, opening Display Settings only when the sort is not already Name.
+     *
+     * @param descending True for Z to A.
+     * @returns The Next button's center, which the grid's sort bar is measured from.
+     * @throws CampaignBreakpointException When Display Settings does not open.
+     */
+    private fun sortTraineesByName(descending: Boolean): Point {
+        val bitmap = game.imageUtils.getSourceBitmap()
+        val next = anchorOf(ButtonNext, bitmap)
+        if (!ocr(bitmap, next, TRAINEE_SORT_PILL, "traineeSort").contains("Name", ignoreCase = true)) {
+            MessageLog.i(TAG, "[CAREER SETUP] Sorting the trainee list by Name.")
+            tapCenter(next, TRAINEE_SORT_PILL)
+            game.wait(1.5)
+            val dialogBitmap = game.imageUtils.getSourceBitmap()
+            if (DialogUtils.getDialogOrNull(game.imageUtils, dialogBitmap)?.name != DialogDisplaySettings.name) throw CampaignBreakpointException("Display Settings did not open on Trainee Select.")
+            val ok = anchorOf(ButtonOk, dialogBitmap)
+            tapAnchored(game, ok, DISPLAY_SORT_TAB_DX, DISPLAY_SORT_TAB_DY)
+            game.wait(0.5)
+            tapAnchored(game, ok, DISPLAY_SORT_NAME_DX, DISPLAY_SORT_NAME_DY)
+            game.wait(0.5)
+            DialogDisplaySettings.ok(game.imageUtils, tries = 5)
+            game.wait(1.5)
+        }
+        val isDescending = ocr(game.imageUtils.getSourceBitmap(), next, TRAINEE_ORDER_TOGGLE, "traineeOrder").contains("Desc", ignoreCase = true)
+        if (isDescending != descending) {
+            tapCenter(next, TRAINEE_ORDER_TOGGLE)
+            game.wait(1.5)
+        }
+        return next
+    }
+
+    /**
+     * Finds the trainee cards whose portrait is fully inside the readable part of the grid.
+     *
+     * @param list The trainee grid.
+     * @returns Each card's "Potential Lvl" label center, in reading order.
+     */
+    private fun visibleTraineeCards(list: ScrollList): List<Point> {
+        val portraitTop = list.listBoundingBox.y + game.imageUtils.relHeight(-TRAINEE_PORTRAIT_DY)
+        return LabelCareerStartPotentialLvl.findAll(game.imageUtils, region = list.readRegion, sourceBitmap = game.imageUtils.getSourceBitmap())
+            .filter { it.y.toInt() >= portraitTop }
+            .sortedWith(compareBy({ it.y.toInt() / game.imageUtils.relHeight(40) }, { it.x }))
+    }
+
+    /**
+     * Taps a trainee card and reads which outfit is now selected.
+     *
+     * @param label The card's "Potential Lvl" label center.
+     * @returns The selected outfit, or null if it is not in the catalog.
+     */
+    private fun selectTraineeCard(label: Point): TraineeCard? {
+        game.tap(label.x, label.y + game.imageUtils.relHeight(TRAINEE_PORTRAIT_DY))
+        game.wait(0.8)
+        return readSelectedOutfit()
+    }
+
+    /**
+     * Taps the middle of a region measured at 1080x1920 from a template.
+     *
+     * @param anchor The template's center on screen.
+     * @param offsets The region as dx, dy, width and height from the anchor.
+     */
+    private fun tapCenter(anchor: Point, offsets: IntArray) = tapAnchored(game, anchor, offsets[0] + offsets[2] / 2, offsets[1] + offsets[3] / 2)
+
+    /**
+     * Finds the template that a screen's positions are measured from.
+     *
+     * @param component The template.
+     * @param bitmap The screenshot to search.
+     * @returns The template's center.
+     * @throws CampaignBreakpointException When the template is not on screen, since nothing on that screen can then be located.
+     */
+    private fun anchorOf(component: ComponentInterface, bitmap: Bitmap): Point =
+        component.findImageWithBitmap(game.imageUtils, bitmap) ?: throw CampaignBreakpointException("Could not find the ${component.template.path} template to locate the rest of the screen from.")
+
+
+    /**
+     * OCRs a region measured at 1080x1920 from a template.
+     *
+     * @param bitmap The screenshot.
+     * @param anchor The template's center on screen.
+     * @param offsets The region as dx, dy, width and height from the anchor.
+     * @param debugName Name for debug images.
+     * @returns The text read.
+     */
+    private fun ocr(bitmap: Bitmap, anchor: Point, offsets: IntArray, debugName: String): String = ocrAnchored(game.imageUtils, bitmap, anchor, offsets, debugName)
+}
