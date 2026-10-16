@@ -11,6 +11,8 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.career_setup.CareerCompletion
 import com.steve1316.uma_android_automation.bot.career_setup.CareerSetup
+import com.steve1316.uma_android_automation.bot.career_setup.CareerSetupSettings
+import com.steve1316.uma_android_automation.bot.career_setup.LegacyPicker
 import com.steve1316.uma_android_automation.bot.solver.Heuristic
 import com.steve1316.uma_android_automation.bot.solver.SmartRaceSolverIntegration
 import com.steve1316.uma_android_automation.components.ButtonBack
@@ -106,6 +108,8 @@ val CAREER_DEBUG_TEST_KEYS: Set<String> =
         "debugMode_startUmamusumeDetailsReadTest",
         "debugMode_startSkillListBuyTest",
         "debugMode_startRainbowDetectionTest",
+        "debugMode_startLegacySparkReaderTest",
+        "debugMode_startCareerSetupTest",
         "debugMode_startSpiritGaugeDetectionTest",
         "debugMode_startTrackblazerRaceSelectionTest",
         "debugMode_startTrackblazerInventorySyncTest",
@@ -471,6 +475,8 @@ abstract class Campaign(game: Game) : Task(game) {
                 "debugMode_startUmamusumeDetailsReadTest" to ::startUmamusumeDetailsReadTest,
                 "debugMode_startSkillListBuyTest" to skillPlan::startSkillListBuyTest,
                 "debugMode_startRainbowDetectionTest" to ::startRainbowDetectionTest,
+                "debugMode_startLegacySparkReaderTest" to ::startLegacySparkReaderTest,
+                "debugMode_startCareerSetupTest" to ::startCareerSetupTest,
             )
 
         var bDidAnyTestsRun = false
@@ -498,6 +504,23 @@ abstract class Campaign(game: Game) : Task(game) {
             if (pass < passes) game.wait(1.0)
         }
         MessageLog.i(TAG, "[TEST] Rainbow Detection test complete. Check the logged metrics and the saved debugRainbowDetection.png crop to calibrate geometry/thresholds.")
+    }
+
+    /** Debug test for the Career Setup spark reader. Run it with a Legacy Select picker open: it logs each visible card's sparks, score and whether it is taken. */
+    open fun startLegacySparkReaderTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Legacy Spark Reader test. Open a Legacy Select picker so the cards are visible.")
+        val settings = CareerSetupSettings.load()
+        LegacyPicker(game, settings, settings.sparkWishList).logVisibleCards()
+    }
+
+    /** Debug test for Career Setup. Run it from Home: it goes through every setup step with the current settings and stops on Final Confirmation without spending TP. */
+    open fun startCareerSetupTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Career Setup test. Start it from Home or any career setup screen.")
+        try {
+            CareerSetup(game, bDryRun = true).run()
+        } catch (e: CampaignBreakpointException) {
+            MessageLog.i(TAG, "[TEST] ${e.message}")
+        }
     }
 
     /**
