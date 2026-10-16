@@ -67,19 +67,9 @@ class Game(val myContext: Context) {
     /** The wait delay specifically for dialog interactions. */
     val dialogWaitDelay: Double = SettingsHelper.getDoubleSetting("general", "dialogWaitDelay")
 
-    /** Holds the task instance corresponding to the selected scenario. */
-    val task: Task =
-        if (runMode == "dailies") {
-            Dailies(this)
-        } else {
-            when (scenario) {
-                "URA Finale" -> UraFinale(this)
-                "Unity Cup" -> UnityCup(this)
-                "Trackblazer" -> Trackblazer(this)
-                "Grand Live" -> GrandLive(this)
-                else -> throw InterruptedException("Invalid scenario: $scenario")
-            }
-        }
+    /** Holds the task instance corresponding to the selected scenario. Swapped for the career task when Dailies hands off to a new career. */
+    var task: Task = if (runMode == "dailies") Dailies(this) else createCareerTask()
+        private set
 
     /** The maximum number of connection error retry attempts allowed. */
     internal val maxConnectionErrorRetryAttempts: Int = 3
@@ -283,6 +273,32 @@ class Game(val myContext: Context) {
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Builds the career task for the selected scenario.
+     *
+     * @return The scenario's career task.
+     * @throws InterruptedException When the scenario setting is not a known scenario.
+     */
+    private fun createCareerTask(): Task =
+        when (scenario) {
+            "URA Finale" -> UraFinale(this)
+            "Unity Cup" -> UnityCup(this)
+            "Trackblazer" -> Trackblazer(this)
+            "Grand Live" -> GrandLive(this)
+            else -> throw InterruptedException("Invalid scenario: $scenario")
+        }
+
+    /**
+     * Whether the run that just ended hands over to a new career: dailies that finished with "Start a Career When Done" on, or a career that was completed
+     * back to Home to start the next one.
+     *
+     * @param result The result the run ended with.
+     * @return True if a new career task should start.
+     */
+    private fun startsCareerNext(result: TaskResult): Boolean =
+        (task as? Campaign)?.bStartNextCareer == true ||
+            (task !is Campaign && runMode == "dailies" && result.code == TaskResultCode.TASK_RESULT_COMPLETE && SettingsHelper.getBooleanSetting("dailies", "startCareerWhenDone", false))
+
+    /**
      * Begins automation here.
      *
      * @return True if all automation goals have been met. False otherwise.
@@ -366,7 +382,18 @@ class Game(val myContext: Context) {
                 val runName = if (runMode == "dailies") "Dailies" else "Scenario: $scenario"
                 DiscordUtils.queue.add("```diff\n+ ${MessageLog.getSystemTimeString()} Bot run started! $runName```$logViewerString")
             }
-            task.start()
+            var result = task.start()
+            // Finished dailies or a completed career hand over to a fresh career, which Career Setup starts from Home. The chain ends once a run stops for any
+            // other reason, such as running out of TP.
+            while (startsCareerNext(result)) {
+                MessageLog.i(TAG, "[INFO] ${if (task is Campaign) "Career completed" else "Dailies done"}. Starting a new $scenario career.")
+                task.onRunEnd()
+                // The run that just ended recorded its outcome, which the task loop reads as a stop request, so the new career starts from a clean status.
+                BotStatus.reset()
+                task = createCareerTask()
+                task.onRunStart(System.currentTimeMillis(), myContext)
+                result = task.start()
+            }
         }
 
         task.onRunEnd()
