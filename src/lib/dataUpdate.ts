@@ -5,7 +5,7 @@ import { DataVersion, getGameDataDir, getInstalledDataVersion, VERSION_FILE_NAME
 export const DATA_UPDATE_CHECK_EVENT = "checkDataUpdate"
 
 /** The data files an update replaces. races.json and scenarios.json only change with an APK. */
-export const DATA_FILES = ["characters.json", "supports.json", "skills.json", "epithets.json", "characterPresets.json", "character_objectives.json"] as const
+export const DATA_FILES = ["characters.json", "supports.json", "skills.json", "epithets.json", "characterPresets.json", "character_objectives.json", "traineeCards.json", "supportCards.json"] as const
 
 /** Where the data files are downloaded from. `EXPO_PUBLIC_DATA_URL_BASE` overrides master on GitHub at build time, for testing. */
 const DATA_URL_BASE = process.env.EXPO_PUBLIC_DATA_URL_BASE || "https://raw.githubusercontent.com/steve1316/uma-android-automation/refs/heads/master/src/data"
@@ -68,7 +68,9 @@ export async function applyDataUpdate(remote: DataVersion): Promise<void> {
     if (staging.exists) staging.delete()
     staging.create()
     try {
-        for (const name of DATA_FILES) {
+        // Data published before a file was added does not list it, so that file keeps using the bundled copy.
+        const files = DATA_FILES.filter((name) => name in remote.files)
+        for (const name of files) {
             const url = `${DATA_URL_BASE}/${name}?v=${encodeURIComponent(remote.version)}`
             const file = await File.downloadFileAsync(url, new File(staging, name))
             if (!remote.files[name] || file.md5 !== remote.files[name]) {
@@ -84,7 +86,7 @@ export async function applyDataUpdate(remote: DataVersion): Promise<void> {
         for (const name of DATA_FILES) {
             const dest = new File(target, name)
             if (dest.exists) dest.delete()
-            await new File(staging, name).move(dest)
+            if (files.includes(name)) await new File(staging, name).move(dest)
         }
         stamp.create()
         stamp.write(JSON.stringify(remote))

@@ -68,6 +68,15 @@ test("applies every file and writes the version stamp last", async () => {
     expect(Object.keys(mockFiles).some((k) => k.startsWith("doc/game-data-staging"))).toBe(false)
 })
 
+test("a file the remote stamp does not list keeps the bundled copy", async () => {
+    mockFiles["doc/game-data/supportCards.json"] = "STALE"
+    const older = { ...remote, files: { ...remote.files } }
+    delete older.files["supportCards.json"]
+    await applyDataUpdate(older)
+    expect(mockFiles["doc/game-data/supportCards.json"]).toBeUndefined()
+    expect(mockFiles["doc/game-data/supports.json"]).toBe(JSON.stringify({ file: "supports.json" }))
+})
+
 test("a checksum mismatch aborts and leaves the old data in place", async () => {
     mockFiles["doc/game-data/data_version.json"] = "OLD"
     mockFiles["doc/game-data/supports.json"] = "OLD"

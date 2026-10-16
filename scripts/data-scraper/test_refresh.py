@@ -73,6 +73,11 @@ GOOD = {
         "Vodka": {"name": "Vodka", "mandatoryRaces": []},
         "Nakayama Festa": {"name": "Nakayama Festa", "mandatoryRaces": []},
     },
+    "traineeCards.json": {
+        "100846": {"name": "Vodka", "title": "[Christmas]", "aptitudes": {}, "growth": {}},
+        "104901": {"name": "Nakayama Festa", "title": "[Base]", "aptitudes": {}, "growth": {}},
+    },
+    "supportCards.json": {"30125": {"name": "Sakura Laurel", "title": "[Card]", "type": "Speed", "rarity": "SSR"}},
 }
 FRESH = {"character": [CHAR_CARDS[2], CHAR_CARDS[3]], "support": [SUPPORT_CARDS[1]]}
 
@@ -101,6 +106,15 @@ def test_find_problems_flags_incomplete_new_trainee_and_support():
     assert "new trainee Nakayama Festa has no entry in characters.json" in problems
     assert "new trainee Nakayama Festa has no entry in character_objectives.json" in problems
     assert "new support card Sakura Laurel has no entry in supports.json" in problems
+
+
+def test_find_problems_flags_new_cards_missing_from_catalogs():
+    new = json.loads(json.dumps(GOOD))
+    del new["traineeCards.json"]["104901"]
+    new["supportCards.json"] = {}
+    problems = refresh.find_problems({}, new, FRESH)
+    assert "new character card 104901 has no entry in traineeCards.json" in problems
+    assert "new support card 30125 has no entry in supportCards.json" in problems
 
 
 def test_find_problems_flags_empty_event_lists():

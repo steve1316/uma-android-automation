@@ -1,0 +1,1550 @@
+{
+    "10001": {
+        "name": "Special Week",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10002": {
+        "name": "Silence Suzuka",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10003": {
+        "name": "Tokai Teio",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10004": {
+        "name": "Maruzensky",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10005": {
+        "name": "Oguri Cap",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10006": {
+        "name": "Gold Ship",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10007": {
+        "name": "Vodka",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10008": {
+        "name": "Taiki Shuttle",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10009": {
+        "name": "Grass Wonder",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10010": {
+        "name": "Mejiro McQueen",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10011": {
+        "name": "El Condor Pasa",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10012": {
+        "name": "TM Opera O",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10013": {
+        "name": "Symboli Rudolf",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10014": {
+        "name": "Seiun Sky",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10015": {
+        "name": "Rice Shower",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10016": {
+        "name": "Winning Ticket",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10017": {
+        "name": "Gold City",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10018": {
+        "name": "Sakura Bakushin O",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10019": {
+        "name": "Super Creek",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10020": {
+        "name": "Haru Urara",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10021": {
+        "name": "Tazuna Hayakawa",
+        "title": "[Tracen Academy]",
+        "type": "Friend",
+        "rarity": "R"
+    },
+    "10022": {
+        "name": "Aoi Kiryuin",
+        "title": "[Tracen Academy]",
+        "type": "Friend",
+        "rarity": "R"
+    },
+    "10023": {
+        "name": "Daiwa Scarlet",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10024": {
+        "name": "Hishi Amazon",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10025": {
+        "name": "Air Groove",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10026": {
+        "name": "Agnes Digital",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10027": {
+        "name": "Tamamo Cross",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10028": {
+        "name": "Fine Motion",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10029": {
+        "name": "Biwa Hayahide",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10030": {
+        "name": "Mayano Top Gun",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10031": {
+        "name": "Manhattan Cafe",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10032": {
+        "name": "Mihono Bourbon",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10033": {
+        "name": "Mejiro Ryan",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10034": {
+        "name": "Yukino Bijin",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10035": {
+        "name": "Ines Fujin",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10036": {
+        "name": "Agnes Tachyon",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10037": {
+        "name": "Air Shakur",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10038": {
+        "name": "Eishin Flash",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10039": {
+        "name": "Smart Falcon",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10040": {
+        "name": "Narita Taishin",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10041": {
+        "name": "Nishino Flower",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10042": {
+        "name": "Biko Pegasus",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10043": {
+        "name": "Marvelous Sunday",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10044": {
+        "name": "Matikanefukukitaru",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10045": {
+        "name": "Meisho Doto",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10046": {
+        "name": "Mejiro Dober",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10047": {
+        "name": "Nice Nature",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10048": {
+        "name": "King Halo",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10049": {
+        "name": "Fuji Kiseki",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10050": {
+        "name": "Sweep Tosho",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10051": {
+        "name": "Twin Turbo",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10052": {
+        "name": "Daitaku Helios",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10053": {
+        "name": "Ikuno Dictus",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10054": {
+        "name": "Mejiro Palmer",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10055": {
+        "name": "Kitasan Black",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10056": {
+        "name": "Satono Diamond",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10057": {
+        "name": "Matikanetannhauser",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10058": {
+        "name": "Yaeno Muteki",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10059": {
+        "name": "Zenno Rob Roy",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10060": {
+        "name": "Riko Kashimoto",
+        "title": "[Tracen Academy]",
+        "type": "Friend",
+        "rarity": "R"
+    },
+    "10061": {
+        "name": "Seeking the Pearl",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10062": {
+        "name": "Sakura Chiyono O",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10063": {
+        "name": "Kawakami Princess",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10064": {
+        "name": "Hishi Akebono",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10065": {
+        "name": "Bamboo Memory",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10066": {
+        "name": "Shinko Windy",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10067": {
+        "name": "Nakayama Festa",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10068": {
+        "name": "Inari One",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10069": {
+        "name": "Mejiro Ardan",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10070": {
+        "name": "Tosen Jordan",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10071": {
+        "name": "Sirius Symboli",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10072": {
+        "name": "Narita Brian",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10073": {
+        "name": "Curren Chan",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10074": {
+        "name": "Sasami Anshinzawa",
+        "title": "[Acupuncturist]",
+        "type": "Friend",
+        "rarity": "R"
+    },
+    "10075": {
+        "name": "Admire Vega",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10076": {
+        "name": "Mejiro Bright",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10077": {
+        "name": "Narita Top Road",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
+    "10078": {
+        "name": "Mr. C.B.",
+        "title": "[Tracen Academy]",
+        "type": "Wit",
+        "rarity": "R"
+    },
+    "10079": {
+        "name": "Daiichi Ruby",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10080": {
+        "name": "K.S.Miracle",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10081": {
+        "name": "Tsurumaru Tsuyoshi",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "10082": {
+        "name": "Symboli Kris S",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10083": {
+        "name": "Light Hello",
+        "title": "[Event Producer]",
+        "type": "Friend",
+        "rarity": "R"
+    },
+    "10084": {
+        "name": "Tanino Gimlet",
+        "title": "[Tracen Academy]",
+        "type": "Power",
+        "rarity": "R"
+    },
+    "10085": {
+        "name": "Sakura Laurel",
+        "title": "[Tracen Academy]",
+        "type": "Stamina",
+        "rarity": "R"
+    },
+    "10086": {
+        "name": "Yamanin Zephyr",
+        "title": "[Tracen Academy]",
+        "type": "Guts",
+        "rarity": "R"
+    },
+    "20001": {
+        "name": "Fuji Kiseki",
+        "title": "[Well, Look Who's Home]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20002": {
+        "name": "Daiwa Scarlet",
+        "title": "[Nothing Hard Work Can't Solve!]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20003": {
+        "name": "Hishi Amazon",
+        "title": "[Reach the Top!]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20004": {
+        "name": "Air Groove",
+        "title": "[Nothing Escapes the Vice Prez]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20005": {
+        "name": "Agnes Digital",
+        "title": "[Digital's Recharge Station]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20006": {
+        "name": "Biwa Hayahide",
+        "title": "[Trial Initiation]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20007": {
+        "name": "Mayano Top Gun",
+        "title": "[Cute + Cute = ?]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20008": {
+        "name": "Manhattan Cafe",
+        "title": "[My Solo Drawn to Raindrop Drums]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20009": {
+        "name": "Mihono Bourbon",
+        "title": "[Pal-Assisted Training]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20010": {
+        "name": "Mejiro Ryan",
+        "title": "[On and Off the Court]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20011": {
+        "name": "Yukino Bijin",
+        "title": "[City Girl 101]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20012": {
+        "name": "Agnes Tachyon",
+        "title": "[Experimental Studies on Subject A]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20013": {
+        "name": "Eishin Flash",
+        "title": "[5:00 a.m.—Right on Schedule]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20014": {
+        "name": "Narita Taishin",
+        "title": "[Poolside High Tides]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20015": {
+        "name": "Marvelous Sunday",
+        "title": "[A Marvelous ☆ Plan]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20016": {
+        "name": "Matikanefukukitaru",
+        "title": "[Fate's Forecast]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20017": {
+        "name": "Meisho Doto",
+        "title": "[Fighting for Fortune]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20018": {
+        "name": "Mejiro Dober",
+        "title": "[Ignore the Stares]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20019": {
+        "name": "Nice Nature",
+        "title": "[It's Just Water]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20020": {
+        "name": "King Halo",
+        "title": "[First-Rate Plan]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20021": {
+        "name": "Aoi Kiryuin",
+        "title": "[Trainers' Teamwork]",
+        "type": "Friend",
+        "rarity": "SR"
+    },
+    "20022": {
+        "name": "Tamamo Cross",
+        "title": "[Now Dat's What I Call Grilled Squid!]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20023": {
+        "name": "Sweep Tosho",
+        "title": "[Lamplit Training of a Witch-to-Be]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20024": {
+        "name": "Daitaku Helios",
+        "title": "[Let's Get This Party Lit!]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20025": {
+        "name": "Ikuno Dictus",
+        "title": "[Never Skip Warm-Ups]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20026": {
+        "name": "Nice Nature",
+        "title": "[Messing Around]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20027": {
+        "name": "Nishino Flower",
+        "title": "[Lifting Your Spirits]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20028": {
+        "name": "Zenno Rob Roy",
+        "title": "[The Perfect Book for You]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20029": {
+        "name": "Seeking the Pearl",
+        "title": "[The World's My Oyster]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20030": {
+        "name": "Ines Fujin",
+        "title": "[You Earned It!]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20031": {
+        "name": "Shinko Windy",
+        "title": "[///WARNING GATE///]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20032": {
+        "name": "Inari One",
+        "title": "[Laughing through the Mud]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20033": {
+        "name": "El Condor Pasa",
+        "title": "[Mud-Caked Compañero]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20034": {
+        "name": "Mejiro Ardan",
+        "title": "[My Heart Will Go On]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20035": {
+        "name": "Tosen Jordan",
+        "title": "[Turf as Nails]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20037": {
+        "name": "Fine Motion",
+        "title": "[Grma, Ramen ♪]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20038": {
+        "name": "Sirius Symboli",
+        "title": "[The Brightest Star Shines On]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20039": {
+        "name": "Vodka",
+        "title": "[An Annoying Supervisor]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20040": {
+        "name": "Mejiro Ryan",
+        "title": "[Hot Hearts and Cool Drinks]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20041": {
+        "name": "Admire Vega",
+        "title": "[Aim for the Brightest]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20042": {
+        "name": "Sakura Bakushin O",
+        "title": "[The Perfect Morning Greeting!]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20043": {
+        "name": "Special Week",
+        "title": "[At the End of the Day]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20044": {
+        "name": "Curren Chan",
+        "title": "[Cozy Cute Memory ♪]",
+        "type": "Speed",
+        "rarity": "SR"
+    },
+    "20045": {
+        "name": "Smart Falcon",
+        "title": "[Almost... an Umadol?! ♡]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20046": {
+        "name": "Sweep Tosho",
+        "title": "[Reckless Witch Training]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20047": {
+        "name": "Tokai Teio",
+        "title": "[Step! Smile! Wink!]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20048": {
+        "name": "Oguri Cap",
+        "title": "[I Love You... Dear Food]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20049": {
+        "name": "Gold City",
+        "title": "[Going for Gold]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20050": {
+        "name": "Seiun Sky",
+        "title": "[Bobbing with the Waves]",
+        "type": "Wit",
+        "rarity": "SR"
+    },
+    "20051": {
+        "name": "K.S.Miracle",
+        "title": "[The 3rd Miracle]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20052": {
+        "name": "Tsurumaru Tsuyoshi",
+        "title": "[Go, Go! Tsuyoshi!]",
+        "type": "Guts",
+        "rarity": "SR"
+    },
+    "20053": {
+        "name": "Narita Top Road",
+        "title": "[Stop, Prez!]",
+        "type": "Power",
+        "rarity": "SR"
+    },
+    "20054": {
+        "name": "TM Opera O",
+        "title": "[Mighty Fotografia]",
+        "type": "Stamina",
+        "rarity": "SR"
+    },
+    "30001": {
+        "name": "Special Week",
+        "title": "[The Brightest Star in Japan!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30002": {
+        "name": "Silence Suzuka",
+        "title": "[Beyond This Shining Moment]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30003": {
+        "name": "Tokai Teio",
+        "title": "[Dream Big!]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30004": {
+        "name": "Gold Ship",
+        "title": "[Breakaway Battleship]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30005": {
+        "name": "Vodka",
+        "title": "[Wild Rider]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30006": {
+        "name": "Grass Wonder",
+        "title": "[Fairest Fleur]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30007": {
+        "name": "El Condor Pasa",
+        "title": "[Champion's Passion]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30008": {
+        "name": "Seiun Sky",
+        "title": "[Foolproof Plan]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30009": {
+        "name": "Tamamo Cross",
+        "title": "[Split the Sky, White Lightning!]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30010": {
+        "name": "Fine Motion",
+        "title": "[Wave of Gratitude]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30011": {
+        "name": "Ines Fujin",
+        "title": "[Watch My Star Fly!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30012": {
+        "name": "Winning Ticket",
+        "title": "[BNWinner!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30013": {
+        "name": "Air Shakur",
+        "title": "[7 More Centimeters]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30014": {
+        "name": "Gold City",
+        "title": "[Run(my)way]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30015": {
+        "name": "Sakura Bakushin O",
+        "title": "[Eat Fast! Yum Fast!]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30016": {
+        "name": "Super Creek",
+        "title": "[Piece of Mind]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30017": {
+        "name": "Smart Falcon",
+        "title": "[My Umadol Way! ☆]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30018": {
+        "name": "Nishino Flower",
+        "title": "[Even the Littlest Bud]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30019": {
+        "name": "Haru Urara",
+        "title": "[Urara's Day Off!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30020": {
+        "name": "Biko Pegasus",
+        "title": "[Double Carrot Punch!]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30021": {
+        "name": "Tazuna Hayakawa",
+        "title": "[Tracen Reception]",
+        "type": "Friend",
+        "rarity": "SSR"
+    },
+    "30022": {
+        "name": "Mejiro McQueen",
+        "title": "[Your Team Ace]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30023": {
+        "name": "Rice Shower",
+        "title": "[Showered in Joy]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30024": {
+        "name": "Oguri Cap",
+        "title": "[Get Lots of Hugs for Me]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30025": {
+        "name": "Special Week",
+        "title": "[The Setting Sun and Rising Stars]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30026": {
+        "name": "Twin Turbo",
+        "title": "[Turbo Booooost!]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30027": {
+        "name": "Mejiro Palmer",
+        "title": "[Go Ahead and Laugh]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30028": {
+        "name": "Kitasan Black",
+        "title": "[Fire at My Heels]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30029": {
+        "name": "Satono Diamond",
+        "title": "[The Will to Overtake]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30030": {
+        "name": "Matikanetannhauser",
+        "title": "[Just Keep Going]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30031": {
+        "name": "Yukino Bijin",
+        "title": "[Hometown Cheers]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30032": {
+        "name": "Yaeno Muteki",
+        "title": "[Fiery Discipline]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30033": {
+        "name": "Winning Ticket",
+        "title": "[Dreams Do Come True!]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30034": {
+        "name": "Rice Shower",
+        "title": "[Happiness Just around the Bend]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30036": {
+        "name": "Riko Kashimoto",
+        "title": "[Planned Perfection]",
+        "type": "Friend",
+        "rarity": "SSR"
+    },
+    "30038": {
+        "name": "Sakura Chiyono O",
+        "title": "[Peak Sakura Season]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30039": {
+        "name": "Kawakami Princess",
+        "title": "[Princess Bride]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30040": {
+        "name": "Hishi Akebono",
+        "title": "[Who Wants the First Bite?]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30041": {
+        "name": "Mejiro Dober",
+        "title": "[My Thoughts, My Desires]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30042": {
+        "name": "Bamboo Memory",
+        "title": "[Head-on Fight!]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30043": {
+        "name": "Nakayama Festa",
+        "title": "[43, 8, 1]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30044": {
+        "name": "Narita Brian",
+        "title": "[Two Pieces]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30045": {
+        "name": "Sweep Tosho",
+        "title": "[It's All Mine!]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30046": {
+        "name": "Winning Ticket",
+        "title": "[Full-Blown Tantrum]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30047": {
+        "name": "Daiwa Scarlet",
+        "title": "[Mini☆Vacation]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30048": {
+        "name": "Mejiro Ryan",
+        "title": "[Winning Pitch]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30052": {
+        "name": "Light Hello",
+        "title": "[From the Ground Up]",
+        "type": "Friend",
+        "rarity": "SSR"
+    },
+    "30053": {
+        "name": "Taiki Shuttle",
+        "title": "[Hands Up, Crook!]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30054": {
+        "name": "Nice Nature",
+        "title": "[Daring to Dream]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30055": {
+        "name": "Seiun Sky",
+        "title": "[Paint the Sky Red]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30056": {
+        "name": "King Halo",
+        "title": "[Tonight, We Waltz]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30057": {
+        "name": "Gold Ship",
+        "title": "[That Time I Became the Strongest]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30062": {
+        "name": "Silence Suzuka",
+        "title": "[Winning Dream]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30063": {
+        "name": "Ikuno Dictus",
+        "title": "[Warm Heart, Soft Steps]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30064": {
+        "name": "Tamamo Cross",
+        "title": "[Beware! Halloween Night!]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30065": {
+        "name": "Zenno Rob Roy",
+        "title": "[Magical Heroine]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30066": {
+        "name": "Mihono Bourbon",
+        "title": "[The Ghost Finds Halloween Magic]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30067": {
+        "name": "Heirs to the Throne",
+        "title": "[Esteemed and Adored]",
+        "type": "Group",
+        "rarity": "SSR"
+    },
+    "30068": {
+        "name": "Curren Chan",
+        "title": "[Cutie Pie with Shining Eyes]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30069": {
+        "name": "Narita Brian",
+        "title": "[The Whistling Arrow's Taunt]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30070": {
+        "name": "Yukino Bijin",
+        "title": "[Dancing Light into the Night]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30071": {
+        "name": "Daitaku Helios",
+        "title": "[Make! Some! NOISE!]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30072": {
+        "name": "Mayano Top Gun",
+        "title": "[Party Formation]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30073": {
+        "name": "Narita Taishin",
+        "title": "[Strict Shopper]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30074": {
+        "name": "Marvelous Sunday",
+        "title": "[Dazzling Day in the Snow]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30075": {
+        "name": "Manhattan Cafe",
+        "title": "[My Solo Spun in Spiraling Runs]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30076": {
+        "name": "Silence Suzuka",
+        "title": "[Searching for Unseen Sights]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30077": {
+        "name": "Admire Vega",
+        "title": "[Lucky Star in the Sky]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30078": {
+        "name": "Matikanefukukitaru",
+        "title": "[Touching Sleeves Is Good Luck! ♪]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30079": {
+        "name": "Meisho Doto",
+        "title": "[Leaping into the Unknown]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30080": {
+        "name": "Sasami Anshinzawa",
+        "title": "[This Might Sting!]",
+        "type": "Friend",
+        "rarity": "SSR"
+    },
+    "30081": {
+        "name": "Team Sirius",
+        "title": "[Passing the Dream On]",
+        "type": "Group",
+        "rarity": "SSR"
+    },
+    "30082": {
+        "name": "Nishino Flower",
+        "title": "[Little Cupcakes, Big Emotions]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30083": {
+        "name": "Sakura Bakushin O",
+        "title": "[Super! Sonic! Flower Power!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30084": {
+        "name": "Tosen Jordan",
+        "title": "[My Way]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30085": {
+        "name": "Agnes Digital",
+        "title": "[A Fan's Joy]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30086": {
+        "name": "Narita Top Road",
+        "title": "[Peachy Silhouette]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30087": {
+        "name": "Mejiro Bright",
+        "title": "[Little by Little]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30088": {
+        "name": "Satono Diamond",
+        "title": "[Special Dreamers!]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30089": {
+        "name": "Marvelous Sunday",
+        "title": "[A MORE MARVELOUS WORLD! ☆]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30090": {
+        "name": "Symboli Rudolf",
+        "title": "[Enchaînement]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30091": {
+        "name": "Sirius Symboli",
+        "title": "[Escorte Étoile]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30092": {
+        "name": "Air Shakur",
+        "title": "[Mag!c Number]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30093": {
+        "name": "Daiwa Scarlet",
+        "title": "[Number 1 Outfit]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30094": {
+        "name": "Bamboo Memory",
+        "title": "[Make These Feelings Reach You!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30095": {
+        "name": "Seeking the Pearl",
+        "title": "[Cheer that Changed the World]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30096": {
+        "name": "Kawakami Princess",
+        "title": "[Go Go☆Princess!]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30097": {
+        "name": "Mr. C.B.",
+        "title": "[Dear Mr. C.B.]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30098": {
+        "name": "Haru Urara",
+        "title": "[Sunny Passion ♪]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30099": {
+        "name": "Ikuno Dictus",
+        "title": "[Beloved Orchid Bouquet]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30100": {
+        "name": "Rice Shower",
+        "title": "[Day I Dreamed Of]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30101": {
+        "name": "Agnes Tachyon",
+        "title": "[Q≠0]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30102": {
+        "name": "El Condor Pasa",
+        "title": "[Twinkle in Your Eyes ∞]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30103": {
+        "name": "Matikanetannhauser",
+        "title": "[Machitan☆Adventure]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30104": {
+        "name": "Zenno Rob Roy",
+        "title": "[\"Rhodonite and the Dreamstone\"]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30105": {
+        "name": "Special Week",
+        "title": "[Take Hold of Our Dreams!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30106": {
+        "name": "Air Groove",
+        "title": "[Tailwind to My Goals]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30107": {
+        "name": "Maruzensky",
+        "title": "[Sentimental Flare ♪]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30108": {
+        "name": "Nakayama Festa",
+        "title": "[Trusting the Dice]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30109": {
+        "name": "Sakura Chiyono O",
+        "title": "[A Good Heart Blossoms to Its Fullest]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30110": {
+        "name": "Manhattan Cafe",
+        "title": "[It's on the House]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30111": {
+        "name": "Tokai Teio",
+        "title": "[Teio-Oo-Oo!!!]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30112": {
+        "name": "Twin Turbo",
+        "title": "[TT Ignition!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30113": {
+        "name": "Biwa Hayahide",
+        "title": "[Uchronia Architect]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30114": {
+        "name": "Daiichi Ruby",
+        "title": "[Ah, Such Majesty]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30115": {
+        "name": "Mejiro Palmer",
+        "title": "[Moonlit Devil ♪]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30116": {
+        "name": "Daitaku Helios",
+        "title": "[Sunlit Angel ♪]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30117": {
+        "name": "Shinko Windy",
+        "title": "[Onwards, Demon Queen Lackeys!]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30118": {
+        "name": "Symboli Kris S",
+        "title": "[A Win Foreshadowed]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30119": {
+        "name": "Mejiro Ardan",
+        "title": "[Hopeful Petals Dancing in the Night]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30120": {
+        "name": "Yaeno Muteki",
+        "title": "[Pious Flame, Heavens Scorcher]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30121": {
+        "name": "Mihono Bourbon",
+        "title": "[U & Me]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30122": {
+        "name": "Eishin Flash",
+        "title": "[Danke Schön]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30123": {
+        "name": "Narita Brian",
+        "title": "[Glad Tidings]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30124": {
+        "name": "Air Groove",
+        "title": "[Are You Merry?]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30125": {
+        "name": "Sakura Laurel",
+        "title": "[Don't Stop Anymore!]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30126": {
+        "name": "Yamanin Zephyr",
+        "title": "[To Winds Untraveled]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30145": {
+        "name": "Tanino Gimlet",
+        "title": "[Welcome to Umayuru]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30146": {
+        "name": "Oguri Cap",
+        "title": "[Run Forth! Dash On! Ever Forward!]",
+        "type": "Wit",
+        "rarity": "SSR"
+    }
+}

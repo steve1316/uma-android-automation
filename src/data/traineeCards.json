@@ -1,0 +1,2509 @@
+{
+    "100101": {
+        "name": "Special Week",
+        "title": "[Special Dreamer]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "100102": {
+        "name": "Special Week",
+        "title": "[Hopp'n♪Happy Heart]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 10,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "100103": {
+        "name": "Special Week",
+        "title": "[Ruler of Japan]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "100201": {
+        "name": "Silence Suzuka",
+        "title": "[Innocent Silence]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "D",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "A",
+            "pace": "C",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "100301": {
+        "name": "Tokai Teio",
+        "title": "[Peak Joy]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "E",
+            "medium": "A",
+            "long": "B",
+            "front": "D",
+            "pace": "A",
+            "late": "C",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "100302": {
+        "name": "Tokai Teio",
+        "title": "[Beyond the Horizon]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "E",
+            "medium": "A",
+            "long": "B",
+            "front": "D",
+            "pace": "A",
+            "late": "C",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "100401": {
+        "name": "Maruzensky",
+        "title": "[Formula R]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "D",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "B",
+            "long": "C",
+            "front": "A",
+            "pace": "E",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "100402": {
+        "name": "Maruzensky",
+        "title": "[Hot☆Summer Night]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "D",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "B",
+            "long": "C",
+            "front": "A",
+            "pace": "E",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 15
+        }
+    },
+    "100501": {
+        "name": "Fuji Kiseki",
+        "title": "[Shooting Star Revue]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "B",
+            "long": "E",
+            "front": "C",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "100502": {
+        "name": "Fuji Kiseki",
+        "title": "[Succès Étoilé]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "B",
+            "long": "E",
+            "front": "C",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 0,
+            "power": 14,
+            "guts": 0,
+            "wit": 8
+        }
+    },
+    "100601": {
+        "name": "Oguri Cap",
+        "title": "[Starlight Beat]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "E",
+            "mile": "A",
+            "medium": "A",
+            "long": "B",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "100602": {
+        "name": "Oguri Cap",
+        "title": "[Ashen Miracle]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "E",
+            "mile": "A",
+            "medium": "A",
+            "long": "B",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 15,
+            "power": 0,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "100701": {
+        "name": "Gold Ship",
+        "title": "[Red Strife]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "100702": {
+        "name": "Gold Ship",
+        "title": "[RUN! RUIN! LAUNCHER!]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "100801": {
+        "name": "Vodka",
+        "title": "[Wild Top Gear]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "F",
+            "front": "C",
+            "pace": "B",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "100802": {
+        "name": "Vodka",
+        "title": "[Fiery Aqua Vitae]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "C",
+            "pace": "B",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "100901": {
+        "name": "Daiwa Scarlet",
+        "title": "[Peak Blue]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "B",
+            "front": "A",
+            "pace": "A",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "100902": {
+        "name": "Daiwa Scarlet",
+        "title": "[Nuit Étoilée de Scarlet]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "B",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "A",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "101001": {
+        "name": "Taiki Shuttle",
+        "title": "[Wild Frontier]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "A",
+            "mile": "A",
+            "medium": "E",
+            "long": "G",
+            "front": "C",
+            "pace": "A",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "101002": {
+        "name": "Taiki Shuttle",
+        "title": "[Bubblegum☆Memories]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "A",
+            "mile": "A",
+            "medium": "E",
+            "long": "G",
+            "front": "C",
+            "pace": "A",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 30,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "101101": {
+        "name": "Grass Wonder",
+        "title": "[Stone-Piercing Blue]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "A",
+            "medium": "B",
+            "long": "A",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "101102": {
+        "name": "Grass Wonder",
+        "title": "[Saintly Jade Cleric]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "A",
+            "medium": "B",
+            "long": "A",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 15,
+            "power": 0,
+            "guts": 0,
+            "wit": 15
+        }
+    },
+    "101201": {
+        "name": "Hishi Amazon",
+        "title": "[Azure Amazon]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "D",
+            "mile": "A",
+            "medium": "A",
+            "long": "B",
+            "front": "G",
+            "pace": "B",
+            "late": "C",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "101301": {
+        "name": "Mejiro McQueen",
+        "title": "[Frontline Elegance]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "D",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "101302": {
+        "name": "Mejiro McQueen",
+        "title": "[End of the Skies]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "D",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 10,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "101303": {
+        "name": "Mejiro McQueen",
+        "title": "[Fair Lady of the Waves]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "D",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 8,
+            "power": 0,
+            "guts": 0,
+            "wit": 14
+        }
+    },
+    "101401": {
+        "name": "El Condor Pasa",
+        "title": "[El☆Número 1]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "B",
+            "front": "E",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "101402": {
+        "name": "El Condor Pasa",
+        "title": "[Kukulkan Warrior]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "B",
+            "front": "E",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 0,
+            "power": 0,
+            "guts": 15,
+            "wit": 0
+        }
+    },
+    "101501": {
+        "name": "TM Opera O",
+        "title": "[O Sole Suo!]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "E",
+            "medium": "A",
+            "long": "A",
+            "front": "C",
+            "pace": "A",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "101502": {
+        "name": "TM Opera O",
+        "title": "[New Year, Same Radiance!]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "E",
+            "medium": "A",
+            "long": "A",
+            "front": "C",
+            "pace": "A",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 14,
+            "stamina": 8,
+            "power": 0,
+            "guts": 0,
+            "wit": 8
+        }
+    },
+    "101601": {
+        "name": "Narita Brian",
+        "title": "[Maverick]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "B",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 20,
+            "power": 0,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "101602": {
+        "name": "Narita Brian",
+        "title": "[Ravenous Wolf]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "B",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "101701": {
+        "name": "Symboli Rudolf",
+        "title": "[Emperor's Path]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "101702": {
+        "name": "Symboli Rudolf",
+        "title": "[Archer by Moonlight]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 14,
+            "power": 0,
+            "guts": 0,
+            "wit": 8
+        }
+    },
+    "101801": {
+        "name": "Air Groove",
+        "title": "[Empress Road]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "C",
+            "mile": "B",
+            "medium": "A",
+            "long": "E",
+            "front": "D",
+            "pace": "A",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "101802": {
+        "name": "Air Groove",
+        "title": "[Quercus Civilis]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "C",
+            "mile": "B",
+            "medium": "A",
+            "long": "E",
+            "front": "D",
+            "pace": "A",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "101901": {
+        "name": "Agnes Digital",
+        "title": "[Full-Color Fangirling]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "A",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "G",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 8,
+            "power": 7,
+            "guts": 0,
+            "wit": 7
+        }
+    },
+    "101902": {
+        "name": "Agnes Digital",
+        "title": "[Fanatic♡Jiangshi]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "A",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "G",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 7,
+            "stamina": 7,
+            "power": 8,
+            "guts": 8,
+            "wit": 0
+        }
+    },
+    "102001": {
+        "name": "Seiun Sky",
+        "title": "[Reeling in the Big One]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "B",
+            "late": "D",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "102002": {
+        "name": "Seiun Sky",
+        "title": "[Soirée des Chatons]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "B",
+            "late": "D",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 0,
+            "power": 8,
+            "guts": 14,
+            "wit": 0
+        }
+    },
+    "102101": {
+        "name": "Tamamo Cross",
+        "title": "[Fast as Lightning]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "G",
+            "mile": "E",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "102102": {
+        "name": "Tamamo Cross",
+        "title": "[Raging Thunder]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "G",
+            "mile": "E",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 14,
+            "stamina": 8,
+            "power": 0,
+            "guts": 8,
+            "wit": 0
+        }
+    },
+    "102201": {
+        "name": "Fine Motion",
+        "title": "[Noble Seamair]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "C",
+            "front": "D",
+            "pace": "A",
+            "late": "E",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 15,
+            "guts": 0,
+            "wit": 15
+        }
+    },
+    "102202": {
+        "name": "Fine Motion",
+        "title": "[Titania]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "C",
+            "front": "D",
+            "pace": "A",
+            "late": "E",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 20
+        }
+    },
+    "102301": {
+        "name": "Biwa Hayahide",
+        "title": "[pf. Winning Equation...]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "E",
+            "pace": "A",
+            "late": "B",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 20
+        }
+    },
+    "102302": {
+        "name": "Biwa Hayahide",
+        "title": "[Rouge Caroler]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "E",
+            "pace": "A",
+            "late": "B",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 12,
+            "power": 12,
+            "guts": 0,
+            "wit": 6
+        }
+    },
+    "102401": {
+        "name": "Mayano Top Gun",
+        "title": "[Scramble☆Zone]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "D",
+            "mile": "D",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "A",
+            "late": "B",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "102402": {
+        "name": "Mayano Top Gun",
+        "title": "[Sunlight Bouquet]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "D",
+            "mile": "D",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "A",
+            "late": "B",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "102501": {
+        "name": "Manhattan Cafe",
+        "title": "[Creeping Shadow]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "B",
+            "long": "A",
+            "front": "G",
+            "pace": "C",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 30,
+            "power": 0,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "102601": {
+        "name": "Mihono Bourbon",
+        "title": "[MB-19890425]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "C",
+            "mile": "B",
+            "medium": "A",
+            "long": "B",
+            "front": "A",
+            "pace": "E",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "102602": {
+        "name": "Mihono Bourbon",
+        "title": "[CODE: ICING]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "C",
+            "mile": "B",
+            "medium": "A",
+            "long": "B",
+            "front": "A",
+            "pace": "E",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "102701": {
+        "name": "Mejiro Ryan",
+        "title": "[Down the Line]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "B",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "102801": {
+        "name": "Hishi Akebono",
+        "title": "[Buono ☆ Alla Moda]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "A",
+            "mile": "B",
+            "medium": "F",
+            "long": "G",
+            "front": "B",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "102901": {
+        "name": "Yukino Bijin",
+        "title": "[Darl'n Snowflake]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "B",
+            "sprint": "D",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "C",
+            "pace": "A",
+            "late": "F",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "103001": {
+        "name": "Rice Shower",
+        "title": "[Rosy Dreams]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 0,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "103002": {
+        "name": "Rice Shower",
+        "title": "[Vampire Makeover!]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "B",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 15,
+            "power": 15,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "103101": {
+        "name": "Ines Fujin",
+        "title": "[Always Electrifying]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "A",
+            "medium": "A",
+            "long": "C",
+            "front": "A",
+            "pace": "C",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 0,
+            "power": 0,
+            "guts": 15,
+            "wit": 0
+        }
+    },
+    "103201": {
+        "name": "Agnes Tachyon",
+        "title": "[tach-nology]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "D",
+            "medium": "A",
+            "long": "B",
+            "front": "E",
+            "pace": "A",
+            "late": "B",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "103301": {
+        "name": "Admire Vega",
+        "title": "[Starry Nocturne]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "C",
+            "front": "G",
+            "pace": "G",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "103401": {
+        "name": "Inari One",
+        "title": "[Edomurasaki]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "A",
+            "sprint": "F",
+            "mile": "B",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "103402": {
+        "name": "Inari One",
+        "title": "[Golden Dream]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "A",
+            "sprint": "F",
+            "mile": "B",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 14,
+            "stamina": 0,
+            "power": 8,
+            "guts": 0,
+            "wit": 8
+        }
+    },
+    "103501": {
+        "name": "Winning Ticket",
+        "title": "[Get to Winning!]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "B",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "103502": {
+        "name": "Winning Ticket",
+        "title": "[Dream Deliverer]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "B",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 0,
+            "power": 14,
+            "guts": 8,
+            "wit": 0
+        }
+    },
+    "103601": {
+        "name": "Air Shakur",
+        "title": "[unsigned]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "E",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "C",
+            "late": "A",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 30
+        }
+    },
+    "103701": {
+        "name": "Eishin Flash",
+        "title": "[Meisterschaft]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "103702": {
+        "name": "Eishin Flash",
+        "title": "[Precise Chocolatier]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 8,
+            "power": 8,
+            "guts": 0,
+            "wit": 14
+        }
+    },
+    "103801": {
+        "name": "Curren Chan",
+        "title": "[Fille Éclair]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "A",
+            "mile": "D",
+            "medium": "G",
+            "long": "G",
+            "front": "B",
+            "pace": "A",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "103802": {
+        "name": "Curren Chan",
+        "title": "[Ma Chérie of the New Moon]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "A",
+            "mile": "D",
+            "medium": "G",
+            "long": "G",
+            "front": "B",
+            "pace": "A",
+            "late": "E",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "103901": {
+        "name": "Kawakami Princess",
+        "title": "[Princess of Pink]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "D",
+            "mile": "B",
+            "medium": "A",
+            "long": "F",
+            "front": "G",
+            "pace": "C",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 10,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "104001": {
+        "name": "Gold City",
+        "title": "[Authentic / 1928]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "D",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "B",
+            "long": "B",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 10,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "104002": {
+        "name": "Gold City",
+        "title": "[Autumn Cosmos]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "D",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "B",
+            "long": "B",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 8,
+            "stamina": 0,
+            "power": 8,
+            "guts": 0,
+            "wit": 14
+        }
+    },
+    "104101": {
+        "name": "Sakura Bakushin O",
+        "title": "[Blossom in Learning]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "A",
+            "mile": "B",
+            "medium": "G",
+            "long": "G",
+            "front": "A",
+            "pace": "A",
+            "late": "F",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "104201": {
+        "name": "Seeking the Pearl",
+        "title": "[Rocket☆Star]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "A",
+            "mile": "A",
+            "medium": "E",
+            "long": "G",
+            "front": "C",
+            "pace": "A",
+            "late": "A",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "104401": {
+        "name": "Sweep Tosho",
+        "title": "[Platanus Witch]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "A",
+            "medium": "A",
+            "long": "D",
+            "front": "G",
+            "pace": "G",
+            "late": "A",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "104501": {
+        "name": "Super Creek",
+        "title": "[Murmuring Stream]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "G",
+            "medium": "A",
+            "long": "A",
+            "front": "D",
+            "pace": "A",
+            "late": "B",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "104502": {
+        "name": "Super Creek",
+        "title": "[Chiffon-Wrapped Mummy]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "G",
+            "medium": "A",
+            "long": "A",
+            "front": "D",
+            "pace": "A",
+            "late": "B",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 14,
+            "stamina": 8,
+            "power": 0,
+            "guts": 8,
+            "wit": 0
+        }
+    },
+    "104601": {
+        "name": "Smart Falcon",
+        "title": "[LOVE☆4EVER]",
+        "aptitudes": {
+            "turf": "E",
+            "dirt": "A",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "A",
+            "pace": "D",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "104602": {
+        "name": "Smart Falcon",
+        "title": "[Twilight Triumph]",
+        "aptitudes": {
+            "turf": "E",
+            "dirt": "A",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "A",
+            "pace": "D",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "104701": {
+        "name": "Zenno Rob Roy",
+        "title": "[Heroic Author]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "E",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "104801": {
+        "name": "Tosen Jordan",
+        "title": "[Jokester ☆ Vibes]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "B",
+            "front": "C",
+            "pace": "A",
+            "late": "B",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "104901": {
+        "name": "Nakayama Festa",
+        "title": "[Desperate Measures]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "B",
+            "front": "G",
+            "pace": "A",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "105001": {
+        "name": "Narita Taishin",
+        "title": "[Nevertheless]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "D",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "F",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "105002": {
+        "name": "Narita Taishin",
+        "title": "[Difference Engineer]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "D",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "F",
+            "late": "B",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 8,
+            "power": 0,
+            "guts": 8,
+            "wit": 14
+        }
+    },
+    "105101": {
+        "name": "Nishino Flower",
+        "title": "[Layered Petals]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "A",
+            "mile": "A",
+            "medium": "E",
+            "long": "G",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 0,
+            "power": 15,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "105201": {
+        "name": "Haru Urara",
+        "title": "[Bestest Prize ♪]",
+        "aptitudes": {
+            "turf": "G",
+            "dirt": "A",
+            "sprint": "A",
+            "mile": "B",
+            "medium": "G",
+            "long": "G",
+            "front": "G",
+            "pace": "G",
+            "late": "A",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 10,
+            "guts": 20,
+            "wit": 0
+        }
+    },
+    "105202": {
+        "name": "Haru Urara",
+        "title": "[New Year ♪ New Urara!]",
+        "aptitudes": {
+            "turf": "G",
+            "dirt": "A",
+            "sprint": "A",
+            "mile": "A",
+            "medium": "G",
+            "long": "G",
+            "front": "G",
+            "pace": "G",
+            "late": "A",
+            "end": "B"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "105301": {
+        "name": "Bamboo Memory",
+        "title": "[Iron Ambition]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "D",
+            "sprint": "A",
+            "mile": "A",
+            "medium": "C",
+            "long": "G",
+            "front": "G",
+            "pace": "E",
+            "late": "A",
+            "end": "C"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "105601": {
+        "name": "Matikanefukukitaru",
+        "title": "[Rising☆Fortune]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 10,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "105602": {
+        "name": "Matikanefukukitaru",
+        "title": "[Lucky Tidings]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 0,
+            "guts": 10,
+            "wit": 10
+        }
+    },
+    "105801": {
+        "name": "Meisho Doto",
+        "title": "[Turbulent Blue]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "F",
+            "pace": "A",
+            "late": "B",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "105802": {
+        "name": "Meisho Doto",
+        "title": "[Dot-o'-Lantern]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "F",
+            "pace": "A",
+            "late": "B",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 15,
+            "guts": 0,
+            "wit": 15
+        }
+    },
+    "105901": {
+        "name": "Mejiro Dober",
+        "title": "[Off the Line]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "A",
+            "medium": "A",
+            "long": "F",
+            "front": "C",
+            "pace": "B",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "105902": {
+        "name": "Mejiro Dober",
+        "title": "[Sapphire Sojourn]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "A",
+            "medium": "A",
+            "long": "F",
+            "front": "C",
+            "pace": "B",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "106001": {
+        "name": "Nice Nature",
+        "title": "[Poinsettia Ribbon]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "F",
+            "pace": "B",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "106002": {
+        "name": "Nice Nature",
+        "title": "[Run & Win]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "F",
+            "pace": "B",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 10,
+            "power": 10,
+            "guts": 0,
+            "wit": 10
+        }
+    },
+    "106101": {
+        "name": "King Halo",
+        "title": "[King of Emeralds]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "A",
+            "mile": "B",
+            "medium": "B",
+            "long": "C",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "106102": {
+        "name": "King Halo",
+        "title": "[Cheerleader in Noble White]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "A",
+            "mile": "B",
+            "medium": "B",
+            "long": "C",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "106201": {
+        "name": "Matikanetannhauser",
+        "title": "[Clippety-Tippety-Clop]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "D",
+            "medium": "A",
+            "long": "A",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 20,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "106401": {
+        "name": "Mejiro Palmer",
+        "title": "[Line Breakthrough]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "F",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "E",
+            "late": "F",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "106701": {
+        "name": "Satono Diamond",
+        "title": "[Natural Brilliance]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 15,
+            "power": 0,
+            "guts": 0,
+            "wit": 15
+        }
+    },
+    "106801": {
+        "name": "Kitasan Black",
+        "title": "[Gilded Shrine to Glory]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "B",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 0
+        }
+    },
+    "106901": {
+        "name": "Sakura Chiyono O",
+        "title": "[Strength in Full Bloom]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "B",
+            "pace": "A",
+            "late": "F",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 10
+        }
+    },
+    "107101": {
+        "name": "Mejiro Ardan",
+        "title": "[Crystalline]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "F",
+            "sprint": "E",
+            "mile": "B",
+            "medium": "A",
+            "long": "D",
+            "front": "C",
+            "pace": "A",
+            "late": "D",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "107201": {
+        "name": "Yaeno Muteki",
+        "title": "[Blazed Head, Covered Fists]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "E",
+            "sprint": "G",
+            "mile": "B",
+            "medium": "A",
+            "long": "E",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 20,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "107401": {
+        "name": "Mejiro Bright",
+        "title": "[Brunissage Line]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "F",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "D",
+            "late": "A",
+            "end": "A"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 14,
+            "power": 0,
+            "guts": 8,
+            "wit": 8
+        }
+    },
+    "107801": {
+        "name": "Yamanin Zephyr",
+        "title": "[Fluttertail Spirit]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "D",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "A",
+            "long": "G",
+            "front": "E",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 10
+        }
+    },
+    "108701": {
+        "name": "Aston Machan",
+        "title": "[Flare]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "A",
+            "mile": "B",
+            "medium": "G",
+            "long": "G",
+            "front": "A",
+            "pace": "A",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 10,
+            "wit": 0
+        }
+    },
+    "109801": {
+        "name": "Copano Rickey",
+        "title": "[Eightfold☆Fortune]",
+        "aptitudes": {
+            "turf": "F",
+            "dirt": "A",
+            "sprint": "C",
+            "mile": "A",
+            "medium": "A",
+            "long": "G",
+            "front": "A",
+            "pace": "A",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 20
+        }
+    },
+    "110001": {
+        "name": "Wonder Acute",
+        "title": "[Butterfly Sting]",
+        "aptitudes": {
+            "turf": "G",
+            "dirt": "A",
+            "sprint": "D",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "C",
+            "pace": "A",
+            "late": "C",
+            "end": "E"
+        },
+        "growth": {
+            "speed": 0,
+            "stamina": 0,
+            "power": 0,
+            "guts": 15,
+            "wit": 15
+        }
+    }
+}
