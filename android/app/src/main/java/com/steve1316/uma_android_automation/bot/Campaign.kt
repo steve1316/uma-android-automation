@@ -376,6 +376,9 @@ abstract class Campaign(game: Game) : Task(game) {
     /** Flag indicating if the bot has already tried checking fans today. */
     protected var bHasTriedCheckingFansToday: Boolean = false
 
+    /** Set when the Main screen handler stops to close a dialog it opened itself, so the next pass reuses this turn's date instead of reading it again. */
+    private var bDateReadBeforeOwnDialog: Boolean = false
+
     /** Flag indicating if the skill point threshold has been handled.
      * This is necessary since the user may have enabled the skill point check
      * skill spending plan. If their plan ends up not purchasing many skills,
@@ -2295,7 +2298,9 @@ abstract class Campaign(game: Game) : Task(game) {
         // Operations to be done every time the date changes.
         // Skip if we've already checked the date this turn and no game-advancing action was taken.
         if (!bHasCheckedDateThisTurn) {
-            val dateChanged = updateDate()
+            // Returning from the aptitudes or fans dialog the bot opened itself is still the same turn, so the date read is skipped.
+            val dateChanged = if (bDateReadBeforeOwnDialog) false else updateDate()
+            bDateReadBeforeOwnDialog = false
             // Show the new turn now, so a planned stop in performGlobalChecks() reports this turn and not the last one.
             DecisionTracer.pushProgress(date.day)
             // Once-per-run: log the Smart Race Solver Preview schedule and seed mid-run history
@@ -2327,7 +2332,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
             if (!trainee.bHasUpdatedAptitudes) {
                 openAptitudesDialog()
-                if (tryHandleAllDialogs()) return true
+                if (closeOwnDialog()) return true
             }
 
             val bIsScheduledRaceDayInitial = LabelScheduledRace.check(game.imageUtils, sourceBitmap = sourceBitmap)
@@ -2335,7 +2340,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
             if (!date.bIsFinaleSeason && !bIsMandatoryRaceDayInitial && !bIsScheduledRaceDayInitial && bNeedToCheckFans && !bHasTriedCheckingFansToday) {
                 openFansDialog()
-                if (tryHandleAllDialogs()) return true
+                if (closeOwnDialog()) return true
             }
 
             // Mark that we've checked the date this turn.
@@ -2372,6 +2377,13 @@ abstract class Campaign(game: Game) : Task(game) {
         val bIsScheduledRaceDay = LabelScheduledRace.check(game.imageUtils)
         return executeAction(action, bIsScheduledRaceDay)
     }
+
+    /**
+     * Closes a dialog the Main screen handler opened itself, such as the fans or aptitudes dialog. The next pass is still the same turn, so it reuses this turn's date.
+     *
+     * @return True if a dialog was handled.
+     */
+    private fun closeOwnDialog(): Boolean = tryHandleAllDialogs().also { if (it) bDateReadBeforeOwnDialog = true }
 
     /**
      * Performs parallel turn-start updates for stats, skill points, mood, energy, and racing requirements.
@@ -2825,6 +2837,8 @@ abstract class Campaign(game: Game) : Task(game) {
             }
 
             val bAtMainScreen = !bDialogVisible && checkMainScreen(tickBitmap, bSkipDialogCheck = true)
+            // Any other screen after the bot's own dialog may mean the turn moved on, so the date is read again.
+            if (!bAtMainScreen) bDateReadBeforeOwnDialog = false
             if (bAtMainScreen) {
                 // The main screen is a known screen, so the recovery after a pause ends here and its own dialogs are confirmed as usual.
                 recordTick(TickOutcome.KNOWN)
