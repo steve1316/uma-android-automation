@@ -143,17 +143,18 @@ class Game(val myContext: Context) {
      * Waits for the game to finish loading.
      *
      * Note that this function is responsible for dictating how fast the bot will run so adjusting this should be done with caution.
+     * It logs once when a load starts and once when it ends, not on every check.
      */
     fun waitForLoading() {
-        var loadingCounter = 0
-        while (checkLoading(suppressLogging = loadingCounter % 10 != 0)) {
-            // Avoid an infinite loop by setting the flag to true.
+        var reason = loadingReason() ?: return
+        MessageLog.i(TAG, "[LOADING] $reason Waiting...")
+        val startTime = System.currentTimeMillis()
+        while (true) {
+            // Avoid an infinite loop by skipping the loading check inside wait().
             wait(waitDelay, skipWaitingForLoading = true)
-            loadingCounter++
-            if (loadingCounter >= 20) {
-                loadingCounter = 0
-            }
+            reason = loadingReason() ?: break
         }
+        MessageLog.i(TAG, "[LOADING] Finished loading after ${"%.1f".format((System.currentTimeMillis() - startTime) / 1000.0)}s.")
     }
 
     /**
@@ -212,20 +213,14 @@ class Game(val myContext: Context) {
      *
      * This may cause significant delays in normal bot processes.
      *
-     * @param suppressLogging Whether to suppress logging for this function. Defaults to false.
-     * @return True if the game is still loading or is awaiting a server response. Otherwise, false.
+     * @return A short description of what the game is waiting on, or null if it is not loading.
      */
-    fun checkLoading(suppressLogging: Boolean = false): Boolean {
-        if (!suppressLogging) MessageLog.i(TAG, "[LOADING] Now checking if the game is still loading...")
+    private fun loadingReason(): String? {
         val sourceBitmap = imageUtils.getSourceBitmap()
-        return if (LabelConnecting.check(imageUtils, sourceBitmap = sourceBitmap)) {
-            if (!suppressLogging) MessageLog.i(TAG, "[LOADING] Detected that the game is awaiting a response from the server from the \"Connecting\" text at the top of the screen. Waiting...")
-            true
-        } else if (LabelNowLoading.check(imageUtils, sourceBitmap = sourceBitmap)) {
-            if (!suppressLogging) MessageLog.i(TAG, "[LOADING] Detected that the game is still loading from the \"Now Loading\" text at the bottom of the screen. Waiting...")
-            true
-        } else {
-            false
+        return when {
+            LabelConnecting.check(imageUtils, sourceBitmap = sourceBitmap) -> "The game is awaiting a response from the server."
+            LabelNowLoading.check(imageUtils, sourceBitmap = sourceBitmap) -> "The game is on a Now Loading screen."
+            else -> null
         }
     }
 
