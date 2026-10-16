@@ -9,6 +9,7 @@ import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
+import com.steve1316.uma_android_automation.bot.career_setup.CareerCompletion
 import com.steve1316.uma_android_automation.bot.career_setup.CareerSetup
 import com.steve1316.uma_android_automation.bot.solver.Heuristic
 import com.steve1316.uma_android_automation.bot.solver.SmartRaceSolverIntegration
@@ -416,6 +417,13 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Whether Career Setup claimed a finished Independent Training, so its career is completed at the end screen and a new one started. */
     private var bClaimedIndependentTraining: Boolean = false
+
+    /** Whether to complete each career at its end screen and start the next one until TP runs out (Career Setup). */
+    private val bStartNextCareerWhenDone: Boolean = SettingsHelper.getBooleanSetting("careerSetup", "startNextCareerWhenDone", false)
+
+    /** Set once this career was completed and the game is back on Home, so the bot starts the next career. */
+    var bStartNextCareer: Boolean = false
+        private set
 
     /**
      * Counts consecutive [performMiscChecks] iterations where [ButtonCancel] matched. The bot only
@@ -2947,7 +2955,14 @@ abstract class Campaign(game: Game) : Task(game) {
                 // Print the final Trainee information.
                 trainee.logInfo(game.scenario)
 
-                return careerEndResult(lostRaceTurn, date.day.takeIf { bHasReadDate })
+                val result = careerEndResult(lostRaceTurn, date.day.takeIf { bHasReadDate })
+                // A claimed Independent Training was started to make way for a new career, so it is completed whatever the setting. A failed career is
+                // still reported through this run's result, and the chain carries on.
+                if (bStartNextCareerWhenDone || bClaimedIndependentTraining) {
+                    CareerCompletion(game).run()
+                    bStartNextCareer = true
+                }
+                return result
             } else if (handledAsKnownScreen { checkCampaignSpecificConditions() }) {
                 MessageLog.i(TAG, "[INFO] Campaign-specific checks complete.")
             } else if (handledAsKnownScreen { handleInheritanceEvent(miscBitmap) }) {
