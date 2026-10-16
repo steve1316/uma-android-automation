@@ -402,6 +402,21 @@ class BaseScraper:
         self.output_filename = str(DATA_DIR / output_filename)
         self.data = {}
 
+    def _read_existing(self) -> Dict[str, Any]:
+        """Reads this scraper's current output file from disk.
+
+        Returns:
+            The existing file contents, or an empty dict when the file is missing or unreadable.
+        """
+        if not os.path.exists(self.output_filename):
+            return {}
+        try:
+            with open(self.output_filename, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError) as exc:
+            logging.warning(f"Could not read existing {os.path.basename(self.output_filename)} ({exc.__class__.__name__}).")
+            return {}
+
     def save_data(self):
         """Writes the scraped data to the output file, sorted by key."""
         sorted_data = {key: self.data[key] for key in sorted(self.data.keys())}
@@ -772,21 +787,6 @@ class TrainingEventScraper(BaseScraper):
             True when the name or any option contains Japanese characters.
         """
         return bool(EVENT_CJK_PATTERN.search(name)) or any(EVENT_CJK_PATTERN.search(o) for o in options)
-
-    def _read_existing(self) -> Dict[str, Dict[str, List[str]]]:
-        """Reads this scraper's current output file from disk.
-
-        Returns:
-            The existing file contents, or an empty dict when the file is missing or unreadable.
-        """
-        if not os.path.exists(self.output_filename):
-            return {}
-        try:
-            with open(self.output_filename, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError) as exc:
-            logging.warning(f"Could not read existing {os.path.basename(self.output_filename)} ({exc.__class__.__name__}).")
-            return {}
 
     def _render_reward(self, reward: Dict[str, Any], card_char: str, energy_mult: float, stat_mult: float) -> str:
         """Renders one reward object into its displayed line, mirroring GameTora's English templates.
@@ -2207,6 +2207,87 @@ class CharacterObjectivesScraper(BaseScraper):
         self.save_data()
 
 
+class TraineeCardScraper(BaseScraper):
+    """Builds the catalog of trainee outfits for Career Setup's trainee picker and Smart Auto-Select.
+
+    Each outfit has its own aptitudes and growth bonuses, so entries are kept per `card_id` rather than per character.
+
+    Output schema -> `src/data/traineeCards.json`:
+
+        {
+            "<card_id>": {
+                "name": "<character name>",
+                "title": "[<outfit title>]",
+                "aptitudes": { "turf": "A", "dirt": "G", "sprint": "F", "mile": "C", "medium": "A", "long": "B", "front": "A", "pace": "A", "late": "B", "end": "C" },
+                "growth": { "speed": 10, "stamina": 0, "power": 20, "guts": 0, "wit": 0 }
+            }
+        }
+    """
+
+    APTITUDE_KEYS = ("turf", "dirt", "sprint", "mile", "medium", "long", "front", "pace", "late", "end")
+    STAT_KEYS = ("speed", "stamina", "power", "guts", "wit")
+
+    def __init__(self):
+        super().__init__("https://gametora.com/umamusume/characters", "traineeCards.json")
+
+    def start(self):
+        """Adds every Global-released trainee outfit to the catalog, keeping existing entries untouched."""
+        self.data = self._read_existing()
+        names = {char["char_id"]: character_name(char) for char in fetch_gametora_manifest_data("characters")}
+        for card in fetch_gametora_manifest_data("character-cards"):
+            name = names.get(card["char_id"])
+            aptitude = card.get("aptitude") or []
+            bonus = card.get("stat_bonus") or []
+            if not is_global_release(card) or not name or len(aptitude) < 10 or len(bonus) < 5:
+                continue
+            self.data.setdefault(
+                str(card["card_id"]),
+                {
+                    "name": name,
+                    "title": card.get("title_en_gl") or "",
+                    "aptitudes": dict(zip(self.APTITUDE_KEYS, aptitude)),
+                    "growth": dict(zip(self.STAT_KEYS, bonus)),
+                },
+            )
+        logging.info(f"traineeCards.json now has {len(self.data)} outfits.")
+        self.save_data()
+
+
+class SupportCardCatalogScraper(BaseScraper):
+    """Builds the catalog of support cards for Career Setup's friend card picker and Smart friend pick.
+
+    Output schema -> `src/data/supportCards.json`:
+
+        {
+            "<support_id>": { "name": "<character name>", "title": "[<card title>]", "type": "Speed", "rarity": "SSR" }
+        }
+    """
+
+    TYPE_NAMES = {"speed": "Speed", "stamina": "Stamina", "power": "Power", "guts": "Guts", "intelligence": "Wit", "friend": "Friend", "group": "Group"}
+    RARITY_NAMES = {1: "R", 2: "SR", 3: "SSR"}
+
+    def __init__(self):
+        super().__init__("https://gametora.com/umamusume/supports", "supportCards.json")
+
+    def start(self):
+        """Adds every Global-released support card to the catalog, keeping existing entries untouched."""
+        self.data = self._read_existing()
+        for card in fetch_gametora_manifest_data("support-cards"):
+            if not is_global_release(card):
+                continue
+            self.data.setdefault(
+                str(card["support_id"]),
+                {
+                    "name": SUPPORT_CARD_NAME_OVERRIDES.get(card["char_name"], card["char_name"]),
+                    "title": card.get("title_en") or "",
+                    "type": self.TYPE_NAMES.get(card.get("type"), str(card.get("type")).title()),
+                    "rarity": self.RARITY_NAMES.get(card.get("rarity"), "R"),
+                },
+            )
+        logging.info(f"supportCards.json now has {len(self.data)} cards.")
+        self.save_data()
+
+
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     start_time = time.time()
@@ -2225,6 +2306,10 @@ if __name__ == "__main__":
     run_scraper_with_retry(CharacterPresetScraper())
 
     run_scraper_with_retry(CharacterObjectivesScraper())
+
+    run_scraper_with_retry(TraineeCardScraper())
+
+    run_scraper_with_retry(SupportCardCatalogScraper())
 
     end_time = round(time.time() - start_time, 2)
     logging.info(f"Total time for processing all applications: {end_time} seconds or {round(end_time / 60, 2)} minutes.")

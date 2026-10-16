@@ -28,7 +28,16 @@ INCLUDED_CARDS_PATH = SCRIPT_DIR / "included_cards.json"
 MANIFEST_IDS_PATH = SCRIPT_DIR / ".cache" / "manifest_ids.json"
 
 # The files the app can download. races.json and scenarios.json are not scraped, so they only change with an APK.
-UPDATABLE_FILES = ["characters.json", "supports.json", "skills.json", "epithets.json", "characterPresets.json", "character_objectives.json"]
+UPDATABLE_FILES = [
+    "characters.json",
+    "supports.json",
+    "skills.json",
+    "epithets.json",
+    "characterPresets.json",
+    "character_objectives.json",
+    "traineeCards.json",
+    "supportCards.json",
+]
 
 # Every GameTora manifest dataset main.py reads. A changed id means GameTora republished that dataset.
 WATCHED_DATASETS = [
@@ -58,7 +67,12 @@ REQUIRED_KEYS = {
     "epithets.json": {"name": str, "bullet_points": list},
     "characterPresets.json": {"name": str, "distanceAptitudes": dict, "surfaceAptitudes": dict},
     "character_objectives.json": {"name": str, "mandatoryRaces": list},
+    "traineeCards.json": {"name": str, "title": str, "aptitudes": dict, "growth": dict},
+    "supportCards.json": {"name": str, "title": str, "type": str, "rarity": str},
 }
+
+# The catalog each card kind must appear in, keyed by its GameTora id.
+CATALOG_FILES = {"character": "traineeCards.json", "support": "supportCards.json"}
 
 # Fields a broken source page silently empties, with the value that means empty and a name for the problem message. The merge is
 # additive, so the number of entries with the field filled must never drop.
@@ -249,6 +263,10 @@ def find_problems(old: Dict[str, Any], new: Dict[str, Any], fresh: Dict[str, Lis
         for name in TRAINEE_FILES:
             if card["name_en"] not in (new.get(name) or {}):
                 problems.append(f"new trainee {card['name_en']} has no entry in {name}")
+    for kind, name in CATALOG_FILES.items():
+        for card in fresh[kind]:
+            if str(card[ID_KEYS[kind]]) not in (new.get(name) or {}):
+                problems.append(f"new {kind} card {card[ID_KEYS[kind]]} has no entry in {name}")
     for card in fresh["support"]:
         for name in SUPPORT_FILES:
             if support_label(card) not in (new.get(name) or {}):
