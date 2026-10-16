@@ -122,6 +122,25 @@ const DebugSettings = () => {
                                 checked={debug.enableDebugMode}
                                 onCheckedChange={(checked) => updateDebug({ enableDebugMode: checked })}
                             />
+                            <View style={styles.hostPad}>
+                                <CustomSlider
+                                    searchId="debug-image-quality"
+                                    searchCondition={debug.enableDebugMode}
+                                    parentId="enable-debug-mode"
+                                    value={debug.debugImageQuality}
+                                    placeholder={defaultSettings.debug.debugImageQuality}
+                                    onValueChange={(value) => updateDebug({ debugImageQuality: value })}
+                                    onSlidingComplete={(value) => updateDebug({ debugImageQuality: value })}
+                                    min={30}
+                                    max={100}
+                                    step={5}
+                                    label="Debug Image Quality"
+                                    labelUnit="%"
+                                    showValue={true}
+                                    showLabels={true}
+                                    description="Sets the JPEG quality of the debug images saved in the debug bundle. Lower values make smaller zip files but blurrier images."
+                                />
+                            </View>
                         </Section>
                         {debug.enableDebugMode && (
                             <WarningContainer style={{ marginTop: 0, marginBottom: SPACING.md }}>

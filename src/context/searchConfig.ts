@@ -1292,6 +1292,13 @@ const searchConfig: SearchOption[] = [
     // Debug Settings
     // ============================================================
     {
+        id: "debug-image-quality",
+        title: "Debug Image Quality",
+        description: "Sets the JPEG quality of the debug images saved in the debug bundle. Lower values make smaller zip files but blurrier images.",
+        page: "DebugSettings",
+        parentId: "enable-debug-mode",
+    },
+    {
         id: "enable-debug-mode",
         title: "Enable Debug Mode",
         description: "Allows debugging messages in the log and test images to be created in the /temp/ folder.",
