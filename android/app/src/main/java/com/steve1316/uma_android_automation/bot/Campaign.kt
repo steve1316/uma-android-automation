@@ -9,6 +9,7 @@ import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
+import com.steve1316.uma_android_automation.bot.solver.Heuristic
 import com.steve1316.uma_android_automation.bot.solver.SmartRaceSolverIntegration
 import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonCancel
@@ -223,6 +224,26 @@ internal fun shouldRunG1DayPreScreen(enabled: Boolean, year: DateYear, isSummer:
  * @return True when the best training should be trained rather than skipping to the race.
  */
 internal fun g1DayPrefersTraining(bestNumRainbow: Int, minRainbowCount: Int): Boolean = bestNumRainbow >= minRainbowCount
+
+/**
+ * Decides how a career that reached its end screen ended. A lost career-ending race, or an end screen before the last regular turn, means the career failed. It is then
+ * reported as stopped by the bot with the cause, so the run-end card, the notification and Discord do not show a failed career as complete. Pure and testable.
+ *
+ * The finale is not the test, since Grand Live has no finale turns and ends with its final concert after Turn 72.
+ *
+ * @param lostRaceTurn The turn the bot gave up a career-ending race on, or null if it did not.
+ * @param endTurn The turn the career ended on, or null if no date was read this run.
+ * @return A completed result, or an error result naming why the career failed.
+ */
+internal fun careerEndResult(lostRaceTurn: Int?, endTurn: Int?): TaskResult {
+    val cause =
+        when {
+            lostRaceTurn != null -> "lost a mandatory race on Turn $lostRaceTurn"
+            endTurn != null && endTurn < Heuristic.LAST_TURN -> "it ended early on Turn $endTurn"
+            else -> return TaskResult.Success(TaskResultCode.TASK_RESULT_COMPLETE, "Bot has reached end of run. Stopping bot...")
+        }
+    return TaskResult.Error(TaskResultCode.TASK_RESULT_BREAKPOINT_REACHED, "Career failed: $cause. The end-of-career cleanup is done.")
+}
 
 /**
  * Defines the base campaign class that contains all shared logic for campaign automation.
