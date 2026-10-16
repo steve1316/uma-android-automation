@@ -69,6 +69,19 @@ export interface Settings {
         clubDonateEnabled: boolean
         enableMissions: boolean
         enablePresents: boolean
+        startCareerWhenDone: boolean
+    }
+
+    // Career Setup settings
+    careerSetup: {
+        usePreselectedTrainee: boolean
+        trainee: string
+        legacyMode: string
+        sparkWishList: string[]
+        deckNumber: number
+        friendCard: string
+        friendMaxRefreshes: number
+        startNextCareerWhenDone: boolean
     }
 
     // Racing settings
@@ -222,6 +235,8 @@ export interface Settings {
         debugMode_startScrollBarDetectionTest: boolean
         debugMode_startUmamusumeDetailsReadTest: boolean
         debugMode_startRainbowDetectionTest: boolean
+        debugMode_startLegacySparkReaderTest: boolean
+        debugMode_startCareerSetupTest: boolean
         debugMode_startSpiritGaugeDetectionTest: boolean
         debugMode_startTrackblazerRaceSelectionTest: boolean
         debugMode_startTrackblazerInventorySyncTest: boolean
@@ -331,6 +346,17 @@ export const defaultSettings: Settings = {
         clubDonateEnabled: true,
         enableMissions: true,
         enablePresents: true,
+        startCareerWhenDone: false,
+    },
+    careerSetup: {
+        usePreselectedTrainee: true,
+        trainee: "",
+        legacyMode: "keep",
+        sparkWishList: ["SPD", "STA", "PWR"],
+        deckNumber: 0,
+        friendCard: "",
+        friendMaxRefreshes: 3,
+        startNextCareerWhenDone: false,
     },
     racing: {
         ignoreConsecutiveRaceWarning: false,
@@ -541,6 +567,8 @@ export const defaultSettings: Settings = {
         debugMode_startScrollBarDetectionTest: false,
         debugMode_startUmamusumeDetailsReadTest: false,
         debugMode_startRainbowDetectionTest: false,
+        debugMode_startLegacySparkReaderTest: false,
+        debugMode_startCareerSetupTest: false,
         debugMode_startSpiritGaugeDetectionTest: false,
         debugMode_startTrackblazerRaceSelectionTest: false,
         debugMode_startTrackblazerInventorySyncTest: false,
@@ -660,9 +688,11 @@ export interface GeneralMiscContextValue {
     general: Settings["general"]
     misc: Settings["misc"]
     dailies: Settings["dailies"]
+    careerSetup: Settings["careerSetup"]
     updateGeneral: SliceUpdater<Settings["general"]>
     updateMisc: SliceUpdater<Settings["misc"]>
     updateDailies: SliceUpdater<Settings["dailies"]>
+    updateCareerSetup: SliceUpdater<Settings["careerSetup"]>
 }
 
 export interface DebugContextValue {
@@ -759,6 +789,7 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     const updateGeneral = useMemo(() => makeSliceUpdater("general"), [makeSliceUpdater])
     const updateMisc = useMemo(() => makeSliceUpdater("misc"), [makeSliceUpdater])
     const updateDailies = useMemo(() => makeSliceUpdater("dailies"), [makeSliceUpdater])
+    const updateCareerSetup = useMemo(() => makeSliceUpdater("careerSetup"), [makeSliceUpdater])
     const updateDebug = useMemo(() => makeSliceUpdater("debug"), [makeSliceUpdater])
     const updateDiscord = useMemo(() => makeSliceUpdater("discord"), [makeSliceUpdater])
     const updateChat = useMemo(() => makeSliceUpdater("chat"), [makeSliceUpdater])
@@ -779,8 +810,17 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
     )
     const trainingEventValue = useMemo<TrainingEventContextValue>(() => ({ trainingEvent: settings.trainingEvent, updateTrainingEvent }), [settings.trainingEvent, updateTrainingEvent])
     const generalMiscValue = useMemo<GeneralMiscContextValue>(
-        () => ({ general: settings.general, misc: settings.misc, dailies: settings.dailies, updateGeneral, updateMisc, updateDailies }),
-        [settings.general, settings.misc, settings.dailies, updateGeneral, updateMisc, updateDailies]
+        () => ({
+            general: settings.general,
+            misc: settings.misc,
+            dailies: settings.dailies,
+            careerSetup: settings.careerSetup,
+            updateGeneral,
+            updateMisc,
+            updateDailies,
+            updateCareerSetup,
+        }),
+        [settings.general, settings.misc, settings.dailies, settings.careerSetup, updateGeneral, updateMisc, updateDailies, updateCareerSetup]
     )
     const debugValue = useMemo<DebugContextValue>(() => ({ debug: settings.debug, updateDebug }), [settings.debug, updateDebug])
     const discordValue = useMemo<DiscordContextValue>(() => ({ discord: settings.discord, updateDiscord }), [settings.discord, updateDiscord])
@@ -826,7 +866,7 @@ export const BotStateProvider = ({ children }: any): React.ReactElement => {
  * @returns A `Settings` object assembled from every slice context's current value.
  */
 export const useSettingsSnapshot = (): Settings => {
-    const { general, misc, dailies } = useContext(GeneralMiscContext)
+    const { general, misc, dailies, careerSetup } = useContext(GeneralMiscContext)
     const { racing } = useContext(RacingContext)
     const { skills } = useContext(SkillsContext)
     const { training, trainingStatTarget } = useContext(TrainingContext)
@@ -836,8 +876,8 @@ export const useSettingsSnapshot = (): Settings => {
     const { chat } = useContext(ChatContext)
     const { scenarioOverrides } = useContext(ScenarioOverridesContext)
     return useMemo(
-        () => ({ general, dailies, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides }),
-        [general, dailies, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides]
+        () => ({ general, dailies, careerSetup, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides }),
+        [general, dailies, careerSetup, racing, skills, trainingEvent, misc, training, trainingStatTarget, debug, discord, chat, scenarioOverrides]
     )
 }
 

@@ -373,7 +373,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * Converts this bitmap to a new HSV [Mat], releasing the intermediates. [toMat] yields an RGBA mat, so the alpha is dropped with `RGBA2RGB` and never `BGR2RGB` - the latter swaps red
      * and blue and would push a blue subject into the red hues, which is the recurring footgun in every hue range in this file.
      */
-    private fun Bitmap.toHsvMat(): Mat {
+    internal fun Bitmap.toHsvMat(): Mat {
         val rgbaMat = toMat()
         val rgbMat = Mat()
         Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB)

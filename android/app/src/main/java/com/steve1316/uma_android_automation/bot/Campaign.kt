@@ -9,6 +9,11 @@ import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
+import com.steve1316.uma_android_automation.bot.career_setup.CareerCompletion
+import com.steve1316.uma_android_automation.bot.career_setup.CareerSetup
+import com.steve1316.uma_android_automation.bot.career_setup.CareerSetupSettings
+import com.steve1316.uma_android_automation.bot.career_setup.LegacyPicker
+import com.steve1316.uma_android_automation.bot.solver.Heuristic
 import com.steve1316.uma_android_automation.bot.solver.SmartRaceSolverIntegration
 import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonCancel
@@ -103,6 +108,8 @@ val CAREER_DEBUG_TEST_KEYS: Set<String> =
         "debugMode_startUmamusumeDetailsReadTest",
         "debugMode_startSkillListBuyTest",
         "debugMode_startRainbowDetectionTest",
+        "debugMode_startLegacySparkReaderTest",
+        "debugMode_startCareerSetupTest",
         "debugMode_startSpiritGaugeDetectionTest",
         "debugMode_startTrackblazerRaceSelectionTest",
         "debugMode_startTrackblazerInventorySyncTest",
@@ -223,6 +230,26 @@ internal fun shouldRunG1DayPreScreen(enabled: Boolean, year: DateYear, isSummer:
  * @return True when the best training should be trained rather than skipping to the race.
  */
 internal fun g1DayPrefersTraining(bestNumRainbow: Int, minRainbowCount: Int): Boolean = bestNumRainbow >= minRainbowCount
+
+/**
+ * Decides how a career that reached its end screen ended. A lost career-ending race, or an end screen before the last regular turn, means the career failed. It is then
+ * reported as stopped by the bot with the cause, so the run-end card, the notification and Discord do not show a failed career as complete. Pure and testable.
+ *
+ * The finale is not the test, since Grand Live has no finale turns and ends with its final concert after Turn 72.
+ *
+ * @param lostRaceTurn The turn the bot gave up a career-ending race on, or null if it did not.
+ * @param endTurn The turn the career ended on, or null if no date was read this run.
+ * @return A completed result, or an error result naming why the career failed.
+ */
+internal fun careerEndResult(lostRaceTurn: Int?, endTurn: Int?): TaskResult {
+    val cause =
+        when {
+            lostRaceTurn != null -> "lost a mandatory race on Turn $lostRaceTurn"
+            endTurn != null && endTurn < Heuristic.LAST_TURN -> "it ended early on Turn $endTurn"
+            else -> return TaskResult.Success(TaskResultCode.TASK_RESULT_COMPLETE, "Bot has reached end of run. Stopping bot...")
+        }
+    return TaskResult.Error(TaskResultCode.TASK_RESULT_BREAKPOINT_REACHED, "Career failed: $cause. The end-of-career cleanup is done.")
+}
 
 /**
  * Defines the base campaign class that contains all shared logic for campaign automation.
@@ -355,6 +382,9 @@ abstract class Campaign(game: Game) : Task(game) {
     /** Flag indicating if the bot has already tried checking fans today. */
     protected var bHasTriedCheckingFansToday: Boolean = false
 
+    /** Set when the Main screen handler stops to close a dialog it opened itself, so the next pass reuses this turn's date instead of reading it again. */
+    private var bDateReadBeforeOwnDialog: Boolean = false
+
     /** Flag indicating if the skill point threshold has been handled.
      * This is necessary since the user may have enabled the skill point check
      * skill spending plan. If their plan ends up not purchasing many skills,
@@ -379,6 +409,25 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** True after a resume, so the next main-screen pass re-reads stats and energy even though the date did not change. */
     protected var bForceTurnStartUpdates: Boolean = false
+
+    /** Whether a date has been read this run, so the career-end screen can tell an early end from a run started on that screen. */
+    private var bHasReadDate: Boolean = false
+
+    /** The turn the bot gave up a career-ending race on, which fails the career, or null. */
+    private var lostRaceTurn: Int? = null
+
+    /** True until the first tick, and again after a resume, so a run started outside a career sets one up first. */
+    private var bCheckCareerSetup: Boolean = true
+
+    /** Whether Career Setup claimed a finished Independent Training, so its career is completed at the end screen and a new one started. */
+    private var bClaimedIndependentTraining: Boolean = false
+
+    /** Whether to complete each career at its end screen and start the next one until TP runs out (Career Setup). */
+    private val bStartNextCareerWhenDone: Boolean = SettingsHelper.getBooleanSetting("careerSetup", "startNextCareerWhenDone", false)
+
+    /** Set once this career was completed and the game is back on Home, so the bot starts the next career. */
+    var bStartNextCareer: Boolean = false
+        private set
 
     /**
      * Counts consecutive [performMiscChecks] iterations where [ButtonCancel] matched. The bot only
@@ -426,6 +475,8 @@ abstract class Campaign(game: Game) : Task(game) {
                 "debugMode_startUmamusumeDetailsReadTest" to ::startUmamusumeDetailsReadTest,
                 "debugMode_startSkillListBuyTest" to skillPlan::startSkillListBuyTest,
                 "debugMode_startRainbowDetectionTest" to ::startRainbowDetectionTest,
+                "debugMode_startLegacySparkReaderTest" to ::startLegacySparkReaderTest,
+                "debugMode_startCareerSetupTest" to ::startCareerSetupTest,
             )
 
         var bDidAnyTestsRun = false
@@ -453,6 +504,23 @@ abstract class Campaign(game: Game) : Task(game) {
             if (pass < passes) game.wait(1.0)
         }
         MessageLog.i(TAG, "[TEST] Rainbow Detection test complete. Check the logged metrics and the saved debugRainbowDetection.png crop to calibrate geometry/thresholds.")
+    }
+
+    /** Debug test for the Career Setup spark reader. Run it with a Legacy Select picker open: it logs each visible card's sparks, score and whether it is taken. */
+    open fun startLegacySparkReaderTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Legacy Spark Reader test. Open a Legacy Select picker so the cards are visible.")
+        val settings = CareerSetupSettings.load()
+        LegacyPicker(game, settings, settings.sparkWishList).logVisibleCards()
+    }
+
+    /** Debug test for Career Setup. Run it from Home: it goes through every setup step with the current settings and stops on Final Confirmation without spending TP. */
+    open fun startCareerSetupTest() {
+        MessageLog.i(TAG, "\n[TEST] Now beginning the Career Setup test. Start it from Home or any career setup screen.")
+        try {
+            CareerSetup(game, bDryRun = true).run()
+        } catch (e: CampaignBreakpointException) {
+            MessageLog.i(TAG, "[TEST] ${e.message}")
+        }
     }
 
     /**
@@ -1065,6 +1133,7 @@ abstract class Campaign(game: Game) : Task(game) {
             }
             if (racing.enableCompleteCareerOnFailure) {
                 MessageLog.i(TAG, "[RACE] Failed a mandatory race and no retries remaining. Completing career...")
+                lostRaceTurn = date.day
                 // Manually set retries to -1 to break the race retry loop.
                 racing.raceRetries = -1
                 dialog.close(game.imageUtils)
@@ -1124,6 +1193,7 @@ abstract class Campaign(game: Game) : Task(game) {
         // The turn-start reads may have been cut short while the log was muted.
         MessageLog.disableOutput = false
         MessageLog.i(TAG, "[RESYNC] Resumed after a pause. Re-reading the screen and the turn before acting.")
+        bCheckCareerSetup = true
         bHasCheckedDateThisTurn = false
         // Force the turn-start stat reads without re-running resetDailyFlags(), which must only run when the date actually changes.
         bForceTurnStartUpdates = true
@@ -1525,6 +1595,7 @@ abstract class Campaign(game: Game) : Task(game) {
             MessageLog.e(TAG, "[ERROR] updateDate:: date.update() failed to update date.")
             return false
         }
+        bHasReadDate = true
 
         if (date.day == prevDay) {
             Log.d(TAG, "[DEBUG] updateDate:: Date did not change.")
@@ -2274,7 +2345,9 @@ abstract class Campaign(game: Game) : Task(game) {
         // Operations to be done every time the date changes.
         // Skip if we've already checked the date this turn and no game-advancing action was taken.
         if (!bHasCheckedDateThisTurn) {
-            val dateChanged = updateDate()
+            // Returning from the aptitudes or fans dialog the bot opened itself is still the same turn, so the date read is skipped.
+            val dateChanged = if (bDateReadBeforeOwnDialog) false else updateDate()
+            bDateReadBeforeOwnDialog = false
             // Show the new turn now, so a planned stop in performGlobalChecks() reports this turn and not the last one.
             DecisionTracer.pushProgress(date.day)
             // Once-per-run: log the Smart Race Solver Preview schedule and seed mid-run history
@@ -2306,7 +2379,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
             if (!trainee.bHasUpdatedAptitudes) {
                 openAptitudesDialog()
-                if (tryHandleAllDialogs()) return true
+                if (closeOwnDialog()) return true
             }
 
             val bIsScheduledRaceDayInitial = LabelScheduledRace.check(game.imageUtils, sourceBitmap = sourceBitmap)
@@ -2314,7 +2387,7 @@ abstract class Campaign(game: Game) : Task(game) {
 
             if (!date.bIsFinaleSeason && !bIsMandatoryRaceDayInitial && !bIsScheduledRaceDayInitial && bNeedToCheckFans && !bHasTriedCheckingFansToday) {
                 openFansDialog()
-                if (tryHandleAllDialogs()) return true
+                if (closeOwnDialog()) return true
             }
 
             // Mark that we've checked the date this turn.
@@ -2351,6 +2424,13 @@ abstract class Campaign(game: Game) : Task(game) {
         val bIsScheduledRaceDay = LabelScheduledRace.check(game.imageUtils)
         return executeAction(action, bIsScheduledRaceDay)
     }
+
+    /**
+     * Closes a dialog the Main screen handler opened itself, such as the fans or aptitudes dialog. The next pass is still the same turn, so it reuses this turn's date.
+     *
+     * @return True if a dialog was handled.
+     */
+    private fun closeOwnDialog(): Boolean = tryHandleAllDialogs().also { if (it) bDateReadBeforeOwnDialog = true }
 
     /**
      * Performs parallel turn-start updates for stats, skill points, mood, energy, and racing requirements.
@@ -2796,6 +2876,15 @@ abstract class Campaign(game: Game) : Task(game) {
             // Take one screenshot for the look-only checks below. Each check that returns false does nothing to the screen, so they can all share it.
             val tickBitmap = game.imageUtils.getSourceBitmap()
 
+            // A run started on Home or a career setup screen starts a new career before the career loop takes over.
+            if (bCheckCareerSetup) {
+                bCheckCareerSetup = false
+                if (CareerSetup.isOutsideCareer(game, tickBitmap)) {
+                    bClaimedIndependentTraining = CareerSetup(game).run()
+                    return null
+                }
+            }
+
             // We always check for dialogs first. A tick with no title bar skips the dialog handler and the same search in checkMainScreen().
             val bDialogVisible = DialogUtils.check(game.imageUtils, sourceBitmap = tickBitmap)
             if (bDialogVisible && tryHandleAllDialogs(sourceBitmap = tickBitmap)) {
@@ -2804,6 +2893,8 @@ abstract class Campaign(game: Game) : Task(game) {
             }
 
             val bAtMainScreen = !bDialogVisible && checkMainScreen(tickBitmap, bSkipDialogCheck = true)
+            // Any other screen after the bot's own dialog may mean the turn moved on, so the date is read again.
+            if (!bAtMainScreen) bDateReadBeforeOwnDialog = false
             if (bAtMainScreen) {
                 // The main screen is a known screen, so the recovery after a pause ends here and its own dialogs are confirmed as usual.
                 recordTick(TickOutcome.KNOWN)
@@ -2887,10 +2978,14 @@ abstract class Campaign(game: Game) : Task(game) {
                 // Print the final Trainee information.
                 trainee.logInfo(game.scenario)
 
-                return TaskResult.Success(
-                    TaskResultCode.TASK_RESULT_COMPLETE,
-                    "Bot has reached end of run. Stopping bot...",
-                )
+                val result = careerEndResult(lostRaceTurn, date.day.takeIf { bHasReadDate })
+                // A claimed Independent Training was started to make way for a new career, so it is completed whatever the setting. A failed career is
+                // still reported through this run's result, and the chain carries on.
+                if (bStartNextCareerWhenDone || bClaimedIndependentTraining) {
+                    CareerCompletion(game).run()
+                    bStartNextCareer = true
+                }
+                return result
             } else if (handledAsKnownScreen { checkCampaignSpecificConditions() }) {
                 MessageLog.i(TAG, "[INFO] Campaign-specific checks complete.")
             } else if (handledAsKnownScreen { handleInheritanceEvent(miscBitmap) }) {

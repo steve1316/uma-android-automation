@@ -1,0 +1,18 @@
+{
+    "Grand Live": {
+        "favorites": ["30052", "30028", "30101", "30107"],
+        "types": ["Speed", "Wit"]
+    },
+    "Trackblazer": {
+        "favorites": ["30028", "30078", "30097", "30054"],
+        "types": ["Speed", "Wit"]
+    },
+    "Unity Cup": {
+        "favorites": ["30101", "30028", "30010", "30097"],
+        "types": ["Wit", "Speed"]
+    },
+    "URA Finale": {
+        "favorites": ["30028", "30101", "30107", "30010"],
+        "types": ["Speed", "Wit", "Stamina"]
+    }
+}

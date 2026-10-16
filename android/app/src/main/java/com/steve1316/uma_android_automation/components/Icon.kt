@@ -82,3 +82,14 @@ val IconInfirmaryEventHeader = icon("infirmary_event_header", Region.topHalf)
 val IconRaceAgendaEmpty = icon("race_agenda_empty", Region.topHalf)
 val IconDialogScrollListTopLeft = icon("dialog_scroll_list_top_left", Region.leftHalf)
 val IconDialogScrollListBottomRight = icon("dialog_scroll_list_bottom_right", Region.rightHalf)
+
+// Career Setup
+val IconCareerStartAffinityDoubleCircle = icon("career_start_affinity_double_circle", Region.topQuarter, confidence = 0.9)
+val IconCareerStartAffinityCircle = icon("career_start_affinity_circle", Region.topQuarter, confidence = 0.9)
+val IconCareerStartAffinityTriangle = icon("career_start_affinity_triangle", Region.topQuarter, confidence = 0.9)
+val IconCareerStartAffinityNone = icon("career_start_affinity_none", Region.topQuarter, confidence = 0.9)
+val IconCareerStartSupportSsr = icon("career_start_support_ssr", confidence = 0.85)
+
+/** Support card type icons from the Borrow Card thumbnails, keyed by the type name used in settings. */
+val IconCareerStartSupportTypes: Map<String, ComponentInterface> =
+    listOf("Speed", "Stamina", "Power", "Guts", "Wit", "Friend", "Group").associateWith { icon("career_start_support_type_${it.lowercase()}", confidence = 0.85) }

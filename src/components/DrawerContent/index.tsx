@@ -64,6 +64,7 @@ const SECTIONS: DrawerSection[] = [
             { label: "Schedule", icon: "calendar-number-outline", route: "ScheduleScreen" },
             { label: "Skills", icon: "american-football-outline", route: "Skills" },
             { label: "Dailies", icon: "today-outline", route: "DailiesSettings" },
+            { label: "Career Setup", icon: "play-circle-outline", route: "CareerSetupSettings" },
         ],
     },
     {
@@ -117,6 +118,7 @@ const SETTINGS_STACK_ROUTES = new Set<string>([
     "DiscordSettings",
     "LLMSettings",
     "DailiesSettings",
+    "CareerSetupSettings",
 ])
 
 /**

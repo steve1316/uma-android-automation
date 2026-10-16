@@ -124,3 +124,28 @@ val LabelSelectOpponent = label("select_opponent", Region.topQuarter)
 val LabelStarUnlockText = label("star_unlock_text", confidence = 0.85)
 val LabelTeamRankBadge = label("team_rank_badge", Region.leftHalf)
 val LabelTopBarRp = label("top_bar_rp", Region.topQuarter)
+
+// Career Setup
+val LabelCareerStartScenarioSelectHeader = label("career_start_scenario_select_header", Region.topQuarter, confidence = 0.9)
+val LabelCareerStartTraineeSelectHeader = label("career_start_trainee_select_header", Region.topQuarter, confidence = 0.9)
+val LabelCareerStartLegacySelectHeader = label("career_start_legacy_select_header", Region.topQuarter, confidence = 0.9)
+val LabelCareerStartSupportFormationHeader = label("career_start_support_formation_header", Region.topQuarter, confidence = 0.9)
+
+// The label sits on each trainee's card art, which drags some matches down to 0.84, so 0.85 missed up to 4 of 10 cards.
+val LabelCareerStartPotentialLvl = label("career_start_potential_lvl", confidence = 0.75)
+val LabelCareerStartLegacyDuplicate = label("career_start_legacy_duplicate", confidence = 0.85)
+val LabelCareerStartLegacy1Tag = label("career_start_legacy_1_tag", confidence = 0.85)
+
+/** The pink "Free once per day!" banner above a guest's Monies Required, shown only while the daily free borrow is unused. */
+val LabelCareerStartLegacyFreeBorrow = label("career_start_legacy_free_borrow", Region.topHalf, confidence = 0.85)
+val LabelCareerStartDuplicateSupport = label("career_start_duplicate_support", confidence = 0.85)
+val LabelCareerStartLastLogin = label("career_start_last_login", confidence = 0.9)
+
+/** The "TRAINING COMPLETE!" label on the Independent Training dialog. While training it shows "Training..." instead. */
+val LabelCareerStartIndependentTrainingComplete = label("career_start_independent_training_complete")
+
+/** Spark badge labels keyed by the label text, grouped by badge color. */
+val LabelCareerStartSparkStat: Map<String, ComponentInterface> = listOf("SPD", "STA", "PWR", "GUTS", "WIT").associateWith { label("career_start_spark_${it.lowercase()}") }
+val LabelCareerStartSparkAptitude: Map<String, ComponentInterface> =
+    listOf("TURF", "DIRT", "SPRNT", "MILE", "MED", "LONG", "FRONT", "PACE", "LATE", "END").associateWith { label("career_start_spark_${it.lowercase()}") }
+val LabelCareerStartSparkUnique: Map<String, ComponentInterface> = mapOf("UNIQ" to label("career_start_spark_uniq"))

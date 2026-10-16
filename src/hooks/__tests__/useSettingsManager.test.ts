@@ -17,6 +17,13 @@ describe("deepMerge", () => {
         expect(deepMerge(target, source as any)).toEqual({ nested: { a: 10, b: 2 } })
     })
 
+    it("a number loaded for a string setting is kept as a string", () => {
+        // The database parses a stored "100701" card id back as the number 100701.
+        const target = { careerSetup: { trainee: "", deckNumber: 0 } }
+        const source = { careerSetup: { trainee: 100701, deckNumber: 3 } }
+        expect(deepMerge(target, source as any)).toEqual({ careerSetup: { trainee: "100701", deckNumber: 3 } })
+    })
+
     it("arrays are replaced entirely, not merged", () => {
         const target = { arr: [1, 2, 3] }
         const source = { arr: [4, 5] }

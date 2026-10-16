@@ -39,6 +39,7 @@ const DAILIES: Settings["dailies"] = {
     clubDonateEnabled: true,
     enableMissions: true,
     enablePresents: true,
+    startCareerWhenDone: false,
 }
 
 /**
@@ -71,8 +72,15 @@ describe("buildSettingsBanner", () => {
 
     it("leaves the Dailies debug tests out of the career banner", () => {
         const banner = buildSettingsBanner(makeStubSettings())
-        expect(banner).toContain("Start Template Matching Test")
+        expect(banner).toContain("Start Basic Template Matching Test")
         expect(banner).not.toContain("Start Dailies")
+    })
+
+    it("lists every career debug test, so an armed one is never hidden", () => {
+        const debug = { enableDebugMode: false, debugMode_startLegacySparkReaderTest: true }
+        const banner = buildSettingsBanner(withSlices({ dailies: DAILIES, debug }))
+        expect(banner).toContain("🔍 Start Legacy Spark Reader Test: ✅")
+        expect(banner).toContain("🔍 Start Rainbow Detection Test: ❌")
     })
 
     it("names the career run mode", () => {

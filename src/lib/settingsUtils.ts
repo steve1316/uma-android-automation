@@ -11,6 +11,9 @@ export const deepMerge = <T extends Record<string, any>>(target: T, source: Part
     for (const key in source) {
         if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key]) && source[key] !== null) {
             output[key] = deepMerge((target[key] || {}) as Record<string, any>, source[key] as any) as T[Extract<keyof T, string>]
+        } else if (typeof target[key] === "string" && typeof source[key] === "number") {
+            // The database parses a stored numeric string such as a card id back as a number, so the default's type decides.
+            output[key] = String(source[key]) as T[Extract<keyof T, string>]
         } else if (source[key] !== undefined) {
             output[key] = source[key] as T[Extract<keyof T, string>]
         }
@@ -37,6 +40,7 @@ export const deepMerge = <T extends Record<string, any>>(target: T, source: Part
  *   only consumed by Kotlin via `SettingsHelper.getStringSetting`.
  * - `trainingEvent.{characterEventData,supportEventData,scenarioEventData}` — bundled JSON event data
  *   written once at bootstrap by `populateEventData`; only consumed by Kotlin.
+ * - `careerSetup.{traineeCardData,supportCardData,friendFavoritesData}` — Career Setup catalogs, written the same way.
  */
 export const DB_OWNED_KEYS: ReadonlyArray<readonly [string, string]> = [
     ["misc", "formattedSettingsString"],
@@ -48,6 +52,9 @@ export const DB_OWNED_KEYS: ReadonlyArray<readonly [string, string]> = [
     ["trainingEvent", "characterEventData"],
     ["trainingEvent", "supportEventData"],
     ["trainingEvent", "scenarioEventData"],
+    ["careerSetup", "traineeCardData"],
+    ["careerSetup", "supportCardData"],
+    ["careerSetup", "friendFavoritesData"],
 ]
 
 const isDbOwned = (category: string, key: string): boolean => DB_OWNED_KEYS.some(([c, k]) => c === category && k === key)
@@ -230,6 +237,30 @@ export const applyMigrations = (settings: any, rawSettings?: any): { settings: a
             scenarioOverrides.trackblazerSkipBadMoodItemsBelowGain = rawScenarioOverrides.trackblazerLowMainStatGainItemFloor
             delete scenarioOverrides.trackblazerLowMainStatGainItemFloor
             markMigrated("Migrated trackblazerLowMainStatGainItemFloor to trackblazerSkipBadMoodItemsBelowGain.")
+        }
+    }
+
+    // Migration: Career Setup now stores outfit and card ids, and its spark scoring mode is called "custom".
+    const careerSetup = (migratedSettings as any).careerSetup
+    if (careerSetup) {
+        if (careerSetup.legacyMode === "sparks") {
+            careerSetup.legacyMode = "custom"
+            markMigrated("Renamed the Career Setup legacy mode sparks to custom.")
+        }
+        // A name instead of a card id cannot tell outfits apart, so the user picks the outfit again.
+        if (careerSetup.trainee && !/^\d+$/.test(careerSetup.trainee)) {
+            careerSetup.trainee = ""
+            markMigrated("Cleared the Career Setup trainee saved by name.")
+        }
+        if (careerSetup.friendCard && !/^\d+$/.test(careerSetup.friendCard)) {
+            careerSetup.friendCard = ""
+            markMigrated("Cleared the Career Setup friend card saved by name.")
+        }
+        for (const key of ["traineeOutfit", "friendCardTitle", "friendCardType", "includeFreeGuest", "uniqueSparkBonus"]) {
+            if (key in careerSetup) {
+                delete careerSetup[key]
+                markMigrated(`Removed the retired Career Setup setting ${key}.`)
+            }
         }
     }
 

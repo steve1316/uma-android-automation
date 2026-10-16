@@ -3,6 +3,8 @@ import { DEBUG_TESTS } from "../../pages/DebugSettings/debugTests"
 import { SCORING_CONSTANTS_CATALOG } from "../training/scoringConstantsCatalog"
 import { formatCareerTurn } from "../solver/constants"
 import { DATING_SCHEDULE_PRESETS } from "../datingSchedule"
+import traineeCardsData from "../../data/live/traineeCards"
+import supportCardsData from "../../data/live/supportCards"
 
 /**
  * Parse `raw` as JSON, returning `fallback` (and adopting its type) when `raw` is empty or malformed.
@@ -81,6 +83,26 @@ const formatOverrideCount = (overrides: Record<string, unknown>, emptyLabel: str
  */
 const tick = (on: boolean): string => (on ? "✅" : "❌")
 
+/**
+ * Builds the Career Setup lines, shown when a run may start a new career.
+ * @param settings Snapshot of all bot settings.
+ * @returns The Career Setup section.
+ */
+function buildCareerSetupSection(settings: Settings): string {
+    const c = settings.careerSetup
+    const outfit = (traineeCardsData as Record<string, { title: string; name: string }>)[c.trainee]
+    const card = (supportCardsData as Record<string, { title: string; name: string }>)[c.friendCard]
+    const trainee = c.usePreselectedTrainee ? "Preselected" : outfit ? `${outfit.title} ${outfit.name}` : "Not set"
+    const legacy = c.legacyMode === "smart" ? "Smart" : c.legacyMode === "custom" ? `Custom (${c.sparkWishList.join(", ") || "None"})` : "Keep Last"
+    return `---------- Career Setup Options ----------
+🧑 Trainee: ${trainee}
+👪 Legacy Parents: ${legacy}
+🃏 Deck: ${c.deckNumber > 0 ? `Deck ${c.deckNumber}` : "Keep current"}
+👥 Friend Card: ${card ? `${card.title} ${card.name}` : "Smart"}
+🔄 Friend Max Refreshes: ${c.friendMaxRefreshes}
+⏭️ Start the Next Career When Done: ${tick(c.startNextCareerWhenDone)}`
+}
+
 /** The banner text that marks a Dailies run, also read by the event log parser. */
 export const DAILIES_RUN_MODE_LABEL = "Run Mode: Dailies"
 
@@ -109,7 +131,8 @@ function buildDailiesBanner(settings: Settings): string {
 🤝 Club Donate to All: ${tick(d.clubDonateEnabled)}
 📋 Collect Mission Rewards: ${tick(d.enableMissions)}
 📦 Collect Presents: ${tick(d.enablePresents)}
-
+🎬 Start a Career After the Dailies: ${d.startCareerWhenDone ? `✅ (${settings.general.scenario || "No scenario set"})` : "❌"}
+${d.startCareerWhenDone ? `\n${buildCareerSetupSection(settings)}\n` : ""}
 ---------- Debug Options ----------
 🐛 Debug Mode: ${tick(settings.debug.enableDebugMode)}
 ${dailiesTests}`
@@ -125,6 +148,11 @@ ${dailiesTests}`
  */
 export function buildSettingsBanner(settings: Settings): string {
     if (settings.general.runMode === "dailies") return buildDailiesBanner(settings)
+
+    // Built from the shared debug test list so a newly added test is never missing from the banner.
+    const careerTests = DEBUG_TESTS.filter((test) => test.runMode !== "dailies")
+        .map((test) => `🔍 ${test.title}: ${tick(settings.debug[test.key])}`)
+        .join("\n")
 
     // Training stat targets by distance.
     const sprintTargetsString = `Sprint: \n\t\tSpeed: ${settings.trainingStatTarget.trainingSprintStatTarget_speedStatTarget}\t\tStamina: ${settings.trainingStatTarget.trainingSprintStatTarget_staminaStatTarget}\t\tPower: ${settings.trainingStatTarget.trainingSprintStatTarget_powerStatTarget}\n\t\tGuts: ${settings.trainingStatTarget.trainingSprintStatTarget_gutsStatTarget}\t\t\tWit: ${settings.trainingStatTarget.trainingSprintStatTarget_witStatTarget}`
@@ -300,6 +328,8 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🎵 Grand Live Song Priority: ${(settings.scenarioOverrides?.grandLiveSongPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveSongPriority ?? []).join(" > ")}
 🎶 Grand Live Lessons Fallback Re-check: After ${settings.scenarioOverrides?.grandLiveLessonRescanInterval ?? 6} turns without a badge
 
+${buildCareerSetupSection(settings)}
+
 ---------- Misc Options ----------
 🔍 Enable Claw Machine Attempt: ${settings.general.enableClawMachineAttempt ? "✅" : "❌"}
 🌀 Enable Swipe-Based Scrolling: ${settings.general.enableSwipeBasedScrolling ? "✅" : "❌"}
@@ -319,20 +349,7 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 📹 Enable Screen Recording: ${
         settings.debug.enableScreenRecording ? `✅ (${settings.debug.recordingBitRate} Mbps, ${settings.debug.recordingFrameRate} FPS, ${settings.debug.recordingResolutionScale}x scale)` : "❌"
     }
-🔍 Start Template Matching Test: ${settings.debug.debugMode_startTemplateMatchingTest ? "✅" : "❌"}
-🔍 Start Single Training OCR Test: ${settings.debug.debugMode_startSingleTrainingOCRTest ? "✅" : "❌"}
-🔍 Start Comprehensive Training OCR Test: ${settings.debug.debugMode_startComprehensiveTrainingOCRTest ? "✅" : "❌"}
-🔍 Start Race List Detection Test: ${settings.debug.debugMode_startRaceListDetectionTest ? "✅" : "❌"}
-🔍 Start Main Screen Update Test: ${settings.debug.debugMode_startMainScreenUpdateTest ? "✅" : "❌"}
-🔍 Start Skill List Buy Test: ${settings.debug.debugMode_startSkillListBuyTest ? "✅" : "❌"}
-🔍 Start Scrollbar Detection Test: ${settings.debug.debugMode_startScrollBarDetectionTest ? "✅" : "❌"}
-🔍 Start Umamusume Details Read Test: ${settings.debug.debugMode_startUmamusumeDetailsReadTest ? "✅" : "❌"}
-🔍 Start Rainbow Detection Test: ${settings.debug.debugMode_startRainbowDetectionTest ? "✅" : "❌"}
-🔍 Start Spirit Gauge Detection Test: ${settings.debug.debugMode_startSpiritGaugeDetectionTest ? "✅" : "❌"}
-🔍 Start Trackblazer Race Selection Test: ${settings.debug.debugMode_startTrackblazerRaceSelectionTest ? "✅" : "❌"}
-🔍 Start Trackblazer Inventory Sync Test: ${settings.debug.debugMode_startTrackblazerInventorySyncTest ? "✅" : "❌"}
-🔍 Start Trackblazer Buy Items Test: ${settings.debug.debugMode_startTrackblazerBuyItemsTest ? "✅" : "❌"}
-🔍 Start Grand Live Token Gain Test: ${settings.debug.debugMode_startGrandLiveTokenGainTest ? "✅" : "❌"}
+${careerTests}
 
 ---------- Discord Options ----------
 🔔 Discord Notifications: ${settings.discord?.enableDiscordNotifications ? "✅" : "❌"}
