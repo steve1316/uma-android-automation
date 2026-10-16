@@ -9,6 +9,7 @@ import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
+import com.steve1316.uma_android_automation.bot.career_setup.CareerSetup
 import com.steve1316.uma_android_automation.bot.solver.Heuristic
 import com.steve1316.uma_android_automation.bot.solver.SmartRaceSolverIntegration
 import com.steve1316.uma_android_automation.components.ButtonBack
@@ -409,6 +410,12 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** The turn the bot gave up a career-ending race on, which fails the career, or null. */
     private var lostRaceTurn: Int? = null
+
+    /** True until the first tick, and again after a resume, so a run started outside a career sets one up first. */
+    private var bCheckCareerSetup: Boolean = true
+
+    /** Whether Career Setup claimed a finished Independent Training, so its career is completed at the end screen and a new one started. */
+    private var bClaimedIndependentTraining: Boolean = false
 
     /**
      * Counts consecutive [performMiscChecks] iterations where [ButtonCancel] matched. The bot only
@@ -1155,6 +1162,7 @@ abstract class Campaign(game: Game) : Task(game) {
         // The turn-start reads may have been cut short while the log was muted.
         MessageLog.disableOutput = false
         MessageLog.i(TAG, "[RESYNC] Resumed after a pause. Re-reading the screen and the turn before acting.")
+        bCheckCareerSetup = true
         bHasCheckedDateThisTurn = false
         // Force the turn-start stat reads without re-running resetDailyFlags(), which must only run when the date actually changes.
         bForceTurnStartUpdates = true
@@ -2836,6 +2844,15 @@ abstract class Campaign(game: Game) : Task(game) {
         try {
             // Take one screenshot for the look-only checks below. Each check that returns false does nothing to the screen, so they can all share it.
             val tickBitmap = game.imageUtils.getSourceBitmap()
+
+            // A run started on Home or a career setup screen starts a new career before the career loop takes over.
+            if (bCheckCareerSetup) {
+                bCheckCareerSetup = false
+                if (CareerSetup.isOutsideCareer(game, tickBitmap)) {
+                    bClaimedIndependentTraining = CareerSetup(game).run()
+                    return null
+                }
+            }
 
             // We always check for dialogs first. A tick with no title bar skips the dialog handler and the same search in checkMainScreen().
             val bDialogVisible = DialogUtils.check(game.imageUtils, sourceBitmap = tickBitmap)
