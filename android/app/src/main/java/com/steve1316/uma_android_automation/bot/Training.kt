@@ -8,6 +8,8 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Campaign
+import com.steve1316.uma_android_automation.bot.solver.CharacterMandatoryRace
+import com.steve1316.uma_android_automation.bot.solver.MandatoryRaces
 import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonOk
 import com.steve1316.uma_android_automation.components.ButtonTraining
@@ -27,10 +29,13 @@ import com.steve1316.uma_android_automation.components.LabelEnergy
 import com.steve1316.uma_android_automation.components.LabelStatTableHeaderSkillPoints
 import com.steve1316.uma_android_automation.components.LabelTrainingCannotPerform
 import com.steve1316.uma_android_automation.components.LabelTrainingFailureChance
+import com.steve1316.uma_android_automation.types.Aptitude
 import com.steve1316.uma_android_automation.types.DateYear
 import com.steve1316.uma_android_automation.types.GameDate
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.applyRunningStyleStaminaFactor
+import com.steve1316.uma_android_automation.types.fuzzyBestMatchIndex
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_scoring.TrainingScoringConstants
@@ -53,6 +58,68 @@ import com.steve1316.uma_scoring.levelBoostMultiplier as sharedLevelBoostMultipl
 import com.steve1316.uma_scoring.rawTrainingScoreComponents as sharedRawTrainingScoreComponents
 import com.steve1316.uma_scoring.scoringConstantsFromMap as sharedScoringConstantsFromMap
 import com.steve1316.uma_scoring.softCapEffectivenessMultiplier as sharedSoftCapEffectivenessMultiplier
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Long goal Stamina
+
+/** Stamina a trainee needs before a Long goal race. Game8 puts Tenno Sho (Spring) at 500 or more. */
+internal const val LONG_GOAL_STAMINA_FLOOR = 500
+
+/** How many turns before a Long goal race the Stamina floor starts to apply. */
+internal const val LONG_GOAL_FLOOR_WINDOW = 12
+
+/** How closely the OCR'd trainee name must match a character name to use that character's Long goal races. */
+private const val LONG_GOAL_NAME_MATCH = 0.9
+
+/**
+ * Finds the turns of a trainee's goal races that are always Long. A choice only counts when every option is Long, since otherwise the shorter race can be taken.
+ *
+ * @param goals The trainee's goal races.
+ * @return The goal turns, earliest first.
+ */
+internal fun longGoalTurns(goals: List<CharacterMandatoryRace>): List<Int> =
+    goals.filter { goal -> goal.options.isNotEmpty() && goal.options.all { it.distanceType == TrackDistance.LONG } }.map { it.turn }.sorted()
+
+/**
+ * Finds the next Long goal race that has not been run yet.
+ *
+ * @param goalTurns The Long goal turns, earliest first.
+ * @param currentDay The current turn.
+ * @return The next Long goal turn, or null when none are left.
+ */
+internal fun nextLongGoalTurn(goalTurns: List<Int>, currentDay: Int): Int? = goalTurns.firstOrNull { it >= currentDay }
+
+/**
+ * Raises the Stamina target to the Long target while a Long goal race is ahead. Training otherwise aims at the trainee's best distance, which for a Mile trainee asks
+ * for far less Stamina than a 3200m goal race needs.
+ *
+ * @param targets The stat targets for the trainee's best distance.
+ * @param longStaminaTarget The Long Stamina target for this year, or null when no Long goal is ahead.
+ * @return The targets with Stamina raised, or unchanged when the Long target is not higher.
+ */
+internal fun applyLongGoalStaminaTarget(targets: Map<StatName, Int>, longStaminaTarget: Int?): Map<StatName, Int> {
+    val stamina = targets[StatName.STAMINA] ?: return targets
+    if (longStaminaTarget == null || longStaminaTarget <= stamina) return targets
+    return targets + (StatName.STAMINA to longStaminaTarget)
+}
+
+/**
+ * Whether the trainee is close enough to a Long goal race, and short enough on Stamina, for Stamina training to come first.
+ *
+ * @param stamina The trainee's current Stamina.
+ * @param turnsToGoal Turns until the next Long goal race, or null when none are left.
+ * @return True while the Stamina floor applies.
+ */
+internal fun isStaminaFloorActive(stamina: Int, turnsToGoal: Int?): Boolean = turnsToGoal in 0..LONG_GOAL_FLOOR_WINDOW && stamina < LONG_GOAL_STAMINA_FLOOR
+
+/**
+ * Moves Stamina to the front of a stat priority list, keeping the others in order.
+ *
+ * @param priority The stat priority list.
+ * @return The list with Stamina first.
+ */
+internal fun staminaFirst(priority: List<StatName>): List<StatName> = listOf(StatName.STAMINA) + (priority - StatName.STAMINA)
 
 /**
  * Handle the training process, including analysis of options, scoring recommendations, and execution.
@@ -210,6 +277,18 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** Failure chance below which the expected-value gate never fires (low-risk trainings are always allowed). */
     private val expectedValueMinFailureChance: Int = SettingsHelper.getIntSetting("training", "expectedValueMinFailureChance", 10)
 
+    /** Whether to put Stamina first ahead of a Long goal race while it is short of the floor. */
+    private val enableLongGoalStaminaFloor: Boolean = SettingsHelper.getBooleanSetting("training", "enableLongGoalStaminaFloor", false)
+
+    /** Each character's goal turns that are always Long races, from the objectives data the app saves at startup. */
+    private val longGoalTurnsByCharacter: Map<String, List<Int>> by lazy {
+        runCatching { MandatoryRaces.parse(SettingsHelper.getStringSetting("racing", "characterObjectivesData").ifEmpty { "{}" }).mapValues { longGoalTurns(it.value) } }
+            .getOrElse {
+                MessageLog.e(TAG, "[ERROR] Could not read the character objectives for Long goal Stamina: ${it.message}")
+                emptyMap()
+            }
+    }
+
     /** Whether to scale the stamina target by the trainee's running style (Front Runners need more stamina than Late/End Closers). Applies only once the running style is detected. */
     private val enableRunningStyleStaminaAdjustment: Boolean = SettingsHelper.getBooleanSetting("training", "enableRunningStyleStaminaAdjustment", false)
 
@@ -261,6 +340,33 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
     /** Whether this is the first training check of the turn. */
     internal var firstTrainingCheck = true
+
+    /**
+     * Finds the next Long goal race for the current trainee. A trainee whose Long grade is D or worse is left alone, since Stamina will not win her the race.
+     *
+     * @return The turn of the next Long goal race, or null when the setting is off, she has none left, or her name or grade is not known yet.
+     */
+    private fun upcomingLongGoalTurn(): Int? {
+        if (!enableLongGoalStaminaFloor) return null
+        val longGrade = campaign.trainee.trackDistanceAptitudes[TrackDistance.LONG] ?: return null
+        if (longGrade < Aptitude.C) return null
+        val name = campaign.trainee.name.ifEmpty { return null }
+        // The name is read off the screen, so an exact match is tried first and then a loose one.
+        val turns =
+            longGoalTurnsByCharacter[name]
+                ?: longGoalTurnsByCharacter.keys.toList().let { names -> fuzzyBestMatchIndex(name, names, LONG_GOAL_NAME_MATCH)?.let { longGoalTurnsByCharacter[names[it]] } }
+                ?: return null
+        return nextLongGoalTurn(turns, campaign.date.day)
+    }
+
+    /**
+     * Whether the trainee is short on Stamina with a Long goal race close enough for Stamina training to come first.
+     *
+     * @param longGoalTurn The next Long goal turn from [upcomingLongGoalTurn], or null when there is none.
+     * @return True while the Long goal Stamina floor applies.
+     */
+    private fun isStaminaFloorActiveNow(longGoalTurn: Int?): Boolean =
+        isStaminaFloorActive(campaign.trainee.getStat(StatName.STAMINA), longGoalTurn?.let { it - campaign.date.day })
 
     /**
      * Retrieve the current stat cap for a given stat: the OCR'd cap when dynamic caps are enabled and it is at least the scenario base (a below-base read is a misread), otherwise the
@@ -1930,6 +2036,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         trainingMap.clear()
         skippedTrainingMap.clear()
 
+        // A Stamina training is kept even when its gain is low for its risk while the trainee is short on Stamina before a Long goal race.
+        val staminaFloorActive = isStaminaFloorActiveNow(upcomingLongGoalTurn())
+
         // Process results and output logs in training order.
         for (result in results) {
             // Whether risky training opted into this training. This one rule decides the raised failure ceiling, the burst exemption below, and the expected-value exemption further
@@ -1996,7 +2105,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // than a user-set risk ceiling. Wit is exempt here for the same reason it gets its own ceiling - this gate scales the required gain by the failure chance, which double-counts
             // the very risk the Wit ceiling already accepted, and would otherwise re-reject every Wit turn the ceiling just let through.
             val burstExempt = result.isBurstReady
-            if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !witExempt && !burstExempt) {
+            val staminaFloorExempt = staminaFloorActive && result.name == StatName.STAMINA
+            if (!test && !ignoreFailureChance && enableExpectedValueGate && !riskyExempt && !witExempt && !burstExempt && !staminaFloorExempt) {
                 val totalStatGain = result.statGains.values.sum()
                 if (failsExpectedValueGate(totalStatGain, result.failureChance, expectedValueGainPerFailPercent, expectedValueMinFailureChance)) {
                     MessageLog.i(
@@ -2360,6 +2470,19 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         // Build skillHintsPerLocation from the training map.
         val skillHintsPerLocation: Map<StatName, Int> = StatName.entries.associateWith { trainingMap[it]?.numSkillHints ?: 0 }
 
+        // Ahead of a Long goal race, aim Stamina at the Long target, and put Stamina first while it is still short of the floor.
+        val longGoalTurn = upcomingLongGoalTurn()
+        val longStaminaTarget = longGoalTurn?.let { campaign.trainee.getPhaseStatTargets(campaign.date.year, TrackDistance.LONG)[StatName.STAMINA] }
+        val staminaFloorActive = isStaminaFloorActiveNow(longGoalTurn)
+        if (staminaFloorActive) {
+            MessageLog.i(
+                TAG,
+                "[TRAINING] Stamina ${campaign.trainee.getStat(StatName.STAMINA)} is below $LONG_GOAL_STAMINA_FLOOR with a Long goal race on Turn $longGoalTurn, so Stamina training goes first.",
+            )
+        }
+        val trainingStatPriority = if (staminaFloorActive) staminaFirst(statPrioritization) else statPrioritization
+        val trainingSummerPriority = if (staminaFloorActive) staminaFirst(summerTrainingStatPriority) else summerTrainingStatPriority
+
         // Build a TrainingConfig using the current game state for use with companion object scoring functions.
         val trainingConfig =
             TrainingConfig(
@@ -2371,15 +2494,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     } else {
                         emptyMap()
                     },
-                statPrioritization = statPrioritization,
+                statPrioritization = trainingStatPriority,
                 eventChoiceStatPriority = eventChoiceStatPriority,
-                summerTrainingStatPriority = summerTrainingStatPriority,
+                summerTrainingStatPriority = trainingSummerPriority,
                 statTargets =
                     if (disableStatTargets) {
                         // Train toward each stat's real cap (OCR'd dynamic cap when available, else the per-scenario base), not a flat scenario value.
                         StatName.entries.associateWith { getCurrentStatCap(it) }
                     } else {
-                        val baseTargets = campaign.trainee.getPhaseStatTargets(campaign.date.year)
+                        val baseTargets = applyLongGoalStaminaTarget(campaign.trainee.getPhaseStatTargets(campaign.date.year), longStaminaTarget)
                         if (enableRunningStyleStaminaAdjustment && campaign.trainee.bHasSetRunningStyle) {
                             applyRunningStyleStaminaFactor(baseTargets, campaign.trainee.runningStyle)
                         } else {

@@ -17,15 +17,25 @@ import com.steve1316.uma_android_automation.bot.Training.Companion.scoringConsta
 import com.steve1316.uma_android_automation.bot.Training.Companion.softCapEffectivenessMultiplier
 import com.steve1316.uma_android_automation.bot.Training.TrainingConfig
 import com.steve1316.uma_android_automation.bot.Training.TrainingOption
+import com.steve1316.uma_android_automation.bot.solver.CharacterMandatoryRace
+import com.steve1316.uma_android_automation.bot.solver.MandatoryRaceOption
 import com.steve1316.uma_android_automation.types.DateMonth
 import com.steve1316.uma_android_automation.types.DatePhase
 import com.steve1316.uma_android_automation.types.DateYear
 import com.steve1316.uma_android_automation.types.GameDate
+import com.steve1316.uma_android_automation.types.RaceGrade
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.types.TrackDistance
+import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.CustomImageUtils.BarFillResult
 import com.steve1316.uma_scoring.TrainingScoringConstants
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -1831,5 +1841,122 @@ class TrainingScoringTest {
         val scoreAbove = calculateStatEfficiencyScore(createDefaultConfig(trainingOptions = listOf(training), currentStats = aboveThreshold), training)
         assertTrue(scoreBelow > 0.0, "sanity: the below-threshold score is positive")
         assertEquals(scoreBelow * 0.5, scoreAbove, 1e-6, "a gain fully above 1200 should be half as effective")
+    }
+
+    /** Unit tests for training Stamina ahead of a Long goal race. Inari One lost Tenno Sho (Spring) on Turn 56 with 388 Stamina, trained toward her Mile targets. */
+    @DisplayName("Long goal Stamina")
+    @Nested
+    inner class LongGoalStaminaTest {
+        /**
+         * Builds a goal race.
+         *
+         * @param turn The goal's turn.
+         * @param distances The distance of each option the goal offers.
+         * @returns The goal race.
+         */
+        private fun goal(turn: Int, vararg distances: TrackDistance) =
+            CharacterMandatoryRace(turn, distances.size > 1, distances.map { MandatoryRaceOption("Race $turn", RaceGrade.G1, TrackSurface.TURF, it, 0) })
+
+        /** Inari One's goals: Medium and Mile races plus Tenno Sho (Spring) on 56 and Arima Kinen on 72, both Long. */
+        private val inariGoals =
+            listOf(
+                goal(37, TrackDistance.MEDIUM),
+                goal(48, TrackDistance.MEDIUM),
+                goal(56, TrackDistance.LONG),
+                goal(60, TrackDistance.MEDIUM),
+                goal(67, TrackDistance.MILE),
+                goal(68, TrackDistance.MEDIUM),
+                goal(72, TrackDistance.LONG),
+            )
+
+        /**
+         * Builds stats in game order.
+         *
+         * @returns The stats keyed by stat.
+         */
+        private fun stats(spd: Int, sta: Int, pow: Int, gut: Int, wit: Int) = mapOf(StatName.SPEED to spd, StatName.STAMINA to sta, StatName.POWER to pow, StatName.GUTS to gut, StatName.WIT to wit)
+
+        @Test
+        @DisplayName("Only goal races that are always Long count")
+        fun testLongGoalTurns() {
+            assertEquals(listOf(56, 72), longGoalTurns(inariGoals))
+            // A choice that offers a non-Long race can be dodged, so it does not count.
+            assertEquals(emptyList<Int>(), longGoalTurns(listOf(goal(40, TrackDistance.LONG, TrackDistance.MEDIUM))))
+        }
+
+        @Test
+        @DisplayName("The next Long goal is the first one not yet passed")
+        fun testNextLongGoalTurn() {
+            assertEquals(56, nextLongGoalTurn(listOf(56, 72), 44))
+            assertEquals(56, nextLongGoalTurn(listOf(56, 72), 56))
+            assertEquals(72, nextLongGoalTurn(listOf(56, 72), 57))
+            assertNull(nextLongGoalTurn(listOf(56, 72), 73))
+        }
+
+        @Test
+        @DisplayName("While a Long goal is ahead, the Stamina target rises to the Long target, never lowers")
+        fun testStaminaTarget() {
+            val mile = stats(1200, 650, 1000, 400, 800)
+            assertEquals(1100, applyLongGoalStaminaTarget(mile, 1100)[StatName.STAMINA])
+            assertEquals(mile, applyLongGoalStaminaTarget(mile, null))
+            assertEquals(mile, applyLongGoalStaminaTarget(mile, 500))
+        }
+
+        @Test
+        @DisplayName("The floor applies within 12 turns of a Long goal while Stamina is under 500")
+        fun testFloorActive() {
+            assertTrue(isStaminaFloorActive(stamina = 388, turnsToGoal = 1))
+            assertTrue(isStaminaFloorActive(stamina = 388, turnsToGoal = 12))
+            assertFalse(isStaminaFloorActive(stamina = 388, turnsToGoal = 13))
+            assertFalse(isStaminaFloorActive(stamina = 500, turnsToGoal = 1))
+            assertFalse(isStaminaFloorActive(stamina = 388, turnsToGoal = null))
+        }
+
+        @Test
+        @DisplayName("Stamina goes first in the priority list and the rest keep their order")
+        fun testStaminaFirst() {
+            assertEquals(listOf(StatName.STAMINA, StatName.SPEED, StatName.POWER, StatName.WIT), staminaFirst(listOf(StatName.SPEED, StatName.POWER, StatName.STAMINA, StatName.WIT)))
+            assertEquals(listOf(StatName.STAMINA, StatName.SPEED), staminaFirst(listOf(StatName.SPEED)))
+        }
+
+        @Test
+        @DisplayName("On Inari One's Turn 55 stats, a Stamina training beats a Speed training once both rules apply")
+        fun testStaminaWinsWithBothRules() {
+            // Turn 55's trainings without the rainbow on Speed, which the floor's 12-turn window gives plenty of.
+            val options =
+                listOf(
+                    TrainingOption(name = StatName.SPEED, statGains = stats(22, 0, 17, 0, 0), failureChance = 18, relationshipBars = arrayListOf(), numRainbow = 0),
+                    TrainingOption(name = StatName.STAMINA, statGains = stats(0, 15, 0, 13, 0), failureChance = 15, relationshipBars = arrayListOf(), numRainbow = 0),
+                )
+            val priority = listOf(StatName.SPEED, StatName.POWER, StatName.STAMINA, StatName.WIT)
+
+            /**
+             * Scores both trainings.
+             *
+             * @returns The Speed and Stamina scores.
+             */
+            fun scores(targets: Map<StatName, Int>, statPriority: List<StatName>): Pair<Double, Double> {
+                val config =
+                    TrainingConfig(
+                        currentStats = stats(806, 388, 823, 296, 302),
+                        statPrioritization = statPriority,
+                        eventChoiceStatPriority = statPriority,
+                        summerTrainingStatPriority = statPriority,
+                        statTargets = targets,
+                        currentDate = GameDate(year = DateYear.SENIOR, month = DateMonth.APRIL, phase = DatePhase.EARLY),
+                        scenario = "Grand Live",
+                        enableRainbowTrainingBonus = true,
+                        blacklist = listOf(StatName.GUTS),
+                        trainingOptions = options,
+                    )
+                return calculateRawTrainingScore(config, options[0]) to calculateRawTrainingScore(config, options[1])
+            }
+
+            val mile = stats(1200, 650, 1000, 400, 800)
+            val (speedToday, staminaToday) = scores(mile, priority)
+            assertTrue(speedToday > staminaToday, "today Speed $speedToday should beat Stamina $staminaToday")
+            val (speedFloor, staminaFloor) = scores(applyLongGoalStaminaTarget(mile, 1100), staminaFirst(priority))
+            assertTrue(staminaFloor > speedFloor, "with both rules Stamina $staminaFloor should beat Speed $speedFloor")
+        }
     }
 }

@@ -169,6 +169,7 @@ const TrainingSettings = () => {
         witOverRestMaxFailureChance,
         witOverRestMinStatGain,
         trainWitDuringFinale,
+        enableLongGoalStaminaFloor,
         enablePrioritizeSkillHints,
         enableTrainingLevelWeighting,
         disableStatTargets,
@@ -803,6 +804,13 @@ const TrainingSettings = () => {
                                         description="When enabled, the bot will train Wit during URA finale turns (73, 74, 75) instead of recovering energy or mood, even if the failure chance is high."
                                         checked={trainWitDuringFinale}
                                         onCheckedChange={(checked) => updateTrainingSetting("trainWitDuringFinale", checked)}
+                                    />
+                                    <ToggleSetting
+                                        id="enable-long-goal-stamina-floor"
+                                        title="Stamina Before Long Goal Races"
+                                        description="When a Long goal race is close and Stamina is below 500, trains Stamina first, aims its target at the Long distance, and keeps Stamina training even when its gain is low for its risk. Skipped when the trainee's Long aptitude is below C."
+                                        checked={enableLongGoalStaminaFloor}
+                                        onCheckedChange={(checked) => updateTrainingSetting("enableLongGoalStaminaFloor", checked)}
                                     />
                                 </Section>
 

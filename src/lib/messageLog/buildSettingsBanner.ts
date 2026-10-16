@@ -190,6 +190,7 @@ export function buildSettingsBanner(settings: Settings): string {
 📈 Weight Score by Training Level: ${settings.training.enableTrainingLevelWeighting ? "✅" : "❌"}
 ☀️ Must Rest Before Summer: ${settings.training.mustRestBeforeSummer ? "✅" : "❌"}
 🎯 Train Wit During Finale: ${settings.training.trainWitDuringFinale ? "✅" : "❌"}
+🏇 Stamina Before Long Goal Races: ${settings.training.enableLongGoalStaminaFloor ? "✅" : "❌"}
 🔍 Training Analysis Validation: ${settings.training.enableTrainingAnalysisValidation ? "✅" : "❌"}
 🤖 Enable YOLO Stat Detection: ${settings.training.enableYoloStatDetection ? "✅" : "❌"}
 

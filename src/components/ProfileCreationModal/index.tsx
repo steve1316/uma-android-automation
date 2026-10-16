@@ -107,6 +107,7 @@ const ProfileCreationModal: React.FC<ProfileCreationModalProps> = ({ visible, on
             { key: "PREFERRED DIST", value: currentTrainingSettings.preferredDistanceOverride || "Auto" },
             { key: "MUST REST", value: yesNo(currentTrainingSettings.mustRestBeforeSummer) },
             { key: "TRAIN WIT FINALE", value: yesNo(currentTrainingSettings.trainWitDuringFinale) },
+            { key: "LONG GOAL STAMINA", value: yesNo(currentTrainingSettings.enableLongGoalStaminaFloor) },
             { key: "PRIORITIZE SKILL", value: yesNo(currentTrainingSettings.enablePrioritizeSkillHints) },
             { key: "WEIGHT BY LEVEL", value: yesNo(currentTrainingSettings.enableTrainingLevelWeighting) },
             { key: "DISABLE TARGETS", value: yesNo(currentTrainingSettings.disableStatTargets) },

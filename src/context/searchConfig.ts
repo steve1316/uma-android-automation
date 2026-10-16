@@ -239,6 +239,12 @@ const searchConfig: SearchOption[] = [
         page: "TrainingSettings",
     },
     {
+        id: "enable-long-goal-stamina-floor",
+        title: "Stamina Before Long Goal Races",
+        description: "When a Long goal race is close and Stamina is below 500, trains Stamina first, aims its target at the Long distance, and keeps Stamina training even when its gain is low for its risk. Skipped when the trainee's Long aptitude is below C.",
+        page: "TrainingSettings",
+    },
+    {
         id: "enable-rainbow-training-bonus",
         title: "Enable Rainbow Training Bonus",
         description:
