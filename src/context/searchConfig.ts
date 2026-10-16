@@ -114,6 +114,12 @@ const searchConfig: SearchOption[] = [
         page: "SettingsMain",
     },
     {
+        id: "settings-storage-folder",
+        title: "Storage Folder",
+        description: "Where logs and debug zips are saved. Tap to pick a different folder.",
+        page: "SettingsMain",
+    },
+    {
         id: "settings-management-title",
         title: "Settings Management",
         description: "Import and export settings from JSON file or access the app's data directory.",
