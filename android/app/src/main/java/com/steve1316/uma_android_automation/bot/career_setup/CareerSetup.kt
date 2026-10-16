@@ -358,6 +358,58 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         }
     }
 
+    /**
+     * Runs the setup until the career has started and the story skip is at full speed. A finished Independent Training found on the way is
+     * claimed instead, and the setup ends on its end-of-career screen so the career loop can complete it.
+     *
+     * @returns True if a finished Independent Training was claimed instead of starting a career.
+     * @throws CampaignBreakpointException When a step cannot be completed, so the run stops with the reason.
+     */
+    fun run(): Boolean {
+        MessageLog.i(TAG, "[CAREER SETUP] Starting a new ${settings.scenario} career.")
+        MessageLog.i(TAG, "[CAREER SETUP] Plan: ${describePlan()}.")
+        repeat(MAX_TICKS) {
+            val bitmap = game.imageUtils.getSourceBitmap()
+            val dialog = DialogUtils.getDialogOrNull(game.imageUtils, bitmap)
+            if (dialog != null) {
+                handleDialog(dialog)
+            } else if (bClaimingIndependentTraining && ButtonCompleteCareer.check(game.imageUtils, sourceBitmap = bitmap)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Claimed the Independent Training. Handing its end-of-career screen to the career loop.")
+                return true
+            } else if (bClaimingIndependentTraining && ButtonOk.click(game.imageUtils, sourceBitmap = bitmap)) {
+                // The Training Log shows the results first.
+                game.wait(2.0)
+            } else if (ButtonCareerStartStorySkipTwo.check(game.imageUtils, sourceBitmap = bitmap)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Career started with the story skip at full speed. Handing over to the career loop.")
+                return false
+            } else if (ButtonCareerStartStorySkipOff.check(game.imageUtils, sourceBitmap = bitmap) || ButtonCareerStartStorySkipOne.check(game.imageUtils, sourceBitmap = bitmap)) {
+                stepUpStorySkip()
+            } else if (bStartTapped && ButtonSkip.click(game.imageUtils, sourceBitmap = bitmap)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Skipping the opening narration.")
+                game.wait(2.0)
+            } else if (ButtonHomeFullStats.check(game.imageUtils, sourceBitmap = bitmap)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Already inside a career. Handing over to the career loop.")
+                return false
+            } else if (LabelCareerStartSupportFormationHeader.check(game.imageUtils, sourceBitmap = bitmap)) {
+                handleSupportFormation(bitmap)
+            } else if (LabelCareerStartLegacySelectHeader.check(game.imageUtils, sourceBitmap = bitmap)) {
+                handleLegacySelect(bitmap)
+            } else if (LabelCareerStartTraineeSelectHeader.check(game.imageUtils, sourceBitmap = bitmap)) {
+                handleTraineeSelect()
+            } else if (LabelCareerStartScenarioSelectHeader.check(game.imageUtils, sourceBitmap = bitmap)) {
+                handleScenarioSelect()
+            } else if (ButtonCareerStartHomeCareer.click(game.imageUtils, sourceBitmap = bitmap)) {
+                MessageLog.i(TAG, "[CAREER SETUP] Opening Career from the Home screen.")
+                game.wait(2.0)
+            } else if (!bStartTapped && ButtonMenuBarHome.click(game.imageUtils, sourceBitmap = bitmap)) {
+                game.wait(2.0)
+            } else {
+                game.wait(1.0)
+            }
+        }
+        throw CampaignBreakpointException("Career Setup did not finish. Stopping bot...")
+    }
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Steps
