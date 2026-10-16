@@ -11,6 +11,8 @@ export interface DebugTestDescriptor {
         | "debugMode_startScrollBarDetectionTest"
         | "debugMode_startUmamusumeDetailsReadTest"
         | "debugMode_startRainbowDetectionTest"
+        | "debugMode_startLegacySparkReaderTest"
+        | "debugMode_startCareerSetupTest"
         | "debugMode_startSpiritGaugeDetectionTest"
         | "debugMode_startTrackblazerRaceSelectionTest"
         | "debugMode_startTrackblazerInventorySyncTest"
@@ -93,6 +95,20 @@ export const DEBUG_TESTS: DebugTestDescriptor[] = [
         title: "Start Rainbow Detection Test",
         description:
             "Disables normal bot operations and starts the Rainbow detection test. Run this on the Training screen: it detects the rainbow glow ring on each support face circle for a few seconds, logs the per-support metrics and the derived rainbow count, and saves an annotated crop to help calibrate the detector.",
+    },
+    {
+        key: "debugMode_startLegacySparkReaderTest",
+        searchId: "debug-legacy-spark-reader-test",
+        title: "Start Legacy Spark Reader Test",
+        description:
+            "Disables normal bot operations and starts the Legacy Spark Reader test. Open a Legacy Select picker yourself first: it reads every visible card's sparks and stars, logs each card's score against the Career Setup wish list, and whether the card is already taken.",
+    },
+    {
+        key: "debugMode_startCareerSetupTest",
+        searchId: "debug-career-setup-test",
+        title: "Start Career Setup Test",
+        description:
+            "Disables normal bot operations and starts the Career Setup test. Start it from Home or any career setup screen: it goes through every Career Setup step with your current settings, then stops on Final Confirmation without tapping Start Career!, so no TP is spent.",
     },
     {
         key: "debugMode_startSpiritGaugeDetectionTest",
