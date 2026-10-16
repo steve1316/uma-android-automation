@@ -151,3 +151,114 @@ data class SparkCard(
     /** The sparks in badge order. */
     val sparks: List<Spark>,
 )
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Scoring
+
+/** Pure scoring for picking legacy parents from their sparks and affinity. */
+object SparkScoring {
+    /**
+     * Scores a card's blue and pink sparks against the ranked wish list. The green unique spark only breaks ties, see [uniqueStars].
+     *
+     * @param sparks The sparks read off the card.
+     * @param wishList Spark labels in priority order. The first entry is worth the most per star.
+     * @returns The spark score.
+     */
+    fun sparkScore(sparks: List<Spark>, wishList: List<String>): Int {
+        val ranks = wishList.map { normalize(it) }
+        return sparks.filter { it.type != SparkType.UNIQUE }.sumOf { spark ->
+            val rank = ranks.indexOf(normalize(spark.label))
+            if (rank == -1) 0 else (ranks.size - rank) * spark.stars.coerceIn(0, 3)
+        }
+    }
+
+    /**
+     * Scores a candidate including its affinity bonus.
+     *
+     * @param candidate The card to score.
+     * @param wishList Spark labels in priority order.
+     * @returns The spark score plus the affinity bonus.
+     */
+    fun totalScore(candidate: LegacyCandidate, wishList: List<String>): Int = sparkScore(candidate.sparks, wishList) + (candidate.affinity?.bonus ?: 0)
+
+    /**
+     * Picks the cards worth tapping to read their affinity.
+     *
+     * @param candidates Every card found in the scan.
+     * @param wishList Spark labels in priority order.
+     * @param size How many cards to keep.
+     * @returns The best cards by spark score, then unique stars, with remaining ties kept in scan order.
+     */
+    fun shortlist(candidates: List<LegacyCandidate>, wishList: List<String>, size: Int): List<LegacyCandidate> =
+        candidates.sortedWith(compareByDescending<LegacyCandidate> { sparkScore(it.sparks, wishList) }.thenByDescending { uniqueStars(it) }).take(size)
+
+    /**
+     * Picks the best card for a slot.
+     *
+     * @param candidates The cards to choose from, usually the shortlist with affinity filled in.
+     * @param wishList Spark labels in priority order.
+     * @returns The highest scoring card that can be used, with unique stars breaking a tie, or null if none can. Paid guests are never chosen.
+     */
+    fun pick(candidates: List<LegacyCandidate>, wishList: List<String>): LegacyCandidate? =
+        candidates.filter { !it.isGuest || it.isFree }.maxWithOrNull(compareBy<LegacyCandidate> { totalScore(it, wishList) }.thenBy { uniqueStars(it) })
+
+    /**
+     * Counts the stars of a card's green unique spark.
+     *
+     * @param candidate The card.
+     * @returns 0 to 3.
+     */
+    private fun uniqueStars(candidate: LegacyCandidate): Int = candidate.sparks.filter { it.type == SparkType.UNIQUE }.sumOf { it.stars.coerceIn(0, 3) }
+
+    /**
+     * Normalizes a spark label for comparison.
+     *
+     * @param label The raw label.
+     * @returns The label trimmed and uppercased.
+     */
+    private fun normalize(label: String): String = label.trim().uppercase()
+}
+
+/**
+ * Derives the spark wish list for Smart Auto-Select from a trainee outfit's aptitudes and growth bonuses.
+ *
+ * Pink sparks come first, because raising a B aptitude to A matters more than a few stat points. Blue sparks follow.
+ */
+object SmartSparks {
+    /**
+     * Builds the ranked wish list for one outfit.
+     *
+     * @param aptitudes The outfit's grades keyed by "turf", "dirt", "sprint", "mile", "medium", "long", "front", "pace", "late" and "end".
+     * @param growth The outfit's growth bonuses in percent keyed by "speed", "stamina", "power", "guts" and "wit".
+     * @param hasLongGoal Whether one of the trainee's goal races is always a Long race. Ranks Stamina first when the outfit's Long grade is C or better.
+     * @returns Spark labels, most wanted first.
+     */
+    fun wishList(aptitudes: Map<String, String>, growth: Map<String, Int>, hasLongGoal: Boolean = false): List<String> {
+        val wanted = mutableListOf<String>()
+
+        // A distance or surface graded B is one the trainee can use, so sparks that lift it to A pay off. C or lower is out of reach.
+        (DISTANCES + SURFACES).filter { aptitudes[it] == "B" }.forEach { wanted.add(APTITUDE_LABELS.getValue(it)) }
+        val bestStyle = STYLES.minByOrNull { rank(aptitudes[it]) }
+        if (bestStyle != null && rank(aptitudes[bestStyle]) > rank("A")) wanted.add(APTITUDE_LABELS.getValue(bestStyle))
+
+        // A Long goal race needs far more Stamina than a Speed-focused build trains, and failing it ends the career. The Senior Year inheritance lands two turns
+        // before the first one (Tenno Sho (Spring) on Turn 56), so Stamina sparks pay off right when they are needed. A Long grade of D or worse cannot win it anyway.
+        if (hasLongGoal && rank(aptitudes["long"]) <= rank("C")) wanted.add("STA")
+        wanted.add("SPD")
+        val bestDistance = DISTANCES.minByOrNull { rank(aptitudes[it]) }
+        val bestDistanceRank = rank(aptitudes[bestDistance])
+        if (DISTANCES.filter { rank(aptitudes[it]) == bestDistanceRank }.any { it == "medium" || it == "long" }) wanted.add("STA")
+        growth.filter { it.value > 0 }.entries.sortedByDescending { it.value }.forEach { wanted.add(STAT_LABELS.getValue(it.key)) }
+        wanted.add("PWR")
+        return wanted.distinct()
+    }
+
+    /**
+     * Ranks a grade so a lower number is better.
+     *
+     * @param grade The grade letter, or null when missing.
+     * @returns The grade's position, with a missing grade ranked worst.
+     */
+    private fun rank(grade: String?): Int = grade?.let { Aptitude.fromName(it) }?.let { Aptitude.S.ordinal - it.ordinal } ?: Aptitude.entries.size
+}
