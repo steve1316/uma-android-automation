@@ -273,10 +273,11 @@ class Game(val myContext: Context) {
      *
      * @param components The components that end the tapping, in priority order.
      * @param timeoutSec How long to keep tapping before giving up.
+     * @param bHandleDialogs Whether the task's dialog handler runs between taps. Off when the caller handles its own dialogs.
      * @return The component that appeared and its location, or null on timeout.
      */
-    fun tapUntil(vararg components: BaseComponentInterface, timeoutSec: Double = 45.0): Pair<BaseComponentInterface, Point>? =
-        waitForAny(*components, timeoutSec = timeoutSec, onMiss = { tap(SharedData.displayWidth / 2.0, SharedData.displayHeight * 0.4, ignoreWaiting = true) })
+    fun tapUntil(vararg components: BaseComponentInterface, timeoutSec: Double = 45.0, bHandleDialogs: Boolean = true): Pair<BaseComponentInterface, Point>? =
+        waitForAny(*components, timeoutSec = timeoutSec, bHandleDialogs = bHandleDialogs, onMiss = { tap(SharedData.displayWidth / 2.0, SharedData.displayHeight * 0.4, ignoreWaiting = true) })
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
