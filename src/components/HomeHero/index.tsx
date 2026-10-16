@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { StyleSheet, View } from "react-native"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Animated, StyleSheet } from "react-native"
 import { useTheme } from "../../context/ThemeContext"
 import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
@@ -7,23 +7,56 @@ import { LiveRun, RunReport } from "../../lib/runReport"
 import type { ThemeColors } from "../../lib/theme"
 import type { RunMode } from "../../context/BotStateContext"
 import { HeroTone, HeroView } from "./heroView"
-import { toneColors } from "./heroTone"
+import { modeAccent, toneColors } from "./heroTone"
 import HeroHeader from "./HeroHeader"
 import HeroActionRow from "./HeroActionRow"
 import HeroButton from "./HeroButton"
 import HeroDrawer from "./HeroDrawer"
 
+/** How long the card takes to fade between the Career and Dailies colors, in milliseconds. */
+const MODE_FADE_MS = 250
+
+/** How long the outline pulse lasts after switching the run mode, in milliseconds. */
+const MODE_PULSE_MS = 450
+
+/** Card styles. The card's colors are animated per run mode, so they are applied in the component. */
+const styles = StyleSheet.create({
+    card: { borderWidth: 1, borderRadius: RADII.xl, paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm + 2 },
+    pulse: { position: "absolute", top: -1, left: -1, right: -1, bottom: -1, borderWidth: 2, borderRadius: RADII.xl },
+})
+
 /**
- * Builds the card styles for the hero's tone.
+ * Fades the card between its Career and Dailies colors when the run mode changes, and pulses its outline once so the switch is noticed.
  * @param colors The theme colors.
  * @param cardTone The card's color family.
- * @returns The style sheet.
+ * @param runMode Whether the next run is a career or the dailies.
+ * @returns The animated card colors and the pulse outline style.
  */
-const createStyles = (colors: ThemeColors, cardTone: HeroTone) => {
-    const tone = toneColors(colors, cardTone)
-    return StyleSheet.create({
-        card: { backgroundColor: tone.cardBg, borderWidth: 1, borderColor: tone.border, borderRadius: RADII.xl, paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm + 2 },
-    })
+const useModeColors = (colors: ThemeColors, cardTone: HeroTone, runMode: RunMode) => {
+    const progress = useRef(new Animated.Value(runMode === "dailies" ? 1 : 0)).current
+    const pulse = useRef(new Animated.Value(0)).current
+    const firstRender = useRef(true)
+
+    useEffect(() => {
+        Animated.timing(progress, { toValue: runMode === "dailies" ? 1 : 0, duration: MODE_FADE_MS, useNativeDriver: false }).start()
+        // The pulse marks a switch, so it does not play when the hero first appears.
+        if (firstRender.current) {
+            firstRender.current = false
+            return
+        }
+        pulse.setValue(1)
+        Animated.timing(pulse, { toValue: 0, duration: MODE_PULSE_MS, useNativeDriver: true }).start()
+    }, [runMode, progress, pulse])
+
+    return useMemo(() => {
+        const career = toneColors(colors, cardTone, "career")
+        const dailies = toneColors(colors, cardTone, "dailies")
+        const between = (from: string, to: string) => progress.interpolate({ inputRange: [0, 1], outputRange: [from, to] })
+        return {
+            card: { backgroundColor: between(career.cardBg, dailies.cardBg), borderColor: between(career.border, dailies.border) },
+            pulse: { borderColor: modeAccent(colors, runMode).accent, opacity: pulse },
+        }
+    }, [colors, cardTone, runMode, progress, pulse])
 }
 
 /** Props for `HomeHero`. */
@@ -102,7 +135,7 @@ const HomeHero = ({
     onDrawerOpen,
 }: HomeHeroProps) => {
     const { colors } = useTheme()
-    const styles = useMemo(() => createStyles(colors, view.cardTone), [colors, view.cardTone])
+    const modeColors = useModeColors(colors, view.cardTone, runMode)
     const [open, setOpen] = useState(false)
 
     /** Opens or closes the drawer, refreshing the live stats when it opens. */
@@ -118,11 +151,12 @@ const HomeHero = ({
     }, [report?.endedAt])
 
     return (
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, modeColors.card]}>
+            <Animated.View style={[styles.pulse, modeColors.pulse]} pointerEvents="none" />
             <HeroHeader view={view} runMode={runMode} onRunModeChange={onRunModeChange} open={open} onToggle={toggle} onDismiss={onDismiss} />
             <HeroActionRow view={view} chips={chips} button={<HeroButton mode={view.buttonMode} startButton={startButton} onOpenGame={onOpenGame} onStopOverlay={onStopOverlay} />} />
             {open ? <HeroDrawer view={view} report={report} live={live} canViewLog={arrivedLive} glance={glance} profile={profile} onViewLog={onViewLog} onCopyError={onCopyError} /> : null}
-        </View>
+        </Animated.View>
     )
 }
 

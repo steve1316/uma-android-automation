@@ -1,4 +1,5 @@
 import { formatRunReport, LiveRun, RunReport, RunTone } from "../../lib/runReport"
+import type { RunMode } from "../../context/BotStateContext"
 
 /** Whether the bot can start: ready, missing a scenario or device info, or on an unsupported device. */
 export type HeroHealth = "ready" | "notReady" | "error"
@@ -47,6 +48,8 @@ export interface HeroViewInput {
     live?: LiveRun | null
     /** Whether a run is in progress, from the bot's start until its run-end report. */
     runActive?: boolean
+    /** Whether the next run is a career or the dailies, named on the ready pill. */
+    runMode?: RunMode
 }
 
 /** Status pills shown when there is no result. */
@@ -62,14 +65,16 @@ const STATUS_PILL: Record<"overlayOn" | HeroHealth, { label: string; tone: HeroT
  * @param input The overlay state, start readiness, and last run.
  * @returns The labels, tones, and modes for each part of the hero.
  */
-export function heroView({ overlayOn, health, report, live = null, runActive = false }: HeroViewInput): HeroView {
+export function heroView({ overlayOn, health, report, live = null, runActive = false, runMode }: HeroViewInput): HeroView {
     const buttonMode = overlayOn ? "openGame" : "start"
     if (!report) {
         const pill = STATUS_PILL[overlayOn ? "overlayOn" : health]
+        // The ready pill names the run mode, so switching Career / Dailies shows on the pill too.
+        const pillLabel = !overlayOn && health === "ready" && runMode ? `● ${runMode.toUpperCase()} READY` : pill.label
         const details: HeroDetails = overlayOn && live ? "live" : "none"
         return {
             cardTone: "brand",
-            pillLabel: pill.label,
+            pillLabel,
             pillTone: pill.tone,
             facts: "",
             title: "",

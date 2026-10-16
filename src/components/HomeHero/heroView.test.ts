@@ -1,5 +1,7 @@
 import { heroView } from "./heroView"
 import { RunReport } from "../../lib/runReport"
+import { THEME } from "../../lib/theme"
+import { toneColors } from "./heroTone"
 
 const report = (over: Partial<RunReport> = {}): RunReport => ({
     outcome: "FINISHED",
@@ -35,6 +37,20 @@ describe("heroView without a result", () => {
         const v = heroView({ overlayOn, health, report: null })
         expect(v).toMatchObject({ pillLabel, pillTone, cardTone: "brand", facts: "", hasResult: false, details: "none", drawerDefaultOpen: false })
         expect(v.buttonMode).toBe(overlayOn ? "openGame" : "start")
+    })
+})
+
+describe("heroView names the run mode when ready", () => {
+    it.each([
+        ["career", "● CAREER READY"],
+        ["dailies", "● DAILIES READY"],
+    ] as const)("runMode=%s shows %s", (runMode, pillLabel) => {
+        expect(heroView({ overlayOn: false, health: "ready", report: null, runMode }).pillLabel).toBe(pillLabel)
+    })
+
+    it("keeps the other status pills as they are", () => {
+        expect(heroView({ overlayOn: false, health: "notReady", report: null, runMode: "dailies" }).pillLabel).toBe("● NOT READY")
+        expect(heroView({ overlayOn: true, health: "ready", report: null, runMode: "dailies" }).pillLabel).toBe("● OVERLAY ON")
     })
 })
 
@@ -130,5 +146,21 @@ describe("heroView run mode switch", () => {
 
     it("locks only while a run is in progress", () => {
         expect(heroView({ overlayOn: true, health: "ready", report: null, runActive: true }).switchLocked).toBe(true)
+    })
+})
+
+describe("toneColors for the run mode", () => {
+    it("tints the brand tone in the Dailies color while in Dailies mode", () => {
+        const tone = toneColors(THEME.light, "brand", "dailies")
+        expect(tone).toMatchObject({ accent: THEME.light.dailies, cardBg: THEME.light.dailiesSubtle, border: THEME.light.dailiesBorder })
+    })
+
+    it("keeps the brand color in Career mode", () => {
+        expect(toneColors(THEME.light, "brand", "career").accent).toBe(THEME.light.brand)
+    })
+
+    it("keeps result colors in either mode", () => {
+        expect(toneColors(THEME.dark, "success", "dailies").accent).toBe(THEME.dark.success)
+        expect(toneColors(THEME.dark, "error", "dailies").accent).toBe(THEME.dark.error)
     })
 })

@@ -47,6 +47,11 @@ const styles = StyleSheet.create({
         width: "100%",
         marginBottom: SPACING.md,
     },
+    // Size of the Dailies start button until the Career one has been measured.
+    heroStartFallback: {
+        width: 156,
+        height: 36,
+    },
     logBody: {
         flex: 1,
     },
@@ -108,6 +113,8 @@ const Home = () => {
     const [liveRun, setLiveRun] = useState<LiveRun | null>(null)
     // Whether a run is in progress, from the bot's start until its run-end report. The overlay alone does not count, so the run mode can change between runs.
     const [runActive, setRunActive] = useState<boolean>(false)
+    // The Career start button's measured size, so the Dailies one matches it and switching the run mode does not change the hero's layout.
+    const [careerStartSize, setCareerStartSize] = useState<{ width: number; height: number } | null>(null)
     // Set when Start is pressed, so the game opens once the overlay reports it is running.
     const openGameOnStart = useRef(false)
     const [showNotReadyDialog, setShowNotReadyDialog] = useState<boolean>(false)
@@ -453,7 +460,10 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
     // Map the existing bot state to the hero card's status pill. Running takes priority. Warnings (unsupported display
     // or ABI mismatch) surface as "error". An unselected scenario lands on "stopped". Otherwise the bot is "ready".
     const heroHealth: HeroHealth = unsupportedReason !== null || abiMismatch ? "error" : canStart && deviceMetrics !== null ? "ready" : "notReady"
-    const hero = useMemo(() => heroView({ overlayOn: isRunning, health: heroHealth, report: lastRun?.report ?? null, live: liveRun, runActive }), [isRunning, heroHealth, lastRun, liveRun, runActive])
+    const hero = useMemo(
+        () => heroView({ overlayOn: isRunning, health: heroHealth, report: lastRun?.report ?? null, live: liveRun, runActive, runMode: general.runMode }),
+        [isRunning, heroHealth, lastRun, liveRun, runActive, general.runMode]
+    )
     const heroProfile = currentProfileName ?? DEFAULT_PROFILE_NAME
 
     // Derive the hero data from the settings slices. The SRS/Debug/Test chips and the Plans/Priority rows render only when active; the Style chip is always shown on the status line.
@@ -530,6 +540,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                         isDailies ? (
                             <CustomButton
                                 size="sm"
+                                style={careerStartSize ?? styles.heroStartFallback}
                                 variant={heroHealth === "ready" ? "success" : "warning"}
                                 icon={<Ionicons name="play-outline" size={20} color={colors.successContent} />}
                                 onPress={handleButtonPress}
@@ -537,20 +548,27 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                                 Dailies
                             </CustomButton>
                         ) : (
-                            <SelectButton
-                                size="sm"
-                                variant={getSelectButtonVariant()}
-                                iconName={getSelectButtonIconName()}
-                                options={scenarios}
-                                placeholder={deviceMetrics ? "Select a Scenario" : "Not Ready"}
-                                value={general.scenario}
-                                onValueChange={(value) => {
-                                    const newScenario = value || ""
-                                    updateGeneral({ scenario: newScenario })
-                                    setReadyStatus(newScenario !== "")
+                            <View
+                                onLayout={(event) => {
+                                    const { width, height } = event.nativeEvent.layout
+                                    setCareerStartSize((prev) => (prev?.width === width && prev?.height === height ? prev : { width, height }))
                                 }}
-                                onPress={handleButtonPress}
-                            />
+                            >
+                                <SelectButton
+                                    size="sm"
+                                    variant={getSelectButtonVariant()}
+                                    iconName={getSelectButtonIconName()}
+                                    options={scenarios}
+                                    placeholder={deviceMetrics ? "Select a Scenario" : "Not Ready"}
+                                    value={general.scenario}
+                                    onValueChange={(value) => {
+                                        const newScenario = value || ""
+                                        updateGeneral({ scenario: newScenario })
+                                        setReadyStatus(newScenario !== "")
+                                    }}
+                                    onPress={handleButtonPress}
+                                />
+                            </View>
                         )
                     }
                     onOpenGame={handleOpenGame}
