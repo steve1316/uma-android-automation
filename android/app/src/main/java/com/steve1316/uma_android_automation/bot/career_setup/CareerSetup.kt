@@ -172,3 +172,125 @@ internal fun emptyLegacySlots(plusXs: List<Double>, screenWidth: Int): List<Int>
  * @returns 1 for the left slot, 2 for the right one.
  */
 internal fun legacySlotOf(x: Double, screenWidth: Int): Int = if (x < screenWidth / 2) 1 else 2
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Settings
+
+/** The Career Setup settings and catalogs, read once when the setup starts. */
+data class CareerSetupSettings(
+    /** The scenario to pick on Scenario Select, as stored in `general.scenario`. */
+    val scenario: String,
+    /** True to keep whichever trainee the game has selected. */
+    val usePreselectedTrainee: Boolean,
+    /** The trainee outfit's card id, or empty when none is chosen. */
+    val trainee: String,
+    /** "keep" to keep the last parents (Smart for an empty slot), "smart" to pick by the outfit's derived sparks, or "custom" to pick by [sparkWishList]. */
+    val legacyMode: String,
+    /** Spark labels in priority order for the custom legacy mode, such as "SPD" or "MILE". */
+    val sparkWishList: List<String>,
+    /** The support deck to use, 1-10, or 0 to keep the current one. */
+    val deckNumber: Int,
+    /** The friend support card's support id, or empty for the smart pick. */
+    val friendCard: String,
+    /** How many times to refresh the Borrow Card list before falling back. */
+    val friendMaxRefreshes: Int,
+    /** The Smart Race Solver's character preset while the solver is on, else null. */
+    val solverCharacter: String?,
+    /** Character names with a goal race that is always a Long race, which Smart Auto-Select ranks Stamina first for. */
+    val longGoalCharacters: Set<String>,
+    /** Trainee outfits keyed by card id. */
+    val traineeCards: Map<String, TraineeCard>,
+    /** Support cards keyed by support id. */
+    val supportCards: Map<String, SupportCard>,
+    /** Friend card favorites keyed by scenario. */
+    val friendFavorites: Map<String, FriendFavorites>,
+) {
+    companion object {
+        private val TAG: String = "[${MainActivity.loggerTag}]CareerSetupSettings"
+
+        /** The wish list used when Smart Auto-Select cannot tell which outfit was picked. */
+        val FALLBACK_WISH_LIST: List<String> = listOf("SPD", "STA", "PWR")
+
+        /**
+         * Reads the settings and catalogs from SQLite.
+         *
+         * @returns The current Career Setup settings.
+         */
+        fun load(): CareerSetupSettings =
+            CareerSetupSettings(
+                scenario = SettingsHelper.getStringSetting("general", "scenario"),
+                usePreselectedTrainee = SettingsHelper.getBooleanSetting("careerSetup", "usePreselectedTrainee", true),
+                trainee = SettingsHelper.getStringSetting("careerSetup", "trainee"),
+                legacyMode = SettingsHelper.getStringSetting("careerSetup", "legacyMode").ifEmpty { "keep" },
+                sparkWishList = SettingsHelper.getStringArraySetting("careerSetup", "sparkWishList", FALLBACK_WISH_LIST),
+                deckNumber = SettingsHelper.getIntSetting("careerSetup", "deckNumber", 0),
+                friendCard = SettingsHelper.getStringSetting("careerSetup", "friendCard"),
+                friendMaxRefreshes = SettingsHelper.getIntSetting("careerSetup", "friendMaxRefreshes", 3),
+                solverCharacter =
+                    SettingsHelper.getStringSetting("racing", "smartRaceSolverCharacterPreset").takeIf {
+                        it.isNotEmpty() &&
+                            SettingsHelper.getBooleanSetting("racing", "enableSmartRaceSolver")
+                    },
+                longGoalCharacters = parseLongGoalCharacters(),
+                traineeCards =
+                    parseCatalog("traineeCardData") { id, o ->
+                        TraineeCard(id, o.getString("name"), o.getString("title"), o.getJSONObject("aptitudes").toStringMap(), o.getJSONObject("growth").toIntMap())
+                    },
+                supportCards = parseCatalog("supportCardData") { id, o -> SupportCard(id, o.getString("name"), o.getString("title"), o.getString("type"), o.getString("rarity")) },
+                friendFavorites = parseCatalog("friendFavoritesData") { _, o -> FriendFavorites(o.getJSONArray("favorites").toStringList(), o.getJSONArray("types").toStringList()) },
+            )
+
+        /**
+         * Finds the characters with a goal race that is always a Long race. A choice between races only counts when every option is Long.
+         *
+         * @returns The character names, or an empty set if the objectives are missing or unreadable.
+         */
+        private fun parseLongGoalCharacters(): Set<String> =
+            runCatching {
+                MandatoryRaces.parse(SettingsHelper.getStringSetting("racing", "characterObjectivesData").ifEmpty { "{}" })
+                    .filterValues { races -> races.any { race -> race.options.isNotEmpty() && race.options.all { it.distanceType == TrackDistance.LONG } } }
+                    .keys
+            }.getOrElse {
+                MessageLog.e(TAG, "[ERROR] Could not read the character objectives for Career Setup: ${it.message}")
+                emptySet()
+            }
+
+        /**
+         * Parses one catalog that the frontend saved at startup.
+         *
+         * @param key The `careerSetup` setting key holding the catalog JSON.
+         * @param build Builds one entry from its key and JSON object.
+         * @returns The catalog, or an empty map if it is missing or unreadable.
+         */
+        private fun <T> parseCatalog(key: String, build: (String, JSONObject) -> T): Map<String, T> =
+            runCatching {
+                val json = JSONObject(SettingsHelper.getStringSetting("careerSetup", key).ifEmpty { "{}" })
+                json.keys().asSequence().associateWith { build(it, json.getJSONObject(it)) }
+            }.getOrElse {
+                MessageLog.e(TAG, "[ERROR] Could not read the Career Setup catalog $key: ${it.message}")
+                emptyMap()
+            }
+
+        /**
+         * Reads a JSON object of strings.
+         *
+         * @returns The object as a map.
+         */
+        private fun JSONObject.toStringMap(): Map<String, String> = keys().asSequence().associateWith { getString(it) }
+
+        /**
+         * Reads a JSON object of numbers.
+         *
+         * @returns The object as a map.
+         */
+        private fun JSONObject.toIntMap(): Map<String, Int> = keys().asSequence().associateWith { getInt(it) }
+
+        /**
+         * Reads a JSON array of strings.
+         *
+         * @returns The array as a list.
+         */
+        private fun JSONArray.toStringList(): List<String> = (0 until length()).map { getString(it) }
+    }
+}
