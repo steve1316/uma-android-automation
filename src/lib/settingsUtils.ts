@@ -11,6 +11,9 @@ export const deepMerge = <T extends Record<string, any>>(target: T, source: Part
     for (const key in source) {
         if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key]) && source[key] !== null) {
             output[key] = deepMerge((target[key] || {}) as Record<string, any>, source[key] as any) as T[Extract<keyof T, string>]
+        } else if (typeof target[key] === "string" && typeof source[key] === "number") {
+            // The database parses a stored numeric string such as a card id back as a number, so the default's type decides.
+            output[key] = String(source[key]) as T[Extract<keyof T, string>]
         } else if (source[key] !== undefined) {
             output[key] = source[key] as T[Extract<keyof T, string>]
         }
