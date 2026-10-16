@@ -5,6 +5,7 @@ import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.fuzzyBestMatchIndex
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import com.steve1316.uma_android_automation.utils.isSameGrayPicture
 import net.ricecode.similarity.LevenshteinDistanceStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 import org.opencv.core.Point
@@ -93,6 +94,17 @@ const val LESSON_RIBBON_CONFIDENCE = 0.85
 fun hasLearnableRibbon(ribbonYs: List<Double>, anchorY: Double, cardHeight: Int): Boolean = ribbonYs.any { it in (anchorY - cardHeight)..anchorY }
 
 /**
+ * Whether a Lessons card is worth reading. A learnable card may be bought. A locked card only matters when the bot may hold its tokens for it instead of
+ * buying a learnable one, so reading it any other time only fills the log at about 2 seconds of OCR per card.
+ *
+ * @param purchasable Whether the card has a "Learnable!" ribbon.
+ * @param anyLearnable Whether any card on the screen has one.
+ * @param canHoldTokens Whether this scan may hold tokens for a sought-after locked card.
+ * @return True to read the card.
+ */
+fun shouldReadLessonCard(purchasable: Boolean, anyLearnable: Boolean, canHoldTokens: Boolean): Boolean = purchasable || (anyLearnable && canHoldTokens)
+
+/**
  * Crop offsets for one Lessons card, all relative to the matched `grandlive_lesson_cost` ("Performance Point Cost") pill center, in reference (1080-wide) pixels.
  *
  * @property name The card's title-bar name region.
@@ -115,6 +127,40 @@ val LESSON_CARD_CROPS =
 /** Crop of the card name at the top of a Lessons purchase dialog, relative to the screen's top-left at 1080p. */
 val LESSON_DIALOG_TITLE_CROP = TokenCrop(90, 150, 655, 75)
 
+/** Header hues, in degrees, that mark a Song card. Measured on device: Song headers are purple at 254 degrees. */
+private val SONG_HEADER_HUES = 220f..290f
+
+/** Header hues, in degrees, that mark a Technique card. Measured on device: Technique headers are green at 90 degrees. */
+private val TECHNIQUE_HEADER_HUES = 60f..120f
+
+/** How far a gray pixel must move, 0-255, to count as changed while waiting for the Lessons list to settle. */
+private const val LESSON_LIST_DIFF_LEVEL = 25
+
+/**
+ * Tells a card's kind from its header color, which is cheaper than reading the kind tag.
+ *
+ * @param hueDegrees The median hue of the header's colored pixels, or null when it has none.
+ * @return The kind, or null when the color matches neither so the kind tag must be read.
+ */
+fun lessonKindFromHeaderHue(hueDegrees: Float?): LessonKind? =
+    when {
+        hueDegrees == null -> null
+        hueDegrees in SONG_HEADER_HUES -> LessonKind.SONG
+        hueDegrees in TECHNIQUE_HEADER_HUES -> LessonKind.TECHNIQUE
+        else -> null
+    }
+
+/**
+ * Whether the Lessons list has finished refreshing after a purchase: it no longer shows the old cards and held still between two screenshots.
+ *
+ * @param before The list's gray pixels before the purchase.
+ * @param previous The list's gray pixels at the last check, or null on the first check.
+ * @param current The list's gray pixels now.
+ * @return True once the new list is on screen and still.
+ */
+fun isLessonListSettled(before: IntArray, previous: IntArray?, current: IntArray): Boolean =
+    previous != null && !isSameGrayPicture(before, current, LESSON_LIST_DIFF_LEVEL, fitContrast = false) && isSameGrayPicture(previous, current, LESSON_LIST_DIFF_LEVEL, fitContrast = false)
+
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Lessons purchase policy
@@ -127,6 +173,15 @@ const val MAX_LESSON_DIALOG_MISMATCHES = 2
 
 /** Longest wait, in seconds, for the Lessons list to replace a bought card before rescanning anyway. */
 const val LESSON_REFRESH_TIMEOUT_SECONDS = 10.0
+
+/** Where the "!" badge sits relative to the Lessons button label at 1080p. Tall because the badge bobs up and down. */
+val LESSONS_BADGE_REGION = TokenCrop(41, -173, 100, 120)
+
+/** Match threshold for the Lessons "!" badge. Measured on device: badged buttons score 0.8 or more and unbadged ones 0.35 or less. */
+const val LESSONS_BADGE_CONFIDENCE = 0.8
+
+/** Seconds between checks while waiting for the Lessons list to settle. Measured: the new list holds still about 0.5s after it appears. */
+const val LESSON_REFRESH_POLL_SECONDS = 0.25
 
 /** A locked card counts as "sought after" (worth holding tokens for) when it matches a category, or is a Song, ranked within this many top spots. */
 private const val SOUGHT_AFTER_TOP_RANKS = 2

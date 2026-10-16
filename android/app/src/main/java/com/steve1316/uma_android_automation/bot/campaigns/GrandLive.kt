@@ -1,6 +1,7 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.MessageLog
@@ -27,12 +28,14 @@ import com.steve1316.uma_android_automation.components.ButtonSkip
 import com.steve1316.uma_android_automation.components.Checkbox
 import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.IconGrandLiveGreatHype
+import com.steve1316.uma_android_automation.components.IconNotificationBadge
 import com.steve1316.uma_android_automation.components.LabelGrandLiveLearnable
 import com.steve1316.uma_android_automation.components.LabelGrandLiveLessonCost
 import com.steve1316.uma_android_automation.components.LabelGrandLiveMaxHype
 import com.steve1316.uma_android_automation.components.LabelGrandLivePerformancePoints
 import com.steve1316.uma_android_automation.types.Aptitude
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.utils.grayOf
 import org.opencv.core.Point
 
 /**
@@ -87,8 +90,8 @@ class GrandLive(game: Game) : Campaign(game) {
     /** User-ranked Song titles (Scenario Overrides). A ranked Song is bought ahead of anything else learnable. Empty means no song preference. */
     private val lessonSongPriority: List<String> = SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveSongPriority")
 
-    /** Turns between Lessons re-checks (Scenario Overrides). The list is static until a purchase, so polling more often than tokens grow wastes screen time. */
-    private val lessonRescanInterval: Int = SettingsHelper.getIntSetting("scenarioOverrides", "grandLiveLessonRescanInterval", 2)
+    /** Turns without a Lessons visit before Lessons opens without its "!" badge (Scenario Overrides), as a fallback for a missed badge. */
+    private val lessonRescanInterval: Int = SettingsHelper.getIntSetting("scenarioOverrides", "grandLiveLessonRescanInterval", 6)
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,22 +173,6 @@ class GrandLive(game: Game) : Campaign(game) {
         }
 
     /**
-     * Read and log the Performance-Point token totals off the main screen's vertical panel (logging only - purchasability comes from
-     * the Lessons screen's "Learnable" banners), and refresh [isHypeMaxed] off the same screenshot.
-     */
-    private fun updateTokenTotals() {
-        val sourceBitmap = game.imageUtils.getSourceBitmap()
-        val center = LabelGrandLivePerformancePoints.findImageWithBitmap(game.imageUtils, sourceBitmap)
-        if (center == null) {
-            MessageLog.w(TAG, "[GRAND_LIVE] Performance Points panel not found on the main screen; skipping token totals read.")
-            return
-        }
-        val totals = readTokenTotals(sourceBitmap, center)
-        isHypeMaxed = IconGrandLiveGreatHype.check(game.imageUtils, sourceBitmap = sourceBitmap)
-        MessageLog.i(TAG, "[GRAND_LIVE] Token totals: ${totals.joinToString(", ") { "${it.first}=${it.second ?: "?"}" }} (Hype maxed: $isHypeMaxed)")
-    }
-
-    /**
      * Select a training facility for the token-gain test by tapping its button until its header appears (mirrors the training analyzer's goToStat).
      *
      * @param button The facility's training selection button.
@@ -208,11 +195,12 @@ class GrandLive(game: Game) : Campaign(game) {
 
     override fun onMainScreenEntry() {
         super.onMainScreenEntry()
-        // Log the Performance-Point token totals and refresh the maxed-Hype flag off the main screen.
-        updateTokenTotals()
+        // Refresh the maxed-Hype flag off the main screen. The token totals are not read, since nothing uses them and the five reads cost about 2s a turn.
+        val sourceBitmap = game.imageUtils.getSourceBitmap()
+        isHypeMaxed = IconGrandLiveGreatHype.check(game.imageUtils, sourceBitmap = sourceBitmap)
         // Lessons is a free side-action (it does not consume the turn), so spend Performance Points on techniques here every
         // main-screen turn. This must live on the main-screen hook - checkCampaignSpecificConditions is not reached on a normal turn.
-        if (shouldOpenLessonsThisTurn()) {
+        if (shouldOpenLessonsThisTurn(sourceBitmap)) {
             runLessonPurchases(forceMaxHype = false)
         }
     }
@@ -248,22 +236,29 @@ class GrandLive(game: Game) : Campaign(game) {
     }
 
     /**
-     * Whether to open Lessons this turn. The "Learnable" banners are only visible on the Lessons screen, so open on the first turn and
-     * then poll every [lessonRescanInterval] turns rather than churning through the static list every turn.
+     * Whether to open Lessons this turn. The game badges the Lessons button with a "!" when a purchase is affordable, so Lessons opens on that.
+     * As a fallback for a missed badge, it also opens once no visit has happened for [lessonRescanInterval] turns.
      *
+     * @param sourceBitmap The Main screen screenshot.
      * @return True when the per-turn Lessons side-action should run.
      */
-    private fun shouldOpenLessonsThisTurn(): Boolean {
-        // A misread date can land ahead of the real turn, which would otherwise hold the interval closed for as many turns as the date overshot.
+    private fun shouldOpenLessonsThisTurn(sourceBitmap: Bitmap): Boolean {
+        val lessonsButton = ButtonGrandLiveLessons.findImageWithBitmap(game.imageUtils, sourceBitmap) ?: return false
+        val badgeRegion = anchoredRect(lessonsButton, LESSONS_BADGE_REGION)
+        if (IconNotificationBadge.findImageWithBitmap(game.imageUtils, sourceBitmap, region = badgeRegion, confidence = LESSONS_BADGE_CONFIDENCE) != null) return true
+
+        // A misread date can land ahead of the real turn, which would otherwise hold the fallback closed for as many turns as the date overshot.
         if (lastLessonScanDay > date.day) {
             MessageLog.i(TAG, "[GRAND_LIVE] Last Lessons scan is dated after the current turn (day ${date.day} < $lastLessonScanDay); re-checking now.")
             lastLessonScanDay = -1
         }
-        if (lastLessonScanDay >= 0 && date.day - lastLessonScanDay < lessonRescanInterval) {
-            MessageLog.i(TAG, "[GRAND_LIVE] Skipping Lessons: re-checked recently, next poll in ${lessonRescanInterval - (date.day - lastLessonScanDay)} turn(s).")
+        val turnsSinceVisit = if (lastLessonScanDay < 0) null else date.day - lastLessonScanDay
+        if (turnsSinceVisit != null && turnsSinceVisit < lessonRescanInterval) {
+            MessageLog.i(TAG, "[GRAND_LIVE] Skipping Lessons: the Lessons button has no \"!\" badge, so nothing is affordable.")
             return false
         }
-        return ButtonGrandLiveLessons.check(game.imageUtils)
+        MessageLog.i(TAG, "[GRAND_LIVE] Opening Lessons without a \"!\" badge as a fallback, since the last visit was ${turnsSinceVisit?.let { "$it turn(s) ago" } ?: "never"}.")
+        return true
     }
 
     /**
@@ -289,9 +284,10 @@ class GrandLive(game: Game) : Campaign(game) {
         val skippedEnergyCards = mutableSetOf<String>()
         var dialogMismatches = 0
         for (iteration in 0 until MAX_LESSON_PURCHASES_PER_VISIT) {
-            val scanned = scanLessons()
             // On a normal turn, hold tokens if a sought-after card is still locked (and Hype is maxed with time to spare) rather than spending them on lesser cards.
-            if (iteration == 0 && !forceMaxHype && shouldWaitForLockedLesson(scanned)) {
+            val canHoldTokens = iteration == 0 && !forceMaxHype && isHypeMaxed && !date.bIsFinaleSeason
+            val scanned = scanLessons(canHoldTokens)
+            if (canHoldTokens && shouldWaitForLockedLesson(scanned)) {
                 MessageLog.i(TAG, "[GRAND_LIVE] Holding tokens this turn - a sought-after Lesson is still locked and Hype is maxed, so saving for it.")
                 break
             }
@@ -317,6 +313,7 @@ class GrandLive(game: Game) : Campaign(game) {
 
             MessageLog.i(TAG, "[GRAND_LIVE] Buying ${choice.kind} '${choice.name}' at row ${choice.rowIndex}: '${choice.effectText}'.")
             val target = scanned[choice.rowIndex]
+            val listBefore = lessonListGray(game.imageUtils.getSourceBitmap())
             game.tap(target.point.x, target.point.y)
             game.wait(game.dialogWaitDelay)
 
@@ -361,7 +358,7 @@ class GrandLive(game: Game) : Campaign(game) {
             // Buying syncs to the server ("Connecting") and repaints the list over a couple of transitions. Clear loading, then wait until the
             // bought card is gone so the next scan reads the new list. A fixed wait was sometimes too short and tapped a card that had just changed.
             game.waitForLoading()
-            waitForLessonsRefresh(choice)
+            waitForLessonsRefresh(listBefore)
         }
 
         // Record the day to pace the next re-open.
@@ -413,11 +410,13 @@ class GrandLive(game: Game) : Campaign(game) {
     /**
      * Scan the Lessons screen by enumerating each card off its `grandlive_lesson_cost` ("Performance Point Cost") pill and reading
      * its name, kind, and effect lines. Purchasability comes from the "Learnable!" ribbon above each card, which is identical artwork on
-     * every card, so the kind is read separately off the kind tag. Every card is logged so a buy-nothing visit is always explainable.
+     * every card, so the kind is read separately off the kind tag. Every card read is logged so a buy-nothing visit is always explainable.
+     * A locked card is only read when it could change the purchase. See [shouldReadLessonCard].
      *
-     * @return The [ScannedLesson]s currently on screen, top-to-bottom, each with its on-screen tap point.
+     * @param canHoldTokens Whether this scan may hold tokens for a sought-after locked card, which is the only time locked cards are read.
+     * @return The [ScannedLesson]s currently on screen, top-to-bottom, each with its on-screen tap point. An unread card has a blank name and effect.
      */
-    private fun scanLessons(): List<ScannedLesson> {
+    private fun scanLessons(canHoldTokens: Boolean): List<ScannedLesson> {
         val sourceBitmap = game.imageUtils.getSourceBitmap()
         val anchors = LabelGrandLiveLessonCost.findAll(game.imageUtils, sourceBitmap = sourceBitmap).sortedBy { it.y }
         if (anchors.isEmpty()) {
@@ -448,19 +447,29 @@ class GrandLive(game: Game) : Campaign(game) {
         MessageLog.i(TAG, "[GRAND_LIVE] Lessons scan found ${anchors.size} card(s) and ${ribbonYs.size} Learnable ribbon(s):")
         return anchors.mapIndexed { rowIndex, anchor ->
             val purchasable = hasLearnableRibbon(ribbonYs, anchor.y, game.imageUtils.relHeight(LESSON_CARD_HEIGHT))
+            val tapPoint = Point(game.imageUtils.relX(anchor.x, 200).toDouble(), game.imageUtils.relY(anchor.y, -150).toDouble())
+            if (!shouldReadLessonCard(purchasable, ribbonYs.isNotEmpty(), canHoldTokens)) {
+                MessageLog.i(TAG, "[GRAND_LIVE]   Row $rowIndex is locked and cannot change this visit's purchase, so it is not read.")
+                // The kind is unread too. A locked card is never bought, so it does not matter.
+                return@mapIndexed ScannedLesson(option = LessonOption(kind = LessonKind.SONG, name = "", effectText = "", purchasable = false, rowIndex = rowIndex), point = tapPoint)
+            }
 
             val name = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.name, "grandlive_lesson_name_$rowIndex")
             val effect1 = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.effect1, "grandlive_lesson_effect1_$rowIndex")
             val effect2 = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.effect2, "grandlive_lesson_effect2_$rowIndex")
 
-            // The ribbon is kind-agnostic, so the kind tag is the only kind signal. An unreadable tag falls back to Song and breaks concert day.
-            val kindText = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.kind, "grandlive_lesson_kind_$rowIndex")
-            val kind = if (kindText.contains("tech", ignoreCase = true)) LessonKind.TECHNIQUE else LessonKind.SONG
-            if (!kindText.contains("song", ignoreCase = true) && kind == LessonKind.SONG) {
-                MessageLog.w(TAG, "[GRAND_LIVE]   Row $rowIndex kind tag read as \"$kindText\"; defaulting to Song. Recheck LESSON_CARD_CROPS.kind if this repeats.")
-            }
+            // The ribbon is kind-agnostic, so the header color tells the kind, with the kind tag read only when the color is unclear.
+            // An unreadable tag falls back to Song and breaks concert day.
+            val kind =
+                lessonKindFromHeaderHue(headerHue(sourceBitmap, anchor)) ?: run {
+                    val kindText = ocrCard(sourceBitmap, anchor, LESSON_CARD_CROPS.kind, "grandlive_lesson_kind_$rowIndex")
+                    val kindFromText = if (kindText.contains("tech", ignoreCase = true)) LessonKind.TECHNIQUE else LessonKind.SONG
+                    if (!kindText.contains("song", ignoreCase = true) && kindFromText == LessonKind.SONG) {
+                        MessageLog.w(TAG, "[GRAND_LIVE]   Row $rowIndex kind tag read as \"$kindText\"; defaulting to Song. Recheck LESSON_CARD_CROPS.kind if this repeats.")
+                    }
+                    kindFromText
+                }
             val effectText = listOf(effect1, effect2).filter { it.isNotBlank() }.joinToString(" ")
-            val tapPoint = Point(game.imageUtils.relX(anchor.x, 200).toDouble(), game.imageUtils.relY(anchor.y, -150).toDouble())
 
             // A Song the shipped list does not know cannot be ranked, and a title the game reworded would otherwise go unnoticed until someone
             // wondered why their Song Priority stopped applying.
@@ -479,32 +488,66 @@ class GrandLive(game: Game) : Campaign(game) {
     }
 
     /**
-     * Wait for the Lessons list to replace a just-bought card, polling its row until a different card (or none) is there. Gives up after
-     * [LESSON_REFRESH_TIMEOUT_SECONDS] and lets the purchase dialog title check catch any stale tap.
+     * Wait for the Lessons list to finish refreshing after a purchase: the old cards are gone, the new ones hold still, and their cost pills show,
+     * which the purchase animation covers. Gives up after [LESSON_REFRESH_TIMEOUT_SECONDS] and lets the purchase dialog title check catch any stale tap.
      *
-     * @param bought The card that was just bought.
+     * @param listBefore The list's gray pixels before the purchase, from [lessonListGray].
      */
-    private fun waitForLessonsRefresh(bought: LessonOption) {
-        if (bought.name.isBlank()) {
-            game.wait(3.0)
-            return
-        }
+    private fun waitForLessonsRefresh(listBefore: IntArray) {
         val deadline = System.currentTimeMillis() + (LESSON_REFRESH_TIMEOUT_SECONDS * 1000).toLong()
+        var previous: IntArray? = null
         while (System.currentTimeMillis() < deadline) {
             val sourceBitmap = game.imageUtils.getSourceBitmap()
-            val anchors = LabelGrandLiveLessonCost.findAll(game.imageUtils, sourceBitmap = sourceBitmap).sortedBy { it.y }
-            // No cards found means the list is mid-transition, so keep waiting.
-            if (anchors.size > bought.rowIndex) {
-                val name = ocrCard(sourceBitmap, anchors[bought.rowIndex], LESSON_CARD_CROPS.name, "grandlive_lesson_refresh_name")
-                if (!isSameLessonTitle(name, bought.name)) {
-                    // The new cards slide in, so let them settle before the next scan reads tap points.
-                    game.wait(1.0)
-                    return
-                }
-            }
-            game.wait(0.5)
+            val current = lessonListGray(sourceBitmap)
+            if (isLessonListSettled(listBefore, previous, current) && LabelGrandLiveLessonCost.check(game.imageUtils, sourceBitmap = sourceBitmap)) return
+            previous = current
+            game.wait(LESSON_REFRESH_POLL_SECONDS, skipWaitingForLoading = true)
         }
-        MessageLog.w(TAG, "[GRAND_LIVE] '${bought.name}' still shows on the Lessons list after ${LESSON_REFRESH_TIMEOUT_SECONDS}s. Rescanning anyway.")
+        MessageLog.w(TAG, "[GRAND_LIVE] The Lessons list did not settle within ${LESSON_REFRESH_TIMEOUT_SECONDS}s of the purchase. Rescanning anyway.")
+    }
+
+    /**
+     * Samples the Lessons list as gray pixels, every 4th pixel across the band the cards fill, to tell when the list changes or holds still.
+     *
+     * @param sourceBitmap The screenshot.
+     * @return The sampled gray pixels.
+     */
+    private fun lessonListGray(sourceBitmap: Bitmap): IntArray {
+        val left = (sourceBitmap.width * 0.05).toInt()
+        val right = (sourceBitmap.width * 0.95).toInt()
+        val top = (sourceBitmap.height * 0.15).toInt()
+        val bottom = (sourceBitmap.height * 0.80).toInt()
+        val row = IntArray(right - left)
+        val columns = (row.size + 3) / 4
+        val gray = IntArray(((bottom - top + 3) / 4) * columns)
+        for ((rowIndex, y) in (top until bottom step 4).withIndex()) {
+            sourceBitmap.getPixels(row, 0, row.size, left, y, row.size, 1)
+            for (column in 0 until columns) gray[rowIndex * columns + column] = grayOf(row[column * 4])
+        }
+        return gray
+    }
+
+    /**
+     * Finds the median hue of a card header's colored pixels, which tells a Song (purple) from a Technique (green) without a text read.
+     *
+     * @param sourceBitmap The Lessons-screen screenshot.
+     * @param anchor The card's cost-pill center.
+     * @return The median hue in degrees, or null when the header has too few colored pixels to tell.
+     */
+    private fun headerHue(sourceBitmap: Bitmap, anchor: Point): Float? {
+        val (x, y, width, height) = anchoredRect(anchor, LESSON_CARD_CROPS.name).toList()
+        val header = game.imageUtils.createSafeBitmap(sourceBitmap, x, y, width, height, "grandlive_lesson_header") ?: return null
+        val pixels = IntArray(header.width * header.height)
+        header.getPixels(pixels, 0, header.width, 0, 0, header.width, header.height)
+        val hsv = FloatArray(3)
+        val hues = ArrayList<Float>()
+        for (pixel in pixels) {
+            Color.colorToHSV(pixel, hsv)
+            if (hsv[1] > 0.25f) hues.add(hsv[0])
+        }
+        if (hues.size < pixels.size / 2) return null
+        hues.sort()
+        return hues[hues.size / 2]
     }
 
     /**
@@ -526,18 +569,20 @@ class GrandLive(game: Game) : Campaign(game) {
      * @param debugName Debug label for the OCR crop dump.
      * @return The trimmed OCR text (empty when nothing was read).
      */
-    private fun ocrCard(sourceBitmap: Bitmap, anchor: Point, crop: TokenCrop, debugName: String): String =
-        game.imageUtils.performOCROnRegion(
-            sourceBitmap,
-            game.imageUtils.relX(anchor.x, crop.dx),
-            game.imageUtils.relY(anchor.y, crop.dy),
-            game.imageUtils.relWidth(crop.width),
-            game.imageUtils.relHeight(crop.height),
-            useThreshold = false,
-            scale = 1.5,
-            ocrEngine = "mlkit",
-            debugName = debugName,
-        ).trim()
+    private fun ocrCard(sourceBitmap: Bitmap, anchor: Point, crop: TokenCrop, debugName: String): String {
+        val (x, y, width, height) = anchoredRect(anchor, crop).toList()
+        return game.imageUtils.performOCROnRegion(sourceBitmap, x, y, width, height, useThreshold = false, scale = 1.5, ocrEngine = "mlkit", debugName = debugName).trim()
+    }
+
+    /**
+     * Converts a crop measured at 1080p from an anchor into a screen region.
+     *
+     * @param anchor The matched anchor center.
+     * @param crop The crop offsets from the anchor.
+     * @return The region as x, y, width and height.
+     */
+    private fun anchoredRect(anchor: Point, crop: TokenCrop): IntArray =
+        intArrayOf(game.imageUtils.relX(anchor.x, crop.dx), game.imageUtils.relY(anchor.y, crop.dy), game.imageUtils.relWidth(crop.width), game.imageUtils.relHeight(crop.height))
 
     /**
      * Whether a card's effect is a skill hint tied to a running style the trainee cannot use (aptitude below C), so it should not be
@@ -558,14 +603,13 @@ class GrandLive(game: Game) : Campaign(game) {
 
     /**
      * Whether to hold tokens this turn instead of buying lesser affordable cards. True when a sought-after card (matching a top-ranked
-     * effect category) is currently locked, Hype is already maxed (no Song needed for it), and the career is not yet in its final
-     * stretch - so tokens can accumulate for the locked card to become learnable next round.
+     * effect category) is currently locked, so tokens can accumulate for it to become learnable next round. Only asked when holding is
+     * allowed: Hype is already maxed (no Song needed for it) and the career is not yet in its final stretch.
      *
      * @param scanned The cards on the Lessons screen this scan.
      * @return True to skip buying and save tokens this turn.
      */
     private fun shouldWaitForLockedLesson(scanned: List<ScannedLesson>): Boolean {
-        if (!isHypeMaxed || date.bIsFinaleSeason) return false
         return scanned.any { !it.option.purchasable && isSoughtAfter(it.option, lessonEffectPriority, lessonSongPriority) }
     }
 

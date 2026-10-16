@@ -24,6 +24,9 @@ val IconMoodGood = icon("mood_good", Region.topHalf)
 val IconMoodNormal = icon("mood_normal", Region.topHalf)
 val IconMoodBad = icon("mood_bad", Region.topHalf)
 val IconMoodAwful = icon("mood_awful", Region.topHalf)
+
+/** The pink "!" badge the Main screen puts on an action button, such as Lessons when a purchase is affordable. */
+val IconNotificationBadge = icon("notification_badge", Region.bottomHalf)
 val IconTrainingHeaderSpeed = icon("training_header_speed", Region.topHalf)
 val IconTrainingHeaderStamina = icon("training_header_stamina", Region.topHalf)
 val IconTrainingHeaderPower = icon("training_header_power", Region.topHalf)

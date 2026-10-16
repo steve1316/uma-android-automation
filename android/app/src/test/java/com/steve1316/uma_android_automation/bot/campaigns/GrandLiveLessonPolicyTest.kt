@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 /**
@@ -567,5 +568,59 @@ class GrandLiveLessonPolicyTest {
         assertFalse(isSameLessonTitle("Makeup Intermediate Class", "Makeup Basics"))
         assertFalse(isSameLessonTitle("Group Lesson Basics", "Group Lesson Intermediate Class"))
         assertFalse(isSameLessonTitle("", "Group Lesson Basics"))
+    }
+
+    @Test
+    @DisplayName("Locked cards are read only when holding tokens for one could change what is bought")
+    fun readsLockedCardsOnlyWhenTheyMatter() {
+        // A learnable card is always read, since it may be bought.
+        assertTrue(shouldReadLessonCard(purchasable = true, anyLearnable = true, canHoldTokens = false))
+        // With nothing learnable there is nothing to buy or hold back, so a locked card is skipped.
+        assertFalse(shouldReadLessonCard(purchasable = false, anyLearnable = false, canHoldTokens = true))
+        // A locked card only matters when the bot may hold tokens for it instead of buying a learnable one.
+        assertTrue(shouldReadLessonCard(purchasable = false, anyLearnable = true, canHoldTokens = true))
+        assertFalse(shouldReadLessonCard(purchasable = false, anyLearnable = true, canHoldTokens = false))
+    }
+
+    /** Unit tests for reading the Lessons screen without text reads: the card kind from its header color, and when the list has settled after a purchase. */
+    @DisplayName("Grand Live Lessons screen")
+    @Nested
+    inner class GrandLiveLessonScreenTest {
+        /** A gray list band before the purchase. */
+        private val before = IntArray(1000) { 200 }
+
+        /** The same band after the purchase, with new cards in it. */
+        private val after = IntArray(1000) { if (it < 300) 80 else 200 }
+
+        @Test
+        @DisplayName("A purple header is a Song and a green header is a Technique")
+        fun kindFromHue() {
+            // Measured on device: Song headers have hue 254 degrees and Technique headers 90 degrees.
+            assertEquals(LessonKind.SONG, lessonKindFromHeaderHue(254f))
+            assertEquals(LessonKind.TECHNIQUE, lessonKindFromHeaderHue(90f))
+        }
+
+        @Test
+        @DisplayName("An unknown header color or no color falls back to reading the kind tag")
+        fun unknownHue() {
+            assertNull(lessonKindFromHeaderHue(0f))
+            assertNull(lessonKindFromHeaderHue(180f))
+            assertNull(lessonKindFromHeaderHue(null))
+        }
+
+        @Test
+        @DisplayName("The list has settled once it differs from before the purchase and holds still")
+        fun settled() {
+            assertTrue(isLessonListSettled(before, after, after.copyOf()))
+        }
+
+        @Test
+        @DisplayName("The list has not settled while it still shows the old cards or is still moving")
+        fun notSettled() {
+            assertFalse(isLessonListSettled(before, before.copyOf(), before.copyOf()))
+            assertFalse(isLessonListSettled(before, null, after))
+            val fading = IntArray(1000) { if (it < 300) 140 else 200 }
+            assertFalse(isLessonListSettled(before, fading, after))
+        }
     }
 }
