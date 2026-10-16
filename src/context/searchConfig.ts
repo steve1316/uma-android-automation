@@ -1197,6 +1197,66 @@ const searchConfig: SearchOption[] = [
         description: "Collects everything in the Presents box.",
         page: "DailiesSettings",
     },
+    {
+        id: "dailies-start-career-when-done",
+        title: "Start a Career After the Dailies",
+        description: "Starts a new career for the Home screen's scenario once the dailies finish, using these settings, then plays it.",
+        page: "CareerSetupSettings",
+    },
+
+    // ============================================================
+    // Career Setup Settings (CareerSetupSettings)
+    // ============================================================
+    {
+        id: "career-setup-use-preselected-trainee",
+        title: "Use Preselected Trainee",
+        description: "Keeps whichever outfit the game has selected on Trainee Select. With the Smart Race Solver on, the run stops if it is not the solver's character.",
+        page: "CareerSetupSettings",
+    },
+    {
+        id: "career-setup-trainee",
+        title: "Trainee",
+        description: "The outfit to pick on Trainee Select. Also sets the Smart Race Solver's character and aptitudes.",
+        page: "CareerSetupSettings",
+        parentId: "career-setup-use-preselected-trainee",
+    },
+    {
+        id: "career-setup-legacy-mode",
+        title: "Legacy Parents",
+        description: "Keep the last parents, pick them by the trainee's needs, or by your own wish list.",
+        page: "CareerSetupSettings",
+    },
+    {
+        id: "career-setup-spark-wish-list",
+        title: "Spark Wish List",
+        description: "Sparks to look for in the two parents, most wanted first.",
+        page: "CareerSetupSettings",
+        parentId: "career-setup-legacy-mode",
+    },
+    {
+        id: "career-setup-deck",
+        title: "Deck",
+        description: "The support deck to start the career with.",
+        page: "CareerSetupSettings",
+    },
+    {
+        id: "career-setup-friend-card",
+        title: "Friend Card",
+        description: "The support card to borrow from the friend list.",
+        page: "CareerSetupSettings",
+    },
+    {
+        id: "career-setup-start-next-career",
+        title: "Start the Next Career When Done",
+        description: "Completes each career on its end screen and starts the next one with these settings, until TP runs out. A finished Independent Training is always claimed and completed first.",
+        page: "CareerSetupSettings",
+    },
+    {
+        id: "career-setup-friend-max-refreshes",
+        title: "Max Refreshes",
+        description: "How many times to refresh the friend list looking for the card before falling back.",
+        page: "CareerSetupSettings",
+    },
 
     // ============================================================
     // Discord Settings
@@ -1346,10 +1406,24 @@ const searchConfig: SearchOption[] = [
         page: "DebugSettings",
     },
     {
+        id: "debug-career-setup-test",
+        title: "Start Career Setup Test",
+        description:
+            "Disables normal bot operations and starts the Career Setup test. Start it from Home or any career setup screen: it goes through every Career Setup step with your current settings, then stops on Final Confirmation without tapping Start Career!, so no TP is spent.",
+        page: "DebugSettings",
+    },
+    {
         id: "debug-spirit-gauge-detection-test",
         title: "Start Spirit Gauge Detection Test",
         description:
             "Disables normal bot operations and starts the Unity Cup Spirit Gauge detection test. Run this on the Training screen: it selects each of the five facilities in turn and logs the detected fillable / burst / extreme spirit gauge counts, saving the gauge crops to help verify detection.",
+        page: "DebugSettings",
+    },
+    {
+        id: "debug-legacy-spark-reader-test",
+        title: "Start Legacy Spark Reader Test",
+        description:
+            "Disables normal bot operations and starts the Legacy Spark Reader test. Open a Legacy Select picker yourself first: it reads every visible card's sparks and stars, logs each card's score against the Career Setup wish list, and whether the card is already taken.",
         page: "DebugSettings",
     },
     {
