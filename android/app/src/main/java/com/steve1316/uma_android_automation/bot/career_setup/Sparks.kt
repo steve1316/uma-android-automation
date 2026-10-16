@@ -262,3 +262,136 @@ object SmartSparks {
      */
     private fun rank(grade: String?): Int = grade?.let { Aptitude.fromName(it) }?.let { Aptitude.S.ordinal - it.ordinal } ?: Aptitude.entries.size
 }
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Reading
+
+/**
+ * Reads the spark badges under each legacy card on the Legacy Select picker.
+ *
+ * Each badge is found by its solid color, its label by matching small label crops, and its stars by counting gold in each third of the star strip.
+ *
+ * @property imageUtils A reference to a CustomImageUtils instance.
+ */
+class SparkReader(private val imageUtils: CustomImageUtils) {
+    /** A badge found by color. */
+    private data class Badge(val type: SparkType, val x: Int, val y: Int)
+
+    /**
+     * Reads every card whose badges are fully inside the region.
+     *
+     * @param bitmap The screenshot.
+     * @param region The area to read, as x, y, width and height.
+     * @returns The cards in reading order. A card with any unreadable badge is left out, since it will be read again from another scroll position.
+     */
+    fun readCards(bitmap: Bitmap, region: IntArray): List<SparkCard> {
+        val badges = findBadges(bitmap, region)
+        val pitch = imageUtils.relWidth(BADGE_PITCH)
+        val tolerance = imageUtils.relWidth(8)
+        return badges
+            .filter { it.type == SparkType.STAT }
+            .mapNotNull { blue ->
+                // A card is its blue badge plus the pink and optional green badge one and two pitches to the right.
+                val row =
+                    listOf(blue) +
+                        listOf(SparkType.APTITUDE to 1, SparkType.UNIQUE to 2).mapNotNull { (type, step) ->
+                            badges.firstOrNull { it.type == type && abs(it.x - (blue.x + pitch * step)) <= tolerance && abs(it.y - blue.y) <= tolerance }
+                        }
+                if (row.none { it.type == SparkType.APTITUDE }) return@mapNotNull null
+                val sparks = row.map { readBadge(bitmap, it) ?: return@mapNotNull null }
+                SparkCard(blue.x, blue.y, sparks)
+            }.sortedWith(compareBy({ it.badgeY / imageUtils.relHeight(40) }, { it.badgeX }))
+    }
+
+    /**
+     * Finds the badges in a region by color.
+     *
+     * @param bitmap The screenshot.
+     * @param region The area to search, as x, y, width and height.
+     * @returns Each badge with its top-left corner in screen coordinates.
+     */
+    private fun findBadges(bitmap: Bitmap, region: IntArray): List<Badge> {
+        val (rx, ry, rw, rh) = region.toList()
+        val crop = imageUtils.createSafeBitmap(bitmap, rx, ry, rw, rh, "sparkBadges") ?: return emptyList()
+        val hsv = with(imageUtils) { crop.toHsvMat() }
+
+        val minW = imageUtils.relWidth(BADGE_MIN_W)
+        val maxW = imageUtils.relWidth(BADGE_MAX_SIZE)
+        val minH = imageUtils.relHeight(BADGE_MIN_H)
+        val maxH = imageUtils.relHeight(BADGE_MAX_SIZE)
+        val badgeH = imageUtils.relHeight(BADGE_H)
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(5.0, 5.0))
+        val found = mutableListOf<Badge>()
+        for ((type, range) in BADGE_COLORS) {
+            val mask = Mat()
+            Core.inRange(hsv, range.first, range.second, mask)
+            Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel)
+            val labels = Mat()
+            val stats = Mat()
+            val centroids = Mat()
+            val count = Imgproc.connectedComponentsWithStats(mask, labels, stats, centroids)
+            for (i in 1 until count) {
+                val w = stats.get(i, Imgproc.CC_STAT_WIDTH)[0].toInt()
+                val h = stats.get(i, Imgproc.CC_STAT_HEIGHT)[0].toInt()
+                val area = stats.get(i, Imgproc.CC_STAT_AREA)[0]
+                if (w !in minW..maxW || h !in minH..maxH || area < 0.45 * w * h) continue
+                // Anchor on the bottom edge, since an item icon touching the top of a badge can stretch its box upward.
+                val x = rx + stats.get(i, Imgproc.CC_STAT_LEFT)[0].toInt()
+                val y = ry + stats.get(i, Imgproc.CC_STAT_TOP)[0].toInt() + h - badgeH
+                found.add(Badge(type, x, y))
+            }
+            mask.release()
+            labels.release()
+            stats.release()
+            centroids.release()
+        }
+        kernel.release()
+        hsv.release()
+        return found
+    }
+
+    /**
+     * Reads one badge's label and stars.
+     *
+     * @param bitmap The screenshot.
+     * @param badge The badge to read.
+     * @returns The spark, or null if the label matched no template.
+     */
+    private fun readBadge(bitmap: Bitmap, badge: Badge): Spark? {
+        val candidates: Map<String, ComponentInterface> =
+            when (badge.type) {
+                SparkType.STAT -> LabelCareerStartSparkStat
+                SparkType.APTITUDE -> LabelCareerStartSparkAptitude
+                SparkType.UNIQUE -> LabelCareerStartSparkUnique
+            }
+        val window = imageUtils.createSafeBitmap(bitmap, badge.x, badge.y, imageUtils.relWidth(BADGE_W), imageUtils.relHeight(LABEL_WINDOW_H), "sparkLabel") ?: return null
+        val label = imageUtils.findBestTemplateMatch(window, candidates, BADGE_W, LABEL_WINDOW_H, minConfidence = 0.7) ?: return null
+        return Spark(badge.type, label, countStars(bitmap, badge))
+    }
+
+    /**
+     * Counts the lit stars under a badge.
+     *
+     * @param bitmap The screenshot.
+     * @param badge The badge whose stars to count.
+     * @returns 0 to 3.
+     */
+    private fun countStars(bitmap: Bitmap, badge: Badge): Int {
+        val w = imageUtils.relWidth(BADGE_W - 4)
+        val strip = imageUtils.createSafeBitmap(bitmap, badge.x + imageUtils.relWidth(2), badge.y + imageUtils.relHeight(STARS_DY), w, imageUtils.relHeight(STARS_H), "sparkStars") ?: return 0
+        val hsv = with(imageUtils) { strip.toHsvMat() }
+        val gold = Mat()
+        Core.inRange(hsv, GOLD_LOWER, GOLD_UPPER, gold)
+        val third = w / 3
+        val lit =
+            (0 until 3).count { k ->
+                val slot = gold.submat(0, gold.rows(), k * third, (k + 1) * third)
+                val share = Core.countNonZero(slot).toDouble() / (slot.rows() * slot.cols())
+                slot.release()
+                share > LIT_STAR_SHARE
+            }
+        listOf(hsv, gold).forEach { it.release() }
+        return lit
+    }
+}
