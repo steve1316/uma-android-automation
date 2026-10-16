@@ -401,9 +401,91 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         game.wait(2.0)
     }
 
+    /**
+     * Picks both legacy parents on the overview, or backs out of a picker the bot did not open.
+     *
+     * @param bitmap The current screenshot.
+     */
+    private fun handleLegacySelect(bitmap: Bitmap) {
+        if (ButtonConfirm.check(game.imageUtils, sourceBitmap = bitmap)) {
+            // A picker left open from before this setup started. Back out so the slots are filled in order.
+            ButtonBack.click(game.imageUtils, sourceBitmap = bitmap)
+            game.wait(1.5)
+            return
+        }
+        if (!ButtonAutoSelect.check(game.imageUtils, sourceBitmap = bitmap)) {
+            game.wait(1.0)
+            return
+        }
+        if (!bLegacyDone) {
+            bLegacyDone = true
+            if (settings.legacyMode == "keep") {
+                if (!keepLastParents(bitmap)) return
+            } else {
+                // Clear both slots first so neither picker shows the other slot's parent as taken.
+                ButtonCareerStartLegacyReset.click(game.imageUtils, sourceBitmap = bitmap)
+                game.wait(1.5)
+                val wanted = if (settings.legacyMode == "custom") settings.sparkWishList else smartWishList
+                val bSkipGuests = pickParent(1, skipGuests = false, wanted)
+                pickParent(2, skipGuests = bSkipGuests, wanted)
+            }
+        }
+        ButtonNext.click(game.imageUtils, tries = 5)
+        game.wait(2.0)
+    }
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Helpers
+
+    /**
+     * Keeps the last legacy parents. An empty slot shows the plus button, for example once the guest borrows run out, and only that slot gets a
+     * Smart pick while the other parent stays.
+     *
+     * @param bitmap The current screenshot.
+     * @returns False if the game's Auto-Select was used instead, so Next waits for the next tick.
+     */
+    private fun keepLastParents(bitmap: Bitmap): Boolean {
+        val emptySlots = emptyLegacySlots(ButtonSelectLegacy.findAll(game.imageUtils, sourceBitmap = bitmap).map { it.x }, game.imageUtils.displayWidth)
+        if (emptySlots.isNotEmpty()) {
+            MessageLog.i(TAG, "[CAREER SETUP] Legacy slot ${emptySlots.joinToString(" and ")} is empty, so it gets a Smart pick and the last parents otherwise stay.")
+            // The kept parent may already be the guest borrow, so a single empty slot skips the Guests tab.
+            var bSkipGuests = emptySlots.size == 1
+            for (slot in emptySlots) bSkipGuests = pickParent(slot, bSkipGuests, smartWishList)
+        } else if (ButtonNext.checkDisabled(game.imageUtils, bitmap) == true) {
+            MessageLog.i(TAG, "[CAREER SETUP] Next is disabled but no legacy slot looks empty. Using the game's Auto-Select.")
+            ButtonAutoSelect.click(game.imageUtils, sourceBitmap = bitmap)
+            game.wait(1.5)
+            return false
+        } else {
+            MessageLog.i(TAG, "[CAREER SETUP] Keeping the last legacy parents.")
+        }
+        return true
+    }
+
+    /**
+     * Opens a Legacy slot and picks its parent.
+     *
+     * @param slot 1 for the left slot, 2 for the right one.
+     * @param skipGuests True to skip the Guests tab, since the other slot holds a guest or found none free.
+     * @param wishList The sparks to score the parents against, most wanted first.
+     * @returns True if the next slot should skip the Guests tab: a guest was taken, or none was free to borrow.
+     * @throws CampaignBreakpointException When no parent could be picked.
+     */
+    private fun pickParent(slot: Int, skipGuests: Boolean, wishList: List<String>): Boolean {
+        MessageLog.i(TAG, "[CAREER SETUP] Picking legacy parent $slot.")
+        // An empty slot shows a large plus button. Tapping the "Select a Legacy" text beside it does nothing.
+        val plus =
+            ButtonSelectLegacy.findAll(game.imageUtils).firstOrNull { legacySlotOf(it.x, game.imageUtils.displayWidth) == slot }
+                ?: throw CampaignBreakpointException("Legacy $slot has no plus button to open its picker.")
+        game.tap(plus.x, plus.y)
+        game.wait(1.5)
+        game.waitForAny(ButtonConfirm, timeoutSec = 10.0, bHandleDialogs = false) ?: throw CampaignBreakpointException("The Legacy $slot picker did not open.")
+        val picker = LegacyPicker(game, settings, wishList)
+        val bGuest = picker.pick(skipGuests) ?: throw CampaignBreakpointException("Could not pick legacy parent $slot.")
+        game.waitForAny(ButtonAutoSelect, timeoutSec = 10.0, bHandleDialogs = false) ?: throw CampaignBreakpointException("Legacy Select did not return after picking parent $slot.")
+        return bGuest || picker.noFreeGuest
+    }
 
     /**
      * Reads which outfit is selected at the top of Trainee Select.
