@@ -223,6 +223,7 @@ export interface Settings {
     // Debug settings
     debug: {
         enableDebugMode: boolean
+        debugImageQuality: number
         ocrThreshold: number
         templateMatchConfidence: number
         templateMatchCustomScale: number
@@ -555,6 +556,7 @@ export const defaultSettings: Settings = {
     },
     debug: {
         enableDebugMode: false,
+        debugImageQuality: 50,
         ocrThreshold: 230,
         templateMatchConfidence: 0.8,
         templateMatchCustomScale: 1.0,

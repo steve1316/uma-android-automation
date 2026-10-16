@@ -7,7 +7,7 @@ import { BotMetaContext, GeneralMiscContext, DebugContext, RacingContext, Skills
 import { useNavigation, CommonActions } from "@react-navigation/native"
 import { useSettings } from "../../context/SettingsContext"
 import { logWithTimestamp, logErrorWithTimestamp } from "../../lib/logger"
-import { Animated, AppState, DeviceEventEmitter, StyleSheet, View, NativeModules } from "react-native"
+import { Animated, AppState, DeviceEventEmitter, Pressable, StyleSheet, View, NativeModules } from "react-native"
 import { Snackbar } from "react-native-paper"
 import { MessageLogDispatchContext } from "../../context/MessageLogContext"
 import { useTheme } from "../../context/ThemeContext"
@@ -29,6 +29,8 @@ import CustomButton from "../../components/CustomButton"
 import { findActiveDebugTest, activeSkillPlans, abbreviateStatPriority, raceStrategyLabel, raceStrategyTargetId } from "../../components/HomeHero/heroGlanceData"
 import { useProfileContext, DEFAULT_PROFILE_NAME } from "../../context/ProfileContext"
 import { SPACING } from "../../lib/spacing"
+import { useStorageFolder, STORAGE_FOLDER_WARNING } from "../../hooks/useStorageFolder"
+import WarningContainer from "../../components/WarningContainer"
 
 const styles = StyleSheet.create({
     root: {
@@ -51,6 +53,10 @@ const styles = StyleSheet.create({
     heroStartFallback: {
         width: 156,
         height: 36,
+    },
+    storageWarning: {
+        width: "100%",
+        marginBottom: SPACING.md,
     },
     logBody: {
         flex: 1,
@@ -138,6 +144,7 @@ const Home = () => {
     const { saveSettings } = useSettings()
     const { currentProfileName } = useProfileContext()
     const navigation = useNavigation()
+    const { status: storageStatus } = useStorageFolder()
 
     const pulseAnim = useRef(new Animated.Value(1)).current
 
@@ -579,6 +586,17 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                     onDrawerOpen={refreshLiveRun}
                 />
             </View>
+
+            {(storageStatus === "default" || storageStatus === "inaccessible") && (
+                <Pressable
+                    style={styles.storageWarning}
+                    onPress={() =>
+                        navigation.dispatch(CommonActions.navigate({ name: "Settings", params: { screen: "SettingsMain", params: { targetId: "settings-storage-folder" }, initial: false } }))
+                    }
+                >
+                    <WarningContainer style={{ marginTop: 0 }}>{STORAGE_FOLDER_WARNING[storageStatus]}</WarningContainer>
+                </Pressable>
+            )}
 
             <View style={styles.contentContainer}>
                 <View style={styles.logBody}>

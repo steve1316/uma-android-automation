@@ -345,6 +345,7 @@ ${buildCareerSetupSection(settings)}
 🔍 OCR Threshold: ${settings.debug.ocrThreshold}
 🔍 Minimum Template Match Confidence: ${settings.debug.templateMatchConfidence}
 🔍 Custom Scale: ${settings.debug.templateMatchCustomScale}
+🖼️ Debug Image Quality: ${settings.debug.debugImageQuality}%
 💻 Remote Log Viewer: ${settings.debug.enableRemoteLogViewer ? "✅" : "❌"}
 📹 Enable Screen Recording: ${
         settings.debug.enableScreenRecording ? `✅ (${settings.debug.recordingBitRate} Mbps, ${settings.debug.recordingFrameRate} FPS, ${settings.debug.recordingResolutionScale}x scale)` : "❌"

@@ -2,8 +2,6 @@ package com.steve1316.uma_android_automation.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.wifi.WifiManager
 import android.util.Base64
 import android.util.Log
@@ -41,7 +39,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.net.NetworkInterface
@@ -91,6 +88,9 @@ object LogStreamServer {
 
     /** Maximum number of messages to retain in the history buffer. */
     private const val MAX_BUFFER_SIZE = 15000
+
+    /** Most debug images sent per refresh, newest first, so a full capture folder does not flood the socket. */
+    private const val MAX_DEBUG_IMAGES_SENT = 150
 
     /** Pattern for matching logs: "00:12:34.567 \[DEBUG\] message content". */
     private val logPattern = Pattern.compile("^(\\n?)(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s*\\[(VERBOSE|DEBUG|INFO|WARN|ERROR)]\\s*(.*)", Pattern.DOTALL)
@@ -488,49 +488,32 @@ object LogStreamServer {
     }
 
     /**
-     * Scans the temp directory, compresses found images, and sends them to the client.
+     * Sends the run's newest debug images to the client. The files are already JPEGs, so they are sent as-is.
      *
      * @param session The active WebSocket server session.
      */
     private suspend fun sendDebugImages(session: DefaultWebSocketServerSession) {
         val context = applicationContext ?: return
-        val tempDir = File(context.filesDir, "temp")
-        if (!tempDir.exists() || !tempDir.isDirectory) {
-            Log.w(TAG, "[WARN] sendDebugImages:: Temp directory does not exist or is not a directory: ${tempDir.absolutePath}")
+        val debugDir = File(context.filesDir, "debug/current")
+        if (!debugDir.isDirectory) {
+            Log.w(TAG, "[WARN] sendDebugImages:: Debug image directory does not exist: ${debugDir.absolutePath}")
             return
         }
 
-        val imageFiles =
-            tempDir.listFiles { _, name ->
-                name.lowercase().endsWith(".png") ||
-                    name.lowercase().endsWith(".jpg") ||
-                    name.lowercase().endsWith(".jpeg") ||
-                    name.lowercase().endsWith(".webp")
-            } ?: return
+        val imageFiles = debugDir.listFiles { _, name -> name.lowercase().endsWith(".jpg") } ?: return
+        Log.d(TAG, "[DEBUG] sendDebugImages:: Found ${imageFiles.size} debug images.")
 
-        Log.d(TAG, "[DEBUG] sendDebugImages:: Found ${imageFiles.size} image files in temp directory.")
-
-        // Send newest first so the most recent capture lands at the top of the viewer grid.
-        for (file in imageFiles.sortedByDescending { it.lastModified() }) {
+        // Names start with the run-wide sequence, so sorting by name puts the most recent capture at the top of the viewer grid.
+        for (file in imageFiles.sortedByDescending { it.name }.take(MAX_DEBUG_IMAGES_SENT)) {
             try {
-                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                if (bitmap != null) {
-                    val outputStream = ByteArrayOutputStream()
-                    // Compress to 50% quality JPEG.
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
-                    val byteArray = outputStream.toByteArray()
-                    val base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT)
-
-                    val json =
-                        JSONObject().apply {
-                            put("type", "image")
-                            put("name", file.name)
-                            put("timestamp", file.lastModified())
-                            put("data", base64Image)
-                        }
-                    session.send(Frame.Text(json.toString()))
-                    bitmap.recycle()
-                }
+                val json =
+                    JSONObject().apply {
+                        put("type", "image")
+                        put("name", file.name)
+                        put("timestamp", file.lastModified())
+                        put("data", Base64.encodeToString(file.readBytes(), Base64.DEFAULT))
+                    }
+                session.send(Frame.Text(json.toString()))
             } catch (e: Exception) {
                 Log.e(TAG, "[ERROR] sendDebugImages:: Failed to send image ${file.name}: ${e.message}")
             }

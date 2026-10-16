@@ -18,6 +18,7 @@ import ToggleSetting from "../../components/ToggleSetting"
 import { useSettings } from "../../context/SettingsContext"
 import { useSettingsFileManager } from "../../hooks/useSettingsFileManager"
 import { usePerformanceLogging } from "../../hooks/usePerformanceLogging"
+import { useStorageFolder, STORAGE_FOLDER_HELP, STORAGE_FOLDER_WARNING } from "../../hooks/useStorageFolder"
 import { TYPE } from "../../lib/type"
 import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
@@ -52,6 +53,7 @@ const Settings = () => {
     const modalShellStyles = useModalShellStyles()
     const [overlayStylePickerOpen, setOverlayStylePickerOpen] = useState(false)
 
+    const { folder: storageFolder, status: storageStatus, pick: pickStorageFolder } = useStorageFolder()
     const { openDataDirectory, resetSettings } = useSettings()
     const { handleImportSettings, handleExportSettings, showImportDialog, setShowImportDialog, showResetDialog, setShowResetDialog } = useSettingsFileManager()
 
@@ -288,6 +290,15 @@ const Settings = () => {
                 </Section>
 
                 <Section label="DATA MANAGEMENT">
+                    <SearchableItem id="settings-storage-folder" title="Storage Folder" description={STORAGE_FOLDER_HELP}>
+                        <Row
+                            title="Storage Folder"
+                            description={storageStatus === "ok" ? STORAGE_FOLDER_HELP : STORAGE_FOLDER_WARNING[storageStatus]}
+                            onPress={pickStorageFolder}
+                            right={<ValuePill label={storageFolder?.name ?? "..."} />}
+                        />
+                    </SearchableItem>
+
                     <SearchableItem id="settings-management-title" title="Settings Management" description="Import and export settings from JSON file or access the app's data directory.">
                         <View style={{ padding: SPACING.md }}>
                             <View style={styles.managementGrid}>

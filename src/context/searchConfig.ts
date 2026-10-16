@@ -114,6 +114,12 @@ const searchConfig: SearchOption[] = [
         page: "SettingsMain",
     },
     {
+        id: "settings-storage-folder",
+        title: "Storage Folder",
+        description: "Where logs and debug zips are saved. Tap to pick a different folder.",
+        page: "SettingsMain",
+    },
+    {
         id: "settings-management-title",
         title: "Settings Management",
         description: "Import and export settings from JSON file or access the app's data directory.",
@@ -1285,6 +1291,13 @@ const searchConfig: SearchOption[] = [
     // ============================================================
     // Debug Settings
     // ============================================================
+    {
+        id: "debug-image-quality",
+        title: "Debug Image Quality",
+        description: "Sets the JPEG quality of the debug images saved in the debug bundle. Lower values make smaller zip files but blurrier images.",
+        page: "DebugSettings",
+        parentId: "enable-debug-mode",
+    },
     {
         id: "enable-debug-mode",
         title: "Enable Debug Mode",
