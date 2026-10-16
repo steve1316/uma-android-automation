@@ -142,6 +142,12 @@ const Settings = () => {
                         right={chevron}
                         onPress={() => navigation.navigate("DailiesSettings" as never)}
                     />
+                    <Row
+                        title="Career Setup"
+                        description="Trainee, legacy parents, deck, and friend card for starting a new career."
+                        right={chevron}
+                        onPress={() => navigation.navigate("CareerSetupSettings" as never)}
+                    />
                 </Section>
 
                 <Section label="SCENARIO">
