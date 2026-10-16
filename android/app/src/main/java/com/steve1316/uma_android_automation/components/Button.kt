@@ -216,3 +216,24 @@ val ButtonSeeAllRaceResults = button("see_all_race_results", Region.bottomHalf)
 val ButtonSortAsc = button("sort_asc", Region.bottomHalf, confidence = 0.9)
 val ButtonSortRating = button("sort_rating", Region.bottomHalf, confidence = 0.9)
 val ButtonSortToggle = button("sort_toggle", Region.bottomHalf, confidence = 0.9)
+
+// Career Setup
+val ButtonCareerStartHomeCareer = button("career_start_home_career", Region.bottomHalf)
+val ButtonCareerStartArrowRight = button("career_start_arrow_right", Region.rightHalf, confidence = 0.9)
+val ButtonCareerStartDeckArrowLeft = button("career_start_deck_arrow_left", Region.leftHalf, confidence = 0.9)
+val ButtonCareerStartDeckArrowRight = button("career_start_deck_arrow_right", Region.rightHalf, confidence = 0.9)
+val ButtonCareerStartFriendRefresh = button("career_start_friend_refresh", Region.bottomHalf)
+
+// Also matches the Support Formation Reset, so only use it once the Legacy Select header is confirmed.
+val ButtonCareerStartLegacyReset = button("career_start_legacy_reset", Region.bottomHalf)
+
+// "Start!" shares its prefix with "Start Career!" and scores 0.87 against it, so it needs a stricter threshold.
+val ButtonCareerStartIndependentStart = button("career_start_independent_start", Region.bottomHalf, confidence = 0.95)
+
+/** The green Career button on the Independent Training dialog, which claims a finished one. */
+val ButtonCareerStartIndependentCareer = button("career_start_independent_career", Region.bottomHalf)
+
+// The three story skip states differ only by their triangles and score 0.82 against each other.
+val ButtonCareerStartStorySkipOff = button("career_start_story_skip_off", Region.bottomHalf, confidence = 0.95)
+val ButtonCareerStartStorySkipOne = button("career_start_story_skip_one", Region.bottomHalf, confidence = 0.95)
+val ButtonCareerStartStorySkipTwo = button("career_start_story_skip_two", Region.bottomHalf, confidence = 0.95)
