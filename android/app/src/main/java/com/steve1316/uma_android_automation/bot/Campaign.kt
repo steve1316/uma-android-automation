@@ -404,6 +404,12 @@ abstract class Campaign(game: Game) : Task(game) {
     /** True after a resume, so the next main-screen pass re-reads stats and energy even though the date did not change. */
     protected var bForceTurnStartUpdates: Boolean = false
 
+    /** Whether a date has been read this run, so the career-end screen can tell an early end from a run started on that screen. */
+    private var bHasReadDate: Boolean = false
+
+    /** The turn the bot gave up a career-ending race on, which fails the career, or null. */
+    private var lostRaceTurn: Int? = null
+
     /**
      * Counts consecutive [performMiscChecks] iterations where [ButtonCancel] matched. The bot only
      * exits on a confirmed warning popup once this reaches [WARNING_POPUP_CONFIRM_THRESHOLD], so a
@@ -1089,6 +1095,7 @@ abstract class Campaign(game: Game) : Task(game) {
             }
             if (racing.enableCompleteCareerOnFailure) {
                 MessageLog.i(TAG, "[RACE] Failed a mandatory race and no retries remaining. Completing career...")
+                lostRaceTurn = date.day
                 // Manually set retries to -1 to break the race retry loop.
                 racing.raceRetries = -1
                 dialog.close(game.imageUtils)
@@ -1549,6 +1556,7 @@ abstract class Campaign(game: Game) : Task(game) {
             MessageLog.e(TAG, "[ERROR] updateDate:: date.update() failed to update date.")
             return false
         }
+        bHasReadDate = true
 
         if (date.day == prevDay) {
             Log.d(TAG, "[DEBUG] updateDate:: Date did not change.")
@@ -2922,10 +2930,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 // Print the final Trainee information.
                 trainee.logInfo(game.scenario)
 
-                return TaskResult.Success(
-                    TaskResultCode.TASK_RESULT_COMPLETE,
-                    "Bot has reached end of run. Stopping bot...",
-                )
+                return careerEndResult(lostRaceTurn, date.day.takeIf { bHasReadDate })
             } else if (handledAsKnownScreen { checkCampaignSpecificConditions() }) {
                 MessageLog.i(TAG, "[INFO] Campaign-specific checks complete.")
             } else if (handledAsKnownScreen { handleInheritanceEvent(miscBitmap) }) {
