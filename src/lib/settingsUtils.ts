@@ -236,5 +236,29 @@ export const applyMigrations = (settings: any, rawSettings?: any): { settings: a
         }
     }
 
+    // Migration: Career Setup now stores outfit and card ids, and its spark scoring mode is called "custom".
+    const careerSetup = (migratedSettings as any).careerSetup
+    if (careerSetup) {
+        if (careerSetup.legacyMode === "sparks") {
+            careerSetup.legacyMode = "custom"
+            markMigrated("Renamed the Career Setup legacy mode sparks to custom.")
+        }
+        // A name instead of a card id cannot tell outfits apart, so the user picks the outfit again.
+        if (careerSetup.trainee && !/^\d+$/.test(careerSetup.trainee)) {
+            careerSetup.trainee = ""
+            markMigrated("Cleared the Career Setup trainee saved by name.")
+        }
+        if (careerSetup.friendCard && !/^\d+$/.test(careerSetup.friendCard)) {
+            careerSetup.friendCard = ""
+            markMigrated("Cleared the Career Setup friend card saved by name.")
+        }
+        for (const key of ["traineeOutfit", "friendCardTitle", "friendCardType", "includeFreeGuest", "uniqueSparkBonus"]) {
+            if (key in careerSetup) {
+                delete careerSetup[key]
+                markMigrated(`Removed the retired Career Setup setting ${key}.`)
+            }
+        }
+    }
+
     return { settings: migratedSettings, anyMigrated }
 }
