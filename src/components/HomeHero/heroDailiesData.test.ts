@@ -13,6 +13,7 @@ const ALL_ON = {
     clubDonateEnabled: true,
     enableMissions: true,
     enablePresents: true,
+    startCareerWhenDone: false,
 }
 
 describe("dailiesChips", () => {

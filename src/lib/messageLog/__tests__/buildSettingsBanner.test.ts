@@ -39,6 +39,7 @@ const DAILIES: Settings["dailies"] = {
     clubDonateEnabled: true,
     enableMissions: true,
     enablePresents: true,
+    startCareerWhenDone: false,
 }
 
 /**

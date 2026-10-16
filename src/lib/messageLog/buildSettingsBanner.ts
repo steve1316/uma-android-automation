@@ -3,6 +3,8 @@ import { DEBUG_TESTS } from "../../pages/DebugSettings/debugTests"
 import { SCORING_CONSTANTS_CATALOG } from "../training/scoringConstantsCatalog"
 import { formatCareerTurn } from "../solver/constants"
 import { DATING_SCHEDULE_PRESETS } from "../datingSchedule"
+import traineeCardsData from "../../data/live/traineeCards"
+import supportCardsData from "../../data/live/supportCards"
 
 /**
  * Parse `raw` as JSON, returning `fallback` (and adopting its type) when `raw` is empty or malformed.
@@ -81,6 +83,26 @@ const formatOverrideCount = (overrides: Record<string, unknown>, emptyLabel: str
  */
 const tick = (on: boolean): string => (on ? "✅" : "❌")
 
+/**
+ * Builds the Career Setup lines, shown when a run may start a new career.
+ * @param settings Snapshot of all bot settings.
+ * @returns The Career Setup section.
+ */
+function buildCareerSetupSection(settings: Settings): string {
+    const c = settings.careerSetup
+    const outfit = (traineeCardsData as Record<string, { title: string; name: string }>)[c.trainee]
+    const card = (supportCardsData as Record<string, { title: string; name: string }>)[c.friendCard]
+    const trainee = c.usePreselectedTrainee ? "Preselected" : outfit ? `${outfit.title} ${outfit.name}` : "Not set"
+    const legacy = c.legacyMode === "smart" ? "Smart" : c.legacyMode === "custom" ? `Custom (${c.sparkWishList.join(", ") || "None"})` : "Keep Last"
+    return `---------- Career Setup Options ----------
+🧑 Trainee: ${trainee}
+👪 Legacy Parents: ${legacy}
+🃏 Deck: ${c.deckNumber > 0 ? `Deck ${c.deckNumber}` : "Keep current"}
+👥 Friend Card: ${card ? `${card.title} ${card.name}` : "Smart"}
+🔄 Friend Max Refreshes: ${c.friendMaxRefreshes}
+⏭️ Start the Next Career When Done: ${tick(c.startNextCareerWhenDone)}`
+}
+
 /** The banner text that marks a Dailies run, also read by the event log parser. */
 export const DAILIES_RUN_MODE_LABEL = "Run Mode: Dailies"
 
@@ -109,7 +131,8 @@ function buildDailiesBanner(settings: Settings): string {
 🤝 Club Donate to All: ${tick(d.clubDonateEnabled)}
 📋 Collect Mission Rewards: ${tick(d.enableMissions)}
 📦 Collect Presents: ${tick(d.enablePresents)}
-
+🎬 Start a Career After the Dailies: ${d.startCareerWhenDone ? `✅ (${settings.general.scenario || "No scenario set"})` : "❌"}
+${d.startCareerWhenDone ? `\n${buildCareerSetupSection(settings)}\n` : ""}
 ---------- Debug Options ----------
 🐛 Debug Mode: ${tick(settings.debug.enableDebugMode)}
 ${dailiesTests}`
@@ -299,6 +322,8 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 💡 Grand Live Lesson Skill Hint Priority: ${(settings.scenarioOverrides?.grandLiveLessonHintPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveLessonHintPriority ?? []).join(" > ")}
 🎵 Grand Live Song Priority: ${(settings.scenarioOverrides?.grandLiveSongPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveSongPriority ?? []).join(" > ")}
 🎶 Grand Live Lessons Fallback Re-check: After ${settings.scenarioOverrides?.grandLiveLessonRescanInterval ?? 6} turns without a badge
+
+${buildCareerSetupSection(settings)}
 
 ---------- Misc Options ----------
 🔍 Enable Claw Machine Attempt: ${settings.general.enableClawMachineAttempt ? "✅" : "❌"}

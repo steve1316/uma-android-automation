@@ -69,6 +69,7 @@ export interface Settings {
         clubDonateEnabled: boolean
         enableMissions: boolean
         enablePresents: boolean
+        startCareerWhenDone: boolean
     }
 
     // Career Setup settings
@@ -343,6 +344,7 @@ export const defaultSettings: Settings = {
         clubDonateEnabled: true,
         enableMissions: true,
         enablePresents: true,
+        startCareerWhenDone: false,
     },
     careerSetup: {
         usePreselectedTrainee: true,
