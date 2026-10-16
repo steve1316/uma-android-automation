@@ -7,6 +7,7 @@ import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.BotStatus
+import com.steve1316.automation_library.utils.DebugCapture
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
@@ -60,6 +61,9 @@ class Game(val myContext: Context) {
 
     /** Whether debug mode is enabled for additional logging and saving debugging images to storage. */
     val debugMode: Boolean = SettingsHelper.getBooleanSetting("debug", "enableDebugMode")
+
+    /** JPEG quality of the saved debug images, handed to the library so every image in the bundle uses it. */
+    val debugImageQuality: Int = SettingsHelper.getIntSetting("debug", "debugImageQuality", 50).also { DebugCapture.jpegQuality = it }
 
     /** The default wait delay between common actions. */
     val waitDelay: Double = SettingsHelper.getDoubleSetting("general", "waitDelay")
