@@ -1,23 +1,40 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.8.8</latestVersion>
+    <latestVersion>5.9.0</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.8.8 - Changelog
+v5.9.0 - Changelog
 
 New
 ---
-- Add 3 `Grand Live` override options to the `Scenario Overrides` page: a `Grand Live Lesson Stat Priority` for which stat gains are bought first, a `Grand Live Lesson Skill Hint Priority` that also buys ranked hints even when the running style is off-aptitude, and a `Grand Live Song Priority` that buys a ranked Song ahead of anything else learnable.
+- Add a `Dailies` run mode that clears Team Trials, Daily Races, the Daily Legend Race, the Club item request and donations, Missions and Presents, then stops. A `Career` / `Dailies` switch on the Home card picks the mode, and the new `Dailies Settings` page holds its options.
+- Add `Career Setup`, which starts a new career from Home using the trainee, legacy parents, support deck and friend card chosen in the new `Career Setup` settings page. Dailies can start a career when they finish, and "Start the Next Career When Done" keeps going until TP runs out.
+- Add in-app updates. Tapping `Update` in the `Update Available` dialog downloads the right APK, installs it and reopens the app on the new version.
+- Add automatic game data updates. A daily check publishes new Global trainees and support cards, the app offers to download them on launch, and a new cloud button in the drawer checks on demand.
+- Add a redesigned overlay with an orb and tray that has Pause, Resume and Stop, plus an overlay style picker under Misc settings. Pause now works on any screen.
+- Add a redesigned Home card that shows live run stats during a run and the result, crash details and log afterwards. Start now turns on the overlay and opens the game in one tap.
+- Add numbered debug images. Each run saves its debug images as numbered JPEGs and zips them with the log into one bundle, and a new `Debug Image Quality` slider sets the JPEG quality.
+- Add a `Storage Folder` row to Settings, and a warning on Home when logs are going to the hidden app folder.
+- Add an `Avoid Maxing Happy Meek` setting for `URA Finale` and an `Avoid Elite Team` setting for `Unity Cup`, both off by default and aimed at parent farming.
+- Add `Start Career Setup Test` and `Start Legacy Spark Reader Test` debug tests.
+- Add trainee outfit and support card catalogs to the game data and the in-app data update.
 
 Adjustments
 ---
-- Update game data up to `Aston Machan 2026-08-24`.
-- Rank `Lessons` cards by how much each one actually grants instead of treating every card in an effect category as equal.
-- Show each item's effects underneath its name in the priority list pickers so you can see what you are ranking.
+- Update game data up to `Narita Brian (BLAZE) 2026-10-14`.
+- Reuse one screenshot per bot tick, which cut screenshots by about a third and sped up turns by about 5% in a test.
+- Make Grand Live open the Lessons screen when its button shows the "!" badge, skip rereading Lessons cards that cannot change the purchase, and reuse unchanged Main screen readings. A visit takes much less time.
+- Log game loading once when it starts and once when it ends instead of on every check, and stop saving debug images for the loading checks.
+- Performance improvement to the floating overlay button so it lags less when dragged.
 
 Fixes
 ---
-- Fix `Lessons` cards that only grant skill points being ignored because the game abbreviates the wording on them.
+- Fix the first-run wizard deleting old logs and recordings when "Move them" was tapped before a real folder was picked.
+- Fix a Grand Live stall where the bot bought a Lessons card, tapped a card that had changed and got stuck on an unaffordable purchase dialog.
+- Fix the Happy Meek duel bias never applying and the bot stalling on the Unity Cup Elite Team race.
+- Fix six white/gold skill pairs being linked backwards, which stopped the gold skill from being bought.
+- Fix the run stopping on the career end screen when the final fan count read as a huge number.
+- Fix the Trackblazer shop check being cleared when the shop dialog tap did not open the shop.
 
 </releaseNotes>
   </update>
