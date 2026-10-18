@@ -27,6 +27,9 @@ private const val MAX_SCROLL_TO_END_SWIPES = 8
 /** How far the scrollbar thumb may sit from an end of its track and still count as having reached it. */
 private const val SCROLL_END_TOLERANCE = 4
 
+/** How far the thumb may sit from an end before a drag to that end is still needed. Tighter than [SCROLL_END_TOLERANCE], since 4px of thumb is about 30px of content on the skill list. */
+private const val SKIP_DRAG_TOLERANCE = 1
+
 /** The smallest measured move that counts as a tracked swipe having scrolled the list. */
 private const val TRACKED_MIN_MOVE_PX = 8
 
@@ -436,7 +439,7 @@ class ScrollList private constructor(
             val list = create(game, sourceBitmap, listTopLeftComponent, listBottomRightComponent, entryDetectionConfig)
             if (list != null) {
                 MessageLog.d(TAG, "[DEBUG] processWithFallback:: Standard ScrollList detected. Processing...")
-                return list.process(maxTimeMs, bScrollBottomToTop, keyExtractor, fallbackComponent, bForceComponentDetection, onEntry)
+                return list.process(maxTimeMs, bScrollBottomToTop, keyExtractor, fallbackComponent, bForceComponentDetection, onEntry = onEntry)
             }
 
             // Step 2: Fallback to component-based detection.
@@ -895,8 +898,8 @@ class ScrollList private constructor(
         val durationMs: Long = durationMs.coerceAtLeast(250L)
         val x0: Int = if (swipeMode) (bboxList.x + (bboxList.w / 2)) else ((startLoc?.x ?: (bboxList.x + (bboxList.w / 2)))).toInt()
         val y0: Int = ((startLoc?.y ?: (bboxList.y + (bboxList.h / 2)))).toInt()
-        // Add some extra height since scrolling isn't accurate.
-        val y1: Int = (bboxList.y + bboxList.h + (entryHeight * 1.5)).toInt().coerceAtLeast(0)
+        // The mirror of [scrollDown]: a swipe started on an entry's bottom edge carries that entry just past the bottom of the list.
+        val y1: Int = (bboxList.y + bboxList.h + entryHeight).toInt().coerceAtLeast(0)
         game.gestureUtils.swipe(x0.toFloat(), y0.toFloat(), x0.toFloat(), y1.toFloat(), duration = durationMs)
         stopScrolling()
     }
@@ -955,7 +958,7 @@ class ScrollList private constructor(
      */
     fun ensureAtTop() {
         if (bThumbIsHandle) {
-            scrollToTop()
+            if (!isThumbAtEnd(bTop = true)) scrollToTop()
             return
         }
         for (swipes in 0 until MAX_SCROLL_TO_END_SWIPES) {
@@ -983,7 +986,7 @@ class ScrollList private constructor(
     /** Takes the list to the bottom, whichever kind of scrollbar it has. The mirror of [ensureAtTop]. */
     fun ensureAtBottom() {
         if (bThumbIsHandle) {
-            scrollToBottom()
+            if (!isThumbAtEnd(bTop = false)) scrollToBottom()
             return
         }
         for (swipes in 0 until MAX_SCROLL_TO_END_SWIPES) {
@@ -1019,6 +1022,19 @@ class ScrollList private constructor(
         val (bboxBar: BoundingBox?, bboxThumb: BoundingBox?) = getListScrollBarBoundingRegion(bitmap)
         if (bboxBar == null || bboxThumb == null) return !swipeMode
         return (bboxBar.y + bboxBar.h) - (bboxThumb.y + bboxThumb.h) <= SCROLL_END_TOLERANCE
+    }
+
+    /**
+     * Whether the scrollbar thumb already sits at one end of its track, so a drag there would be wasted. A list opens at its top and a scan ends at its bottom, so this saves a drag per pass.
+     *
+     * @param bTop True to check the top end, false for the bottom.
+     * @return True only when a thumb was found within [SKIP_DRAG_TOLERANCE] of that end.
+     */
+    private fun isThumbAtEnd(bTop: Boolean): Boolean {
+        val (bboxBar: BoundingBox?, bboxThumb: BoundingBox?) = getListScrollBarBoundingRegion()
+        if (bboxBar == null || bboxThumb == null) return false
+        val gap: Int = if (bTop) bboxThumb.y - bboxBar.y else (bboxBar.y + bboxBar.h) - (bboxThumb.y + bboxThumb.h)
+        return gap <= SKIP_DRAG_TOLERANCE
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1150,6 +1166,8 @@ class ScrollList private constructor(
      * @param keyExtractor Optional callback to generate unique keys and skip duplicates.
      * @param entryComponent Optional component to use for identifying rows.
      * @param bForceComponentDetection If true, force component-based detection even if the scroll list region is found.
+     * @param settleSeconds Wait after each swipe before the next frame is read, on top of the wait inside the swipe itself.
+     * @param onFrame Optional callback run once per frame with the frame and its entries, before any key or entry callback.
      * @param onEntry Callback executed for each entry. Return true to exit early.
      * @return True if processing completed or exited early via callback.
      */
@@ -1159,6 +1177,8 @@ class ScrollList private constructor(
         keyExtractor: ((ScrollListEntry) -> String?)? = null,
         entryComponent: ComponentInterface? = null,
         bForceComponentDetection: Boolean = false,
+        settleSeconds: Double = 0.5,
+        onFrame: ((Bitmap, List<ScrollListEntry>) -> Unit)? = null,
         onEntry: OnEntryDetectedCallback,
     ): Boolean {
         var bitmap = game.imageUtils.getSourceBitmap()
@@ -1222,6 +1242,8 @@ class ScrollList private constructor(
                 // An empty frame (after retries) is itself a no-new-content signal in swipe mode, so an empty list terminates instead of swiping to the hard cap.
                 if (swipeMode) consecutiveNoNewFrames++
             } else {
+                onFrame?.invoke(bitmap, currentFrameEntries)
+
                 // Extract each entry's key once, before any callback runs. The keys find the overlap with the previous frame here and become lastFrameKeys below,
                 // and callers that cache what their keyExtractor reads (like skill titles) can then reuse it on the first frame too.
                 val currentFrameKeys: List<String>? = keyExtractor?.let { extract -> currentFrameEntries.map { extract(it) ?: entrySignature(it.bitmap) } }
@@ -1266,7 +1288,11 @@ class ScrollList private constructor(
 
             entryBboxes.addAll(currentFrameEntries.map { it.bbox })
             val avgEntryHeight: Int = if (entryBboxes.isEmpty()) 0 else entryBboxes.map { it.h }.average().toInt()
-            val scrollStartLoc: Point? = if (currentFrameEntries.isEmpty()) null else Point(bboxEntries.x.toDouble(), currentFrameEntries.last().bbox.y.toDouble())
+            // Down swipes start on the last entry's top edge and up swipes on the topmost entry's bottom edge, so that entry leaves the list and the one past it comes in whole.
+            val scrollStartLoc: Point? =
+                currentFrameEntries.lastOrNull()?.bbox?.let { bbox ->
+                    Point(bboxEntries.x.toDouble(), (if (bScrollBottomToTop) bbox.y + bbox.h else bbox.y).toDouble())
+                }
 
             if (bIsScrollable || swipeMode) {
                 if (bScrollBottomToTop) {
@@ -1276,7 +1302,7 @@ class ScrollList private constructor(
                 }
                 scrollCount++
                 // Slight delay to allow screen to settle before next iteration.
-                game.wait(0.5, skipWaitingForLoading = true)
+                game.wait(settleSeconds, skipWaitingForLoading = true)
             } else {
                 MessageLog.d(TAG, "[DEBUG] process:: List is not scrollable. Exiting loop.")
                 return true // Return true since we processed the only frame.
