@@ -573,7 +573,7 @@ object SmartRaceSolverIntegration {
      * runtime race history. Used by the settings UI to render a calendar preview of what the
      * solver would do if a fresh run started today with the current configuration.
      *
-     * @param configJson Snapshot of the user's solver config: scenario, characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, weights.
+     * @param configJson Snapshot of the user's solver config: scenario, characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, pickedRaces, weights.
      * @return JSON string of `{decisions, projectedEpithets, totalScore}`. Each decision entry is
      *   either `{type:"Train"}`, `{type:"Rest"}`, or `{type:"Race", raceKey, name, grade}`.
      */
@@ -601,7 +601,8 @@ object SmartRaceSolverIntegration {
         val scenario = config.optString("scenario", "Trackblazer")
         val characterPreset = config.optStringOrNull("characterPreset")
         val aptitudes = parseAptitudesObj(config.optJSONObject("aptitudes"))
-        val manualLocks = parseManualLocks(config.optJSONObject("manualLocks"), racesByTurn)
+        // Hand-picked races are race locks too. They win over a manual lock on the same turn.
+        val manualLocks = parseManualLocks(config.optJSONObject("manualLocks"), racesByTurn) + parseManualLocks(config.optJSONObject("pickedRaces"), racesByTurn)
         val objectives =
             parseObjectivesJsonField(config.optStringOrNull("objectivesDataJson"))
                 ?: loadObjectives()
@@ -639,7 +640,7 @@ object SmartRaceSolverIntegration {
      * @param racesByTurn Race calendar the solver may pick from.
      * @param raceHistorySnapshot History to feed the solver. Defaults to a snapshot of the current run's accumulated wins.
      * @param lockedDecisions Manual turn -> decision overrides. Null (default) loads locks from the
-     *   `smartRaceSolverManualLocks` setting. Pass `emptyMap()` explicitly to skip lock loading.
+     *   `smartRaceSolverManualLocks` and `pickedRaces` settings. Pass `emptyMap()` explicitly to skip lock loading.
      * @return Populated [SolverState].
      */
     private fun newSolverState(
@@ -1291,15 +1292,27 @@ object SmartRaceSolverIntegration {
     private const val TRAIN_LOCK_SENTINEL: String = "__TRAIN__"
 
     /**
-     * Reads `smartRaceSolverManualLocks` from settings and parses it into a turn -> decision map.
+     * Reads `smartRaceSolverManualLocks` and the hand-picked `pickedRaces` from settings and parses them into one turn -> decision map. A picked race wins over a
+     * manual lock on the same turn.
      *
      * @param racesByTurn Candidate pool used by [parseManualLocks] to resolve race names to keys.
-     * @return Parsed manual locks, or an empty map when the setting is absent or unparseable.
+     * @return Parsed locks, or an empty map when both settings are absent or unparseable.
      */
     private fun loadManualLocksFromSettings(racesByTurn: Map<TurnNumber, List<RaceCandidate>>): Map<TurnNumber, Decision> {
-        val json = SettingsHelper.getStringSetting("racing", "smartRaceSolverManualLocks")
-        val obj = runCatching { if (json.isEmpty()) null else JSONObject(json) }.getOrNull()
-        return parseManualLocks(obj, racesByTurn)
+        val manualLocks = parseManualLocks(readJsonObjectSetting("smartRaceSolverManualLocks"), racesByTurn)
+        val pickedRaces = parseManualLocks(readJsonObjectSetting("pickedRaces"), racesByTurn)
+        return manualLocks + pickedRaces
+    }
+
+    /**
+     * Reads a racing setting that holds a JSON object.
+     *
+     * @param key The racing setting key.
+     * @return The parsed object, or null when the setting is empty or unparseable.
+     */
+    private fun readJsonObjectSetting(key: String): JSONObject? {
+        val json = SettingsHelper.getStringSetting("racing", key)
+        return runCatching { if (json.isEmpty()) null else JSONObject(json) }.getOrNull()
     }
 
     /**
