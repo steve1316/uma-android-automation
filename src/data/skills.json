@@ -793,7 +793,7 @@
         "condition": "phase>=2&corner!=0&remain_distance>=600&order<=3",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -6505,7 +6505,7 @@
         "condition": "distance_rate>=40&distance_rate<=50&order_rate>=40&order_rate<=80",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -6659,7 +6659,7 @@
         "condition": "running_style==4&phase_firsthalf_random==2",
         "precondition": "distance_rate>=66&order_rate_out50_continue==1&temptation_count==0",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202492
     },
@@ -7317,7 +7317,7 @@
         "condition": "running_style==4&phase_firsthalf_random==2",
         "precondition": "distance_rate>=66&order_rate_out50_continue==1&temptation_count==0",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": 202491,
         "downgrade": null
     },

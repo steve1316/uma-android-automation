@@ -1535,6 +1535,24 @@
         "type": "Guts",
         "rarity": "SSR"
     },
+    "30127": {
+        "name": "Special Week",
+        "title": "[Outrunning Misfortune]",
+        "type": "Stamina",
+        "rarity": "SSR"
+    },
+    "30128": {
+        "name": "Sweep Tosho",
+        "title": "[Capricious Excellence]",
+        "type": "Wit",
+        "rarity": "SSR"
+    },
+    "30129": {
+        "name": "Grass Wonder",
+        "title": "[From Icy Blues to Verdant Hues]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
     "30145": {
         "name": "Tanino Gimlet",
         "title": "[Welcome to Umayuru]",

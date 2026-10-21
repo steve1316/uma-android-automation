@@ -4425,6 +4425,16 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Our Differences Bring Us Closer": [
+            "Randomly either\n----------\nGuts +10\nLeader's Pride hint +1\n----------\n\n----------\nGuts +30\nLeader's Pride hint +3"
+        ],
+        "Praise the Clutch Maiden!": [
+            "Medium Straightaways ○ hint +2",
+            "Power +20"
+        ],
+        "The Clutch Captain Is Number One!": [
+            "Energy +15\n(random) Get Fast Learner status\n(random) Heal a negative status effect"
         ]
     },
     "Manhattan Cafe": {
@@ -8319,6 +8329,16 @@
             "Randomly either\n----------\nMaximum Energy +12\nEnergy +40\nHeal all negative status effects\nor (~30%)\nor (~30%)\nEnergy -20\nMood -2\nGet Practice Poor status",
             "Randomly either\n----------\nEnergy +20\nMood +1\nGet Charming ○ status\nor (~15%)\nor (~15%)\nEnergy -10 / -20\nMood -1\n(random) Get Practice Poor status",
             "Energy +10"
+        ],
+        "Year-End Cleaning Detail": [
+            "Randomly either\n----------\nStamina +10\nBe Still hint +1\n----------\n\n----------\nStamina +30\nBe Still hint +3"
+        ],
+        "Modernizing Traditions": [
+            "Power +20",
+            "Spring Runner ○ hint +2"
+        ],
+        "Bridging the World": [
+            "Power +15\n(random) Get Charming ○ status\n(random) Heal a negative status effect"
         ]
     },
     "Seeking the Pearl": {

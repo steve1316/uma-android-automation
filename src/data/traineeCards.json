@@ -2299,6 +2299,29 @@
             "wit": 15
         }
     },
+    "106702": {
+        "name": "Satono Diamond",
+        "title": "[Jade's Prosperity]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "G",
+            "pace": "B",
+            "late": "A",
+            "end": "D"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 15,
+            "power": 0,
+            "guts": 0,
+            "wit": 0
+        }
+    },
     "106801": {
         "name": "Kitasan Black",
         "title": "[Gilded Shrine to Glory]",
@@ -2320,6 +2343,29 @@
             "power": 0,
             "guts": 0,
             "wit": 0
+        }
+    },
+    "106802": {
+        "name": "Kitasan Black",
+        "title": "[Crane's Ambition]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "A",
+            "front": "A",
+            "pace": "B",
+            "late": "C",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 0,
+            "wit": 10
         }
     },
     "106901": {

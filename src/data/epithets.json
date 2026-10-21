@@ -3819,6 +3819,29 @@
         "characters": [],
         "matchers": []
     },
+    "The Star of Tomakomai": {
+        "name": "The Star of Tomakomai",
+        "bullet_points": [
+            "Hokko Tarumae only",
+            "Win at least 10 dirt G1 races",
+            "Earn a total of at least 320000 fans"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Hokko Tarumae"
+        ],
+        "matchers": [
+            {
+                "type": "winCount",
+                "count": 10,
+                "filter": {
+                    "terrain": "Dirt",
+                    "grade": "G1"
+                },
+                "displayLabel": "Win 10 G1 Dirt races"
+            }
+        ]
+    },
     "Tohoku Top Dog": {
         "name": "Tohoku Top Dog",
         "bullet_points": [
