@@ -31,7 +31,7 @@ import ScheduleStats from "./components/ScheduleStats"
 import RaceSolverTab from "./RaceSolverTab"
 import RecreationTab from "./RecreationTab"
 import TurnDetailSheet from "./TurnDetailSheet"
-import { buildEligibleRacesByTurn, buildAllowedEpithetNames } from "./raceEditing"
+import { buildRaceOptionsByTurn, buildAllowedEpithetNames, type RaceOption } from "./raceEditing"
 
 /** Ordered Schedule tabs. */
 const TAB_ITEMS: TabStripItem[] = [
@@ -39,8 +39,8 @@ const TAB_ITEMS: TabStripItem[] = [
     { key: "recreation", label: "Recreation" },
 ]
 
-/** Empty eligible-races-by-turn map, returned while neither the calendar nor the turn-detail sheet is open so the catalog scan is skipped. */
-const EMPTY_ELIGIBLE: Map<number, RaceEntry[]> = new Map()
+/** Empty race-options-by-turn map, returned while neither the calendar nor the turn-detail sheet is open so the catalog scan is skipped. */
+const EMPTY_RACE_OPTIONS: Map<number, RaceOption[]> = new Map()
 
 /** Empty allowed-epithet-names set, returned while neither the calendar nor the turn-detail sheet is open so the catalog scan is skipped. */
 const EMPTY_ALLOWED: Set<string> = new Set()
@@ -92,7 +92,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
     const racingSettings = useMemo(() => ({ ...defaultSettings.racing, ...racing }), [racing])
     const generalSettings = useMemo(() => ({ ...defaultSettings.general, ...general }), [general])
 
-    const { aptitudes, targetEpithets, forcedEpithets, manualLocks, weights } = useSolverInputs(racingSettings)
+    const { aptitudes, targetEpithets, forcedEpithets, manualLocks, pickedRaces, weights } = useSolverInputs(racingSettings)
 
     const { preview, previewLoading, dirty, runPreview } = useSolverPreview({
         enableSmartRaceSolver: racingSettings.enableSmartRaceSolver,
@@ -102,6 +102,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
         targetEpithets,
         forcedEpithets,
         manualLocks,
+        pickedRaces,
         weights,
         maxRaces: racingSettings.smartRaceSolverMaxRaces,
         maxConsecutiveRaces: racingSettings.smartRaceSolverMaxConsecutiveRaces,
@@ -156,7 +157,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
     // Skip the eligible-race and allowed-epithet catalog scans while neither the calendar nor the turn-detail sheet is open - they're
     // only consumed there, and the full-catalog scan is otherwise wasted work on every aptitude/weight/scenario change.
     const calendarOrSheetOpen = calendarOpen || selectedTurn != null
-    const eligibleRacesByTurn = useMemo(() => (calendarOrSheetOpen ? buildEligibleRacesByTurn(aptitudes, weights) : EMPTY_ELIGIBLE), [aptitudes, weights, calendarOrSheetOpen])
+    const raceOptionsByTurn = useMemo(() => (calendarOrSheetOpen ? buildRaceOptionsByTurn(aptitudes, weights) : EMPTY_RACE_OPTIONS), [aptitudes, weights, calendarOrSheetOpen])
     const allowedEpithetNames = useMemo(
         () => (calendarOrSheetOpen ? buildAllowedEpithetNames(general?.scenario ?? "", racingSettings.smartRaceSolverCharacterPreset) : EMPTY_ALLOWED),
         [general?.scenario, racingSettings.smartRaceSolverCharacterPreset, calendarOrSheetOpen]
@@ -172,14 +173,19 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
     const closeTurn = useCallback(() => setSelectedTurn(null), [])
 
     // Whether any manual scheduling overlay exists, so the Reset button can disable itself on an already-clean schedule.
-    const hasOverrides = Object.keys(manualLocks).length > 0 || generalSettings.recreationTurns.length > 0 || generalSettings.purePassionTurn > 0 || generalSettings.stopAtDates.length > 0
+    const hasOverrides =
+        Object.keys(manualLocks).length > 0 ||
+        Object.keys(pickedRaces).length > 0 ||
+        generalSettings.recreationTurns.length > 0 ||
+        generalSettings.purePassionTurn > 0 ||
+        generalSettings.stopAtDates.length > 0
 
     /**
-     * Clear every manual scheduling overlay back to a clean default: SRS manual locks to the pure solver plan, recreation and Pure Passion pins emptied, and all stop-at-date
-     * markers removed. Leaves the feature toggles alone. Clearing the SRS locks flips the schedule dirty, so the existing Apply bar surfaces for a re-solve without the locks.
+     * Clear every manual scheduling overlay back to a clean default: SRS manual locks to the pure solver plan, hand-picked races removed, recreation and
+     * Pure Passion pins emptied, and all stop-at-date markers removed. Leaves the feature toggles alone. Clearing the SRS locks flips the schedule dirty, so the existing Apply bar surfaces for a re-solve without the locks.
      */
     const handleReset = useCallback(() => {
-        updateRacing({ smartRaceSolverManualLocks: "{}" })
+        updateRacing({ smartRaceSolverManualLocks: "{}", pickedRaces: "{}" })
         updateGeneral({ recreationTurns: [], purePassionTurn: -1, datingSchedulePreset: DATING_SCHEDULE_CUSTOM, stopAtDates: [], enableStopAtDate: false })
     }, [updateRacing, updateGeneral])
 
@@ -328,7 +334,7 @@ function Schedule({ route }: { route?: { params?: ScheduleRouteParams } }) {
                     model={model}
                     ctx={ctx}
                     mutators={mutators}
-                    eligibleRacesByTurn={eligibleRacesByTurn}
+                    raceOptionsByTurn={raceOptionsByTurn}
                     allowedEpithetNames={allowedEpithetNames}
                     manualLocks={manualLocks}
                     onClose={closeTurn}

@@ -1,12 +1,13 @@
 import { mandatorySource } from "./sources/mandatorySource"
 import { srsSource } from "./sources/srsSource"
+import { pickedRaceSource } from "./sources/pickedRaceSource"
 import { recreationSource } from "./sources/recreationSource"
 import { purePassionSource } from "./sources/purePassionSource"
 import { stopAtDateSource } from "./sources/stopAtDateSource"
 import type { ScheduleEvent, ScheduleSource, ScheduleSourceContext, ScheduleSourceId } from "./types"
 
 /** Every schedule source, in render/precedence-collection order. New date-based features append here. */
-export const SCHEDULE_SOURCES: ScheduleSource[] = [mandatorySource, srsSource, recreationSource, purePassionSource, stopAtDateSource]
+export const SCHEDULE_SOURCES: ScheduleSource[] = [mandatorySource, srsSource, pickedRaceSource, recreationSource, purePassionSource, stopAtDateSource]
 
 /** The merged view of one turn across all sources. */
 export interface MergedTurn {

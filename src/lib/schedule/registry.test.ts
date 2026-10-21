@@ -6,6 +6,8 @@ import { purePassionSource } from "./sources/purePassionSource"
 import { stopAtDateSource } from "./sources/stopAtDateSource"
 import { srsSource } from "./sources/srsSource"
 import { mandatorySource } from "./sources/mandatorySource"
+import { pickedRaceSource } from "./sources/pickedRaceSource"
+import { parseTurnMap } from "./turnMap"
 import type { ScheduleMutators, ScheduleSourceContext } from "./types"
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,6 +27,7 @@ function makeCtx(overrides: Partial<{ general: Record<string, unknown>; racing: 
         racing: {
             enableSmartRaceSolver: true,
             smartRaceSolverManualLocks: "{}",
+            pickedRaces: "{}",
             ...(overrides.racing ?? {}),
         } as unknown as Settings["racing"],
         preview: overrides.preview ?? null,
@@ -213,5 +216,54 @@ describe("claim / release", () => {
         stopAtDateSource.releaseTurn!(49, makeCtx(), mut)
         expect(result().stopAtDates).toEqual(["Senior February Early"])
         expect(result().enableStopAtDate).toBe(true)
+    })
+
+    it("picked race claim writes the race and release removes it", () => {
+        const claimed = captureRacing({ pickedRaces: "{}" })
+        pickedRaceSource.claimTurn!(20, makeCtx(), claimed.mut, "Satsuki Sho")
+        expect(JSON.parse(claimed.result().pickedRaces as string)).toEqual({ "20": "Satsuki Sho" })
+
+        const released = captureRacing({ pickedRaces: JSON.stringify({ "20": "Satsuki Sho", "30": "Aoba Sho" }) })
+        pickedRaceSource.releaseTurn!(20, makeCtx(), released.mut)
+        expect(JSON.parse(released.result().pickedRaces as string)).toEqual({ "30": "Aoba Sho" })
+    })
+
+    it("picked race claim without a race name is a no-op", () => {
+        const claimed = captureRacing({ pickedRaces: "{}" })
+        pickedRaceSource.claimTurn!(20, makeCtx(), claimed.mut)
+        expect(JSON.parse(claimed.result().pickedRaces as string)).toEqual({})
+    })
+})
+
+describe("picked races", () => {
+    const racesByKey = { "Satsuki Sho (Classic April Early)": { name: "Satsuki Sho", grade: "G1", turnNumber: 31 } as never }
+
+    it("emit explicit events with a grade badge even when the solver is off", () => {
+        const ctx = makeCtx({ racing: { enableSmartRaceSolver: false, pickedRaces: JSON.stringify({ "31": "Satsuki Sho" }) }, racesByKey })
+        const model = buildScheduleModel(SCHEDULE_SOURCES, ctx)
+        expect(model.byTurn.get(31)?.owner).toMatchObject({ sourceId: "pickedRace", ownership: "explicit", marker: "🎯", label: "Satsuki Sho", badge: "G1" })
+    })
+
+    it("hide the solver's own event on the same turn so no reservable flag shows", () => {
+        const ctx = makeCtx({
+            racing: { pickedRaces: JSON.stringify({ "31": "Satsuki Sho" }), smartRaceSolverManualLocks: JSON.stringify({ "31": "Hochi Hai Yayoi Sho" }) },
+            preview: preview({ "31": { type: "Race", name: "Satsuki Sho", grade: "G1" } }),
+            racesByKey,
+        })
+        expect(srsSource.getEvents(ctx).find((e) => e.turn === 31)).toBeUndefined()
+        const merged = buildScheduleModel(SCHEDULE_SOURCES, ctx).byTurn.get(31)
+        expect(merged?.owner?.sourceId).toBe("pickedRace")
+        expect(merged?.hasReservableAutoRace).toBe(false)
+        expect(merged?.conflict).toBe(false)
+    })
+
+    it("conflict with a recreation date on the same turn", () => {
+        const ctx = makeCtx({ general: { recreationTurns: [31] }, racesByKey })
+        expect(planClaim(31, "pickedRace", buildScheduleModel(SCHEDULE_SOURCES, ctx)).kind).toBe("conflict")
+    })
+
+    it("tolerate malformed JSON", () => {
+        expect(parseTurnMap("not json")).toEqual({})
+        expect(parseTurnMap("")).toEqual({})
     })
 })

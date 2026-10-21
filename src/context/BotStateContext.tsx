@@ -121,6 +121,8 @@ export interface Settings {
         smartRaceSolverMaxRaces: number
         smartRaceSolverMaxConsecutiveRaces: number
         smartRaceSolverWeights: string
+        /** JSON map of races the user picked by hand (turn string -> race name). The bot runs these whether or not the Smart Race Solver is on. */
+        pickedRaces: string
     }
 
     // Skill Settings
@@ -393,6 +395,7 @@ export const defaultSettings: Settings = {
         smartRaceSolverTargetEpithets: "[]",
         smartRaceSolverForcedEpithets: "[]",
         smartRaceSolverManualLocks: "{}",
+        pickedRaces: "{}",
         smartRaceSolverMaxRaces: 0,
         smartRaceSolverMaxConsecutiveRaces: 3,
         smartRaceSolverWeights: JSON.stringify({

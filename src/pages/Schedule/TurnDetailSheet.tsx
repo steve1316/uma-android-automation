@@ -10,7 +10,7 @@ import CustomButton from "../../components/CustomButton"
 import { SCHEDULE_SOURCES, planClaim, type ScheduleModel } from "../../lib/schedule/registry"
 import type { ScheduleMutators, ScheduleSourceContext, ScheduleSourceId } from "../../lib/schedule/types"
 import { formatCareerTurn, shortenRaceName, formatGradeLabel, gradeColor, TRAIN_LOCK_SENTINEL, type RaceEntry } from "../../lib/solver/constants"
-import { raceProgressionLines } from "./raceEditing"
+import { raceProgressionLines, type RaceOption } from "./raceEditing"
 import { SPACING } from "../../lib/spacing"
 import { TYPE } from "../../lib/type"
 
@@ -27,8 +27,8 @@ interface TurnDetailSheetProps {
     ctx: ScheduleSourceContext
     /** The settings writers. */
     mutators: ScheduleMutators
-    /** Eligible races bucketed by turn, for the "Switch to an eligible race" alternatives list. */
-    eligibleRacesByTurn: Map<number, RaceEntry[]>
+    /** Every race bucketed by turn, with a poor-aptitude tag, for the "Pick a race" list. */
+    raceOptionsByTurn: Map<number, RaceOption[]>
     /** Epithet names visible under the active scenario/character gates, for the epithet-progression list. */
     allowedEpithetNames: Set<string>
     /** Parsed SRS manual-locks map (turn -> race name or the train sentinel), for the Lock/Unlock button state. */
@@ -105,20 +105,20 @@ function RaceLine({ grade, name, race, nameStyle, metaStyle, styles }: RaceLineP
 }
 
 /**
- * Per-turn editor for the Schedule screen. Shows the turn's current owner, an SRS race section (race card, epithet progression, eligible-race
- * alternatives, and Lock/Delete actions) when a race is scheduled, and a toggle row per non-race source. Enforces one owner per action turn: turning
+ * Per-turn editor for the Schedule screen. Shows the turn's current owner, a hand-picked race card or an SRS race section (race card, epithet progression,
+ * and Lock/Delete actions), a "Pick a race" list of every race on the turn, and a toggle row per non-race source. Enforces one owner per action turn: turning
  * on a source that collides with an existing owner prompts an override that clears it first. A mandatory turn is read-only. Stop-at-date coexists.
  * @param turn The selected turn, or null.
  * @param model The merged schedule model.
  * @param ctx The source context.
  * @param mutators The settings writers.
- * @param eligibleRacesByTurn Eligible races bucketed by turn, for the alternatives list.
+ * @param raceOptionsByTurn Every race bucketed by turn, for the "Pick a race" list.
  * @param allowedEpithetNames Epithet names visible under the active scenario/character gates.
  * @param manualLocks Parsed SRS manual-locks map, for the Lock/Unlock button state.
  * @param onClose Close handler.
  * @returns The detail sheet modal.
  */
-function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allowedEpithetNames, manualLocks, onClose }: TurnDetailSheetProps) {
+function TurnDetailSheet({ turn, model, ctx, mutators, raceOptionsByTurn, allowedEpithetNames, manualLocks, onClose }: TurnDetailSheetProps) {
     const { colors } = useTheme()
 
     const styles = useMemo(
@@ -169,6 +169,9 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
                 },
                 altName: { ...TYPE.body, fontWeight: "600", color: colors.text },
                 altMeta: { ...TYPE.caption, color: colors.textMuted },
+                poorTag: { ...TYPE.caption, color: colors.warning, fontWeight: "700" },
+                warnNote: { ...TYPE.caption, color: colors.warning, marginTop: SPACING.xs },
+                reservedRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: SPACING.sm },
                 actionRow: { flexDirection: "row", gap: 8, marginTop: SPACING.md },
                 lockButton: { borderWidth: 1, borderColor: colors.borderStrong },
                 hint: { ...TYPE.caption, color: colors.textMuted, fontStyle: "italic", marginTop: SPACING.md, textAlign: "center" },
@@ -196,7 +199,11 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
         () => (race && ctx.preview ? raceProgressionLines(race, turn!, ctx.preview, ctx.racesByKey, allowedEpithetNames) : []),
         [race, turn, ctx.preview, ctx.racesByKey, allowedEpithetNames]
     )
-    const alternatives = useMemo(() => (turn != null ? (eligibleRacesByTurn.get(turn) ?? []).filter((r) => !race || r.name !== race.name) : []), [turn, eligibleRacesByTurn, race])
+    const pickedName = owner?.sourceId === "pickedRace" ? owner.variant : undefined
+    const raceOptions = turn != null ? (raceOptionsByTurn.get(turn) ?? []) : []
+    const pickedOption = pickedName ? raceOptions.find((option) => option.race.name === pickedName) : undefined
+    const pickList = raceOptions.filter((option) => option.race.name !== pickedName)
+    const isReserved = !!merged?.reservations.some((event) => event.variant === TRAIN_LOCK_SENTINEL)
 
     /** Apply a claim/release for a source, enforcing one owner per action turn. A conflicting owner (another date, or a stop) is replaced silently - no confirmation prompt. */
     const toggle = (sourceId: ScheduleSourceId, isOn: boolean, variant?: string) => {
@@ -215,7 +222,8 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
     const lockRace = () => raceName && turn != null && SOURCE_BY_ID.srs.claimTurn?.(turn, ctx, mutators, raceName)
     const unlockRace = () => turn != null && SOURCE_BY_ID.srs.releaseTurn?.(turn, ctx, mutators)
     const deleteRace = () => turn != null && SOURCE_BY_ID.srs.claimTurn?.(turn, ctx, mutators, TRAIN_LOCK_SENTINEL)
-    const switchRace = (altName: string) => turn != null && SOURCE_BY_ID.srs.claimTurn?.(turn, ctx, mutators, altName)
+    const pickRace = (name: string) => toggle("pickedRace", false, name)
+    const unpickRace = () => toggle("pickedRace", true)
 
     // The race card renders for scheduled races except on recreation/pure-passion turns (those own the turn instead). An auto SRS race has no explicit owner,
     // so the owner box would otherwise read "Nothing scheduled" right above the race card. Hide it in that case, but keep it for real owners and empty turns.
@@ -223,8 +231,9 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
     const displacedByDate = owner?.sourceId === "recreation" || owner?.sourceId === "purePassion"
     const displacedRace = !isMandatory && race && (displacedByDate || stopPresent) ? race : undefined
     const displacedLabelText = displacedByDate ? "Smart Race Solver would run this race, but your date takes priority:" : "Smart Race Solver would run this race, but the bot stops here:"
-    const showRaceSection = hasRace && !displacedRace
-    const showOwnerBox = owner != null || (!showRaceSection && !displacedRace)
+    // A hand-picked race owns the turn outright, so its own card replaces the SRS race section and the owner box.
+    const showRaceSection = hasRace && !displacedRace && !pickedName
+    const showOwnerBox = !pickedName && (owner != null || (!showRaceSection && !displacedRace))
     const ownerLabel = owner ? `${owner.marker} ${owner.label}` : "Nothing scheduled"
 
     return (
@@ -267,22 +276,6 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
                         ))
                     )}
 
-                    {!isMandatory && (
-                        <>
-                            <Divider style={{ marginTop: SPACING.md }} />
-                            <Text style={styles.sectionLabel}>Switch to an eligible race</Text>
-                            {alternatives.length === 0 ? (
-                                <Text style={styles.emptyNote}>No other eligible races on this turn.</Text>
-                            ) : (
-                                alternatives.map((alt) => (
-                                    <Pressable key={alt.name} style={styles.altRow} onPress={() => switchRace(alt.name)} android_ripple={{ color: colors.ripple, foreground: true }}>
-                                        <RaceLine grade={alt.grade} name={alt.name} race={alt} nameStyle={styles.altName} metaStyle={styles.altMeta} styles={styles} />
-                                    </Pressable>
-                                ))
-                            )}
-                        </>
-                    )}
-
                     {isMandatory ? (
                         <Text style={styles.lockedNote}>📌 Locked to a mandatory career race - it cannot be changed.</Text>
                     ) : (
@@ -300,12 +293,57 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
                 </>
             )}
 
+            {pickedName && (
+                <>
+                    <Text style={styles.sectionLabel}>🎯 Picked race</Text>
+                    <View style={styles.raceCard}>
+                        <RaceLine
+                            grade={pickedOption?.race.grade ?? owner?.badge ?? ""}
+                            name={pickedName}
+                            race={pickedOption?.race}
+                            nameStyle={styles.raceName}
+                            metaStyle={styles.raceMeta}
+                            styles={styles}
+                        />
+                    </View>
+                    {pickedOption?.poorAptitude && <Text style={styles.warnNote}>Below your aptitude threshold. The bot will still run it.</Text>}
+                    <View style={styles.actionRow}>
+                        <CustomButton variant="destructive" size="sm" onPress={unpickRace}>
+                            Remove
+                        </CustomButton>
+                    </View>
+                </>
+            )}
+
+            {isReserved && !pickedName && (
+                <View style={styles.reservedRow}>
+                    <Text style={styles.emptyNote}>🚆 Kept clear of races.</Text>
+                    <CustomButton variant="secondary" size="sm" style={styles.lockButton} onPress={unlockRace}>
+                        Undo
+                    </CustomButton>
+                </View>
+            )}
+
             {displacedRace && (
                 <>
                     <Text style={styles.displacedLabel}>{displacedLabelText}</Text>
                     <View style={[styles.raceCard, styles.displacedCard]}>
                         <RaceLine grade={displacedRace.grade} name={displacedRace.name} race={displacedRace} nameStyle={styles.raceName} metaStyle={styles.raceMeta} styles={styles} />
                     </View>
+                </>
+            )}
+
+            {!isMandatory && raceOptions.length > 0 && (
+                <>
+                    <Divider style={{ marginTop: SPACING.md }} />
+                    <Text style={styles.sectionLabel}>{pickedName ? "Pick a different race" : "Pick a race"}</Text>
+                    <Text style={styles.emptyNote}>The bot runs the race you pick on this turn, even with Smart Race Solver off.</Text>
+                    {pickList.map((option) => (
+                        <Pressable key={option.race.name} style={styles.altRow} onPress={() => pickRace(option.race.name)} android_ripple={{ color: colors.ripple, foreground: true }}>
+                            <RaceLine grade={option.race.grade} name={option.race.name} race={option.race} nameStyle={styles.altName} metaStyle={styles.altMeta} styles={styles} />
+                            {option.poorAptitude && <Text style={styles.poorTag}>Poor aptitude</Text>}
+                        </Pressable>
+                    ))}
                 </>
             )}
 
@@ -323,7 +361,7 @@ function TurnDetailSheet({ turn, model, ctx, mutators, eligibleRacesByTurn, allo
             />
             <Row title="Stop bot here" description="Stops the bot when it reaches this turn." right={<Switch checked={stopPresent} onCheckedChange={() => toggle("stopAtDate", stopPresent)} />} />
 
-            {showRaceSection && !isMandatory && <Text style={styles.hint}>Changes take effect after tapping Apply Changes.</Text>}
+            {ctx.racing.enableSmartRaceSolver && !isMandatory && (showRaceSection || !!pickedName) && <Text style={styles.hint}>Changes take effect after tapping Apply Changes.</Text>}
         </SheetModal>
     )
 }
