@@ -1,13 +1,15 @@
 {
-    "version": "2026-10-15T16:39:42Z",
-    "label": "Narita Brian (Blaze) 2026-10-14",
+    "version": "2026-10-21T16:56:12Z",
+    "label": "Kitasan Black (New Year) 2026-10-20",
     "minAppVersion": "5.8.8",
     "files": {
-        "characters.json": "c89ec847438cd50889f9ba17503f1221",
-        "supports.json": "c73dbcee98996ea1e410c1e846b212c7",
-        "skills.json": "a79d958e0e62285d02be42ef18e8c65b",
-        "epithets.json": "9ddca28f3c77d16c37832f6eb1cfa5b5",
+        "characters.json": "69a001a1426d023d7fd3bf0954ebb6a6",
+        "supports.json": "1740bd20914fa64d0f7023e7d16f938f",
+        "skills.json": "da7199f4a2893ef2d5bcb23ae1f20765",
+        "epithets.json": "a23ddb5d698c23ace288b09911bfdcb0",
         "characterPresets.json": "751900ee7bbf8a92cd32c132b1f47f6b",
-        "character_objectives.json": "5c7a2d8628af04b76eb63158cd087985"
+        "character_objectives.json": "5c7a2d8628af04b76eb63158cd087985",
+        "traineeCards.json": "cf6811ede186da1c5efbc8d2bb0e5930",
+        "supportCards.json": "632e83deb3d8305d63d132344833b74f"
     }
 }

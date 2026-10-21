@@ -562,6 +562,16 @@
         ],
         "(❯❯❯)\nHidden Petals": [
             "Randomly either\n----------\nEnergy -10\nSpeed +5\nGuts +5\nWit +5\nFurious Feat hint +1\nGrass Wonder bond +5\n----------\n\n----------\nEnergy -10\nSpeed +15\nGuts +15\nWit +15\nFurious Feat hint +3\nGrass Wonder bond +5"
+        ],
+        "(❯)\nWoe of a Guiding Hand": [
+            "Power +10\nPressure hint +1\nGrass Wonder bond +5"
+        ],
+        "(❯❯)\nSizing Up to the Past": [
+            "Energy +15\nGrass Wonder bond +5",
+            "Power +15\nGrass Wonder bond +5"
+        ],
+        "(❯❯❯)\nA Rivalry Renewed": [
+            "Stamina +5\nPower +10\nCooldown hint +1\nGrass Wonder bond +5"
         ]
     },
     "Haru Urara": {
@@ -2027,6 +2037,16 @@
         ],
         "(❯❯❯)\nI'm Gonna Visit Home!": [
             "Energy -10\nAll stats +7\nOverwhelming Pressure hint +1\nSpecial Week bond +7"
+        ],
+        "(❯)\nEngrossed in Enjoyment": [
+            "Energy +15\nMood +1\nSpecial Week bond +5"
+        ],
+        "(❯❯)\nSharing in Sincerity": [
+            "Speed +7\nStamina +7\nGuts +7\nFree-Spirited hint +1\nSpecial Week bond +5",
+            "Energy +25\nSpecial Week bond +5"
+        ],
+        "(❯❯❯)\nDriven in Desire": [
+            "Randomly either\n----------\nSpeed +4\nStamina +10\nGuts +4\nNo Stopping Me! hint +1\nSpecial Week bond +5\n----------\n\n----------\nSpeed +8\nStamina +15\nGuts +8\nNo Stopping Me! hint +3\nSpecial Week bond +5"
         ]
     },
     "Super Creek": {
@@ -2082,6 +2102,16 @@
         "(❯❯)\nThe Trick to Perseverance!": [
             "Wit +10\nSubdued End Closers hint +2\nSweep Tosho bond +5",
             "Speed +10\nEnd Closer Straightaways ○ hint +2\nSweep Tosho bond +5"
+        ],
+        "(❯)\nPast: A Kimono Worn Long Ago": [
+            "Randomly either\n----------\nWit +10\nIntense Gaze hint +1\nSweep Tosho bond +5\n----------\n\n----------\nWit +15\nIntense Gaze hint +3\nRestraint hint +1\nSweep Tosho bond +10",
+            "Energy +15\nSweep Tosho bond +5"
+        ],
+        "(❯❯)\nPresent: Tying the Obi": [
+            "Skill points +25\nSweep Tosho bond +5"
+        ],
+        "(❯❯❯)\nFuture: Taut Sandal Straps": [
+            "Randomly either\n----------\nPower +7\nWit +7\nRazor-Sharp Steps hint +1\nSweep Tosho bond +5\n----------\n\n----------\nPower +15\nWit +15\nRazor-Sharp Steps hint +3\nSweep Tosho bond +5"
         ]
     },
     "Symboli Kris S": {
