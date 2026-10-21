@@ -52,10 +52,12 @@ import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.CustomImageUtils.RaceDetails
 import com.steve1316.uma_android_automation.utils.LogStreamServer
+import com.steve1316.uma_android_automation.utils.ScrollList
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
 import org.json.JSONObject
 import org.opencv.core.Point
+import kotlin.math.abs
 
 /**
  * Factors to shrink a career-goal criteria line template by, ordered most likely first.
@@ -68,6 +70,9 @@ import org.opencv.core.Point
  * tier, which races anyway and logs a warning, so the warning is the tripwire for widening this.
  */
 private val GOAL_CRITERIA_SHRINK_FACTORS: List<Double> = (100 downTo 80).map { it / 100.0 }
+
+/** X of the double-star icon on the race list at the 1080px baseline. Rows without the icon use it to place the race name crop. */
+private const val PICKED_RACE_STAR_X = 881
 
 /** How far above the goal's progress counter the criteria line search band starts. The line sits ~28px above the counter's center, so this leaves room for a taller or wrapped one. */
 private const val GOAL_CRITERIA_BAND_ABOVE_COUNTER = 90
@@ -144,6 +149,23 @@ internal fun requirementForcesRacing(
 }
 
 /**
+ * Parses the hand-picked races setting into a turn -> race name map. Malformed JSON, non-numeric turns, and blank names are dropped.
+ *
+ * @param json The raw `pickedRaces` setting string.
+ * @return Map of 1-indexed turn number to the picked race name.
+ */
+internal fun parsePickedRaces(json: String): Map<Int, String> {
+    val obj = runCatching { JSONObject(json.ifBlank { "{}" }) }.getOrNull() ?: return emptyMap()
+    val out = mutableMapOf<Int, String>()
+    for (key in obj.keys()) {
+        val turn = key.toIntOrNull() ?: continue
+        val name = obj.optString(key, "").trim()
+        if (name.isNotEmpty()) out[turn] = name
+    }
+    return out
+}
+
+/**
  * Manage and orchestrate the racing process, including mandatory, maiden, and extra races.
  *
  * @property game A reference to the bot's [Game] instance.
@@ -199,6 +221,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
     /** Whether to skip Summer training to do races from the in-game agenda. */
     val skipSummerTrainingForAgenda = SettingsHelper.getBooleanSetting("racing", "skipSummerTrainingForAgenda")
+
+    /** Races the user picked by hand on the Schedule calendar, as turn -> race name. The bot runs these whether or not the Smart Race Solver is on. */
+    private val pickedRaces: Map<Int, String> = parsePickedRaces(SettingsHelper.getStringSetting("racing", "pickedRaces"))
 
     /** The current number of retries available for the run. */
     internal var raceRetries = campaign.getMaxRaceRetries()
@@ -909,6 +934,13 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             }
         }
     }
+
+    /**
+     * The race the user picked by hand for the current turn.
+     *
+     * @return The picked race name, or null when the turn has none.
+     */
+    fun pickedRaceThisTurn(): String? = pickedRaces[campaign.date.day]
 
     /**
      * True when the active requirement should force racing this turn (see `requirementForcesRacing`). Reads the local races DB for the G1-only trophy case.
@@ -1782,8 +1814,10 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 enableSmartRaceSolver &&
                     !enableForceRacing &&
                     SmartRaceSolverIntegration.peekRaceKeyForTurn(currentTurn = campaign.date.day, scenario = game.scenario) != null
+            // A race the user picked by hand bypasses it too.
+            val isPickedRace = pickedRaceThisTurn() != null
             var overrideIgnore = false
-            if (isScheduledRace || hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement || isSrsScheduledRace) {
+            if (isScheduledRace || hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement || isSrsScheduledRace || isPickedRace) {
                 MessageLog.v(TAG, "[RACE] Racing requirement is active. Ignoring consecutive race warning.")
                 overrideIgnore = true
             }
@@ -2189,7 +2223,8 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                 enableSmartRaceSolver &&
                     !enableForceRacing &&
                     SmartRaceSolverIntegration.peekRaceKeyForTurn(currentTurn = campaign.date.day, scenario = game.scenario) != null
-            val overrideIgnore: Boolean = isScheduledRace || enableForceRacing || hasInsufficientGoalRacePtsRequirement || isSrsScheduledRace
+            val pickedRace = pickedRaceThisTurn()
+            val overrideIgnore: Boolean = isScheduledRace || enableForceRacing || hasInsufficientGoalRacePtsRequirement || isSrsScheduledRace || pickedRace != null
             val result: DialogHandlerResult = campaign.handleDialogs(args = mapOf("overrideIgnoreConsecutiveRaceWarning" to overrideIgnore))
             if (result is DialogHandlerResult.Handled &&
                 result.dialog.name == "consecutive_race_warning" &&
@@ -2244,21 +2279,29 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     enableForceRacing = enableForceRacing,
                 )
 
+            // A race the user picked by hand runs ahead of the solver and the requirement logic. When it is missing from the list, the bot trains instead unless a
+            // requirement still needs a race this turn.
+            val hasRequirement = hasFanRequirement || hasTrophyRequirement || hasInsufficientGoalRacePtsRequirement
             val success =
-                if (useSmartRacing) {
-                    MessageLog.v(TAG, "[RACE] Using Smart Race Solver for Year ${campaign.date.year}.")
-                    processSmartRacing()
-                } else {
-                    if (enableSmartRaceSolver && !hasFanRequirement && !hasTrophyRequirement) {
-                        MessageLog.i(TAG, "[RACE] Smart Race Solver conditions not met, using traditional racing logic...")
-                        if (campaign.date.year == DateYear.JUNIOR) {
-                            MessageLog.i(TAG, "[RACE]   - It is currently the Junior Year.")
-                        } else if (enableForceRacing) {
-                            MessageLog.i(TAG, "[RACE]   - enableForceRacing is true")
-                        }
+                when {
+                    pickedRace != null && selectPickedRace(pickedRace) -> true
+                    pickedRace != null && !hasRequirement -> false
+                    useSmartRacing -> {
+                        MessageLog.v(TAG, "[RACE] Using Smart Race Solver for Year ${campaign.date.year}.")
+                        processSmartRacing()
                     }
+                    else -> {
+                        if (enableSmartRaceSolver && !hasFanRequirement && !hasTrophyRequirement) {
+                            MessageLog.i(TAG, "[RACE] Smart Race Solver conditions not met, using traditional racing logic...")
+                            if (campaign.date.year == DateYear.JUNIOR) {
+                                MessageLog.i(TAG, "[RACE]   - It is currently the Junior Year.")
+                            } else if (enableForceRacing) {
+                                MessageLog.i(TAG, "[RACE]   - enableForceRacing is true")
+                            }
+                        }
 
-                    processStandardRacing()
+                        processStandardRacing()
+                    }
                 }
 
             if (!success) {
@@ -2325,6 +2368,114 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         MessageLog.v(TAG, "[RACE] Racing process for Extra Race${if (isScheduledRace) " (scheduled) " else " "}is completed. Grade: ${lastRaceGrade ?: "OP"}")
         MessageLog.v(TAG, "********************")
         return true
+    }
+
+    /**
+     * Selects the race the user picked by hand for this turn on the race list.
+     *
+     * @param pickedName The picked race's name.
+     * @return True if the race was found and tapped, false if it is not on the list.
+     */
+    private fun selectPickedRace(pickedName: String): Boolean {
+        val (location, race) = findPickedRaceOnList(pickedName) ?: return false
+        lastRaceGrade = race.grade
+        lastRaceFans = race.fans
+        lastRaceDistance = race.trackDistance
+        lastRaceName = race.name
+        lastRaceSurface = race.trackSurface
+        lastRaceIsRival = race.isRival
+        game.tap(location.x, location.y, LabelRaceSelectionFans.template.path, ignoreWaiting = true)
+        return true
+    }
+
+    /**
+     * Finds the race the user picked by hand on the race list. Every row is read, not just the double-star ones, so a race the trainee is poorly suited for is
+     * found too. Each row is anchored on its "fans" label, which every row has. Stages the race in the solver's history when the Smart Race Solver is on.
+     *
+     * @param pickedName The picked race's name.
+     * @return The row's on-screen tap point and its race data, or null when the race is not on the list.
+     */
+    fun findPickedRaceOnList(pickedName: String): Pair<Point, RaceData>? {
+        val turn = campaign.date.day
+        MessageLog.i(TAG, "[RACE] Looking for the picked race \"$pickedName\" on turn $turn.")
+
+        // Where the double-star icon sits relative to a row's "fans" label. The name crop in extractRaceName is calibrated against that icon, so rows without
+        // one borrow the offset learned from any row that has one.
+        var starX = game.imageUtils.relWidth(PICKED_RACE_STAR_X).toDouble()
+        var labelToStarY = 0.0
+        var found: Pair<Point, RaceData>? = null
+
+        /**
+         * Reads one row and records it as the match when it is the picked race.
+         *
+         * @param label The row's "fans" label, in screen coordinates.
+         * @param stars Double-star icons on screen, in screen coordinates.
+         * @param sourceBitmap The screenshot the row was found in. It is only taken when a fan count is needed.
+         * @return True when the row is the picked race.
+         */
+        fun checkRow(label: Point, stars: List<Point>, sourceBitmap: Lazy<Bitmap>): Boolean {
+            val star = stars.firstOrNull { abs(it.y - label.y) < game.imageUtils.relHeight(40) }
+            if (star != null) {
+                starX = star.x
+                labelToStarY = star.y - label.y
+            }
+            val detectedName = game.imageUtils.extractRaceName(Point(starX, label.y + labelToStarY))
+            val matches = lookupRaceInDatabase(turn, detectedName)
+            val match = matches.firstOrNull { it.name == pickedName } ?: return false
+            // Two races can share this row's track string. Confirm the picked one by its fan count before tapping.
+            if (matches.size > 1) {
+                val rowFans = game.imageUtils.readRaceRowFans(label, sourceBitmap.value)
+                if (!SmartRaceSolverIntegration.isCorrectCollisionRow(match.fans, rowFans)) {
+                    MessageLog.i(TAG, "[RACE] Same-track sibling at this row (fans=$rowFans != picked ${match.fans}). Continuing the scan.")
+                    return false
+                }
+            }
+            found = label to match
+            return true
+        }
+
+        /**
+         * Finds the rows in one image and checks each one.
+         *
+         * @param bitmap The image to search, either a scroll entry or the whole screen.
+         * @param region The region to search, or null for each template's default.
+         * @param toScreen Maps a point in [bitmap] to screen coordinates.
+         * @param sourceBitmap The full screenshot for the fan count read, only taken when a row needs it.
+         * @return True when one of the rows is the picked race.
+         */
+        fun scanRows(bitmap: Bitmap, region: IntArray?, toScreen: (Point) -> Point, sourceBitmap: Lazy<Bitmap>): Boolean {
+            val labels = LabelRaceSelectionFans.findAll(game.imageUtils, sourceBitmap = bitmap, region = region).map(toScreen)
+            val stars = IconRaceListPredictionDoubleStar.findAll(game.imageUtils, sourceBitmap = bitmap, region = region).map(toScreen)
+            return labels.any { checkRow(it, stars, sourceBitmap) }
+        }
+
+        val scrollList = ScrollList.create(game)
+        if (scrollList != null) {
+            scrollList.process { _, entry ->
+                val toScreen = { p: Point -> Point(entry.bbox.x + p.x, entry.bbox.y + p.y) }
+                scanRows(entry.bitmap, intArrayOf(0, 0, 0, 0), toScreen, lazy { game.imageUtils.getSourceBitmap() })
+            }
+        } else {
+            MessageLog.w(TAG, "[WARN] findPickedRaceOnList:: Failed to create ScrollList. Falling back to the rows on screen.")
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            scanRows(sourceBitmap, null, { it }, lazyOf(sourceBitmap))
+        }
+
+        val result = found
+        if (result == null) {
+            MessageLog.w(TAG, "[WARN] findPickedRaceOnList:: The picked race \"$pickedName\" is not on the race list for turn $turn.")
+            return null
+        }
+        MessageLog.i(TAG, "[RACE] Found the picked race \"${result.second.name}\" (${result.second.grade}).")
+        if (enableSmartRaceSolver) {
+            SmartRaceSolverIntegration.markPendingRace(
+                raceKey = result.second.name,
+                raceName = result.second.name,
+                classYear = campaign.date.year.name,
+                turnNumber = turn,
+            )
+        }
+        return result
     }
 
     /**
