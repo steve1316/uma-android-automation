@@ -1,6 +1,7 @@
 package com.steve1316.uma_android_automation.bot
 
 import com.steve1316.uma_android_automation.types.DateYear
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
@@ -91,5 +92,15 @@ class RacingDecisionTest {
 
         // No requirement active: this gate never forces racing (the caller uses the normal eligibility path instead).
         assertFalse(forces(hasG1 = true), "With no requirement active, this gate must not force racing")
+    }
+
+    @Test
+    @DisplayName("Picked races parse into a turn to race name map and tolerate bad input")
+    fun testParsePickedRaces() {
+        assertEquals(mapOf(50 to "Takarazuka Kinen", 70 to "Arima Kinen"), parsePickedRaces("{\"50\":\"Takarazuka Kinen\",\"70\":\" Arima Kinen \"}"))
+        assertEquals(mapOf(50 to "Tenno Sho (Spring)"), parsePickedRaces("{\"50\":\"Tenno Sho (Spring)\",\"abc\":\"Bad Turn\",\"60\":\"\"}"), "Non-numeric turns and blank names are dropped")
+        assertEquals(emptyMap<Int, String>(), parsePickedRaces(""), "A blank setting means no picked races")
+        assertEquals(emptyMap<Int, String>(), parsePickedRaces("not json"), "Malformed JSON means no picked races")
+        assertEquals(emptyMap<Int, String>(), parsePickedRaces("[]"), "A JSON array means no picked races")
     }
 }

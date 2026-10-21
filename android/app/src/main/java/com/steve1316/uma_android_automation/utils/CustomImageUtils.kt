@@ -2952,6 +2952,32 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
+     * Reads the fan count of a race list row from the number just left of its "fans" label.
+     *
+     * @param fansLabelLocation The center of the row's "fans" label.
+     * @param sourceBitmap The screenshot the label was found in.
+     * @return The fan count, or -1 if it could not be read.
+     */
+    fun readRaceRowFans(fansLabelLocation: Point, sourceBitmap: Bitmap): Int {
+        val detectedText =
+            performOCROnRegion(
+                sourceBitmap,
+                relX(fansLabelLocation.x, -187),
+                relY(fansLabelLocation.y, -20),
+                relWidth(150),
+                relHeight(40),
+                useThreshold = true,
+                useGrayscale = true,
+                scale = 2.0,
+                ocrEngine = "mlkit",
+                debugName = "readRaceRowFans",
+            )
+        val fans = detectedText.filter { it.isDigit() }.toIntOrNull() ?: -1
+        MessageLog.i(TAG, "[INFO] readRaceRowFans:: Detected \"$detectedText\" as $fans fans.")
+        return fans
+    }
+
+    /**
      * Determines the agenda header text associated with each race list button.
      *
      * @param sourceBitmap The source bitmap to analyze.

@@ -37,23 +37,32 @@ export interface ProgressionLine {
     pending: string[]
 }
 
+/** One race the user can pick on a turn. */
+export interface RaceOption {
+    /** The catalog race. */
+    race: RaceEntry
+    /** True when the race's distance or surface is below the aptitude threshold. The race can still be picked. */
+    poorAptitude: boolean
+}
+
 /**
- * Buckets every eligible race by the turn it runs on, sorted strongest-first within each turn.
+ * Buckets every race in the catalog by the turn it runs on, so the user can pick any of them. Races the trainee is suited for come first, then the poor-aptitude ones.
+ * Each group is sorted strongest-first. Only the aptitude threshold decides the tag, since the OP/Pre-OP gate is a solver preference and not a fitness problem.
  *
  * @param aptitudes The runner's aptitude ranks per distance/terrain slot.
- * @param weights Solver weights, used here for the aptitude threshold and OP/Pre-OP inclusion gates.
- * @returns Map from turn number to the eligible races on that turn, sorted by grade rank then descending fans.
+ * @param weights Solver weights, used here for the aptitude threshold.
+ * @returns Map from turn number to the race options on that turn.
  */
-export const buildEligibleRacesByTurn = (aptitudes: AptitudeMap, weights: WeightsMap): Map<number, RaceEntry[]> => {
-    const byTurn = new Map<number, RaceEntry[]>()
+export const buildRaceOptionsByTurn = (aptitudes: AptitudeMap, weights: WeightsMap): Map<number, RaceOption[]> => {
+    const byTurn = new Map<number, RaceOption[]>()
+    const aptitudeGate = { aptitudeThreshold: weights.aptitudeThreshold, includeOpAndPreOp: true }
     for (const race of ALL_RACES) {
-        if (!isRaceEligible(race, aptitudes, weights)) continue
         const list = byTurn.get(race.turnNumber) ?? []
-        list.push(race)
+        list.push({ race, poorAptitude: !isRaceEligible(race, aptitudes, aptitudeGate) })
         byTurn.set(race.turnNumber, list)
     }
     for (const list of byTurn.values()) {
-        list.sort((a, b) => (GRADE_RANK[a.grade] ?? 99) - (GRADE_RANK[b.grade] ?? 99) || b.fans - a.fans)
+        list.sort((a, b) => Number(a.poorAptitude) - Number(b.poorAptitude) || (GRADE_RANK[a.race.grade] ?? 99) - (GRADE_RANK[b.race.grade] ?? 99) || b.race.fans - a.race.fans)
     }
     return byTurn
 }

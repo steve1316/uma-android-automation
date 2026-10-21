@@ -11,7 +11,7 @@ import type { RaceEntry } from "../solver/constants"
 // shapes stay byte-compatible with what the Kotlin bot reads. All logic here is pure so future features drop in without touching the calendar UI.
 
 /** Identifier for a schedule source. New date-based features append an id here; nothing else needs to know about them. */
-export type ScheduleSourceId = "mandatory" | "srs" | "recreation" | "purePassion" | "stopAtDate"
+export type ScheduleSourceId = "mandatory" | "srs" | "pickedRace" | "recreation" | "purePassion" | "stopAtDate"
 
 /**
  * How an event on a turn participates in one-owner enforcement.

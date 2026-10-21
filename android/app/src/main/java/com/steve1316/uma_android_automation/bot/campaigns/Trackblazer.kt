@@ -1077,14 +1077,22 @@ class Trackblazer(game: Game) : Campaign(game) {
             }
             game.wait(1.0)
 
-            // Handle any consecutive race warning dialogs that might pop up after clicking "Races".
+            // Handle any consecutive race warning dialogs that might pop up after clicking "Races". A race the user picked by hand ignores the warning.
+            val pickedRace = racing.pickedRaceThisTurn()
             val dialogResult = handleDialogs()
-            if (dialogResult is DialogHandlerResult.Handled && consecutiveRaceCount > consecutiveRacesLimit && game.imageUtils.determineTurnsRemainingBeforeNextGoal() != 1) {
+            if (dialogResult is DialogHandlerResult.Handled &&
+                pickedRace == null &&
+                consecutiveRaceCount > consecutiveRacesLimit &&
+                game.imageUtils.determineTurnsRemainingBeforeNextGoal() != 1
+            ) {
                 MessageLog.i(TAG, "[TRACKBLAZER] Consecutive race warning obeyed. Aborting racing.")
                 return false
             }
 
-            val suitableRaceResult = findSuitableRace(consecutiveRaceCount, preferredDistances, preferredSurfaces)
+            // A race the user picked by hand comes first. When it is missing from the list, fall back to the usual Trackblazer pick.
+            val suitableRaceResult =
+                pickedRace?.let { racing.findPickedRaceOnList(it) }
+                    ?: findSuitableRace(consecutiveRaceCount, preferredDistances, preferredSurfaces)
             if (suitableRaceResult != null) {
                 val suitableRaceLocation = suitableRaceResult.first
                 val raceData = suitableRaceResult.second
@@ -1325,8 +1333,11 @@ class Trackblazer(game: Game) : Campaign(game) {
         // Energy floor for always train priorities to avoid wasting items.
         val canSafelyTrain = trainee.energy > forceTrainEnergyFloor
 
-        // Summer Training: Train during July and August in Classic/Senior.
-        if (canSafelyTrain && date.isSummer() && !(racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) {
+        // A race the user picked by hand for this turn.
+        val pickedRace = racing.pickedRaceThisTurn()
+
+        // Summer Training: Train during July and August in Classic/Senior, unless the user picked a race for this turn.
+        if (canSafelyTrain && date.isSummer() && pickedRace == null && !(racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)) {
             MessageLog.i(TAG, "[TRACKBLAZER] It is Summer. Prioritizing training.")
             decisionTracer.recordActionChoice(MainScreenAction.TRAIN, "Trackblazer: Summer prioritizes training")
             return MainScreenAction.TRAIN
@@ -1410,6 +1421,13 @@ class Trackblazer(game: Game) : Campaign(game) {
                 )
                 return MainScreenAction.REST
             }
+        }
+
+        // A race the user picked by hand runs ahead of the solver.
+        if (pickedRace != null) {
+            MessageLog.i(TAG, "[TRACKBLAZER] The user picked \"$pickedRace\" for this turn. Racing.")
+            decisionTracer.recordActionChoice(MainScreenAction.RACE, "Trackblazer: picked race \"$pickedRace\" on turn ${date.day}")
+            return MainScreenAction.RACE
         }
 
         // Smart Race Solver pre-check: the solver's role is binary - either "race race-X today" or "no race today". When the solver picks

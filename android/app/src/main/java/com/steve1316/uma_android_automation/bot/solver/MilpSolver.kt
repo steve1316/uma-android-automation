@@ -62,13 +62,15 @@ object MilpSolver {
         private val model = ExpressionsBasedModel()
         private val turns: IntRange = state.currentTurn..Heuristic.LAST_TURN
 
-        // Eligible races per turn (after aptitude filter and removing already-won races).
+        // Eligible races per turn (after aptitude filter and removing already-won races). A race locked on its turn skips the aptitude filter, since the user
+        // picked it by hand and the lock must stay satisfiable.
         private val eligibleByTurn: Map<TurnNumber, List<RaceCandidate>> =
             run {
                 val won = state.raceHistory.mapTo(HashSet()) { it.raceKey }
                 turns.associateWith { t ->
+                    val lockedKey = (state.lockedDecisions[t] as? Decision.RaceDecision)?.raceKey
                     state.racesByTurn[t].orEmpty()
-                        .filter { ScoringFunctions.isEligible(it, state) }
+                        .filter { it.key == lockedKey || ScoringFunctions.isEligible(it, state) }
                         .filter { it.key !in won }
                 }
             }

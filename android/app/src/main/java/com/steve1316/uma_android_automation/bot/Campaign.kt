@@ -2651,7 +2651,14 @@ abstract class Campaign(game: Game) : Task(game) {
             )
         }
 
-        if (mustRestBeforeSummer && (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) && date.month == DateMonth.JUNE && date.phase == DatePhase.LATE) {
+        // A race the user picked by hand for this turn skips the pre-summer prep, since Late June holds races like the Takarazuka Kinen.
+        val pickedRace = racing.pickedRaceThisTurn()
+        if (mustRestBeforeSummer &&
+            pickedRace == null &&
+            (date.year == DateYear.CLASSIC || date.year == DateYear.SENIOR) &&
+            date.month == DateMonth.JUNE &&
+            date.phase == DatePhase.LATE
+        ) {
             when (resolvePreSummerAction(trainee.energy, trainee.mood, training.firstTrainingCheck)) {
                 MainScreenAction.REST -> {
                     MessageLog.i(TAG, "[INFO] Energy is low (${trainee.energy}% < 70%). Forcing rest during $date in preparation for Summer Training.")
@@ -2691,6 +2698,13 @@ abstract class Campaign(game: Game) : Task(game) {
         if (shouldRecoverMood(sourceBitmap)) {
             decisionTracer.recordActionChoice(MainScreenAction.RECOVER_MOOD, "shouldRecoverMood returned true (mood ${trainee.mood})")
             return MainScreenAction.RECOVER_MOOD
+        }
+
+        // A race the user picked by hand runs once injury and mood are handled, ahead of the G1-day pre-screen and the solver.
+        if (pickedRace != null) {
+            MessageLog.i(TAG, "[INFO] The user picked \"$pickedRace\" for this turn. Setting the action to RACE.")
+            decisionTracer.recordActionChoice(MainScreenAction.RACE, "Picked race \"$pickedRace\" on turn ${date.day}")
+            return MainScreenAction.RACE
         }
 
         if (shouldRunG1DayPreScreen(racing.enableG1DayPreference, date.year, date.isSummer(), isFinals, trainee.energy, racing.minEnergyForExtraRacing, hasG1Race = {

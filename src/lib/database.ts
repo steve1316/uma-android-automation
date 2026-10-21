@@ -112,6 +112,7 @@ export class DatabaseManager {
         "smartRaceSolverTargetEpithets",
         "smartRaceSolverForcedEpithets",
         "smartRaceSolverManualLocks",
+        "pickedRaces",
         "smartRaceSolverWeights",
     ]
     private TABLE_SETTINGS = "settings"

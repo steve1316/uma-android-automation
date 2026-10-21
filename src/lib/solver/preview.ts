@@ -18,6 +18,8 @@ export interface SolverConfigSnapshot {
     forcedEpithets: string[]
     /** Per-turn forced decisions keyed by 1-indexed turn number (as a string). Each value is a race name or `TRAIN_LOCK_SENTINEL` from `./constants`. */
     manualLocks: Record<string, string>
+    /** Hand-picked races keyed by 1-indexed turn number (as a string). Each value is a race name. They override `manualLocks` on the same turn and skip the aptitude filter. */
+    pickedRaces?: Record<string, string>
     /** Solver weights bundle. Inline equivalent of `WeightsMap` from `./constants`; see that interface for per-field docs. */
     weights: {
         /** Multiplier applied to every race's stat + SP reward when scoring. */

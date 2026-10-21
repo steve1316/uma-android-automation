@@ -38,6 +38,13 @@ const searchConfig: SearchOption[] = [
         tab: "raceSolver",
     },
     {
+        id: "schedule-picked-races",
+        title: "Pick a race",
+        description: "Tap a turn on the Schedule calendar to pick any race for it, even one the trainee is poorly suited for. The bot runs it with or without the Smart Race Solver.",
+        page: "ScheduleScreen",
+        tab: "raceSolver",
+    },
+    {
         id: "settings-dating-schedule",
         title: "Support Card Dating Schedule",
         description:

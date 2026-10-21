@@ -23,9 +23,10 @@ interface LegendFlags {
     srs: boolean
 }
 
-/** Legend entries; each chip renders only when its gating source is enabled (mandatory always shows). */
+/** Legend entries; each chip renders only when its gating source is enabled (mandatory and picked races always show). */
 const LEGEND: Array<{ glyph: string; label: string; show: (flags: LegendFlags) => boolean }> = [
     { glyph: "📌", label: "Mandatory", show: () => true },
+    { glyph: "🎯", label: "Picked race", show: () => true },
     { glyph: "🔒", label: "SRS race lock", show: (flags) => flags.srs },
     { glyph: "📅", label: "Recreation", show: (flags) => flags.dating },
     { glyph: "✨", label: "Pure Passion", show: (flags) => flags.dating },
@@ -134,7 +135,7 @@ function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer, contributi
             contributingTurns.has(turn) && calStyles.calendarCellHighlighted,
         ]
 
-        // Shared render for a race owner (a mandatory career race or an SRS lock): grade badge + shortened name.
+        // Shared render for a race owner (a mandatory career race, an SRS lock, or a picked race): grade badge + shortened name.
         const raceOwnerContent = owner ? (
             <View style={styles.cellContent}>
                 {owner.badge ? (
@@ -153,7 +154,7 @@ function CalendarTab({ model, legendFlags, onSelectTurn, allowSummer, contributi
             content = raceOwnerContent
         } else if (stopEvent) {
             content = <Text style={styles.cellGlyph}>{stopEvent.marker}</Text>
-        } else if (owner?.sourceId === "srs") {
+        } else if (owner?.sourceId === "srs" || owner?.sourceId === "pickedRace") {
             content = raceOwnerContent
         } else if (owner) {
             content = <Text style={styles.cellGlyph}>{owner.marker}</Text>

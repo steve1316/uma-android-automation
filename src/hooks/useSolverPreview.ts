@@ -32,6 +32,8 @@ export interface SolverPreviewInputs {
     forcedEpithets: string[]
     /** Per-turn manual locks (turn string -> race name or train sentinel). */
     manualLocks: Record<string, string>
+    /** Hand-picked races (turn string -> race name). The solver treats them as fixed races. */
+    pickedRaces: Record<string, string>
     /** Solver weights bundle. */
     weights: SolverConfigSnapshot["weights"]
     /** Optional-race cap (0 = no limit). */
@@ -61,7 +63,7 @@ export interface SolverPreviewState {
  * @returns The preview state plus a `runPreview` refresher.
  */
 export function useSolverPreview(inputs: SolverPreviewInputs): SolverPreviewState {
-    const { enableSmartRaceSolver, scenario, characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, weights, maxRaces, maxConsecutiveRaces } = inputs
+    const { enableSmartRaceSolver, scenario, characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, pickedRaces, weights, maxRaces, maxConsecutiveRaces } = inputs
 
     const [preview, setPreview] = useState<SchedulePreview | null>(lastPreviewCache?.preview ?? null)
     const [previewLoading, setPreviewLoading] = useState(false)
@@ -69,8 +71,8 @@ export function useSolverPreview(inputs: SolverPreviewInputs): SolverPreviewStat
     const [previewSnapshotKey, setPreviewSnapshotKey] = useState<string | null>(lastPreviewCache?.key ?? null)
 
     const currentSnapshotKey = useMemo(
-        () => JSON.stringify({ scenario: scenario || "Trackblazer", characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, weights, maxRaces, maxConsecutiveRaces }),
-        [scenario, characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, weights, maxRaces, maxConsecutiveRaces]
+        () => JSON.stringify({ scenario: scenario || "Trackblazer", characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, pickedRaces, weights, maxRaces, maxConsecutiveRaces }),
+        [scenario, characterPreset, aptitudes, targetEpithets, forcedEpithets, manualLocks, pickedRaces, weights, maxRaces, maxConsecutiveRaces]
     )
 
     const dirty = previewSnapshotKey != null && currentSnapshotKey !== previewSnapshotKey
@@ -82,6 +84,7 @@ export function useSolverPreview(inputs: SolverPreviewInputs): SolverPreviewStat
         targetEpithets,
         forcedEpithets,
         manualLocks,
+        pickedRaces,
         weights,
         maxRaces,
         maxConsecutiveRaces,
