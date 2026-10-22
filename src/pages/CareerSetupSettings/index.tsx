@@ -2,9 +2,10 @@ import React, { useContext, useMemo, useRef, useState } from "react"
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native"
 import Ionicons from "@react-native-vector-icons/ionicons"
 import { useTheme } from "../../context/ThemeContext"
-import { GeneralMiscContext, RacingContext, defaultSettings } from "../../context/BotStateContext"
+import { GeneralMiscContext, RacingContext, SkillsContext, defaultSettings } from "../../context/BotStateContext"
 import { SearchPageProvider } from "../../context/SearchPageContext"
 import PageHeader from "../../components/PageHeader"
+import WarningContainer from "../../components/WarningContainer"
 import SearchableItem from "../../components/SearchableItem"
 import ToggleSetting from "../../components/ToggleSetting"
 import CustomSlider from "../../components/CustomSlider"
@@ -159,6 +160,7 @@ const CareerSetupSettings = () => {
     const scrollViewRef = useRef<ScrollView>(null)
     const { careerSetup, updateCareerSetup, dailies, updateDailies } = useContext(GeneralMiscContext)
     const { updateRacing } = useContext(RacingContext)
+    const { skills } = useContext(SkillsContext)
     const settings = { ...defaultSettings.careerSetup, ...careerSetup }
     const dailiesSettings = { ...defaultSettings.dailies, ...dailies }
     const [openSheet, setOpenSheet] = useState<OpenSheet>(null)
@@ -218,13 +220,22 @@ const CareerSetupSettings = () => {
                 <ScrollView ref={scrollViewRef} nestedScrollEnabled={true} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
                     <View className="m-1">
                         <Section label="Career Chain">
-                            <ToggleSetting
-                                id="career-setup-start-next-career"
-                                title="Start the Next Career When Done"
-                                description="Completes each career on its end screen and starts the next one with these settings, until TP runs out. A finished Independent Training is always claimed and completed first."
-                                checked={settings.startNextCareerWhenDone}
-                                onCheckedChange={(checked) => updateCareerSetup({ startNextCareerWhenDone: checked })}
-                            />
+                            {/* One child of the Section, so the warning sits directly under the toggle with no divider between them. */}
+                            <View>
+                                <ToggleSetting
+                                    id="career-setup-start-next-career"
+                                    title="Start the Next Career When Done"
+                                    description="Completes each career on its end screen and starts the next one with these settings, until TP runs out. A finished Independent Training is always claimed and completed first."
+                                    checked={settings.startNextCareerWhenDone}
+                                    onCheckedChange={(checked) => updateCareerSetup({ startNextCareerWhenDone: checked })}
+                                />
+                                {settings.startNextCareerWhenDone && !skills.plans.careerComplete.enabled && (
+                                    <WarningContainer style={{ marginBottom: SPACING.md }}>
+                                        Warning: The bot completes each career without stopping, so any skill points left at the end are lost. Turn on the Career Complete skill plan to spend them
+                                        first.
+                                    </WarningContainer>
+                                )}
+                            </View>
                             <ToggleSetting
                                 id="dailies-start-career-when-done"
                                 title="Start a Career After the Dailies"
