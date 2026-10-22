@@ -90,6 +90,9 @@ val IconCareerStartAffinityTriangle = icon("career_start_affinity_triangle", Reg
 val IconCareerStartAffinityNone = icon("career_start_affinity_none", Region.topQuarter, confidence = 0.9)
 val IconCareerStartSupportSsr = icon("career_start_support_ssr", confidence = 0.85)
 
+/** The 1/2 TP bottle among the event icons on Scenario Select, shown while the TP Cost Halved event runs. Its slot moves with the other events. */
+val IconCareerStartTpCostHalved = icon("career_start_tp_cost_halved", Region.topHalf, confidence = 0.85)
+
 /** Support card type icons from the Borrow Card thumbnails, keyed by the type name used in settings. */
 val IconCareerStartSupportTypes: Map<String, ComponentInterface> =
     listOf("Speed", "Stamina", "Power", "Guts", "Wit", "Friend", "Group").associateWith { icon("career_start_support_type_${it.lowercase()}", confidence = 0.85) }

@@ -59,4 +59,32 @@ class CareerSetupTest {
             assertEquals(emptyList<Int>(), emptyLegacySlots(emptyList(), screenWidth = 1080))
         }
     }
+
+    /** Unit tests for Event Boost, which doubles the TP a career costs and is only ticked when the TP covers that. */
+    @DisplayName("Event Boost")
+    @Nested
+    inner class EventBoostTest {
+        @Test
+        @DisplayName("Ticked when the TP covers double the normal cost, read from either state of the box")
+        fun covers() {
+            assertTrue(wantsEventBoost(tp = 66, spend = 15, bTicked = false))
+            assertTrue(wantsEventBoost(tp = 66, spend = 30, bTicked = true))
+            assertTrue(wantsEventBoost(tp = 30, spend = 15, bTicked = false))
+        }
+
+        @Test
+        @DisplayName("Left off when the TP only covers the normal cost")
+        fun doesNotCover() {
+            assertFalse(wantsEventBoost(tp = 29, spend = 15, bTicked = false))
+            assertFalse(wantsEventBoost(tp = 20, spend = 30, bTicked = true))
+            assertFalse(wantsEventBoost(tp = 40, spend = 30, bTicked = false))
+        }
+
+        @Test
+        @DisplayName("Left off when a number could not be read")
+        fun unreadable() {
+            assertFalse(wantsEventBoost(tp = null, spend = 15, bTicked = false))
+            assertFalse(wantsEventBoost(tp = 66, spend = null, bTicked = true))
+        }
+    }
 }
