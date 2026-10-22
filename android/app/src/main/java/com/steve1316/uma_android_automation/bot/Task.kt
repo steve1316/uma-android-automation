@@ -6,8 +6,6 @@ import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.BotStatus
 import com.steve1316.automation_library.utils.DiscordUtils
-import com.steve1316.automation_library.utils.GameTarget
-import com.steve1316.automation_library.utils.MyAccessibilityService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandler
@@ -27,9 +25,6 @@ internal const val UMA_GAME_NAME = "Umamusume Pretty Derby"
 
 /** Run-end reason for a career that ran to the end. */
 internal const val CAREER_COMPLETE_REASON = "Career complete"
-
-/** Pause reason shown when the bot was resumed while another app is in front. */
-private const val GAME_NOT_IN_FRONT_REASON = "Open the game, then tap Resume"
 
 /** The possible result codes for a task's execution. */
 enum class TaskResultCode {
@@ -116,13 +111,6 @@ internal interface TaskLoopHooks {
     fun onResumeAfterAbort()
 
     /**
-     * Checks that the game is in front after a pause, and asks for a new pause when it is not.
-     *
-     * @return True when the game is in front or unknown, false when a new pause was requested.
-     */
-    fun ensureGameInFront(): Boolean
-
-    /**
      * Runs one step of the task.
      *
      * @return A result to end the loop, or null to keep going.
@@ -132,7 +120,7 @@ internal interface TaskLoopHooks {
 
 /**
  * Runs a task's steps until one returns a result. A pause can abort a step midway. The loop then waits at the safe point, clears per-turn
- * state, checks the game is in front, and starts the next step from the current screen. A stop always ends the run, even mid-pause.
+ * state, and starts the next step from the current screen. A stop always ends the run, even mid-pause.
  *
  * @param hooks What the loop needs from the bot.
  * @return The result that ended the loop.
@@ -146,7 +134,6 @@ internal fun runTaskLoop(hooks: TaskLoopHooks): TaskResult {
                 bPendingResync = false
                 hooks.onResumeAfterAbort()
             }
-            if (bPaused && !hooks.ensureGameInFront()) continue
             val result = hooks.process()
             if (result != null) return result
         } catch (e: Exception) {
@@ -337,20 +324,6 @@ abstract class Task(game: Game) : DialogHandler(game) {
 
             override fun onResumeAfterAbort() = this@Task.onResumeAfterAbort()
 
-            override fun ensureGameInFront(): Boolean = this@Task.ensureGameInFront()
-
             override fun process(): TaskResult? = this@Task.process()
         }
-
-    /**
-     * After a pause, checks that the game is the app in front. When another app is, asks for a new pause so the bot never taps over it.
-     *
-     * @return True when the game is in front or the app in front is unknown, false when a new pause was requested.
-     */
-    private fun ensureGameInFront(): Boolean {
-        if (!GameTarget.otherAppInFront()) return true
-        MessageLog.i(TAG, "[PAUSE] ${MyAccessibilityService.currentForeground()} is in front instead of the game. Pausing again until the game is open.")
-        BotHold.requestPause(GAME_NOT_IN_FRONT_REASON)
-        return false
-    }
 }

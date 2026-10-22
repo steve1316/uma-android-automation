@@ -18,17 +18,13 @@ private val DONE: TaskResult = TaskResult.Success()
  *
  * @param steps What each `process()` call does, in order.
  * @param paused What each `awaitIfPaused()` call returns. False once used up.
- * @param inFront What each `ensureGameInFront()` call returns. True once used up.
  */
-private class FakeHooks(steps: List<Step>, paused: List<Boolean> = emptyList(), inFront: List<Boolean> = emptyList()) : TaskLoopHooks {
+private class FakeHooks(steps: List<Step>, paused: List<Boolean> = emptyList()) : TaskLoopHooks {
     /** Steps left to run. */
     private val steps = ArrayDeque(steps)
 
     /** `awaitIfPaused()` answers left. */
     private val paused = ArrayDeque(paused)
-
-    /** `ensureGameInFront()` answers left. */
-    private val inFront = ArrayDeque(inFront)
 
     /** True once a step asked for a stop. */
     var stopRequested = false
@@ -44,9 +40,6 @@ private class FakeHooks(steps: List<Step>, paused: List<Boolean> = emptyList(), 
 
     /** How many times `acknowledgeAbort()` ran. */
     var ackCalls = 0
-
-    /** How many times `ensureGameInFront()` ran. */
-    var inFrontCalls = 0
 
     /** When true, a stop lands while `acknowledgeAbort()` runs. */
     var stopDuringAck = false
@@ -77,18 +70,13 @@ private class FakeHooks(steps: List<Step>, paused: List<Boolean> = emptyList(), 
         resyncCalls++
     }
 
-    override fun ensureGameInFront(): Boolean {
-        inFrontCalls++
-        return inFront.removeFirstOrNull() ?: true
-    }
-
     override fun process(): TaskResult? {
         processCalls++
         return steps.removeFirst().invoke(this)
     }
 }
 
-/** Unit tests for the task loop: the restart after a pause abort, the resync, the foreground re-pause, and Stop winning over a restart. */
+/** Unit tests for the task loop: the restart after a pause abort, the resync, and Stop winning over a restart. */
 @DisplayName("Task loop")
 class TaskLoopTest {
     @Test
@@ -105,7 +93,6 @@ class TaskLoopTest {
         val hooks = FakeHooks(listOf<Step>({ abort() }, { DONE }))
         assertSame(DONE, runTaskLoop(hooks))
         assertEquals(1, hooks.resyncCalls)
-        assertEquals(0, hooks.inFrontCalls)
     }
 
     @Test
@@ -173,25 +160,6 @@ class TaskLoopTest {
         val hooks = FakeHooks(listOf<Step>({ DONE }), paused = listOf(true))
         assertSame(DONE, runTaskLoop(hooks))
         assertEquals(1, hooks.resyncCalls)
-        assertEquals(1, hooks.inFrontCalls)
-    }
-
-    @Test
-    fun gameNotInFrontPausesAgainBeforeAnyStep() {
-        val hooks = FakeHooks(listOf<Step>({ DONE }), paused = listOf(true, true), inFront = listOf(false, true))
-        assertSame(DONE, runTaskLoop(hooks))
-        assertEquals(1, hooks.processCalls)
-        assertEquals(2, hooks.inFrontCalls)
-        assertEquals(2, hooks.resyncCalls)
-    }
-
-    @Test
-    fun foregroundIsOnlyCheckedAfterAPause() {
-        val hooks = FakeHooks(listOf<Step>({ null }, { DONE }))
-        assertSame(DONE, runTaskLoop(hooks))
-        assertEquals(2, hooks.processCalls)
-        assertEquals(0, hooks.inFrontCalls)
-        assertEquals(0, hooks.resyncCalls)
     }
 
     @Test
