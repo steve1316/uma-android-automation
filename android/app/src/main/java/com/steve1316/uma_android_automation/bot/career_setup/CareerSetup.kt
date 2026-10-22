@@ -7,6 +7,7 @@ import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.CampaignBreakpointException
 import com.steve1316.uma_android_automation.bot.DialogHandlerResult
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.dailies.parseCounter
 import com.steve1316.uma_android_automation.bot.solver.MandatoryRaces
 import com.steve1316.uma_android_automation.components.ButtonAutoSelect
 import com.steve1316.uma_android_automation.components.ButtonBack
@@ -41,6 +42,7 @@ import com.steve1316.uma_android_automation.components.DialogFinalConfirmation
 import com.steve1316.uma_android_automation.components.DialogIndependentTraining
 import com.steve1316.uma_android_automation.components.DialogInterface
 import com.steve1316.uma_android_automation.components.DialogUtils
+import com.steve1316.uma_android_automation.components.IconCareerStartTpCostHalved
 import com.steve1316.uma_android_automation.components.LabelCareerStartIndependentTrainingComplete
 import com.steve1316.uma_android_automation.components.LabelCareerStartLegacySelectHeader
 import com.steve1316.uma_android_automation.components.LabelCareerStartPotentialLvl
@@ -70,6 +72,9 @@ private val SCENARIO_KEYWORDS: Map<String, String> =
 /** The scenario description box on Scenario Select, from the Next button. */
 private val SCENARIO_DESCRIPTION = intArrayOf(-455, -316, 900, 180)
 
+/** The "88/100" TP counter in the top bar on Scenario Select, from the screen's header. */
+private val SCENARIO_TP_COUNTER = intArrayOf(279, -219, 135, 47)
+
 /** The outfit and name lines of the selected trainee on Trainee Select, from the screen's header. */
 private val TRAINEE_OUTFIT_LINE = intArrayOf(-53, 321, 420, 32)
 private val TRAINEE_NAME_LINE = intArrayOf(-53, 353, 420, 36)
@@ -93,6 +98,15 @@ private const val DECK_COUNT_H = 42
 private const val NORMAL_CAREER_TAB_DX = -20
 private const val NORMAL_CAREER_TAB_DY = -1450
 
+/** The "Spend N TP to begin training?" line on Final Confirmation, from the Cancel button. */
+private val FINAL_CONFIRMATION_SPEND_LINE = intArrayOf(-40, -205, 560, 50)
+
+/** The current TP left of the arrow on Final Confirmation, from the Cancel button. */
+private val FINAL_CONFIRMATION_CURRENT_TP = intArrayOf(198, -137, 100, 55)
+
+/** The first number in a line of OCR text, such as the 15 in "Spend 15 TP to begin training?". */
+private val FIRST_NUMBER = Regex("""\d+""")
+
 /** Screens the loop may pass through before giving up. */
 private const val MAX_TICKS = 120
 
@@ -114,6 +128,9 @@ private const val TRAINEE_GRID_READ_BOTTOM_DY = -161
 
 /** Scroll pages allowed on the trainee grid. */
 private const val MAX_TRAINEE_PAGES = 30
+
+/** The TP a new career costs. The TP Cost Halved event halves it. */
+private const val CAREER_TP_COST = 30
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,6 +189,19 @@ internal fun emptyLegacySlots(plusXs: List<Double>, screenWidth: Int): List<Int>
  * @returns 1 for the left slot, 2 for the right one.
  */
 internal fun legacySlotOf(x: Double, screenWidth: Int): Int = if (x < screenWidth / 2) 1 else 2
+
+/**
+ * Decides whether to tick Event Boost on Final Confirmation, which doubles the TP a career costs.
+ *
+ * @param tp The current TP, or null when unreadable.
+ * @param spend The TP the dialog says it will spend, or null when unreadable.
+ * @param bTicked Whether Event Boost is ticked, in which case [spend] is already doubled.
+ * @returns True when the TP covers double the normal cost.
+ */
+internal fun wantsEventBoost(tp: Int?, spend: Int?, bTicked: Boolean): Boolean {
+    if (tp == null || spend == null) return false
+    return tp >= if (bTicked) spend else spend * 2
+}
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -397,7 +427,7 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
             } else if (LabelCareerStartTraineeSelectHeader.check(game.imageUtils, sourceBitmap = bitmap)) {
                 handleTraineeSelect()
             } else if (LabelCareerStartScenarioSelectHeader.check(game.imageUtils, sourceBitmap = bitmap)) {
-                handleScenarioSelect()
+                handleScenarioSelect(bitmap)
             } else if (ButtonCareerStartHomeCareer.click(game.imageUtils, sourceBitmap = bitmap)) {
                 MessageLog.i(TAG, "[CAREER SETUP] Opening Career from the Home screen.")
                 game.wait(2.0)
@@ -414,8 +444,13 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // Steps
 
-    /** Taps the right arrow on Scenario Select until the description names the chosen scenario, then taps Next. */
-    private fun handleScenarioSelect() {
+    /**
+     * Checks the TP, then taps the right arrow on Scenario Select until the description names the chosen scenario and taps Next.
+     *
+     * @param bitmap The screenshot of Scenario Select.
+     */
+    private fun handleScenarioSelect(bitmap: Bitmap) {
+        checkTp(bitmap)
         val keyword = SCENARIO_KEYWORDS[settings.scenario] ?: throw CampaignBreakpointException("Career Setup does not know the scenario \"${settings.scenario}\".")
         val next = anchorOf(ButtonNext, game.imageUtils.getSourceBitmap())
         repeat(MAX_CAROUSEL_TAPS) {
@@ -430,6 +465,23 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
             game.wait(1.5)
         }
         throw CampaignBreakpointException("Could not find the ${settings.scenario} scenario on Scenario Select.")
+    }
+
+    /**
+     * Reads the TP and looks for the TP Cost Halved event on Scenario Select. Stops the bot before the rest of the setup when TP cannot pay for the career.
+     * A failed read carries on and leaves it to the game's restore prompt. The Career Setup Test spends no TP, so it only logs.
+     *
+     * @param bitmap The screenshot of Scenario Select.
+     */
+    private fun checkTp(bitmap: Bitmap) {
+        val tp = parseCounter(ocr(bitmap, anchorOf(LabelCareerStartScenarioSelectHeader, bitmap), SCENARIO_TP_COUNTER, "scenarioTp"))?.first
+        // The event icon only decides whether to stop when TP is under the full cost, so look again there in case it was still fading in.
+        val bShortOfFullCost = tp != null && tp < CAREER_TP_COST
+        val bHalved = IconCareerStartTpCostHalved.check(game.imageUtils, sourceBitmap = bitmap) || (bShortOfFullCost && IconCareerStartTpCostHalved.check(game.imageUtils, tries = 3))
+        val cost = if (bHalved) CAREER_TP_COST / 2 else CAREER_TP_COST
+        val event = if (bHalved) " (TP Cost Halved event is on)" else ""
+        MessageLog.i(TAG, "[CAREER SETUP] TP is ${tp ?: "unreadable"}. A career costs $cost TP$event.")
+        if (tp != null && tp < cost && !bDryRun) throw CampaignBreakpointException("Out of TP to start the next career ($tp of $cost). Stopping bot...")
     }
 
     /** Picks the trainee on Trainee Select, or keeps the preselected one, then taps Next. */
@@ -563,6 +615,7 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
             tapAnchored(game, anchorOf(ButtonCancel, game.imageUtils.getSourceBitmap()), NORMAL_CAREER_TAB_DX, NORMAL_CAREER_TAB_DY)
             game.wait(1.0)
         }
+        setEventBoost()
         if (bDryRun) {
             if (!ButtonStartCareer.check(game.imageUtils, tries = 5)) throw CampaignBreakpointException("Could not find Start Career! on Final Confirmation.")
             throw CampaignBreakpointException("Career Setup Test reached Final Confirmation on the Normal Career tab. Stopping before Start Career!.")
@@ -573,18 +626,33 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         game.wait(3.0)
     }
 
+    /**
+     * Ticks Event Boost on Final Confirmation when the TP covers its doubled cost, and unticks it otherwise so the career can still start.
+     * Nothing happens when no boost event runs, since the dialog then has no checkbox.
+     */
+    private fun setEventBoost() {
+        val bitmap = game.imageUtils.getSourceBitmap()
+        val checkbox = Checkbox.findImageWithBitmap(game.imageUtils, bitmap) ?: return
+        val bTicked = Checkbox.isTicked(game.imageUtils, bitmap, checkbox)
+        val cancel = anchorOf(ButtonCancel, bitmap)
+        val spend = ocrInt(bitmap, cancel, FINAL_CONFIRMATION_SPEND_LINE, "finalConfirmationSpend")
+        val tp = ocrInt(bitmap, cancel, FINAL_CONFIRMATION_CURRENT_TP, "finalConfirmationTp")
+        val bWanted = wantsEventBoost(tp, spend, bTicked)
+        MessageLog.i(TAG, "[CAREER SETUP] Event Boost ${if (bWanted) "on" else "off"} (TP ${tp ?: "unreadable"}, spend ${spend ?: "unreadable"}${if (bTicked) " while ticked" else ""}).")
+        if (bWanted != bTicked) {
+            game.tap(checkbox.x, checkbox.y)
+            game.wait(0.5)
+        }
+    }
+
     /** Accepts the Confirm Auto-Select dialog with "Include guests" unticked, since a guest the game picks may cost monies. */
     private fun confirmAutoSelect() {
         val bitmap = game.imageUtils.getSourceBitmap()
         val checkbox = Checkbox.findImageWithBitmap(game.imageUtils, bitmap)
-        if (checkbox != null) {
-            // A ticked box has a green checkmark and an unticked one a grey checkmark.
-            val boxSize = game.imageUtils.relWidth(44)
-            if (game.imageUtils.isRegionGreen(bitmap, checkbox.x.toInt() - boxSize / 2, checkbox.y.toInt() - boxSize / 2, boxSize, boxSize)) {
-                MessageLog.i(TAG, "[CAREER SETUP] Unticking \"Include guests\" so Auto-Select never pays for a borrow.")
-                game.tap(checkbox.x, checkbox.y)
-                game.wait(0.5)
-            }
+        if (checkbox != null && Checkbox.isTicked(game.imageUtils, bitmap, checkbox)) {
+            MessageLog.i(TAG, "[CAREER SETUP] Unticking \"Include guests\" so Auto-Select never pays for a borrow.")
+            game.tap(checkbox.x, checkbox.y)
+            game.wait(0.5)
         }
         DialogConfirmAutoSelect.ok(game.imageUtils)
     }
@@ -825,7 +893,7 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         if (target !in 1..10) return
         val header = anchorOf(LabelCareerStartSupportFormationHeader, game.imageUtils.getSourceBitmap())
         repeat(MAX_CAROUSEL_TAPS) {
-            val current = Regex("""\d+""").find(ocr(game.imageUtils.getSourceBitmap(), header, DECK_TITLE, "deckTitle"))?.value?.toIntOrNull()
+            val current = ocrInt(game.imageUtils.getSourceBitmap(), header, DECK_TITLE, "deckTitle")
             if (current == target) {
                 MessageLog.i(TAG, "[CAREER SETUP] Using Deck $target.")
                 return
@@ -848,4 +916,15 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
      * @returns The text read.
      */
     private fun ocr(bitmap: Bitmap, anchor: Point, offsets: IntArray, debugName: String): String = ocrAnchored(game.imageUtils, bitmap, anchor, offsets, debugName)
+
+    /**
+     * OCRs a region measured at 1080x1920 from a template and reads the first number in it.
+     *
+     * @param bitmap The screenshot.
+     * @param anchor The template's center on screen.
+     * @param offsets The region as dx, dy, width and height from the anchor.
+     * @param debugName Name for debug images.
+     * @returns The first number read, or null when there is none.
+     */
+    private fun ocrInt(bitmap: Bitmap, anchor: Point, offsets: IntArray, debugName: String): Int? = FIRST_NUMBER.find(ocr(bitmap, anchor, offsets, debugName))?.value?.toIntOrNull()
 }

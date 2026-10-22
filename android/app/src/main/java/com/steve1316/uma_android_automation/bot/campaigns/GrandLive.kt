@@ -700,9 +700,7 @@ class GrandLive(game: Game) : Campaign(game) {
         val confirmSource = game.imageUtils.getSourceBitmap()
         val checkbox = Checkbox.findImageWithBitmap(game.imageUtils, confirmSource)
         if (checkbox != null) {
-            val boxSize = game.imageUtils.relWidth(44)
-            val ticked = game.imageUtils.isRegionGreen(confirmSource, checkbox.x.toInt() - boxSize / 2, checkbox.y.toInt() - boxSize / 2, boxSize, boxSize)
-            if (ticked) {
+            if (Checkbox.isTicked(game.imageUtils, confirmSource, checkbox)) {
                 MessageLog.i(TAG, "[GRAND_LIVE] Skip-cutscene checkbox is already ticked; leaving it.")
             } else {
                 game.tap(checkbox.x, checkbox.y)
