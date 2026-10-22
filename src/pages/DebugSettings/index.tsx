@@ -114,7 +114,8 @@ const DebugSettings = () => {
                         {/* //////////////////////////////////////////////////////////////////////////////////////////////////
                             //////////////////////////////////////////////////////////////////////////////////////////////////
                             Debug Mode */}
-                        <Section label="Debug Mode">
+                        {/* The slider stays mounted while hidden so search can still find it, so drop its divider and padding too. */}
+                        <Section label="Debug Mode" lastDivider={debug.enableDebugMode}>
                             <ToggleSetting
                                 id="enable-debug-mode"
                                 title="Enable Debug Mode"
@@ -122,7 +123,7 @@ const DebugSettings = () => {
                                 checked={debug.enableDebugMode}
                                 onCheckedChange={(checked) => updateDebug({ enableDebugMode: checked })}
                             />
-                            <View style={styles.hostPad}>
+                            <View style={debug.enableDebugMode ? styles.hostPad : undefined}>
                                 <CustomSlider
                                     searchId="debug-image-quality"
                                     searchCondition={debug.enableDebugMode}
