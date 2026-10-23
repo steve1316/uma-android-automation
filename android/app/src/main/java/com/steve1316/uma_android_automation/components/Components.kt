@@ -18,24 +18,48 @@ import org.opencv.core.Point
 /**
  * Defines various screen regions.
  *
- * Used to refine search areas during OCR for performance.
+ * Used to refine search areas during OCR for performance. Templates keep a reference to these arrays, so [refresh] rewrites them in place.
  */
 object Region {
-    val topHalf: IntArray = intArrayOf(0, 0, SharedData.displayWidth, SharedData.displayHeight / 2)
-    val topQuarter: IntArray = intArrayOf(0, 0, SharedData.displayWidth, SharedData.displayHeight / 4)
-    val bottomHalf: IntArray = intArrayOf(0, SharedData.displayHeight / 2, SharedData.displayWidth, SharedData.displayHeight / 2)
-    val bottomQuarter: IntArray = intArrayOf(0, SharedData.displayHeight / 4, SharedData.displayWidth, SharedData.displayHeight / 4)
-    val middle: IntArray = intArrayOf(0, SharedData.displayHeight / 4, SharedData.displayWidth, SharedData.displayHeight / 2)
-    val leftHalf: IntArray = intArrayOf(0, 0, SharedData.displayWidth / 2, SharedData.displayHeight)
-    val rightHalf: IntArray = intArrayOf(SharedData.displayWidth / 2, 0, SharedData.displayWidth / 2, SharedData.displayHeight)
-    val threeQuarterRight: IntArray = intArrayOf((SharedData.displayWidth * 0.625).toInt(), 0, (SharedData.displayWidth * 0.375).toInt(), SharedData.displayHeight)
-    val topRightThird: IntArray = intArrayOf(SharedData.displayWidth - (SharedData.displayWidth / 3), 0, SharedData.displayWidth / 3, SharedData.displayHeight - (SharedData.displayHeight / 3))
+    val topHalf = IntArray(4)
+    val topQuarter = IntArray(4)
+    val bottomHalf = IntArray(4)
+    val bottomQuarter = IntArray(4)
+    val middle = IntArray(4)
+    val leftHalf = IntArray(4)
+    val rightHalf = IntArray(4)
+    val threeQuarterRight = IntArray(4)
+    val topRightThird = IntArray(4)
 
     /** Right half of the top sixth of the screen, where the "Connecting..." text appears. */
-    val topRightSixth: IntArray = intArrayOf(SharedData.displayWidth / 2, 0, SharedData.displayWidth / 2, SharedData.displayHeight / 6)
+    val topRightSixth = IntArray(4)
 
     /** Right half of the bottom quarter of the screen, where the "Now Loading..." text appears. */
-    val bottomRightQuarter: IntArray = intArrayOf(SharedData.displayWidth / 2, SharedData.displayHeight - (SharedData.displayHeight / 4), SharedData.displayWidth / 2, SharedData.displayHeight / 4)
+    val bottomRightQuarter = IntArray(4)
+
+    init {
+        refresh()
+    }
+
+    /**
+     * Recomputes every region from the current screen size. This object lives as long as the app process, so a run that started while the
+     * screen was rotated would otherwise leave every later run searching landscape regions on a portrait screen.
+     */
+    fun refresh() {
+        val w = SharedData.displayWidth
+        val h = SharedData.displayHeight
+        intArrayOf(0, 0, w, h / 2).copyInto(topHalf)
+        intArrayOf(0, 0, w, h / 4).copyInto(topQuarter)
+        intArrayOf(0, h / 2, w, h / 2).copyInto(bottomHalf)
+        intArrayOf(0, h / 4, w, h / 4).copyInto(bottomQuarter)
+        intArrayOf(0, h / 4, w, h / 2).copyInto(middle)
+        intArrayOf(0, 0, w / 2, h).copyInto(leftHalf)
+        intArrayOf(w / 2, 0, w / 2, h).copyInto(rightHalf)
+        intArrayOf((w * 0.625).toInt(), 0, (w * 0.375).toInt(), h).copyInto(threeQuarterRight)
+        intArrayOf(w - (w / 3), 0, w / 3, h - (h / 3)).copyInto(topRightThird)
+        intArrayOf(w / 2, 0, w / 2, h / 6).copyInto(topRightSixth)
+        intArrayOf(w / 2, h - (h / 4), w / 2, h / 4).copyInto(bottomRightQuarter)
+    }
 }
 
 /**
