@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot.dailies
 
+import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
@@ -74,30 +75,48 @@ class Club(private val game: Game, private val requestEnabled: Boolean, private 
      * @return A note for the summary.
      */
     private fun request(): String {
+        val sourceBitmap = openRequestDialog()
+        return when {
+            LabelItemRequestExpired.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+                MessageLog.i(TAG, "[DAILIES] The last item request expired. Collecting it.")
+                ButtonClose.click(game.imageUtils)
+                openRequestDialog()
+                pickItem()
+            }
+
+            LabelItemRequestSelectPrompt.check(game.imageUtils, sourceBitmap = sourceBitmap) -> pickItem()
+
+            // Neither expired nor asking for a pick, so a request looks to be running. Close also collects an expired request whose label was
+            // missed, so reopen once and request a new item if the picker shows now.
+            else -> {
+                ButtonClose.click(game.imageUtils)
+                game.wait(1.0)
+                val retryBitmap = openRequestDialog()
+                if (LabelItemRequestSelectPrompt.check(game.imageUtils, sourceBitmap = retryBitmap)) {
+                    MessageLog.i(TAG, "[DAILIES] The item picker showed after closing the request, so the last request had expired. Requesting a new item.")
+                    pickItem()
+                } else {
+                    ButtonClose.click(game.imageUtils, sourceBitmap = retryBitmap)
+                    "request still active"
+                }
+            }
+        }
+    }
+
+    /**
+     * Taps the Item Request button and waits for the dialog in any of its states.
+     *
+     * @return A screenshot of the open dialog.
+     * @throws DailyStepFailed When the button or the dialog never appears.
+     */
+    private fun openRequestDialog(): Bitmap {
         val button = game.waitForAny(ButtonClubItemRequest)?.second ?: throw DailyStepFailed("Item Request button not found")
         game.tap(button.x, button.y)
         game.wait(1.0)
         // An expired or running request shows Close, but the item picker shows Cancel instead, so wait for any of the three states.
         game.waitForAny(LabelItemRequestExpired, LabelItemRequestSelectPrompt, ButtonClose) ?: throw DailyStepFailed("Item Request dialog did not appear")
         game.wait(0.5)
-        val sourceBitmap = game.imageUtils.getSourceBitmap()
-        return when {
-            LabelItemRequestExpired.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
-                MessageLog.i(TAG, "[DAILIES] The last item request expired. Collecting it.")
-                ButtonClose.click(game.imageUtils)
-                if (!ButtonClubItemRequest.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Item Request button not found in attempt to request a new item")
-                game.wait(1.0)
-                pickItem()
-            }
-
-            LabelItemRequestSelectPrompt.check(game.imageUtils, sourceBitmap = sourceBitmap) -> pickItem()
-
-            // Neither expired nor asking for a pick, so a request is still running.
-            else -> {
-                ButtonClose.click(game.imageUtils)
-                "request still active"
-            }
-        }
+        return game.imageUtils.getSourceBitmap()
     }
 
     /**

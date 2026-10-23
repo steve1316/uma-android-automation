@@ -385,6 +385,9 @@ abstract class Campaign(game: Game) : Task(game) {
     /** Set when the Main screen handler stops to close a dialog it opened itself, so the next pass reuses this turn's date instead of reading it again. */
     private var bDateReadBeforeOwnDialog: Boolean = false
 
+    /** Set when a racing popup such as Insufficient Fans was closed since the last date read. It shows at the start of a turn, so it belongs to the turn read next. */
+    private var bRacingPopupBeforeDateRead: Boolean = false
+
     /** Flag indicating if the skill point threshold has been handled.
      * This is necessary since the user may have enabled the skill point check
      * skill spending plan. If their plan ends up not purchasing many skills,
@@ -703,15 +706,9 @@ abstract class Campaign(game: Game) : Task(game) {
                 }
             }
 
-            "goal_not_reached" -> {
+            "goal_not_reached", "insufficient_fans" -> {
                 // We are handling the logic for when to race on our own. Thus, we just close this warning.
-                racing.encounteredRacingPopup = true
-                result.dialog.close(game.imageUtils)
-            }
-
-            "insufficient_fans" -> {
-                // We are handling the logic for when to race on our own. Thus, we just close this warning.
-                racing.encounteredRacingPopup = true
+                markRacingPopup()
                 result.dialog.close(game.imageUtils)
             }
 
@@ -1200,6 +1197,7 @@ abstract class Campaign(game: Game) : Task(game) {
         bForcedWitTraining = false
         consecutiveButtonCancelMatches = 0
         racing.resetAfterAbort()
+        bRacingPopupBeforeDateRead = false
         training.clearAnalysisCache()
         if (SmartRaceSolverIntegration.discardPendingRace()) {
             MessageLog.i(TAG, "[RESYNC] Dropped the race staged before the pause, since its result was not seen.")
@@ -1658,26 +1656,25 @@ abstract class Campaign(game: Game) : Task(game) {
         // Skip recreation date if it's already completed (will only be used for mood recovery).
         // While the schedule is active, a pending date is reserved for it and trainee recreation does not restore energy, so skip straight to resting.
         // Once the schedule is abandoned, resting here advances the date chain again.
-        if (
-            !isScheduleActive() &&
-            !recreationDateCompleted &&
-            IconRecreationDate.check(game.imageUtils, sourceBitmap = sourceBitmap) &&
-            handleRecreationDate(recoverMoodIfCompleted = false)
-        ) {
+        val bTriedRecreationDate = !isScheduleActive() && !recreationDateCompleted && IconRecreationDate.check(game.imageUtils, sourceBitmap = sourceBitmap)
+        if (bTriedRecreationDate && handleRecreationDate(recoverMoodIfCompleted = false)) {
             MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via recreation date.")
             return true
         }
 
+        // A failed date attempt opened the Recreation popup after the capture above, so take a fresh one rather than tap where Rest used to be.
+        val restBitmap: Bitmap = if (bTriedRecreationDate) game.imageUtils.getSourceBitmap() else sourceBitmap
+
         // Otherwise, fall back to the regular energy recovery logic.
         return when {
-            ButtonRest.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+            ButtonRest.click(game.imageUtils, sourceBitmap = restBitmap) -> {
                 confirmRestDialogs()
                 game.waitForLoading()
                 MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via rest.")
                 true
             }
 
-            ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+            ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = restBitmap) -> {
                 confirmRestDialogs()
                 game.waitForLoading()
                 MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via Summer rest.")
@@ -1833,7 +1830,7 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
-     * Backs out of the open Choose Recreation Partner dialog and waits for the screen to settle.
+     * Backs out of the open Recreation popup or Choose Recreation Partner dialog and waits for the screen to settle.
      *
      * @return Always false, so a caller can return it directly as the "did not start an outing" result.
      */
@@ -1981,9 +1978,9 @@ abstract class Campaign(game: Game) : Task(game) {
                     logRecreationProgress()
                     true
                 } else {
-                    MessageLog.e(TAG, "[ERROR] handleRecreationDate:: Failed to find a way to start the recreation date.")
-                    game.waitForLoading()
-                    false
+                    // Close the Recreation popup so the caller's next tap lands on the Main screen instead of the popup.
+                    MessageLog.e(TAG, "[ERROR] handleRecreationDate:: Failed to find a way to start the recreation date. Closing the Recreation popup.")
+                    cancelPartnerDialog()
                 }
             }
         } else {
@@ -2289,7 +2286,7 @@ abstract class Campaign(game: Game) : Task(game) {
             return true
         } else if (IconRaceNotEnoughFans.check(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.i(TAG, "[MISC] There was a popup about insufficient fans.")
-            racing.encounteredRacingPopup = true
+            markRacingPopup()
             ButtonCancel.click(game.imageUtils, sourceBitmap = bitmap)
             return true
         } else if (ButtonBack.click(game.imageUtils, sourceBitmap = bitmap)) {
@@ -2348,14 +2345,16 @@ abstract class Campaign(game: Game) : Task(game) {
             // Returning from the aptitudes or fans dialog the bot opened itself is still the same turn, so the date read is skipped.
             val dateChanged = if (bDateReadBeforeOwnDialog) false else updateDate()
             bDateReadBeforeOwnDialog = false
+            val bRacingPopupThisTurn = bRacingPopupBeforeDateRead
+            bRacingPopupBeforeDateRead = false
             // Show the new turn now, so a planned stop in performGlobalChecks() reports this turn and not the last one.
             DecisionTracer.pushProgress(date.day)
             // Once-per-run: log the Smart Race Solver Preview schedule and seed mid-run history
             // recovery now that the date is known, so it appears in logs before shop/items.
             SmartRaceSolverIntegration.runStartupHooks(game = game, currentTurn = date.day, scenario = game.scenario)
             if (dateChanged || !trainee.bHasUpdatedStats) {
-                // Reset common daily flags.
-                racing.encounteredRacingPopup = false
+                // Reset common daily flags. A racing popup closed just before this read came up at the start of this new turn, so it still forces a race.
+                racing.encounteredRacingPopup = bRacingPopupThisTurn
                 racing.raceRepeatWarningCheck = false
                 bHasTriedCheckingFansToday = false
                 bHasCheckedForMaidenRaceToday = false
@@ -2431,6 +2430,12 @@ abstract class Campaign(game: Game) : Task(game) {
      * @return True if a dialog was handled.
      */
     private fun closeOwnDialog(): Boolean = tryHandleAllDialogs().also { if (it) bDateReadBeforeOwnDialog = true }
+
+    /** Records a racing popup such as Insufficient Fans, which forces a race this turn and also on the turn read next if the date was not read yet. */
+    private fun markRacingPopup() {
+        racing.encounteredRacingPopup = true
+        bRacingPopupBeforeDateRead = true
+    }
 
     /**
      * Performs parallel turn-start updates for stats, skill points, mood, energy, and racing requirements.
@@ -2691,6 +2696,8 @@ abstract class Campaign(game: Game) : Task(game) {
 
         if (hasInjury) {
             // Injury handled internally in checkInjury, but returning NONE as turn is likely over or needs re-evaluation.
+            // The infirmary uses up the turn, so the date is read again on the next main screen.
+            bHasCheckedDateThisTurn = false
             decisionTracer.recordActionChoice(MainScreenAction.NONE, "Injury detected and handled internally; turn aborted for re-evaluation")
             return MainScreenAction.NONE
         }
