@@ -1656,26 +1656,25 @@ abstract class Campaign(game: Game) : Task(game) {
         // Skip recreation date if it's already completed (will only be used for mood recovery).
         // While the schedule is active, a pending date is reserved for it and trainee recreation does not restore energy, so skip straight to resting.
         // Once the schedule is abandoned, resting here advances the date chain again.
-        if (
-            !isScheduleActive() &&
-            !recreationDateCompleted &&
-            IconRecreationDate.check(game.imageUtils, sourceBitmap = sourceBitmap) &&
-            handleRecreationDate(recoverMoodIfCompleted = false)
-        ) {
+        val bTriedRecreationDate = !isScheduleActive() && !recreationDateCompleted && IconRecreationDate.check(game.imageUtils, sourceBitmap = sourceBitmap)
+        if (bTriedRecreationDate && handleRecreationDate(recoverMoodIfCompleted = false)) {
             MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via recreation date.")
             return true
         }
 
+        // A failed date attempt opened the Recreation popup after the capture above, so take a fresh one rather than tap where Rest used to be.
+        val restBitmap: Bitmap = if (bTriedRecreationDate) game.imageUtils.getSourceBitmap() else sourceBitmap
+
         // Otherwise, fall back to the regular energy recovery logic.
         return when {
-            ButtonRest.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+            ButtonRest.click(game.imageUtils, sourceBitmap = restBitmap) -> {
                 confirmRestDialogs()
                 game.waitForLoading()
                 MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via rest.")
                 true
             }
 
-            ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+            ButtonRestAndRecreation.click(game.imageUtils, sourceBitmap = restBitmap) -> {
                 confirmRestDialogs()
                 game.waitForLoading()
                 MessageLog.v(TAG, "[ENERGY] Successfully recovered energy via Summer rest.")
@@ -1831,7 +1830,7 @@ abstract class Campaign(game: Game) : Task(game) {
     }
 
     /**
-     * Backs out of the open Choose Recreation Partner dialog and waits for the screen to settle.
+     * Backs out of the open Recreation popup or Choose Recreation Partner dialog and waits for the screen to settle.
      *
      * @return Always false, so a caller can return it directly as the "did not start an outing" result.
      */
@@ -1979,9 +1978,9 @@ abstract class Campaign(game: Game) : Task(game) {
                     logRecreationProgress()
                     true
                 } else {
-                    MessageLog.e(TAG, "[ERROR] handleRecreationDate:: Failed to find a way to start the recreation date.")
-                    game.waitForLoading()
-                    false
+                    // Close the Recreation popup so the caller's next tap lands on the Main screen instead of the popup.
+                    MessageLog.e(TAG, "[ERROR] handleRecreationDate:: Failed to find a way to start the recreation date. Closing the Recreation popup.")
+                    cancelPartnerDialog()
                 }
             }
         } else {
