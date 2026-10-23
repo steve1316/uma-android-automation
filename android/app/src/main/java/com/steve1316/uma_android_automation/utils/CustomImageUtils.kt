@@ -510,7 +510,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @param shrinkFactors The factors to shrink the template by, in the order they should be attempted. The first one that matches wins.
      * @param region Region (x, y, width, height) of the source to match. Defaults to (0, 0, 0, 0) for full search.
      * @param customConfidence Optional confidence threshold override. Defaults to 0.0.
-     * @return The factor that matched, or null if none of them did.
+     * @return The factor that matched and the match location, or null if none of them did.
      */
     fun matchTemplateAtScales(
         sourceBitmap: Bitmap,
@@ -519,11 +519,12 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         shrinkFactors: List<Double>,
         region: IntArray = intArrayOf(0, 0, 0, 0),
         customConfidence: Double = 0.0,
-    ): Double? {
+    ): Pair<Double, Point>? {
         shrinkFactors.forEach { factor ->
             val shrunkTemplate =
                 if (factor == 1.0) templateBitmap else templateBitmap.scale((templateBitmap.width * factor).toInt(), (templateBitmap.height * factor).toInt())
-            if (match(sourceBitmap, shrunkTemplate, templateName, region = region, customConfidence = customConfidence).second != null) return factor
+            val location = match(sourceBitmap, shrunkTemplate, templateName, region = region, customConfidence = customConfidence).second
+            if (location != null) return Pair(factor, location)
         }
 
         return null

@@ -73,6 +73,14 @@ import kotlin.math.abs
  */
 private val GOAL_CRITERIA_SHRINK_FACTORS: List<Double> = (100 downTo 80).map { it / 100.0 }
 
+/**
+ * Factors to shrink the fan and trophy goal counter templates by on a tall 1080p screen, ordered most likely first.
+ *
+ * The counters render about 6% smaller on a 1080x2340 screen than in the captured templates.
+ * There the fan counter scores 0.85 at full size but 0.94 when shrunk to 0.94, so a single-size check missed the goal and the bot never raced for it.
+ */
+private val TALL_GOAL_COUNTER_SHRINK_FACTORS: List<Double> = listOf(1.0, 0.98, 0.96, 0.94)
+
 /** X of the double-star icon on the race list at the 1080px baseline. Rows without the icon use it to place the race name crop. */
 private const val PICKED_RACE_STAR_X = 881
 
@@ -901,7 +909,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
         // Check for fan requirement on the main screen.
         val sourceBitmapToUse = sourceBitmap ?: game.imageUtils.getSourceBitmap()
-        val needsFanRequirement = LabelRaceCriteriaFans.check(game.imageUtils, sourceBitmap = sourceBitmapToUse, confidence = 0.9)
+        // The counters only render smaller on a tall screen. The templates were captured at 1080x1920, so full size is enough there.
+        val goalCounterFactors = if (ScreenLayout.isTall) TALL_GOAL_COUNTER_SHRINK_FACTORS else listOf(1.0)
+        val needsFanRequirement = LabelRaceCriteriaFans.checkAtScales(game.imageUtils, sourceBitmap = sourceBitmapToUse, shrinkFactors = goalCounterFactors) != null
         if (needsFanRequirement) {
             hasFanRequirement = true
             MessageLog.i(TAG, "[RACE] Fan requirement criteria detected on main screen. Forcing racing to fulfill requirement.")
@@ -913,7 +923,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             }
 
             // Check for trophy requirement on the main screen. The counter doubles as the anchor for the criteria line sitting directly above it.
-            val trophyCounterLocation = LabelRaceCriteriaTrophies.findImageWithBitmap(game.imageUtils, sourceBitmap = sourceBitmapToUse, confidence = 0.9)
+            val trophyCounterLocation = LabelRaceCriteriaTrophies.findAtScales(game.imageUtils, sourceBitmap = sourceBitmapToUse, shrinkFactors = goalCounterFactors)
             if (trophyCounterLocation != null) {
                 hasTrophyRequirement = true
 
