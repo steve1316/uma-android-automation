@@ -1,6 +1,9 @@
 package com.steve1316.uma_android_automation.bot
 
+import com.steve1316.uma_android_automation.bot.Training.Companion.SKIP_HIGH_FAILURE_CHANCE
+import com.steve1316.uma_android_automation.bot.Training.Companion.SKIP_POOR_VALUE_FOR_RISK
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -8,8 +11,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for the low-energy training policy: the minimum-energy rest floor in Campaign and the Wit failure-ceiling exemption in Training. Both are pure, so they are verified here
- * without a live Campaign or the Android-coupled analysis pipeline. The shipped defaults are the rest floor off (0), the Wit exemption off, its ceiling 35%, and its minimum gain 25.
+ * Unit tests for the low-energy training policy: the minimum-energy rest floor in Campaign, plus the Wit failure-ceiling exemption and the lone low-value training rule in Training.
+ * All are pure, so they are verified here without a live Campaign or the Android-coupled analysis pipeline. The shipped defaults are the rest floor off (0), the Wit exemption off,
+ * its ceiling 35%, its minimum gain 25, and the lone-training rule on with a minimum gain of 25.
  */
 @DisplayName("Low-energy training policy")
 class LowEnergyPolicyTest {
@@ -106,5 +110,88 @@ class LowEnergyPolicyTest {
             witFailureChance <= ceilingFor(StatName.WIT, mainStatGain = witGain, enableWitOverRest = true, witOverRestMinStatGain = 20),
             "With the exemption on and the minimum tuned to 20, the 20-gain Wit turn fits under its own 35% ceiling and is trained instead of rested",
         )
+    }
+
+    /** Builds a surviving Wit training with only the fields the lone-training rule reads. */
+    private fun option(
+        statGains: Map<StatName, Int> = mapOf(StatName.SPEED to 4, StatName.WIT to 15),
+        numBars: Int = 0,
+        numMaxedBars: Int = 0,
+        numSkillHints: Int = 0,
+        numRainbow: Int = 0,
+        readyToBurst: Int = 0,
+    ) = Training.TrainingOption(
+        name = StatName.WIT,
+        statGains = statGains,
+        failureChance = 5,
+        relationshipBars =
+            ArrayList(List(numBars) { CustomImageUtils.BarFillResult(StatName.WIT, 20.0, 1, "blue") } + List(numMaxedBars) { CustomImageUtils.BarFillResult(StatName.WIT, 100.0, 5, "orange") }),
+        numRainbow = numRainbow,
+        numSkillHints = numSkillHints,
+        extras = mapOf("spiritGaugesReadyToBurst" to readyToBurst),
+    )
+
+    /** The four other trainings from the turn 58 log, all skipped for failure chance. */
+    private val tiredSkips = listOf(SKIP_HIGH_FAILURE_CHANCE, SKIP_HIGH_FAILURE_CHANCE, SKIP_HIGH_FAILURE_CHANCE, SKIP_POOR_VALUE_FOR_RISK)
+
+    /** Calls the lone-training rule as `processAnalysisResults` does, at the turn 58 energy of 29%, with the feature on and the shipped 25 gain minimum by default. */
+    private fun restsOverLone(
+        survivor: Training.TrainingOption = option(),
+        otherSkipReasons: List<String?> = tiredSkips,
+        energy: Int = 29,
+        isFinale: Boolean = false,
+        enabled: Boolean = true,
+        minStatGain: Int = 25,
+    ) = Training.restsOverLoneTraining(survivor, otherSkipReasons, energy, isFinale, enabled, minStatGain)
+
+    @Test
+    @DisplayName("Turn 58: a lone bare Wit (SPD 4 / WIT 15) left after the rest were too risky is dropped so the bot recovers energy")
+    fun testLoneLowValueTrainingDropped() {
+        assertTrue(restsOverLone(), "Every other training was skipped for risk and Wit has no supports and only 15 Wit, so the pal date or a rest is worth more")
+    }
+
+    @Test
+    @DisplayName("The lone training is kept once its main stat gain reaches the minimum")
+    fun testLoneTrainingKeptAtMinGain() {
+        assertFalse(restsOverLone(option(statGains = mapOf(StatName.WIT to 25))), "A Wit gain exactly at the 25 minimum is worth the turn")
+        assertTrue(restsOverLone(option(statGains = mapOf(StatName.WIT to 24))), "A gain just under the minimum is still dropped")
+    }
+
+    @Test
+    @DisplayName("The lone training is kept when it builds a bond, holds a hint, is a rainbow, or has a burst ready")
+    fun testLoneTrainingKeptWithExtraValue() {
+        assertFalse(restsOverLone(option(numBars = 1)), "One support bar means the turn also builds a bond")
+        assertFalse(restsOverLone(option(numSkillHints = 1)), "A skill hint is value the stat gain does not show")
+        assertFalse(restsOverLone(option(numRainbow = 1)), "A rainbow training is never thrown away")
+        assertFalse(restsOverLone(option(readyToBurst = 1)), "A ready Spirit Explosion burst is never thrown away")
+    }
+
+    @Test
+    @DisplayName("Turn 42: a lone Wit (SPD 4 / WIT 14) whose only supports are already maxed is dropped")
+    fun testLoneTrainingWithMaxedBarsDropped() {
+        assertTrue(restsOverLone(option(statGains = mapOf(StatName.SPEED to 4, StatName.WIT to 14), numMaxedBars = 2)), "Maxed bonds build nothing, so two orange bars add no value")
+        assertFalse(restsOverLone(option(numBars = 1, numMaxedBars = 2)), "One bond still growing next to the maxed ones keeps the turn")
+    }
+
+    @Test
+    @DisplayName("The rule only fires below 50% energy")
+    fun testLoneTrainingKeptAtMidEnergy() {
+        assertTrue(restsOverLone(energy = 49), "Just under the cap the trainee is tired enough that a rest or the pal date is worth more")
+        assertFalse(restsOverLone(energy = 50), "At half energy a rest recovers too little to beat even a small gain")
+    }
+
+    @Test
+    @DisplayName("The rule only fires when every other training was skipped for risk")
+    fun testNonRiskSkipsKept() {
+        assertFalse(restsOverLone(otherSkipReasons = emptyList()), "With every other training blacklisted or restricted, the lone one is all that is allowed, not a sign of low energy")
+        assertFalse(restsOverLone(otherSkipReasons = listOf(SKIP_HIGH_FAILURE_CHANCE, "low irregular gain")), "One skip was not about risk, so the trainee is not shown to be tired")
+        assertTrue(restsOverLone(otherSkipReasons = listOf("$SKIP_HIGH_FAILURE_CHANCE (wit)", "$SKIP_HIGH_FAILURE_CHANCE (risky)")), "The raised-ceiling variants still count as risk skips")
+    }
+
+    @Test
+    @DisplayName("The Finale and the setting being off keep the lone training")
+    fun testFinaleAndDisabledKept() {
+        assertFalse(restsOverLone(isFinale = true), "The Finale has its own forced-Wit handling, so this rule stays out of it")
+        assertFalse(restsOverLone(enabled = false), "Turning the setting off restores the old behavior")
     }
 }

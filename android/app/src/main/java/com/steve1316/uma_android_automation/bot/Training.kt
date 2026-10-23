@@ -268,6 +268,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** The main-stat gain Wit must reach before its raised ceiling applies, so only a genuinely high-value Wit turn survives a failure chance the other stats could not. */
     private val witOverRestMinStatGain: Int = SettingsHelper.getIntSetting("training", "witOverRestMinStatGain", 25)
 
+    /** Whether a lone low-value training left after the others were skipped for risk is dropped, so the bot takes the pal date or rests instead. */
+    private val enableRestOverLowValueTraining: Boolean = SettingsHelper.getBooleanSetting("training", "enableRestOverLowValueTraining", true)
+
+    /** The main stat gain at or above which that lone training is kept anyway. */
+    private val restOverLowValueMinStatGain: Int = SettingsHelper.getIntSetting("training", "restOverLowValueMinStatGain", 25)
+
     /** Whether the expected-value failure gate is active. When on, trainings whose total stat gain is poor value for their failure chance are skipped. */
     private val enableExpectedValueGate: Boolean = SettingsHelper.getBooleanSetting("training", "enableExpectedValueGate", true)
 
@@ -1025,6 +1031,41 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          */
         fun witExemptFromFailureChance(stat: StatName, mainStatGain: Int, enableWitOverRest: Boolean, witOverRestMinStatGain: Int): Boolean =
             enableWitOverRest && stat == StatName.WIT && mainStatGain >= witOverRestMinStatGain
+
+        /** Skip reason for a training over its failure-chance ceiling. The raised-ceiling variants append a suffix, so match it as a prefix. */
+        const val SKIP_HIGH_FAILURE_CHANCE = "high failure chance"
+
+        /** Skip reason for a training whose total gain is poor value for its failure chance. */
+        const val SKIP_POOR_VALUE_FOR_RISK = "poor value for risk"
+
+        /** Skip reason for a lone low-value training dropped so a tired trainee recovers energy instead. */
+        const val SKIP_LOW_VALUE_WHILE_TIRED = "low value while tired"
+
+        /** Energy at or above which a lone low-value training is always kept, because a rest from there recovers too little to beat even a small gain. */
+        const val REST_OVER_LONE_TRAINING_MAX_ENERGY = 50
+
+        /**
+         * Whether to drop the only training left this turn so the empty map backs out to energy recovery (the pal date or a rest). It fires only when every other analyzed training
+         * was skipped for risk, which shows the trainee is tired, and the survivor carries nothing but a small main stat gain. Pure and unit-testable.
+         *
+         * @param survivor The one training that passed every filter this turn.
+         * @param otherSkipReasons The skip reasons of the analyzed trainings that did not pass. Blacklisted and restricted trainings are never analyzed, so they are not here.
+         * @param energy The trainee's current energy percentage.
+         * @param isFinale Whether it is the Finale, whose forced-Wit handling owns these turns.
+         * @param enabled Whether the user turned the rule on.
+         * @param minStatGain The main stat gain at or above which the lone training is kept.
+         * @return True when the lone training should be dropped in favor of recovering energy.
+         */
+        fun restsOverLoneTraining(survivor: TrainingOption, otherSkipReasons: List<String?>, energy: Int, isFinale: Boolean, enabled: Boolean, minStatGain: Int): Boolean {
+            if (!enabled || isFinale || otherSkipReasons.isEmpty() || energy >= REST_OVER_LONE_TRAINING_MAX_ENERGY) return false
+            if (!otherSkipReasons.all { it != null && (it.startsWith(SKIP_HIGH_FAILURE_CHANCE) || it == SKIP_POOR_VALUE_FOR_RISK) }) return false
+            // A maxed (orange) bond builds nothing more, so only bars still growing count as support value.
+            return survivor.relationshipBars.none { it.dominantColor != "orange" } &&
+                survivor.numSkillHints == 0 &&
+                survivor.numRainbow == 0 &&
+                !survivor.isBurstReady &&
+                survivor.mainStatGain < minStatGain
+        }
 
         /**
          * The additive Unity Cup Extreme Spirit Burst score bonus for `count` supports ready to extreme-burst. Shared by the Junior/Classic Unity scorer and the Senior-year path so the
@@ -2000,12 +2041,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             // Process results and populate training maps.
             processAnalysisResults(analysisResults, ignoreFailureChance, test, args)
 
-            // Every facility was rejected by the per-training filters. Mirror handleTraining's own reasoning: treat it as an
-            // energy problem (recover energy) unless the emptiness is purely restriction/blacklist, which resting cannot fix.
-            if (!test && !singleTraining && trainingMap.isEmpty()) {
-                needsEnergyRecovery = !allTrainingsRestrictedOrBlacklisted
-            }
-
             // Store analysis results in cache for reuse during the same turn.
             if (!test && !singleTraining) {
                 cachedAnalysisResults = analysisResults.toList()
@@ -2069,16 +2104,16 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                             TAG,
                             "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%) despite high main stat gain of $mainStatGain.",
                         )
-                        "high failure chance (risky)"
+                        "$SKIP_HIGH_FAILURE_CHANCE (risky)"
                     } else if (witExempt) {
                         MessageLog.i(
                             TAG,
                             "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding even the raised Wit threshold ($effectiveFailureChance%).",
                         )
-                        "high failure chance (wit)"
+                        "$SKIP_HIGH_FAILURE_CHANCE (wit)"
                     } else {
                         MessageLog.i(TAG, "[TRAINING] Skipping ${result.name} training due to failure chance (${result.failureChance}%) exceeding threshold ($effectiveFailureChance%).")
-                        "high failure chance"
+                        SKIP_HIGH_FAILURE_CHANCE
                     }
 
                 // Store the skipped training for logging purposes.
@@ -2113,7 +2148,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                         TAG,
                         "[TRAINING] Skipping ${result.name} training: poor value for risk (total gain $totalStatGain < ${expectedValueGainPerFailPercent}x fail ${result.failureChance}%).",
                     )
-                    val skippedTraining = result.toSkippedOption("poor value for risk")
+                    val skippedTraining = result.toSkippedOption(SKIP_POOR_VALUE_FOR_RISK)
                     skippedTrainingMap[result.name] = skippedTraining
                     continue
                 }
@@ -2143,6 +2178,29 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     trainingLevel = result.trainingLevel,
                 )
             trainingMap[result.name] = newTraining
+        }
+
+        // A tired trainee with one bare, low-gain training left gets more from the pal date or a rest. Dropping it empties the map, which backs out to energy recovery.
+        if (!test && !ignoreFailureChance) {
+            val otherSkipReasons = skippedTrainingMap.values.map { it.skipReason }
+            trainingMap.values
+                .singleOrNull()
+                ?.takeIf { restsOverLoneTraining(it, otherSkipReasons, campaign.trainee.energy, campaign.date.bIsFinaleSeason, enableRestOverLowValueTraining, restOverLowValueMinStatGain) }
+                ?.let { survivor ->
+                    MessageLog.i(
+                        TAG,
+                        "[TRAINING] Skipping ${survivor.name} training: $SKIP_LOW_VALUE_WHILE_TIRED (main gain ${survivor.mainStatGain} < $restOverLowValueMinStatGain, no bonds to build, every other training too risky).",
+                    )
+                    trainingMap.remove(survivor.name)
+                    skippedTrainingMap[survivor.name] = survivor.copy(skipReason = SKIP_LOW_VALUE_WHILE_TIRED)
+                }
+        }
+
+        // Every facility was rejected by the per-training filters. Mirror handleTraining's own reasoning: treat it as an energy problem (recover energy)
+        // unless the emptiness is purely restriction/blacklist, which resting cannot fix. Both the fresh and the cached pass land here.
+        val singleTraining = args["singleTraining"] as? Boolean ?: false
+        if (!test && !singleTraining && trainingMap.isEmpty()) {
+            needsEnergyRecovery = !allTrainingsRestrictedOrBlacklisted
         }
     }
 

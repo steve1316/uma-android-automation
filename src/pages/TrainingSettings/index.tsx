@@ -168,6 +168,8 @@ const TrainingSettings = () => {
         enableWitOverRest,
         witOverRestMaxFailureChance,
         witOverRestMinStatGain,
+        enableRestOverLowValueTraining,
+        restOverLowValueMinStatGain,
         trainWitDuringFinale,
         enableLongGoalStaminaFloor,
         enablePrioritizeSkillHints,
@@ -780,6 +782,33 @@ const TrainingSettings = () => {
                                                 description="When the Wit training's main stat gain meets or exceeds this value, Wit uses its higher maximum failure chance."
                                                 searchId="wit-over-rest-min-stat-gain"
                                                 parentId="enable-wit-over-rest"
+                                            />
+                                        </View>
+                                    )}
+
+                                    <ToggleSetting
+                                        id="enable-rest-over-low-value-training"
+                                        title="Rest Instead of a Lone Low-Value Training"
+                                        description="Below 50% energy, when every other training is too risky and the one left has no bonds to build, skill hint or rainbow, take the recreation date or rest instead of training it for a small gain."
+                                        checked={enableRestOverLowValueTraining}
+                                        onCheckedChange={(checked) => updateTrainingSetting("enableRestOverLowValueTraining", checked)}
+                                    />
+                                    {enableRestOverLowValueTraining && (
+                                        <View style={styles.sliderShell}>
+                                            <CustomSlider
+                                                value={restOverLowValueMinStatGain || defaultSettings.training.restOverLowValueMinStatGain}
+                                                placeholder={defaultSettings.training.restOverLowValueMinStatGain}
+                                                onValueChange={(value) => updateTrainingSetting("restOverLowValueMinStatGain", value)}
+                                                min={5}
+                                                max={100}
+                                                step={5}
+                                                label="Minimum Lone Training Main Stat Gain"
+                                                labelUnit=""
+                                                showValue={true}
+                                                showLabels={true}
+                                                description="The lone training is still trained when its main stat gain meets or exceeds this value."
+                                                searchId="rest-over-low-value-min-stat-gain"
+                                                parentId="enable-rest-over-low-value-training"
                                             />
                                         </View>
                                     )}
