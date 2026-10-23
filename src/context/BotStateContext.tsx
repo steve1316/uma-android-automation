@@ -179,6 +179,8 @@ export interface Settings {
         enableWitOverRest: boolean
         witOverRestMaxFailureChance: number
         witOverRestMinStatGain: number
+        enableRestOverLowValueTraining: boolean
+        restOverLowValueMinStatGain: number
         trainWitDuringFinale: boolean
         enableLongGoalStaminaFloor: boolean
         enablePrioritizeSkillHints: boolean
@@ -524,6 +526,8 @@ export const defaultSettings: Settings = {
         enableWitOverRest: false,
         witOverRestMaxFailureChance: 35,
         witOverRestMinStatGain: 25,
+        enableRestOverLowValueTraining: true,
+        restOverLowValueMinStatGain: 25,
         trainWitDuringFinale: false,
         enableLongGoalStaminaFloor: false,
         enablePrioritizeSkillHints: false,

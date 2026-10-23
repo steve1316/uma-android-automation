@@ -211,6 +211,9 @@ export function buildSettingsBanner(settings: Settings): string {
             ? `\n   🎯 Wit Maximum Failure Chance: ${settings.training.witOverRestMaxFailureChance}%\n   📊 Minimum Wit Main Stat Gain Threshold: ${settings.training.witOverRestMinStatGain}`
             : ""
     }
+😴 Rest Instead of a Lone Low-Value Training: ${settings.training.enableRestOverLowValueTraining ? "✅" : "❌"}${
+        settings.training.enableRestOverLowValueTraining ? `\n   📊 Minimum Lone Training Main Stat Gain: ${settings.training.restOverLowValueMinStatGain}` : ""
+    }
 🔄 Disable Training on Maxed Stat: ${settings.training.disableTrainingOnMaxedStat ? "✅" : "❌"}
 📏 Preferred Distance Override: ${settings.training.preferredDistanceOverride === "Default" ? "Default" : settings.training.preferredDistanceOverride}
 🌈 Enable Rainbow Training Bonus: ${settings.training.enableRainbowTrainingBonus ? "✅" : "❌"}

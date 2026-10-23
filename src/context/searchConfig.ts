@@ -226,6 +226,20 @@ const searchConfig: SearchOption[] = [
         parentId: "enable-wit-over-rest",
     },
     {
+        id: "enable-rest-over-low-value-training",
+        title: "Rest Instead of a Lone Low-Value Training",
+        description:
+            "Below 50% energy, when every other training is too risky and the one left has no bonds to build, skill hint or rainbow, take the recreation date or rest instead of training it for a small gain.",
+        page: "TrainingSettings",
+    },
+    {
+        id: "rest-over-low-value-min-stat-gain",
+        title: "Minimum Lone Training Main Stat Gain",
+        description: "The lone training is still trained when its main stat gain meets or exceeds this value.",
+        page: "TrainingSettings",
+        parentId: "enable-rest-over-low-value-training",
+    },
+    {
         id: "enable-prioritize-skill-hints",
         title: "Prioritize Skill Hints",
         description: "When enabled, the bot will prioritize acquiring skill hints, bypassing stat prioritization and blacklist, while still being constrained by the failure chance thresholds.",
