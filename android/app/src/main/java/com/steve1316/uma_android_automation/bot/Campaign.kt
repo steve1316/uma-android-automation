@@ -385,6 +385,9 @@ abstract class Campaign(game: Game) : Task(game) {
     /** Set when the Main screen handler stops to close a dialog it opened itself, so the next pass reuses this turn's date instead of reading it again. */
     private var bDateReadBeforeOwnDialog: Boolean = false
 
+    /** Set when a racing popup such as Insufficient Fans was closed since the last date read. It shows at the start of a turn, so it belongs to the turn read next. */
+    private var bRacingPopupBeforeDateRead: Boolean = false
+
     /** Flag indicating if the skill point threshold has been handled.
      * This is necessary since the user may have enabled the skill point check
      * skill spending plan. If their plan ends up not purchasing many skills,
@@ -703,15 +706,9 @@ abstract class Campaign(game: Game) : Task(game) {
                 }
             }
 
-            "goal_not_reached" -> {
+            "goal_not_reached", "insufficient_fans" -> {
                 // We are handling the logic for when to race on our own. Thus, we just close this warning.
-                racing.encounteredRacingPopup = true
-                result.dialog.close(game.imageUtils)
-            }
-
-            "insufficient_fans" -> {
-                // We are handling the logic for when to race on our own. Thus, we just close this warning.
-                racing.encounteredRacingPopup = true
+                markRacingPopup()
                 result.dialog.close(game.imageUtils)
             }
 
@@ -1200,6 +1197,7 @@ abstract class Campaign(game: Game) : Task(game) {
         bForcedWitTraining = false
         consecutiveButtonCancelMatches = 0
         racing.resetAfterAbort()
+        bRacingPopupBeforeDateRead = false
         training.clearAnalysisCache()
         if (SmartRaceSolverIntegration.discardPendingRace()) {
             MessageLog.i(TAG, "[RESYNC] Dropped the race staged before the pause, since its result was not seen.")
@@ -2289,7 +2287,7 @@ abstract class Campaign(game: Game) : Task(game) {
             return true
         } else if (IconRaceNotEnoughFans.check(game.imageUtils, sourceBitmap = bitmap)) {
             MessageLog.i(TAG, "[MISC] There was a popup about insufficient fans.")
-            racing.encounteredRacingPopup = true
+            markRacingPopup()
             ButtonCancel.click(game.imageUtils, sourceBitmap = bitmap)
             return true
         } else if (ButtonBack.click(game.imageUtils, sourceBitmap = bitmap)) {
@@ -2348,14 +2346,16 @@ abstract class Campaign(game: Game) : Task(game) {
             // Returning from the aptitudes or fans dialog the bot opened itself is still the same turn, so the date read is skipped.
             val dateChanged = if (bDateReadBeforeOwnDialog) false else updateDate()
             bDateReadBeforeOwnDialog = false
+            val bRacingPopupThisTurn = bRacingPopupBeforeDateRead
+            bRacingPopupBeforeDateRead = false
             // Show the new turn now, so a planned stop in performGlobalChecks() reports this turn and not the last one.
             DecisionTracer.pushProgress(date.day)
             // Once-per-run: log the Smart Race Solver Preview schedule and seed mid-run history
             // recovery now that the date is known, so it appears in logs before shop/items.
             SmartRaceSolverIntegration.runStartupHooks(game = game, currentTurn = date.day, scenario = game.scenario)
             if (dateChanged || !trainee.bHasUpdatedStats) {
-                // Reset common daily flags.
-                racing.encounteredRacingPopup = false
+                // Reset common daily flags. A racing popup closed just before this read came up at the start of this new turn, so it still forces a race.
+                racing.encounteredRacingPopup = bRacingPopupThisTurn
                 racing.raceRepeatWarningCheck = false
                 bHasTriedCheckingFansToday = false
                 bHasCheckedForMaidenRaceToday = false
@@ -2431,6 +2431,12 @@ abstract class Campaign(game: Game) : Task(game) {
      * @return True if a dialog was handled.
      */
     private fun closeOwnDialog(): Boolean = tryHandleAllDialogs().also { if (it) bDateReadBeforeOwnDialog = true }
+
+    /** Records a racing popup such as Insufficient Fans, which forces a race this turn and also on the turn read next if the date was not read yet. */
+    private fun markRacingPopup() {
+        racing.encounteredRacingPopup = true
+        bRacingPopupBeforeDateRead = true
+    }
 
     /**
      * Performs parallel turn-start updates for stats, skill points, mood, energy, and racing requirements.
