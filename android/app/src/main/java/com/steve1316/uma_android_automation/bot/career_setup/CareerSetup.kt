@@ -50,7 +50,9 @@ import com.steve1316.uma_android_automation.components.LabelCareerStartScenarioS
 import com.steve1316.uma_android_automation.components.LabelCareerStartSupportFormationHeader
 import com.steve1316.uma_android_automation.components.LabelCareerStartTraineeSelectHeader
 import com.steve1316.uma_android_automation.types.TrackDistance
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import com.steve1316.uma_android_automation.utils.ScreenLayout
 import com.steve1316.uma_android_automation.utils.ScrollList
 import org.json.JSONArray
 import org.json.JSONObject
@@ -453,8 +455,10 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         checkTp(bitmap)
         val keyword = SCENARIO_KEYWORDS[settings.scenario] ?: throw CampaignBreakpointException("Career Setup does not know the scenario \"${settings.scenario}\".")
         val next = anchorOf(ButtonNext, game.imageUtils.getSourceBitmap())
+        // The description box is centered on screen while Next is pinned to the bottom, so on a tall screen the box sits farther above Next.
+        val description = ScreenLayout.region(SCENARIO_DESCRIPTION, Anchor.CENTER, relativeTo = Anchor.BOTTOM)
         repeat(MAX_CAROUSEL_TAPS) {
-            val text = ocr(game.imageUtils.getSourceBitmap(), next, SCENARIO_DESCRIPTION, "scenarioDescription").lowercase().filter { it.isLetter() }
+            val text = ocr(game.imageUtils.getSourceBitmap(), next, description, "scenarioDescription").lowercase().filter { it.isLetter() }
             if (text.contains(keyword)) {
                 MessageLog.i(TAG, "[CAREER SETUP] Selected the ${settings.scenario} scenario.")
                 ButtonNext.click(game.imageUtils, tries = 5)
@@ -743,8 +747,9 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
     private fun readSelectedOutfit(): TraineeCard? {
         val bitmap = game.imageUtils.getSourceBitmap()
         val header = traineeHeader ?: anchorOf(LabelCareerStartTraineeSelectHeader, bitmap).also { traineeHeader = it }
-        val name = ocr(bitmap, header, TRAINEE_NAME_LINE, "traineeName")
-        val title = ocr(bitmap, header, TRAINEE_OUTFIT_LINE, "traineeOutfit")
+        // The trainee panel is centered on screen while the header is pinned to the top, so on a tall screen the lines sit farther below it.
+        val name = ocr(bitmap, header, ScreenLayout.region(TRAINEE_NAME_LINE, Anchor.CENTER, relativeTo = Anchor.TOP), "traineeName")
+        val title = ocr(bitmap, header, ScreenLayout.region(TRAINEE_OUTFIT_LINE, Anchor.CENTER, relativeTo = Anchor.TOP), "traineeOutfit")
         return CareerCatalog.match(title, name, settings.traineeCards.values).also { MessageLog.d(TAG, "[DEBUG] readSelectedOutfit:: \"$title $name\" -> ${it?.id}") }
     }
 
@@ -893,7 +898,7 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
         if (target !in 1..10) return
         val header = anchorOf(LabelCareerStartSupportFormationHeader, game.imageUtils.getSourceBitmap())
         repeat(MAX_CAROUSEL_TAPS) {
-            val current = ocrInt(game.imageUtils.getSourceBitmap(), header, DECK_TITLE, "deckTitle")
+            val current = ocrInt(game.imageUtils.getSourceBitmap(), header, ScreenLayout.region(DECK_TITLE, Anchor.CENTER, relativeTo = Anchor.TOP), "deckTitle")
             if (current == target) {
                 MessageLog.i(TAG, "[CAREER SETUP] Using Deck $target.")
                 return

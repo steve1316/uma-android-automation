@@ -50,8 +50,10 @@ import com.steve1316.uma_android_automation.types.RaceGrade
 import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.CustomImageUtils.RaceDetails
 import com.steve1316.uma_android_automation.utils.LogStreamServer
+import com.steve1316.uma_android_automation.utils.ScreenLayout
 import com.steve1316.uma_android_automation.utils.ScrollList
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
@@ -1050,7 +1052,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         val bbox =
             BoundingBox(
                 x = game.imageUtils.relX(0.0, 125),
-                y = game.imageUtils.relY(0.0, 1140),
+                y = game.imageUtils.relY(1140, Anchor.CENTER),
                 w = game.imageUtils.relWidth(825),
                 h = game.imageUtils.relHeight(45),
             )

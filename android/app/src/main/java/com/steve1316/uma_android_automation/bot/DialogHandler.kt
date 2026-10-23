@@ -13,6 +13,7 @@ import com.steve1316.uma_android_automation.components.IconHorseshoe
 import com.steve1316.uma_android_automation.components.RadioCareerQuickShortenAllEvents
 import com.steve1316.uma_android_automation.components.RadioPortrait
 import com.steve1316.uma_android_automation.types.BoundingBox
+import com.steve1316.uma_android_automation.utils.Anchor
 import org.opencv.core.Point
 
 /** Represents the result of a dialog handling operation. */
@@ -283,7 +284,7 @@ open class DialogHandler(val game: Game) {
                 val bbox =
                     BoundingBox(
                         x = game.imageUtils.relX(0.0, 160),
-                        y = game.imageUtils.relY(0.0, 770),
+                        y = game.imageUtils.relY(770, Anchor.CENTER),
                         w = game.imageUtils.relWidth(70),
                         h = game.imageUtils.relHeight(460),
                     )

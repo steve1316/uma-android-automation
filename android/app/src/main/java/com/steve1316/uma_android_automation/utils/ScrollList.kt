@@ -186,10 +186,10 @@ class ScrollList private constructor(
     val listBoundingBox: BoundingBox get() = bboxList
 
     /** The minimum height for a single entry. */
-    private val defaultMinEntryHeight: Int = game.imageUtils.relHeight((SharedData.displayHeight * 0.0781).toInt()) // 150px on 1920h
+    private val defaultMinEntryHeight: Int = game.imageUtils.relHeight(150)
 
     /** The maximum height for a single entry. */
-    private val defaultMaxEntryHeight: Int = game.imageUtils.relHeight((SharedData.displayHeight * 0.1302).toInt()) // 250px on 1920h
+    private val defaultMaxEntryHeight: Int = game.imageUtils.relHeight(250)
 
     /** The configuration used for image detection. */
     private val entryDetectionConfig =

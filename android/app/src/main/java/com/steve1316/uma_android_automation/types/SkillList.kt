@@ -15,6 +15,7 @@ import com.steve1316.uma_android_automation.types.SkillData
 import com.steve1316.uma_android_automation.types.SkillListEntry
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
@@ -34,6 +35,9 @@ private const val MAX_SKILL_SCROLLS = 10
 /** Left edge of each Skills-tab grid column, on the 1080-wide reference. */
 private const val SKILL_CELL_X_LEFT = 118
 private const val SKILL_CELL_X_RIGHT = 622
+
+/** Y of the Conditions and Skills tab buttons on the Umamusume Details dialog, on the 1920-tall reference. */
+internal const val DETAILS_TAB_Y = 952
 
 /** Top of the first Skills-tab row and the pitch between rows, on the 1920-tall reference. */
 private const val SKILL_GRID_TOP_Y = 1036
@@ -544,7 +548,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             // early and drop the rows still below it.
             emptyPasses = if (newFound == 0) emptyPasses + 1 else 0
             if (pass > 0 && emptyPasses >= 2) break
-            if (pass < MAX_SKILL_SCROLLS) scrollList?.scrollContentDownBy((SharedData.displayHeight * SKILL_SCROLL_TRAVEL_Y / 1920.0).toInt())
+            if (pass < MAX_SKILL_SCROLLS) scrollList?.scrollContentDownBy(game.imageUtils.relHeight(SKILL_SCROLL_TRAVEL_Y))
         }
 
         val skillNames: List<String> = ownedNames.values.map { it.name }
@@ -554,7 +558,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
 
     /** Switches the Umamusume Details dialog from its default Conditions tab to the Skills tab (a fixed position in the modal). Tapping it when already there is harmless. */
     private fun switchToSkillsTab() {
-        game.tap(SharedData.displayWidth * 0.736, SharedData.displayHeight * 0.496, "details_skills_tab")
+        game.tap(SharedData.displayWidth * 0.736, game.imageUtils.relY(DETAILS_TAB_Y, Anchor.CENTER).toDouble(), "details_skills_tab")
         game.wait(0.5, skipWaitingForLoading = true)
     }
 
@@ -587,16 +591,15 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      */
     private fun detailsSkillCellBbox(row: Int, col: Int, pass: Int): BoundingBox {
         val w = SharedData.displayWidth.toDouble()
-        val h = SharedData.displayHeight.toDouble()
         val x0 = if (col == 0) SKILL_CELL_X_LEFT else SKILL_CELL_X_RIGHT
         // Page 0 sits on the grid, but after a swipe the list settles ~40px low, so shift only the scrolled passes down to pull a wrapped name's second line into the crop without
         // clipping the tops of the aligned first-page rows.
         val yTop = SKILL_GRID_TOP_Y + row * SKILL_ROW_PITCH_Y + (if (pass == 0) 0 else 40)
         return BoundingBox(
             x = (w * x0 / 1080.0).toInt(),
-            y = (h * yTop / 1920.0).toInt(),
+            y = game.imageUtils.relY(yTop, Anchor.CENTER),
             w = (w * detailsSkillCellRefWidth(row, col) / 1080.0).toInt(),
-            h = (h * SKILL_CELL_REF_HEIGHT / 1920.0).toInt(),
+            h = game.imageUtils.relHeight(SKILL_CELL_REF_HEIGHT),
         )
     }
 
@@ -692,13 +695,12 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      */
     private fun isNegativeSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): Boolean {
         val w = SharedData.displayWidth.toDouble()
-        val h = SharedData.displayHeight.toDouble()
         // The patch sits on the tile's right edge. Take its row origin from the same box the OCR crops, so it follows the scrolled-pass offset - sampling the un-scrolled grid on a scrolled
         // pass lands 40px into a 112px row pitch, i.e. on the neighbouring tile, and would read that tile's colour instead of this one's.
         val sx = (w * (if (col == 0) 470 else 990) / 1080.0).toInt()
-        val sy = detailsSkillCellBbox(row, col, pass).y + (h * 14 / 1920.0).toInt()
+        val sy = detailsSkillCellBbox(row, col, pass).y + game.imageUtils.relHeight(14)
         val patchW = (w * 40 / 1080.0).toInt()
-        val patchH = (h * 40 / 1920.0).toInt()
+        val patchH = game.imageUtils.relHeight(40)
         var r = 0L
         var g = 0L
         var b = 0L
@@ -730,15 +732,14 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      */
     private fun readUniqueSkillLevel(bitmap: Bitmap): Int {
         val w = SharedData.displayWidth.toDouble()
-        val h = SharedData.displayHeight.toDouble()
         // The unique level is a single digit shown as "Lvl N"; crop tightly on just the number and read it at high scale so ML Kit does not drop it.
         val text =
             game.imageUtils.performOCROnRegion(
                 bitmap,
                 (w * 493 / 1080.0).toInt(),
-                (h * 1052 / 1920.0).toInt(),
+                game.imageUtils.relY(1052, Anchor.CENTER),
                 (w * 46 / 1080.0).toInt(),
-                (h * 48 / 1920.0).toInt(),
+                game.imageUtils.relHeight(48),
                 useThreshold = false,
                 useGrayscale = true,
                 scale = 3.0,
@@ -955,16 +956,16 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             if (bIsObtained) {
                 BoundingBox(
                     x = (localPoint.x - (SharedData.displayWidth * 0.77)).toInt(),
-                    y = (localPoint.y - (SharedData.displayHeight * 0.0599)).toInt(),
+                    y = game.imageUtils.relY(localPoint.y, -115),
                     w = (SharedData.displayWidth * 0.91).toInt(),
-                    h = (SharedData.displayHeight * 0.12).toInt(),
+                    h = game.imageUtils.relHeight(230),
                 )
             } else {
                 BoundingBox(
                     x = (localPoint.x - (SharedData.displayWidth * 0.86)).toInt(),
-                    y = (localPoint.y - (SharedData.displayHeight * 0.0583)).toInt(),
+                    y = game.imageUtils.relY(localPoint.y, -112),
                     w = (SharedData.displayWidth * 0.91).toInt(),
-                    h = (SharedData.displayHeight * 0.12).toInt(),
+                    h = game.imageUtils.relHeight(230),
                 )
             }
 

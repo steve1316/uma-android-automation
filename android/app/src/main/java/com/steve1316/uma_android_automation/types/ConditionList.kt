@@ -7,6 +7,7 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.components.ButtonConditions
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import org.opencv.core.Point
@@ -117,7 +118,7 @@ class ConditionList(private val game: Game) {
             if (!frameFull) break
             if (scrollList == null) break
             if (pass > 0 && emptyPasses >= 2) break
-            if (pass < MAX_CONDITION_SCROLLS) scrollList.scrollContentDownBy((SharedData.displayHeight * CONDITION_SCROLL_TRAVEL_Y / 1920.0).toInt())
+            if (pass < MAX_CONDITION_SCROLLS) scrollList.scrollContentDownBy(game.imageUtils.relHeight(CONDITION_SCROLL_TRAVEL_Y))
         }
         MessageLog.i(TAG, "[INFO] Read ${positives.size} positive, ${negatives.size} negative conditions. Positive: ${positives.joinToString(", ")}. Negative: ${negatives.joinToString(", ")}.")
         return DetailsConditionsResult(positives, negatives)
@@ -175,7 +176,7 @@ class ConditionList(private val game: Game) {
      * the closed one white. Against a screen showing the Skills tab open, the Skills template scores 0.43 and the Conditions template 0.56 - both far below the 0.8 needed to match.
      */
     private fun switchToConditionsTab() {
-        game.tap(SharedData.displayWidth * 0.264, SharedData.displayHeight * 0.496, "details_conditions_tab")
+        game.tap(SharedData.displayWidth * 0.264, game.imageUtils.relY(DETAILS_TAB_Y, Anchor.CENTER).toDouble(), "details_conditions_tab")
         game.wait(0.5, skipWaitingForLoading = true)
     }
 }
