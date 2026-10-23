@@ -2696,6 +2696,8 @@ abstract class Campaign(game: Game) : Task(game) {
 
         if (hasInjury) {
             // Injury handled internally in checkInjury, but returning NONE as turn is likely over or needs re-evaluation.
+            // The infirmary uses up the turn, so the date is read again on the next main screen.
+            bHasCheckedDateThisTurn = false
             decisionTracer.recordActionChoice(MainScreenAction.NONE, "Injury detected and handled internally; turn aborted for re-evaluation")
             return MainScreenAction.NONE
         }
