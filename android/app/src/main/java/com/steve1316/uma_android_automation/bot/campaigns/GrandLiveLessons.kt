@@ -124,8 +124,14 @@ val LESSON_CARD_CROPS =
         effect2 = TokenCrop(180, -150, 680, 95),
     )
 
-/** Crop of the card name at the top of a Lessons purchase dialog, relative to the screen's top-left at 1080p. */
-val LESSON_DIALOG_TITLE_CROP = TokenCrop(90, 150, 655, 75)
+/** Template for the green header of a Lessons purchase dialog. The dialog sits lower on taller screens, so its crops are measured from this instead of the screen top. */
+const val LESSON_DIALOG_HEADER_TEMPLATE = "components/dialog/dialog_title_gradient_0"
+
+/** Crop of the card name at the top of a Lessons purchase dialog, relative to the dialog header's center at 1080p. */
+val LESSON_DIALOG_TITLE_CROP = TokenCrop(-31, 53, 655, 75)
+
+/** Crop of the projected "<new> / <cap>" energy readout on a Lessons purchase dialog, relative to the dialog header's center at 1080p. */
+val LESSON_DIALOG_ENERGY_CROP = TokenCrop(434, 503, 250, 90)
 
 /** Header hues, in degrees, that mark a Song card. Measured on device: Song headers are purple at 254 degrees. */
 private val SONG_HEADER_HUES = 220f..290f
@@ -173,6 +179,12 @@ const val MAX_LESSON_DIALOG_MISMATCHES = 2
 
 /** Longest wait, in seconds, for the Lessons list to replace a bought card before rescanning anyway. */
 const val LESSON_REFRESH_TIMEOUT_SECONDS = 10.0
+
+/** Top of the band the Lessons cards fill on the 1080x1920 baseline, sampled to tell when the list holds still. */
+const val LESSON_LIST_TOP_Y = 288
+
+/** Bottom of the band the Lessons cards fill on the 1080x1920 baseline. */
+const val LESSON_LIST_BOTTOM_Y = 1536
 
 /** Where the "!" badge sits relative to the Lessons button label at 1080p. Tall because the badge bobs up and down. */
 val LESSONS_BADGE_REGION = TokenCrop(41, -173, 100, 120)
