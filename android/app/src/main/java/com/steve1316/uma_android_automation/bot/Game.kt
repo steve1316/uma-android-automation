@@ -26,7 +26,9 @@ import com.steve1316.uma_android_automation.components.BaseComponentInterface
 import com.steve1316.uma_android_automation.components.LabelConnecting
 import com.steve1316.uma_android_automation.components.LabelNowLoading
 import com.steve1316.uma_android_automation.components.Region
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import com.steve1316.uma_android_automation.utils.ScreenLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.opencv.core.Point
@@ -330,6 +332,9 @@ class Game(val myContext: Context) {
         // Print device and version information.
         MessageLog.i(TAG, "[INFO] Device Information: ${SharedData.displayWidth}x${SharedData.displayHeight}, DPI ${SharedData.displayDPI}")
         Region.refresh()
+        val topInset = ScreenLayout.detectTopInset(myContext) { imageUtils.getSourceBitmap() }
+        ScreenLayout.refresh(SharedData.displayWidth, SharedData.displayHeight, topInset)
+        MessageLog.i(TAG, "[INFO] Screen layout: ${topInset}px cutout band, centered UI shifted ${ScreenLayout.shift(Anchor.CENTER)}px, bottom UI ${ScreenLayout.shift(Anchor.BOTTOM)}px.")
         val isConfig1 = SharedData.displayWidth == 1080 && SharedData.displayHeight == 1920 && SharedData.displayDPI == 240
         val isConfig2 = SharedData.displayWidth == 1080 && SharedData.displayHeight == 2340 && SharedData.displayDPI == 450
         if (!isConfig1 && !isConfig2) {
