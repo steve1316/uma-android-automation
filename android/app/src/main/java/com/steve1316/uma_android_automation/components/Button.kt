@@ -218,7 +218,15 @@ val ButtonSortRating = button("sort_rating", Region.bottomHalf, confidence = 0.9
 val ButtonSortToggle = button("sort_toggle", Region.bottomHalf, confidence = 0.9)
 
 // Career Setup
-val ButtonCareerStartHomeCareer = button("career_start_home_career", Region.bottomHalf)
+/** The Career button on Home. A career in progress draws the button larger under its date bubble, so it needs its own template. */
+object ButtonCareerStartHomeCareer : MultiStateButtonInterface {
+    override val templates: List<Template> =
+        listOf(
+            Template("components/button/career_start_home_career", region = Region.bottomHalf),
+            Template("components/button/career_start_home_career_in_progress", region = Region.bottomHalf),
+        )
+}
+
 val ButtonCareerStartArrowRight = button("career_start_arrow_right", Region.rightHalf, confidence = 0.9)
 val ButtonCareerStartDeckArrowLeft = button("career_start_deck_arrow_left", Region.leftHalf, confidence = 0.9)
 val ButtonCareerStartDeckArrowRight = button("career_start_deck_arrow_right", Region.rightHalf, confidence = 0.9)
