@@ -212,6 +212,12 @@ open class DialogHandler(val game: Game) {
                 dialog.ok(game.imageUtils)
             }
 
+            // Opening Career from Home, or the game coming back after a restart, asks to resume the career in progress.
+            "continue_career" -> {
+                MessageLog.i(TAG, "[DIALOG] Resuming the career in progress.")
+                dialog.ok(game.imageUtils)
+            }
+
             "epithets" -> {
                 dialog.close(game.imageUtils)
             }
