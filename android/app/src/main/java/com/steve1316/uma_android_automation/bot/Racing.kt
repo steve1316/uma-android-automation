@@ -305,6 +305,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
      */
     var bRetryUntilFirst: Boolean = false
 
+    /** Whether the estimated View Results location was already tapped on this race prep screen. If the screen is still there afterwards, the race is run manually. */
+    private var bTriedEstimatedViewResults: Boolean = false
+
     /** Whether to stop the bot when a mandatory race is detected. */
     internal val enableStopOnMandatoryRace: Boolean = SettingsHelper.getBooleanSetting("racing", "enableStopOnMandatoryRaces")
 
@@ -413,6 +416,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
         /** The name of the race name column. */
         private const val RACES_COLUMN_NAME = "name"
+
+        /** How far left of the Race button's center the View Results button's center sits on the race prep screen at the 1080px baseline. Both share one row. */
+        private const val VIEW_RESULTS_OFFSET_FROM_RACE_X = -325
 
         /** The name of the race grade column. */
         private const val RACES_COLUMN_GRADE = "grade"
@@ -1271,7 +1277,20 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             game.wait(3.0)
             retriesThisRace++
             raceRetries--
+            bTriedEstimatedViewResults = false
         }
+    }
+
+    /**
+     * Estimates where the View Results button is from the Race button beside it. Used when the View Results text itself fails to match, such as when
+     * the game renders the UI slightly smaller than the template on some screen sizes.
+     *
+     * @param sourceBitmap The race prep screen to search.
+     * @return The estimated center of the View Results button, or null if the Race button was not found either.
+     */
+    private fun estimateViewResultsLocation(sourceBitmap: Bitmap): Point? {
+        val raceLocation: Point = ButtonRaceManual.findImageWithBitmap(game.imageUtils, sourceBitmap) ?: return null
+        return Point(game.imageUtils.relX(raceLocation.x, VIEW_RESULTS_OFFSET_FROM_RACE_X).toDouble(), raceLocation.y)
     }
 
     /**
@@ -1307,6 +1326,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         var bDidSelectRaceStrategy = false
         retriesThisRace = 0
         bRetryUntilFirst = retryUntilFirst
+        bTriedEstimatedViewResults = false
 
         // Safety counter to prevent infinite loop.
         var loopCount = 0
@@ -1367,7 +1387,19 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                         }
 
                         null -> {
-                            MessageLog.w(TAG, "[WARN] runRaceWithRetries:: At Race prep screen but failed to detect ViewResults button.")
+                            // Try the estimated location once. If the prep screen is still here on the next pass, the estimate missed or skip is locked.
+                            val estimate: Point? = if (bTriedEstimatedViewResults) null else estimateViewResultsLocation(bitmap)
+                            if (estimate != null) {
+                                bTriedEstimatedViewResults = true
+                                MessageLog.w(TAG, "[WARN] runRaceWithRetries:: Failed to detect ViewResults button. Tapping its estimated location at $estimate next to the Race button.")
+                                ButtonViewResults.tap(estimate.x, estimate.y, ButtonViewResults.template.path)
+                                game.waitForLoading()
+                            } else if (ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap)) {
+                                MessageLog.w(TAG, "[WARN] runRaceWithRetries:: Failed to skip with the ViewResults button. Running race manually.")
+                                game.waitForLoading()
+                            } else {
+                                MessageLog.w(TAG, "[WARN] runRaceWithRetries:: At Race prep screen but failed to detect both the ViewResults and Race buttons.")
+                            }
                         }
                     }
                 }
@@ -1421,6 +1453,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     MessageLog.i(TAG, "[RACE] Finished below 1st place. Retrying for the win...")
                     if (ButtonTryAgainAlt.click(game.imageUtils, sourceBitmap = bitmap)) {
                         game.wait(3.0)
+                        bTriedEstimatedViewResults = false
                     }
                 }
 
