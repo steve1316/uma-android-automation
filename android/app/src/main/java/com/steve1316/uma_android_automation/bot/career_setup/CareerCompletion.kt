@@ -11,6 +11,7 @@ import com.steve1316.uma_android_automation.components.ButtonConfirm
 import com.steve1316.uma_android_automation.components.ButtonMenuBarHome
 import com.steve1316.uma_android_automation.components.ButtonNext
 import com.steve1316.uma_android_automation.components.ButtonOk
+import com.steve1316.uma_android_automation.components.ButtonToHome
 import com.steve1316.uma_android_automation.components.DialogUtils
 
 /** How long finishing a career may take before the bot gives up, in seconds. The screens take about a minute with every animation. */
@@ -19,8 +20,11 @@ private const val COMPLETION_TIMEOUT_SECONDS = 180
 /** Dialogs that are confirmed to move the finish forward. Every other dialog on the way, such as Career Complete or Event Home, is closed or cancelled. */
 private val CONFIRMED_DIALOGS = setOf("complete_career", "sparks_confirmation")
 
-/** Buttons that end the tapping between screens: Home, or a button on the next screen or dialog to act on. */
-private val WAYPOINTS = arrayOf(ButtonMenuBarHome, ButtonCompleteCareer, ButtonNext, ButtonConfirm, ButtonOk, ButtonClose, ButtonCancel)
+/**
+ * Buttons that end the tapping between screens: Home, or a button on the next screen or dialog to act on.
+ * To Home is there for the Career Complete dialog that has no Close button.
+ */
+private val WAYPOINTS = arrayOf(ButtonMenuBarHome, ButtonCompleteCareer, ButtonNext, ButtonConfirm, ButtonOk, ButtonClose, ButtonCancel, ButtonToHome)
 
 /** The one tap to make on a screen while finishing a career. */
 internal enum class CompletionStep { DONE, COMPLETE_CAREER, NEXT, CONFIRM, OK, CLOSE, WAIT }
