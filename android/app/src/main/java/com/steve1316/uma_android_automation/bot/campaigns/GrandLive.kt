@@ -35,6 +35,7 @@ import com.steve1316.uma_android_automation.components.LabelGrandLiveMaxHype
 import com.steve1316.uma_android_automation.components.LabelGrandLivePerformancePoints
 import com.steve1316.uma_android_automation.types.Aptitude
 import com.steve1316.uma_android_automation.types.StatName
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.grayOf
 import org.opencv.core.Point
 
@@ -318,11 +319,14 @@ class GrandLive(game: Game) : Campaign(game) {
             game.wait(game.dialogWaitDelay)
 
             val confirmSource = game.imageUtils.getSourceBitmap()
+            // Only the title and energy checks below read from the header, so it is matched the first time one of them needs it.
+            val dialogHeader: Point? by lazy { game.imageUtils.findImageWithBitmap(LESSON_DIALOG_HEADER_TEMPLATE, confirmSource, suppressError = true) }
 
             // The list can refresh under the tap and open a different card than the one scanned, so check the dialog names the chosen card.
             // An unreadable card name cannot be checked, so it falls through to the Learn button check below.
             if (choice.name.isNotBlank()) {
-                val dialogTitle = ocrCard(confirmSource, Point(0.0, 0.0), LESSON_DIALOG_TITLE_CROP, "grandlive_lesson_dialog_title")
+                // A missing header means no dialog opened, which counts as a mismatch so it is cancelled and rescanned.
+                val dialogTitle = dialogHeader?.let { ocrCard(confirmSource, it, LESSON_DIALOG_TITLE_CROP, "grandlive_lesson_dialog_title") } ?: ""
                 if (!isSameLessonTitle(dialogTitle, choice.name)) {
                     MessageLog.w(TAG, "[GRAND_LIVE] Purchase dialog reads \"$dialogTitle\", not '${choice.name}'. Cancelling and rescanning.")
                     cancelPurchaseDialog(confirmSource)
@@ -334,7 +338,7 @@ class GrandLive(game: Game) : Campaign(game) {
             // For an Energy card away from the final concert, read the dialog's printed "<new> / <cap>" and cancel if it would cap out (wasted energy).
             // Reading the dialog avoids relying on the trainee's energy, which is unknown when the bot is started straight on a concert screen.
             if (!isFinalConcert && parseEnergyGain(choice.effectText) != null) {
-                val projected = readDialogProjectedEnergy(confirmSource)
+                val projected = dialogHeader?.let { readDialogProjectedEnergy(confirmSource, it) }
                 if (projected != null && projected.first >= projected.second) {
                     MessageLog.i(TAG, "[GRAND_LIVE] Skipping '${choice.name}': projected energy ${projected.first}/${projected.second} would overflow.")
                     cancelPurchaseDialog(confirmSource)
@@ -507,7 +511,8 @@ class GrandLive(game: Game) : Campaign(game) {
     }
 
     /**
-     * Samples the Lessons list as gray pixels, every 4th pixel across the band the cards fill, to tell when the list changes or holds still.
+     * Samples the Lessons list as gray pixels, every 4th pixel across the band the cards fill, to tell when the list changes or holds still. The
+     * band follows the centered cards, so on a tall screen it stays clear of the animated stage lights and music notes above and below them.
      *
      * @param sourceBitmap The screenshot.
      * @return The sampled gray pixels.
@@ -515,8 +520,8 @@ class GrandLive(game: Game) : Campaign(game) {
     private fun lessonListGray(sourceBitmap: Bitmap): IntArray {
         val left = (sourceBitmap.width * 0.05).toInt()
         val right = (sourceBitmap.width * 0.95).toInt()
-        val top = (sourceBitmap.height * 0.15).toInt()
-        val bottom = (sourceBitmap.height * 0.80).toInt()
+        val top = game.imageUtils.relY(LESSON_LIST_TOP_Y, Anchor.CENTER)
+        val bottom = game.imageUtils.relY(LESSON_LIST_BOTTOM_Y, Anchor.CENTER)
         val row = IntArray(right - left)
         val columns = (row.size + 3) / 4
         val gray = IntArray(((bottom - top + 3) / 4) * columns)
@@ -618,16 +623,18 @@ class GrandLive(game: Game) : Campaign(game) {
      * Energy purchase that would cap out. Reads the dialog rather than the trainee's energy, which is unknown when the bot starts on a concert screen.
      *
      * @param sourceBitmap The confirmation-dialog screenshot.
+     * @param dialogHeader The center of the dialog's header, which the readout is measured from.
      * @return The projected new energy and the cap it was read against, or null when the readout could not be parsed.
      */
-    private fun readDialogProjectedEnergy(sourceBitmap: Bitmap): Pair<Int, Int>? {
+    private fun readDialogProjectedEnergy(sourceBitmap: Bitmap, dialogHeader: Point): Pair<Int, Int>? {
+        val (x, y, width, height) = anchoredRect(dialogHeader, LESSON_DIALOG_ENERGY_CROP).toList()
         val text =
             game.imageUtils.performOCROnRegion(
                 sourceBitmap,
-                game.imageUtils.relX(0.0, 555),
-                game.imageUtils.relY(0.0, 600),
-                game.imageUtils.relWidth(250),
-                game.imageUtils.relHeight(90),
+                x,
+                y,
+                width,
+                height,
                 useThreshold = true,
                 useGrayscale = true,
                 scale = 2.0,

@@ -50,8 +50,10 @@ import com.steve1316.uma_android_automation.types.RaceGrade
 import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
+import com.steve1316.uma_android_automation.utils.Anchor
 import com.steve1316.uma_android_automation.utils.CustomImageUtils.RaceDetails
 import com.steve1316.uma_android_automation.utils.LogStreamServer
+import com.steve1316.uma_android_automation.utils.ScreenLayout
 import com.steve1316.uma_android_automation.utils.ScrollList
 import net.ricecode.similarity.JaroWinklerStrategy
 import net.ricecode.similarity.StringSimilarityServiceImpl
@@ -70,6 +72,14 @@ import kotlin.math.abs
  * tier, which races anyway and logs a warning, so the warning is the tripwire for widening this.
  */
 private val GOAL_CRITERIA_SHRINK_FACTORS: List<Double> = (100 downTo 80).map { it / 100.0 }
+
+/**
+ * Factors to shrink the fan and trophy goal counter templates by on a tall 1080p screen, ordered most likely first.
+ *
+ * The counters render about 6% smaller on a 1080x2340 screen than in the captured templates.
+ * There the fan counter scores 0.85 at full size but 0.94 when shrunk to 0.94, so a single-size check missed the goal and the bot never raced for it.
+ */
+private val TALL_GOAL_COUNTER_SHRINK_FACTORS: List<Double> = listOf(1.0, 0.98, 0.96, 0.94)
 
 /** X of the double-star icon on the race list at the 1080px baseline. Rows without the icon use it to place the race name crop. */
 private const val PICKED_RACE_STAR_X = 881
@@ -295,6 +305,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
      */
     var bRetryUntilFirst: Boolean = false
 
+    /** Whether the estimated View Results location was already tapped on this race prep screen. If the screen is still there afterwards, the race is run manually. */
+    private var bTriedEstimatedViewResults: Boolean = false
+
     /** Whether to stop the bot when a mandatory race is detected. */
     internal val enableStopOnMandatoryRace: Boolean = SettingsHelper.getBooleanSetting("racing", "enableStopOnMandatoryRaces")
 
@@ -403,6 +416,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
         /** The name of the race name column. */
         private const val RACES_COLUMN_NAME = "name"
+
+        /** How far left of the Race button's center the View Results button's center sits on the race prep screen at the 1080px baseline. Both share one row. */
+        private const val VIEW_RESULTS_OFFSET_FROM_RACE_X = -325
 
         /** The name of the race grade column. */
         private const val RACES_COLUMN_GRADE = "grade"
@@ -899,7 +915,9 @@ class Racing(private val game: Game, private val campaign: Campaign) {
 
         // Check for fan requirement on the main screen.
         val sourceBitmapToUse = sourceBitmap ?: game.imageUtils.getSourceBitmap()
-        val needsFanRequirement = LabelRaceCriteriaFans.check(game.imageUtils, sourceBitmap = sourceBitmapToUse, confidence = 0.9)
+        // The counters only render smaller on a tall screen. The templates were captured at 1080x1920, so full size is enough there.
+        val goalCounterFactors = if (ScreenLayout.isTall) TALL_GOAL_COUNTER_SHRINK_FACTORS else listOf(1.0)
+        val needsFanRequirement = LabelRaceCriteriaFans.checkAtScales(game.imageUtils, sourceBitmap = sourceBitmapToUse, shrinkFactors = goalCounterFactors) != null
         if (needsFanRequirement) {
             hasFanRequirement = true
             MessageLog.i(TAG, "[RACE] Fan requirement criteria detected on main screen. Forcing racing to fulfill requirement.")
@@ -911,7 +929,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             }
 
             // Check for trophy requirement on the main screen. The counter doubles as the anchor for the criteria line sitting directly above it.
-            val trophyCounterLocation = LabelRaceCriteriaTrophies.findImageWithBitmap(game.imageUtils, sourceBitmap = sourceBitmapToUse, confidence = 0.9)
+            val trophyCounterLocation = LabelRaceCriteriaTrophies.findAtScales(game.imageUtils, sourceBitmap = sourceBitmapToUse, shrinkFactors = goalCounterFactors)
             if (trophyCounterLocation != null) {
                 hasTrophyRequirement = true
 
@@ -1050,7 +1068,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         val bbox =
             BoundingBox(
                 x = game.imageUtils.relX(0.0, 125),
-                y = game.imageUtils.relY(0.0, 1140),
+                y = game.imageUtils.relY(1140, Anchor.CENTER),
                 w = game.imageUtils.relWidth(825),
                 h = game.imageUtils.relHeight(45),
             )
@@ -1259,7 +1277,20 @@ class Racing(private val game: Game, private val campaign: Campaign) {
             game.wait(3.0)
             retriesThisRace++
             raceRetries--
+            bTriedEstimatedViewResults = false
         }
+    }
+
+    /**
+     * Estimates where the View Results button is from the Race button beside it. Used when the View Results text itself fails to match, such as when
+     * the game renders the UI slightly smaller than the template on some screen sizes.
+     *
+     * @param sourceBitmap The race prep screen to search.
+     * @return The estimated center of the View Results button, or null if the Race button was not found either.
+     */
+    private fun estimateViewResultsLocation(sourceBitmap: Bitmap): Point? {
+        val raceLocation: Point = ButtonRaceManual.findImageWithBitmap(game.imageUtils, sourceBitmap) ?: return null
+        return Point(game.imageUtils.relX(raceLocation.x, VIEW_RESULTS_OFFSET_FROM_RACE_X).toDouble(), raceLocation.y)
     }
 
     /**
@@ -1295,6 +1326,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
         var bDidSelectRaceStrategy = false
         retriesThisRace = 0
         bRetryUntilFirst = retryUntilFirst
+        bTriedEstimatedViewResults = false
 
         // Safety counter to prevent infinite loop.
         var loopCount = 0
@@ -1355,7 +1387,19 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                         }
 
                         null -> {
-                            MessageLog.w(TAG, "[WARN] runRaceWithRetries:: At Race prep screen but failed to detect ViewResults button.")
+                            // Try the estimated location once. If the prep screen is still here on the next pass, the estimate missed or skip is locked.
+                            val estimate: Point? = if (bTriedEstimatedViewResults) null else estimateViewResultsLocation(bitmap)
+                            if (estimate != null) {
+                                bTriedEstimatedViewResults = true
+                                MessageLog.w(TAG, "[WARN] runRaceWithRetries:: Failed to detect ViewResults button. Tapping its estimated location at $estimate next to the Race button.")
+                                ButtonViewResults.tap(estimate.x, estimate.y, ButtonViewResults.template.path)
+                                game.waitForLoading()
+                            } else if (ButtonRaceManual.click(game.imageUtils, sourceBitmap = bitmap)) {
+                                MessageLog.w(TAG, "[WARN] runRaceWithRetries:: Failed to skip with the ViewResults button. Running race manually.")
+                                game.waitForLoading()
+                            } else {
+                                MessageLog.w(TAG, "[WARN] runRaceWithRetries:: At Race prep screen but failed to detect both the ViewResults and Race buttons.")
+                            }
                         }
                     }
                 }
@@ -1409,6 +1453,7 @@ class Racing(private val game: Game, private val campaign: Campaign) {
                     MessageLog.i(TAG, "[RACE] Finished below 1st place. Retrying for the win...")
                     if (ButtonTryAgainAlt.click(game.imageUtils, sourceBitmap = bitmap)) {
                         game.wait(3.0)
+                        bTriedEstimatedViewResults = false
                     }
                 }
 

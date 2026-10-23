@@ -326,6 +326,34 @@ interface ComponentInterface : BaseComponentInterface {
      * @return The factor that matched, or null if the component was not found at any of them.
      */
     fun checkAtScales(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, shrinkFactors: List<Double>, region: IntArray? = null, confidence: Double? = null): Double? {
+        return matchAtScales(imageUtils, sourceBitmap, shrinkFactors, region, confidence)?.first
+    }
+
+    /**
+     * Finds the component on screen, shrinking the template by each factor in [shrinkFactors] until one matches.
+     *
+     * @param imageUtils A reference to a CustomImageUtils instance.
+     * @param sourceBitmap The source bitmap to search within.
+     * @param shrinkFactors The factors to shrink the template by, in the order they should be attempted.
+     * @param region The screen region to search in.
+     * @param confidence The threshold (0.0, 1.0] required for a match.
+     * @return The location of the match, or null if the component was not found at any of the factors.
+     */
+    fun findAtScales(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, shrinkFactors: List<Double>, region: IntArray? = null, confidence: Double? = null): Point? {
+        return matchAtScales(imageUtils, sourceBitmap, shrinkFactors, region, confidence)?.second
+    }
+
+    /**
+     * Shared body of [checkAtScales] and [findAtScales].
+     *
+     * @param imageUtils A reference to a CustomImageUtils instance.
+     * @param sourceBitmap The source bitmap to search within.
+     * @param shrinkFactors The factors to shrink the template by, in the order they should be attempted.
+     * @param region The screen region to search in.
+     * @param confidence The threshold (0.0, 1.0] required for a match.
+     * @return The factor that matched and the match location, or null if the component was not found at any of the factors.
+     */
+    private fun matchAtScales(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, shrinkFactors: List<Double>, region: IntArray?, confidence: Double?): Pair<Double, Point>? {
         val templateBitmap: Bitmap = template.getBitmap(imageUtils) ?: return null
         return imageUtils.matchTemplateAtScales(
             sourceBitmap = sourceBitmap,

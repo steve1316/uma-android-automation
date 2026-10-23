@@ -227,9 +227,10 @@ object ButtonCareerStartHomeCareer : MultiStateButtonInterface {
         )
 }
 
-val ButtonCareerStartArrowRight = button("career_start_arrow_right", Region.rightHalf, confidence = 0.9)
-val ButtonCareerStartDeckArrowLeft = button("career_start_deck_arrow_left", Region.leftHalf, confidence = 0.9)
-val ButtonCareerStartDeckArrowRight = button("career_start_deck_arrow_right", Region.rightHalf, confidence = 0.9)
+// The carousel arrow templates keep only the chevron's point, since the art behind them changes with each scenario and deck.
+val ButtonCareerStartArrowRight = button("career_start_arrow_right", Region.rightHalf)
+val ButtonCareerStartDeckArrowLeft = button("career_start_deck_arrow_left", Region.leftHalf)
+val ButtonCareerStartDeckArrowRight = button("career_start_deck_arrow_right", Region.rightHalf)
 val ButtonCareerStartFriendRefresh = button("career_start_friend_refresh", Region.bottomHalf)
 
 // Also matches the Support Formation Reset, so only use it once the Legacy Select header is confirmed.
@@ -241,7 +242,8 @@ val ButtonCareerStartIndependentStart = button("career_start_independent_start",
 /** The green Career button on the Independent Training dialog, which claims a finished one. */
 val ButtonCareerStartIndependentCareer = button("career_start_independent_career", Region.bottomHalf)
 
-// The three story skip states differ only by their triangles and score 0.82 against each other.
-val ButtonCareerStartStorySkipOff = button("career_start_story_skip_off", Region.bottomHalf, confidence = 0.95)
-val ButtonCareerStartStorySkipOne = button("career_start_story_skip_one", Region.bottomHalf, confidence = 0.95)
-val ButtonCareerStartStorySkipTwo = button("career_start_story_skip_two", Region.bottomHalf, confidence = 0.95)
+// The three story skip states differ only by their triangles but score at most 0.72 against each other, so the default 0.8 tells them apart.
+// A stricter threshold misses them on a 1080x2340 screen, where the right state only scores about 0.84.
+val ButtonCareerStartStorySkipOff = button("career_start_story_skip_off", Region.bottomHalf)
+val ButtonCareerStartStorySkipOne = button("career_start_story_skip_one", Region.bottomHalf)
+val ButtonCareerStartStorySkipTwo = button("career_start_story_skip_two", Region.bottomHalf)
