@@ -227,9 +227,10 @@ object ButtonCareerStartHomeCareer : MultiStateButtonInterface {
         )
 }
 
-val ButtonCareerStartArrowRight = button("career_start_arrow_right", Region.rightHalf, confidence = 0.9)
-val ButtonCareerStartDeckArrowLeft = button("career_start_deck_arrow_left", Region.leftHalf, confidence = 0.9)
-val ButtonCareerStartDeckArrowRight = button("career_start_deck_arrow_right", Region.rightHalf, confidence = 0.9)
+// The carousel arrow templates keep only the chevron's point, since the art behind them changes with each scenario and deck.
+val ButtonCareerStartArrowRight = button("career_start_arrow_right", Region.rightHalf)
+val ButtonCareerStartDeckArrowLeft = button("career_start_deck_arrow_left", Region.leftHalf)
+val ButtonCareerStartDeckArrowRight = button("career_start_deck_arrow_right", Region.rightHalf)
 val ButtonCareerStartFriendRefresh = button("career_start_friend_refresh", Region.bottomHalf)
 
 // Also matches the Support Formation Reset, so only use it once the Legacy Select header is confirmed.
