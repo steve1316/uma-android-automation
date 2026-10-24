@@ -272,6 +272,19 @@
             "Dirt": "E"
         }
     },
+    "Hokko Tarumae": {
+        "name": "Hokko Tarumae",
+        "distanceAptitudes": {
+            "Sprint": "F",
+            "Mile": "A",
+            "Medium": "A",
+            "Long": "E"
+        },
+        "surfaceAptitudes": {
+            "Turf": "G",
+            "Dirt": "A"
+        }
+    },
     "Inari One": {
         "name": "Inari One",
         "distanceAptitudes": {

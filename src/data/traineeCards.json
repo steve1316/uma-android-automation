@@ -2529,6 +2529,29 @@
             "wit": 20
         }
     },
+    "109901": {
+        "name": "Hokko Tarumae",
+        "title": "[Starry Lightship]",
+        "aptitudes": {
+            "turf": "G",
+            "dirt": "A",
+            "sprint": "F",
+            "mile": "A",
+            "medium": "A",
+            "long": "E",
+            "front": "B",
+            "pace": "A",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 10,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
     "110001": {
         "name": "Wonder Acute",
         "title": "[Butterfly Sting]",
