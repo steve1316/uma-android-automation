@@ -1,40 +1,32 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.9.0</latestVersion>
+    <latestVersion>5.9.1</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.9.0 - Changelog
+v5.9.1 - Changelog
 
 New
 ---
-- Add a `Dailies` run mode that clears Team Trials, Daily Races, the Daily Legend Race, the Club item request and donations, Missions and Presents, then stops. A `Career` / `Dailies` switch on the Home card picks the mode, and the new `Dailies Settings` page holds its options.
-- Add `Career Setup`, which starts a new career from Home using the trainee, legacy parents, support deck and friend card chosen in the new `Career Setup` settings page. Dailies can start a career when they finish, and "Start the Next Career When Done" keeps going until TP runs out.
-- Add in-app updates. Tapping `Update` in the `Update Available` dialog downloads the right APK, installs it and reopens the app on the new version.
-- Add automatic game data updates. A daily check publishes new Global trainees and support cards, the app offers to download them on launch, and a new cloud button in the drawer checks on demand.
-- Add a redesigned overlay with an orb and tray that has Pause, Resume and Stop, plus an overlay style picker under Misc settings. Pause now works on any screen.
-- Add a redesigned Home card that shows live run stats during a run and the result, crash details and log afterwards. Start now turns on the overlay and opens the game in one tap.
-- Add numbered debug images. Each run saves its debug images as numbered JPEGs and zips them with the log into one bundle, and a new `Debug Image Quality` slider sets the JPEG quality.
-- Add a `Storage Folder` row to Settings, and a warning on Home when logs are going to the hidden app folder.
-- Add an `Avoid Maxing Happy Meek` setting for `URA Finale` and an `Avoid Elite Team` setting for `Unity Cup`, both off by default and aimed at parent farming.
-- Add `Start Career Setup Test` and `Start Legacy Spark Reader Test` debug tests.
-- Add trainee outfit and support card catalogs to the game data and the in-app data update.
+- Add hand-picked races to the Schedule calendar. Pick a specific race for any turn and the bot runs it on that turn, and the Smart Race Solver plans the rest of the career around it.
+- Add a "Rest Instead of a Lone Low-Value Training" setting under Training, on by default. Below 50% energy, when every other training is too risky and the one left gives a small main stat gain, the bot takes the recreation date or rests instead. The training is kept if it still builds a bond, has a skill hint, is a rainbow or has a Spirit Explosion ready.
+- Add TP reading on Scenario Select. Career Setup now notices the TP Cost Halved event, stops before starting a career it cannot pay for, and ticks Event Boost only when the TP covers the doubled cost.
+- Add a warning under "Start the Next Career When Done" while the Career Complete skill plan is off, since leftover skill points are lost when the next career starts automatically.
+- Add basic fallback for when the `View Results` button could not be found.
 
 Adjustments
 ---
-- Update game data up to `Narita Brian (BLAZE) 2026-10-14`.
-- Reuse one screenshot per bot tick, which cut screenshots by about a third and sped up turns by about 5% in a test.
-- Make Grand Live open the Lessons screen when its button shows the "!" badge, skip rereading Lessons cards that cannot change the purchase, and reuse unchanged Main screen readings. A visit takes much less time.
-- Log game loading once when it starts and once when it ends instead of on every check, and stop saving debug images for the loading checks.
-- Performance improvement to the floating overlay button so it lags less when dragged.
+- Update game data up to `Kitasan Black (New Year) 2026-10-20`.
+- Remove the game-in-front check at run start and on resume, so the bot no longer pauses a second time right after you resume it.
+- Recompute screen regions at the start of every run, so a run started while the screen was rotated no longer leaves later runs searching the wrong areas.
 
 Fixes
 ---
-- Fix the first-run wizard deleting old logs and recordings when "Move them" was tapped before a real folder was picked.
-- Fix a Grand Live stall where the bot bought a Lessons card, tapped a card that had changed and got stuck on an unaffordable purchase dialog.
-- Fix the Happy Meek duel bias never applying and the bot stalling on the Unity Cup Elite Team race.
-- Fix six white/gold skill pairs being linked backwards, which stopped the gold skill from being bought.
-- Fix the run stopping on the career end screen when the final fan count read as a huge number.
-- Fix the Trackblazer shop check being cleared when the shop dialog tap did not open the shop.
+- Fix the bot getting stuck when started from Home with a career already in progress.
+- Fix the bot getting stuck on the "Career Complete" dialog when set to start the next career.
+- Fix a forced race from an Insufficient Fans or goal popup being lost when the popup shows at the start of a turn.
+- Fix a failed recreation date tapping the popup instead of closing it and resting.
+- Fix the bot not rereading the date after an infirmary visit used up the turn.
+- Fix the Club daily not requesting a new item when the expired request's label was missed.
 
 </releaseNotes>
   </update>
