@@ -1,15 +1,15 @@
 {
-    "version": "2026-10-21T16:56:12Z",
-    "label": "Kitasan Black (New Year) 2026-10-20",
+    "version": "2026-10-24T15:40:38Z",
+    "label": "Hokko Tarumae 2026-10-24",
     "minAppVersion": "5.8.8",
     "files": {
-        "characters.json": "69a001a1426d023d7fd3bf0954ebb6a6",
+        "characters.json": "e745b8b8b00b81f110ce83f998234617",
         "supports.json": "1740bd20914fa64d0f7023e7d16f938f",
-        "skills.json": "da7199f4a2893ef2d5bcb23ae1f20765",
-        "epithets.json": "a23ddb5d698c23ace288b09911bfdcb0",
-        "characterPresets.json": "751900ee7bbf8a92cd32c132b1f47f6b",
-        "character_objectives.json": "5c7a2d8628af04b76eb63158cd087985",
-        "traineeCards.json": "cf6811ede186da1c5efbc8d2bb0e5930",
+        "skills.json": "23e7423d9b90708e6bc6ec2e7ea2c8a3",
+        "epithets.json": "eeabfde3cc0ffaedc5b6cd0fde1eefb9",
+        "characterPresets.json": "80ddd472c05d8b6e3960ea3b31945dad",
+        "character_objectives.json": "3fbfc12cfe6e938895d2ae37b1bdcdc6",
+        "traineeCards.json": "ab2dc1cbe4799b98d56de95e021d6f82",
         "supportCards.json": "632e83deb3d8305d63d132344833b74f"
     }
 }

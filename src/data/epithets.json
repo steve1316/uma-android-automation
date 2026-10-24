@@ -4542,7 +4542,7 @@
             "Yamanin Zephyr only",
             "Win the Yasuda Kinen twice",
             "Win the Sprinters Stakes",
-            "Win the Takarazuka Kinen (Senior)",
+            "Win the Tenno Sho (Autumn) (Senior)",
             "Reach 1200 or more Speed"
         ],
         "scenarios": [],
@@ -4563,9 +4563,9 @@
             },
             {
                 "type": "winRace",
-                "name": "Takarazuka Kinen",
+                "name": "Tenno Sho (Autumn)",
                 "atClass": "Senior",
-                "displayLabel": "Win the Takarazuka Kinen"
+                "displayLabel": "Win the Tenno Sho (Autumn)"
             }
         ]
     },

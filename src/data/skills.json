@@ -7415,7 +7415,7 @@
         "condition": "is_lastspurt==1&order_rate<=40&order_rate>=30&ground_type==2",
         "precondition": "phase==1&blocked_side_continuetime>=2&corner!=0",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },

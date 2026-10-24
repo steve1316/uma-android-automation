@@ -2263,6 +2263,122 @@
             }
         ]
     },
+    "Hokko Tarumae": {
+        "name": "Hokko Tarumae",
+        "mandatoryRaces": [
+            {
+                "turn": 39,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Leopard Stakes",
+                        "grade": "G3",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 4000
+                    }
+                ]
+            },
+            {
+                "turn": 47,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Champions Cup",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 51,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Kawasaki Kinen",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 57,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Kashiwa Kinen",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 60,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Teio Sho",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 69,
+                "isChoice": true,
+                "options": [
+                    {
+                        "raceName": "JBC Classic",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
+                    },
+                    {
+                        "raceName": "JBC Classic",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 8000
+                    }
+                ]
+            },
+            {
+                "turn": 71,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Champions Cup",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 72,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tokyo Daishoten",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 8000
+                    }
+                ]
+            }
+        ]
+    },
     "Inari One": {
         "name": "Inari One",
         "mandatoryRaces": [
