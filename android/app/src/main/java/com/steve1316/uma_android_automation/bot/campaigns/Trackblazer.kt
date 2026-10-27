@@ -1599,18 +1599,47 @@ class Trackblazer(game: Game) : Campaign(game) {
     }
 
     /**
-     * Reads the Shop Coins amount via OCR and updates our internal count.
+     * Reads the Shop Coins amount via OCR and updates our internal count. The count can still be settling when the Shop opens, so it is read until two reads in a row
+     * agree, for up to 3 seconds. A read is taken only once the Shop screen is up, since the Main screen has a Training Items button too.
      *
      * @return True if the Shop Coins amount was updated successfully, false otherwise.
      */
     fun updateShopCoins(): Boolean {
         MessageLog.i(TAG, "[TRACKBLAZER] Updating current amount of Shop Coins...")
-        game.wait(3.0)
-        val (trainingItemsButtonLocation, sourceBitmap) = ButtonTrainingItems.find(game.imageUtils, tries = 30)
-        if (trainingItemsButtonLocation == null) {
-            MessageLog.e(TAG, "[ERROR] updateShopCoins:: Failed to find Training Items button.")
-            return false
+        val deadline = System.currentTimeMillis() + 3000
+        var previous: Int? = null
+        while (true) {
+            val (trainingItemsButtonLocation, sourceBitmap) = ButtonTrainingItems.find(game.imageUtils, tries = 30)
+            if (trainingItemsButtonLocation == null) {
+                MessageLog.e(TAG, "[ERROR] updateShopCoins:: Failed to find Training Items button.")
+                return false
+            }
+            val coins: Int? = if (ButtonHomeFullStats.check(game.imageUtils, sourceBitmap = sourceBitmap)) null else readShopCoins(trainingItemsButtonLocation, sourceBitmap)
+            val timedOut = System.currentTimeMillis() >= deadline
+            if ((coins != null && coins == previous) || timedOut) {
+                val lastRead: Int? = coins ?: previous
+                if (lastRead != null) {
+                    shopCoins = lastRead
+                    MessageLog.i(TAG, "[INFO] Current Shop Coins: $shopCoins")
+                } else {
+                    MessageLog.w(TAG, "[WARN] updateShopCoins:: Could not read the Shop Coins before timing out. Keeping $shopCoins.")
+                }
+                break
+            }
+            previous = coins
+            game.wait(0.2, skipWaitingForLoading = true)
         }
+        return true
+    }
+
+    /**
+     * Reads the Shop Coins amount once from a frame.
+     *
+     * @param trainingItemsButtonLocation Where the Training Items button is, which the coin count sits below.
+     * @param sourceBitmap The frame.
+     * @return The amount, or null when nothing numeric was read.
+     */
+    private fun readShopCoins(trainingItemsButtonLocation: Point, sourceBitmap: Bitmap): Int? {
         val coinText =
             game.imageUtils.performOCROnRegion(
                 sourceBitmap,
@@ -1624,22 +1653,11 @@ class Trackblazer(game: Game) : Campaign(game) {
                 ocrEngine = "mlkit",
                 debugName = "ShopCoins",
             )
-
-        try {
-            // ML Kit sometimes misreads a lone digit "1" as the letter "L". Treat that whole-string case as 1 so we don't drop a valid count of one.
-            val normalizedText = if (coinText.trim().equals("L", ignoreCase = true)) "1" else coinText
-            val cleanedText = normalizedText.replace(Regex("[^0-9]"), "")
-            if (cleanedText.isEmpty()) {
-                MessageLog.w(TAG, "[WARN] updateShopCoins:: Parsed empty string for Shop Coins from raw text: \"$coinText\".")
-            } else {
-                shopCoins = cleanedText.toInt()
-                MessageLog.i(TAG, "[INFO] Current Shop Coins: $shopCoins (Raw OCR text: \"$coinText\")")
-            }
-        } catch (_: NumberFormatException) {
-            MessageLog.e(TAG, "[ERROR] updateShopCoins:: Failed to parse Shop Coins from OCR text: \"$coinText\".")
-        }
-
-        return true
+        // ML Kit sometimes misreads a lone digit "1" as the letter "L". Treat that whole-string case as 1 so we don't drop a valid count of one.
+        val normalizedText = if (coinText.trim().equals("L", ignoreCase = true)) "1" else coinText
+        val coins: Int? = normalizedText.replace(Regex("[^0-9]"), "").toIntOrNull()
+        if (coins == null) MessageLog.w(TAG, "[WARN] readShopCoins:: Parsed no Shop Coins from raw text: \"$coinText\".")
+        return coins
     }
 
     /**
@@ -1719,7 +1737,8 @@ class Trackblazer(game: Game) : Campaign(game) {
             return
         }
 
-        val itemsBought = shopList.buyItems(filteredPriorityList, shopCoins, inventoryLimits, bForcePurchase = bForcePurchase)
+        val purchases = shopList.buyItems(filteredPriorityList, shopCoins, inventoryLimits, bForcePurchase = bForcePurchase)
+        val itemsBought = purchases.map { it.first }
         if (itemsBought.isNotEmpty()) {
             // Update internal inventory.
             val nextInventory = currentInventory.toMutableMap()
@@ -1732,8 +1751,8 @@ class Trackblazer(game: Game) : Campaign(game) {
             if (handleDialogs(DialogExchangeComplete, args = mapOf("itemsBought" to itemsBought)) is DialogHandlerResult.Handled) {
                 MessageLog.i(TAG, "[TRACKBLAZER] Successfully handled \"Exchange Complete\" dialog.")
 
-                // Update internal coins count via OCR after purchase.
-                updateShopCoins()
+                // The prices paid give the new balance directly. Force Purchase started from an unread balance, so it reads the coins again instead.
+                if (bForcePurchase) updateShopCoins() else shopCoins = (shopCoins - purchases.sumOf { it.second }).coerceAtLeast(0)
                 MessageLog.i(TAG, "[TRACKBLAZER] Remaining Shop Coins: $shopCoins")
 
                 ButtonBack.click(game.imageUtils)

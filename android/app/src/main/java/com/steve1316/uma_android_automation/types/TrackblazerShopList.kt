@@ -22,10 +22,16 @@ import com.steve1316.uma_android_automation.components.LabelPurchased
 import com.steve1316.uma_android_automation.types.Mood
 import com.steve1316.uma_android_automation.types.StatName
 import com.steve1316.uma_android_automation.types.Trainee
+import com.steve1316.uma_android_automation.utils.CropMemory
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
+import com.steve1316.uma_android_automation.utils.toGrayMat
 import org.json.JSONArray
+import org.opencv.core.Mat
 import org.opencv.core.Point
+
+/** Wait after each Shop list swipe, on top of the wait inside the swipe. The list stops dead after the swipe's edge tap, as the skill list does. */
+private const val SHOP_LIST_SETTLE_SECONDS = 0.2
 
 /**
  * Store a single scanned item's entry, name, and disabled state.
@@ -195,6 +201,15 @@ class TrackblazerShopList(private val game: Game) {
     /** Whether the "Do not show again" checkbox has been clicked during the purchase flow. */
     private var hasClickedDoNotShowAgain: Boolean = false
 
+    /** The item names read for the current frame with one batched OCR call, by entry index. Only names that matched a known item are kept. */
+    private var frameNames: Map<Int, String> = emptyMap()
+
+    /** The held amounts read for the current frame in the same OCR call as [frameNames], by entry index. Only rows with a plus button and a numeric read are kept. */
+    private var frameAmounts: Map<Int, Int> = emptyMap()
+
+    /** The name crops read during [buyItems], with their names, so its purchase pass recognizes each row by its pixels instead of reading it again. Null outside [buyItems]. */
+    private var nameCrops: CropMemory<String>? = null
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -232,47 +247,10 @@ class TrackblazerShopList(private val game: Game) {
      * @return The detected item name if found, or null otherwise.
      */
     fun getShopItemName(entry: ScrollListEntry, isDisabled: Boolean = false): String? {
+        frameNames[entry.index]?.let { return it }
         val bitmap = entry.bitmap
-        // Whether the row was anchored via the "Purchased" badge. Purchased names are black text on a grey background, which thresholding washes out.
-        var isPurchased = false
-        // Find the item's checkbox to use as a reference point.
-        var refPoint = CheckboxShopItem.findImageWithBitmap(game.imageUtils, bitmap)
-
-        if (refPoint == null) {
-            if (entry.refX != null && entry.refY != null) {
-                // Use preserved reference point if checkbox isn't found.
-                refPoint = Point(entry.refX.toDouble(), entry.refY.toDouble())
-                if (game.debugMode) MessageLog.d(TAG, "[DEBUG] getShopItemName:: Using preserved reference point for item name detection: $refPoint")
-            } else {
-                // Fallback: Try to find the plus button if the checkbox isn't there (e.g., in the inventory dialog).
-                refPoint = ButtonSkillUp.findImageWithBitmap(game.imageUtils, bitmap)
-                if (refPoint != null && game.debugMode) {
-                    MessageLog.d(TAG, "[DEBUG] getShopItemName:: Using plus button as reference for item name detection.")
-                }
-                // Fallback: Try the "Purchased" badge for already-purchased items, which have neither a checkbox nor a plus button.
-                if (refPoint == null) {
-                    refPoint = LabelPurchased.findImageWithBitmap(game.imageUtils, bitmap)
-                    if (refPoint != null) {
-                        isPurchased = true
-                        if (game.debugMode) MessageLog.d(TAG, "[DEBUG] getShopItemName:: Using purchased badge as reference for item name detection.")
-                    }
-                }
-            }
-        }
-
-        if (refPoint == null) {
-            if (game.debugMode) MessageLog.e(TAG, "[ERROR] getShopItemName:: Failed to find any reference point (checkbox, plus button, or purchased badge) for this Item.")
-            return null
-        }
-
-        // Calculate the bounding box for the item's name based on the reference point.
-        val nameBBox =
-            BoundingBox(
-                x = game.imageUtils.relX(refPoint.x, -850).coerceAtLeast(0),
-                y = game.imageUtils.relY(refPoint.y, -75).coerceAtLeast(0),
-                w = game.imageUtils.relWidth(750),
-                h = game.imageUtils.relHeight(60),
-            )
+        val (refPoint, isPurchased) = findNameReference(entry) ?: return null
+        val nameBBox = nameBox(refPoint)
 
         // Create a cropped bitmap of the name region.
         val croppedName = game.imageUtils.createSafeBitmap(bitmap, nameBBox, "ShopItemName")
@@ -332,6 +310,118 @@ class TrackblazerShopList(private val game: Game) {
     }
 
     /**
+     * Finds the point an item's name is placed from: its checkbox, the preserved reference point, its plus button, or its "Purchased" badge.
+     *
+     * @param entry The [ScrollListEntry] of the item.
+     * @return The reference point and whether it is the "Purchased" badge, or null when none was found.
+     */
+    private fun findNameReference(entry: ScrollListEntry): Pair<Point, Boolean>? {
+        val bitmap = entry.bitmap
+        // Whether the row was anchored via the "Purchased" badge. Purchased names are black text on a grey background, which thresholding washes out.
+        var isPurchased = false
+        // Find the item's checkbox to use as a reference point.
+        var refPoint = CheckboxShopItem.findImageWithBitmap(game.imageUtils, bitmap)
+
+        if (refPoint == null) {
+            if (entry.refX != null && entry.refY != null) {
+                // Use preserved reference point if checkbox isn't found.
+                refPoint = Point(entry.refX.toDouble(), entry.refY.toDouble())
+                if (game.debugMode) MessageLog.d(TAG, "[DEBUG] findNameReference:: Using preserved reference point for item name detection: $refPoint")
+            } else {
+                // Fallback: Try to find the plus button if the checkbox isn't there (e.g., in the inventory dialog).
+                refPoint = ButtonSkillUp.findImageWithBitmap(game.imageUtils, bitmap)
+                if (refPoint != null && game.debugMode) {
+                    MessageLog.d(TAG, "[DEBUG] findNameReference:: Using plus button as reference for item name detection.")
+                }
+                // Fallback: Try the "Purchased" badge for already-purchased items, which have neither a checkbox nor a plus button.
+                if (refPoint == null) {
+                    refPoint = LabelPurchased.findImageWithBitmap(game.imageUtils, bitmap)
+                    if (refPoint != null) {
+                        isPurchased = true
+                        if (game.debugMode) MessageLog.d(TAG, "[DEBUG] findNameReference:: Using purchased badge as reference for item name detection.")
+                    }
+                }
+            }
+        }
+
+        if (refPoint == null) {
+            if (game.debugMode) MessageLog.e(TAG, "[ERROR] findNameReference:: Failed to find any reference point (checkbox, plus button, or purchased badge) for this Item.")
+            return null
+        }
+        return refPoint to isPurchased
+    }
+
+    /**
+     * The box an item's name sits in, placed from its reference point.
+     *
+     * @param refPoint The reference point from [findNameReference], in the entry's pixels.
+     * @return The name box in the entry's pixels.
+     */
+    private fun nameBox(refPoint: Point): BoundingBox =
+        BoundingBox(
+            x = game.imageUtils.relX(refPoint.x, -850).coerceAtLeast(0),
+            y = game.imageUtils.relY(refPoint.y, -75).coerceAtLeast(0),
+            w = game.imageUtils.relWidth(750),
+            h = game.imageUtils.relHeight(60),
+        )
+
+    /**
+     * The box an item's held amount sits in, placed from its plus button.
+     *
+     * @param plusPoint The plus button's center, in the entry's pixels.
+     * @return The amount box in the entry's pixels.
+     */
+    private fun amountBox(plusPoint: Point): BoundingBox =
+        BoundingBox(x = game.imageUtils.relX(plusPoint.x, -585), y = game.imageUtils.relY(plusPoint.y, -15), w = game.imageUtils.relWidth(55), h = game.imageUtils.relHeight(50))
+
+    /**
+     * Reads the names of every entry on a frame with one OCR call and keeps the ones that match a known item. [getShopItemName] returns these first and reads an
+     * entry on its own only when its batched read did not match. With [bAmounts], each row's held amount is read in the same call for [getItemAmount].
+     *
+     * Inside [buyItems], a row whose name crop matches one already read is named from [nameCrops] instead. A frame with every row matched costs no OCR.
+     *
+     * @param frameEntries The entries detected on the frame. Each holds its own crop.
+     * @param bAmounts Whether to read the held amounts too, which only the Training Items dialog shows.
+     */
+    private fun readFrameNames(frameEntries: List<ScrollListEntry>, bAmounts: Boolean) {
+        val memory: CropMemory<String>? = nameCrops.takeIf { !bAmounts }
+        val recalled = mutableMapOf<Int, String>()
+        // The grayscale name crops of the rows not recalled, kept to remember them once read.
+        val unread = mutableMapOf<Int, Mat>()
+        val fields = mutableMapOf<String, Pair<Bitmap, BoundingBox>>()
+        for (entry in frameEntries) {
+            findNameReference(entry)?.let { (refPoint, _) ->
+                val box: BoundingBox = nameBox(refPoint)
+                val crop: Mat? =
+                    memory?.let { game.imageUtils.createSafeBitmap(entry.bitmap, box, "ShopItemNameCrop") }?.let { bitmap ->
+                        toGrayMat(bitmap).also { if (bitmap !== entry.bitmap) bitmap.recycle() }
+                    }
+                val name: String? = crop?.let { memory.find(it) }
+                if (name != null) {
+                    crop.release()
+                    recalled[entry.index] = name
+                } else {
+                    crop?.let { unread[entry.index] = it }
+                    fields["name${entry.index}"] = entry.bitmap to box
+                }
+            }
+            if (bAmounts) ButtonSkillUp.findImageWithBitmap(game.imageUtils, entry.bitmap)?.let { fields["amount${entry.index}"] = entry.bitmap to amountBox(it) }
+        }
+        val texts: Map<String, String> = if (fields.isEmpty()) emptyMap() else game.imageUtils.readFields(fields)
+        val itemNames = shopItems.keys.toList()
+        val read: Map<Int, String> =
+            frameEntries.mapNotNull { entry -> texts["name${entry.index}"]?.let { TextUtils.matchStringInList(it, itemNames, threshold = 0.8) }?.let { entry.index to it } }.toMap()
+        // Only a crop whose read matched a known item is remembered, so a misread is never recalled.
+        for ((index, crop) in unread) {
+            val name: String? = read[index]
+            if (name != null && memory != null) memory.add(crop, name) else crop.release()
+        }
+        frameNames = recalled + read
+        frameAmounts =
+            frameEntries.mapNotNull { entry -> texts["amount${entry.index}"]?.replace(Regex("[^0-9]"), "")?.toIntOrNull()?.let { entry.index to it.coerceIn(0, 5) } }.toMap()
+    }
+
+    /**
      * Extract the item amount from a cropped Shop list entry bitmap.
      *
      * @param entry The [ScrollListEntry] of the item.
@@ -339,18 +429,20 @@ class TrackblazerShopList(private val game: Game) {
      * @return The detected amount of the item on-hand.
      */
     fun getItemAmount(entry: ScrollListEntry, isDisabled: Boolean): Int {
+        frameAmounts[entry.index]?.let { return it }
         val bitmap = entry.bitmap
         // Use the plus button as a reference point for the amount detection.
         val refPoint = ButtonSkillUp.findImageWithBitmap(game.imageUtils, bitmap) ?: return 1
 
         // Perform OCR on the amount region relative to the plus button.
+        val amountBBox = amountBox(refPoint)
         val amountText =
             game.imageUtils.performOCROnRegion(
                 bitmap,
-                game.imageUtils.relX(refPoint.x, -585),
-                game.imageUtils.relY(refPoint.y, -15),
-                game.imageUtils.relWidth(55),
-                game.imageUtils.relHeight(50),
+                amountBBox.x,
+                amountBBox.y,
+                amountBBox.w,
+                amountBBox.h,
                 useThreshold = false,
                 useGrayscale = true,
                 scale = 2.0,
@@ -696,10 +788,15 @@ class TrackblazerShopList(private val game: Game) {
      * Process items in a dialog, handling both scrollable and non-scrollable cases.
      *
      * @param keyExtractor Optional callback to extract a unique key for each entry.
+     * @param bScrollBottomToTop If true, process the list from the bottom up.
      * @param callback The callback to execute for each entry. Return true to stop.
      * @return True if the process completed successfully.
      */
-    fun processItemsWithFallback(keyExtractor: ((ScrollListEntry) -> String?)? = null, callback: (ScrollListEntry) -> Boolean): Boolean {
+    fun processItemsWithFallback(
+        keyExtractor: ((ScrollListEntry) -> String?)? = null,
+        bScrollBottomToTop: Boolean = false,
+        callback: (ScrollListEntry) -> Boolean,
+    ): Boolean {
         // Training Items dialog uses specific scroll regions if detected.
         val isTrainingItems = ButtonConfirmUse.check(game.imageUtils)
         val topLeft = if (isTrainingItems) IconDialogScrollListTopLeft else null
@@ -710,14 +807,23 @@ class TrackblazerShopList(private val game: Game) {
             isShopOnSale = LabelOnSale.check(game.imageUtils)
         }
 
-        return ScrollList.processWithFallback(
-            game,
-            keyExtractor = keyExtractor,
-            fallbackComponent = ButtonSkillUp,
-            listTopLeftComponent = topLeft,
-            listBottomRightComponent = bottomRight,
-        ) { _, entry: ScrollListEntry ->
-            callback(entry)
+        try {
+            return ScrollList.processWithFallback(
+                game,
+                bScrollBottomToTop = bScrollBottomToTop,
+                keyExtractor = keyExtractor,
+                fallbackComponent = ButtonSkillUp,
+                listTopLeftComponent = topLeft,
+                listBottomRightComponent = bottomRight,
+                onFrame = { _, frameEntries -> readFrameNames(frameEntries, bAmounts = isTrainingItems) },
+                settleSeconds = if (isTrainingItems) 0.5 else SHOP_LIST_SETTLE_SECONDS,
+            ) { _, entry: ScrollListEntry ->
+                callback(entry)
+            }
+        } finally {
+            // Entry indexes restart on the next pass, so reads from this one must not leak into it.
+            frameNames = emptyMap()
+            frameAmounts = emptyMap()
         }
     }
 
@@ -743,11 +849,39 @@ class TrackblazerShopList(private val game: Game) {
      * @param inventoryLimits A map of item names to the maximum amount that can be bought for each.
      * @param bDryRun If true, only logs intentions without performing any clicks.
      * @param bForcePurchase If true, the bot will attempt to buy items even if [currentCoins] is 0, stopping once it hits a disabled item.
-     * @return A list of successfully purchased items.
+     * @return Each successfully purchased item with the price paid for it.
      */
-    fun buyItems(priorityList: List<String>, currentCoins: Int, inventoryLimits: Map<String, Int>, bDryRun: Boolean = false, bForcePurchase: Boolean = false): List<String> {
+    fun buyItems(priorityList: List<String>, currentCoins: Int, inventoryLimits: Map<String, Int>, bDryRun: Boolean = false, bForcePurchase: Boolean = false): List<Pair<String, Int>> {
+        val memory = CropMemory<String>()
+        nameCrops = memory
+        try {
+            return scanAndBuyItems(priorityList, currentCoins, inventoryLimits, bDryRun, bForcePurchase)
+        } finally {
+            nameCrops = null
+            memory.clear()
+        }
+    }
+
+    /**
+     * Scans the Shop list, plans the purchases, and walks the list again to select and buy them. See [buyItems].
+     *
+     * @param priorityList An ordered list of item names to buy.
+     * @param currentCoins The current amount of Shop Coins available.
+     * @param inventoryLimits A map of item names to the maximum amount that can be bought for each.
+     * @param bDryRun If true, only logs intentions without performing any clicks.
+     * @param bForcePurchase If true, the bot will attempt to buy items even if [currentCoins] is 0, stopping once it hits a disabled item.
+     * @return Each successfully purchased item with the price paid for it.
+     */
+    private fun scanAndBuyItems(priorityList: List<String>, currentCoins: Int, inventoryLimits: Map<String, Int>, bDryRun: Boolean, bForcePurchase: Boolean): List<Pair<String, Int>> {
         if (priorityList.isEmpty()) {
             MessageLog.i(TAG, "[INFO] Priority shopping list is empty. No items to buy.")
+            return emptyList()
+        }
+
+        // Without a sale every price is the catalog price, so skip the scan when even the cheapest wanted item is out of reach.
+        val cheapestPrice: Int = priorityList.minOf { shopItems[it]?.price ?: 0 }
+        if (!bForcePurchase && currentCoins < cheapestPrice && !LabelOnSale.check(game.imageUtils)) {
+            MessageLog.i(TAG, "[INFO] $currentCoins coins cannot buy any wanted item (cheapest is $cheapestPrice) and the Shop is not on sale. Skipping the scan.")
             return emptyList()
         }
 
@@ -905,12 +1039,13 @@ class TrackblazerShopList(private val game: Game) {
 
         if (bDryRun) {
             // Return early for the dry run test.
-            return itemsToBuy.map { it.first }
+            return itemsToBuy.map { it.first to it.second }
         }
 
         // Step 3: Purchasing Phase.
-        // Re-process the list to click on the selected items.
-        val itemsBought = mutableListOf<String>()
+        // Re-process the list to click on the selected items. The scan ended at the bottom, so walk back up from there instead of returning to the top first.
+        // Force Purchase keeps the top-down order, since it stops at the first item it can no longer afford.
+        val itemsBought = mutableListOf<Pair<String, Int>>()
         val itemsRemainingToClick = itemsToBuy.toMutableList()
         val itemNameMapInPurchase = mutableMapOf<Int, String>()
         processItemsWithFallback(
@@ -919,15 +1054,17 @@ class TrackblazerShopList(private val game: Game) {
                 if (name != null) itemNameMapInPurchase[entry.index] = name
                 name
             },
+            bScrollBottomToTop = !bForcePurchase,
         ) { entry ->
             val isDisabled = isEntryDisabled(entry.bitmap)
             val itemName = itemNameMapInPurchase[entry.index] ?: getShopItemName(entry, isDisabled)
 
             if (itemName != null) {
-                // In Force Purchase mode, we stop if we encounter a disabled button, as it means we are out of coins.
-                if (bForcePurchase && isDisabled) {
-                    MessageLog.i(TAG, "[INFO] Force Purchase: Encountered disabled item \"$itemName\". Stopping purchasing.")
-                    return@processItemsWithFallback true
+                // A greyed-out card cannot be bought. In Force Purchase mode it means we are out of coins, so stop.
+                // Otherwise skip it, since a copy already bought sits below the fresh copies and walking up from the bottom would spend the match on it.
+                if (isDisabled) {
+                    if (bForcePurchase) MessageLog.i(TAG, "[INFO] Force Purchase: Encountered disabled item \"$itemName\". Stopping purchasing.")
+                    return@processItemsWithFallback bForcePurchase
                 }
 
                 // Find the first matching item in our purchase list.
@@ -937,7 +1074,7 @@ class TrackblazerShopList(private val game: Game) {
                     MessageLog.i(TAG, "[INFO] Selecting \"$itemName\" for ${targetItem.second} coins at index ${entry.index}. (Reason: ${shopItems[itemName]?.effect})")
                     // Tap the item's entry to select it.
                     game.tap(entry.bbox.cx.toDouble(), entry.bbox.cy.toDouble())
-                    itemsBought.add(itemName)
+                    itemsBought.add(itemName to targetItem.second)
                     itemsRemainingToClick.removeAt(targetIndex)
                 }
             }

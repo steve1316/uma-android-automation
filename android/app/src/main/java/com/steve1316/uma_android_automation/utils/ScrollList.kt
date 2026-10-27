@@ -403,6 +403,8 @@ class ScrollList private constructor(
          * @param listTopLeftComponent Optional top-left corner component for the scroll list.
          * @param listBottomRightComponent Optional bottom-right corner component for the scroll list.
          * @param entryDetectionConfig Optional config for entry detection.
+         * @param onFrame Optional callback run once per frame with the frame and its entries, before any key or entry callback.
+         * @param settleSeconds Wait after each swipe of a standard ScrollList before the next frame is read, on top of the wait inside the swipe itself.
          * @param onEntry Callback executed for each entry. Return true to exit early.
          * @return True if processing completed or exited early via callback.
          */
@@ -416,6 +418,8 @@ class ScrollList private constructor(
             listTopLeftComponent: ComponentInterface? = null,
             listBottomRightComponent: ComponentInterface? = null,
             entryDetectionConfig: ScrollListEntryDetectionConfig? = null,
+            onFrame: ((Bitmap, List<ScrollListEntry>) -> Unit)? = null,
+            settleSeconds: Double = 0.5,
             onEntry: OnEntryDetectedCallback,
         ): Boolean {
             val sourceBitmap = game.imageUtils.getSourceBitmap()
@@ -424,7 +428,7 @@ class ScrollList private constructor(
             val list = create(game, sourceBitmap, listTopLeftComponent, listBottomRightComponent, entryDetectionConfig)
             if (list != null) {
                 MessageLog.d(TAG, "[DEBUG] processWithFallback:: Standard ScrollList detected. Processing...")
-                return list.process(maxTimeMs, bScrollBottomToTop, keyExtractor, fallbackComponent, bForceComponentDetection, onEntry = onEntry)
+                return list.process(maxTimeMs, bScrollBottomToTop, keyExtractor, fallbackComponent, bForceComponentDetection, settleSeconds = settleSeconds, onFrame = onFrame, onEntry = onEntry)
             }
 
             // Step 2: Fallback to component-based detection.
@@ -445,6 +449,7 @@ class ScrollList private constructor(
                         MessageLog.w(TAG, "[WARN] processWithFallback:: Failed to detect any entries using fallback component.")
                         return false
                     }
+                    if (frameEntries.isNotEmpty()) onFrame?.invoke(bitmap, frameEntries)
 
                     var newThisFrame = 0
                     for (entry in frameEntries) {
@@ -478,6 +483,7 @@ class ScrollList private constructor(
                 MessageLog.w(TAG, "[WARN] processWithFallback:: Failed to detect any entries using fallback component.")
                 return false
             }
+            onFrame?.invoke(sourceBitmap, entries)
 
             // Static "list" for fallback mode (not scrollable).
             val processedKeys = mutableSetOf<String>()
