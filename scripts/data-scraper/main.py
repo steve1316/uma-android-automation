@@ -371,18 +371,33 @@ def fetch_gametora_periods() -> Tuple[List[str], str]:
     raise RuntimeError("Could not find GameTora's update timeline or the Global server's position on it in its JS bundle.")
 
 
-def fetch_gametora_event_data(section: str, url_name: str) -> Dict[str, Any]:
+def fetch_gametora_event_data(section: str, url_name: str, retries: int = 2, backoff: float = 3.0) -> Dict[str, Any]:
     """Fetches one card's English training-event data from GameTora's page-data JSON (no browser needed).
+
+    GameTora occasionally drops a connection mid-run. A dropped or timed-out request is retried, since one lost card fails a strict run.
 
     Args:
         section (str): The GameTora section, either "supports" or "characters".
         url_name (str): The card's URL slug.
+        retries (int, optional): How many extra attempts to make after a dropped or timed-out request.
+        backoff (float, optional): Seconds to wait between attempts.
 
     Returns:
         The parsed English `eventData` keyed by category, or an empty dict when the page exposes none.
+
+    Raises:
+        requests.exceptions.RequestException: If the request still fails after its retries, or returns an HTTP error.
     """
     url = f"https://gametora.com/_next/data/{fetch_gametora_build_id()}/umamusume/{section}/{url_name}.json"
-    response = requests.get(url, headers=HTTP_HEADERS, timeout=30)
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(url, headers=HTTP_HEADERS, timeout=30)
+            break
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            if attempt == retries:
+                raise
+            logging.warning(f"GameTora {section}/{url_name} dropped ({exc.__class__.__name__}); retrying in {backoff}s.")
+            time.sleep(backoff)
     response.raise_for_status()
     event_data = response.json().get("pageProps", {}).get("eventData", {})
     raw_en = event_data.get("en") if isinstance(event_data, dict) else None
