@@ -16,10 +16,16 @@ import com.steve1316.uma_android_automation.types.SkillListEntry
 import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.TrackSurface
 import com.steve1316.uma_android_automation.utils.Anchor
+import com.steve1316.uma_android_automation.utils.OcrWord
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
+import org.opencv.android.Utils
+import org.opencv.core.Core
+import org.opencv.core.Mat
 import org.opencv.core.Point
+import org.opencv.core.Rect
+import org.opencv.imgproc.Imgproc
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -90,6 +96,32 @@ private const val SKILL_LIST_GLYPH_MIN_CONFIDENCE = 0.85
 
 /** Matches any rank glyph. Hoisted so [skillBaseName] does not recompile it on every cell it strips. */
 private val SKILL_GLYPH_REGEX = Regex("[○◎×]")
+
+/** Wait after each skill list swipe, on top of the 0.2s inside the swipe. Measured on device, the list stops dead after the edge tap, so the default 0.5s was slack. */
+private const val SKILL_LIST_SETTLE_SECONDS = 0.2
+
+/** Pixels trimmed from each side of a stored title crop before it is matched, so an entry box detected a few pixels off still fits inside the new crop. */
+private const val TITLE_MATCH_INSET = 8
+
+/** Correlation a title crop must reach to count as the same entry. Measured on device, the same entry scored 0.995 after a scroll and different entries 0.30-0.50. */
+private const val TITLE_MATCH_MIN_SCORE = 0.95
+
+/** Pixels allowed to differ by more than [TITLE_MATCH_DIFF_LEVEL] between two crops of the same entry. A "○" against a "◎" of the same skill differs by far more than this. */
+private const val TITLE_MATCH_MAX_DIFF_PIXELS = 10
+
+/** Grayscale difference that counts a pixel as changed. The same entry after a scroll differed by at most 34. */
+private const val TITLE_MATCH_DIFF_LEVEL = 80.0
+
+/**
+ * A skill list title crop read during a scan, kept so a later frame or the buy pass can recognize the same entry without OCR.
+ *
+ * @property crop The grayscale title crop. The [SkillList] that made it releases it.
+ * @property title The OCR text, which doubles as the entry's [ScrollList] key.
+ */
+private class ScannedTitle(val crop: Mat, val title: String) {
+    /** The canonical skill name once the entry was analyzed, or null when the analysis failed. */
+    var name: String? = null
+}
 
 /** A callback that fires whenever we detect an entry in the skill list. */
 fun interface OnEntryDetectedCallback {
@@ -182,6 +214,12 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     /** The current amount of skill points available to spend. */
     var skillPoints: Int = 0
         private set
+
+    /** Every distinct title crop the last scan read, in the order it read them. */
+    private val scannedTitles: MutableList<ScannedTitle> = mutableListOf()
+
+    /** Every word on the current scan frame, read on first use with one OCR call. Null outside a scan. */
+    private var frameWords: Lazy<List<OcrWord>>? = null
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -437,29 +475,58 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      */
     fun getSkillListEntryTitle(bitmap: Bitmap? = null, debugString: String = ""): String? {
         val srcBitmap: Bitmap = bitmap ?: game.imageUtils.getSourceBitmap()
+        val croppedTitle: Bitmap = cropSkillListEntryTitle(srcBitmap, debugString) ?: return null
+        return readSkillListEntryTitle(croppedTitle)
+    }
 
-        // Define the region within the entry where the title is located.
-        val bbox =
-            BoundingBox(
-                x = (srcBitmap.width * 0.142).toInt(),
-                y = 0,
-                w = (srcBitmap.width * 0.57).toInt(),
-                h = (srcBitmap.height * 0.338).toInt(),
-            )
+    /**
+     * Where the title sits inside a skill list entry.
+     *
+     * @param w The entry's width.
+     * @param h The entry's height.
+     * @return The title region, relative to the entry.
+     */
+    private fun titleRegion(w: Int, h: Int): BoundingBox = BoundingBox(x = (w * 0.142).toInt(), y = 0, w = (w * 0.57).toInt(), h = (h * 0.338).toInt())
 
-        // Crop the title region and perform OCR.
-        val croppedTitle = game.imageUtils.createSafeBitmap(srcBitmap, bbox, "bboxTitle_$debugString")
+    /**
+     * Where the price sits inside the refined skill box from [onScrollListEntry].
+     *
+     * @param w The skill box's width.
+     * @param h The skill box's height.
+     * @return The price region, relative to the skill box.
+     */
+    private fun priceRegion(w: Int, h: Int): BoundingBox = BoundingBox(x = (w * 0.7935).toInt(), y = (h * 0.372).toInt(), w = (w * 0.1068).toInt(), h = (h * 0.251).toInt())
+
+    /**
+     * Crops the title region out of a skill list entry.
+     *
+     * @param bitmap A [Bitmap] containing a single cropped skill list entry.
+     * @param debugString Identifier string for debugging files.
+     * @return The title crop, or null if the crop failed.
+     */
+    private fun cropSkillListEntryTitle(bitmap: Bitmap, debugString: String = ""): Bitmap? {
+        val croppedTitle = game.imageUtils.createSafeBitmap(bitmap, titleRegion(bitmap.width, bitmap.height), "bboxTitle_$debugString")
         if (croppedTitle == null) {
-            Log.e(TAG, "[ERROR] getSkillListEntryTitle:: createSafeBitmap for croppedTitle returned null.")
+            Log.e(TAG, "[ERROR] cropSkillListEntryTitle:: createSafeBitmap for croppedTitle returned null.")
             return null
         }
         if (game.debugMode) {
             game.imageUtils.saveBitmap(croppedTitle, filename = "bboxTitle_$debugString")
         }
+        return croppedTitle
+    }
 
-        var skillName: String = extractText(croppedTitle)
+    /**
+     * Reads the skill name from a title crop with OCR, then resolves the trailing rank glyph.
+     *
+     * @param croppedTitle The title crop from [cropSkillListEntryTitle].
+     * @param frameText The title already read from the whole frame. OCR runs on the crop only when this is null.
+     * @return The detected skill name, or null if OCR found nothing.
+     */
+    private fun readSkillListEntryTitle(croppedTitle: Bitmap, frameText: String? = null): String? {
+        var skillName: String = frameText ?: extractText(croppedTitle)
         if (skillName == "") {
-            Log.e(TAG, "[ERROR] getSkillListEntryTitle:: Failed to extract skill name string via OCR.")
+            Log.e(TAG, "[ERROR] readSkillListEntryTitle:: Failed to extract skill name string via OCR.")
             return null
         }
 
@@ -777,17 +844,8 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     fun getSkillListEntryPrice(bitmap: Bitmap? = null, debugString: String = ""): Int? {
         val srcBitmap: Bitmap = bitmap ?: game.imageUtils.getSourceBitmap()
 
-        // Define the region within the entry where the price value is located.
-        val bbox =
-            BoundingBox(
-                x = (srcBitmap.width * 0.7935).toInt(),
-                y = (srcBitmap.height * 0.372).toInt(),
-                w = (srcBitmap.width * 0.1068).toInt(),
-                h = (srcBitmap.height * 0.251).toInt(),
-            )
-
         // Crop the price region and perform OCR.
-        val croppedPrice = game.imageUtils.createSafeBitmap(srcBitmap, bbox, "bboxPrice_$debugString")
+        val croppedPrice = game.imageUtils.createSafeBitmap(srcBitmap, priceRegion(srcBitmap.width, srcBitmap.height), "bboxPrice_$debugString")
         if (croppedPrice == null) {
             Log.e(TAG, "[ERROR] getSkillListEntryPrice:: createSafeBitmap for croppedPrice returned null.")
             return null
@@ -818,11 +876,13 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      * @param bIsObtained Whether the skill has already been purchased.
      * @param debugString Identifier string for debugging files.
      * @param cachedTitle Optional pre-detected title to avoid redundant OCR.
+     * @param cachedPrice Optional pre-detected price to avoid redundant OCR.
      * @return The updated [SkillListEntry] object, or null if analysis fails.
      */
-    fun analyzeSkillListEntry(bitmap: Bitmap, bIsObtained: Boolean, debugString: String = "", cachedTitle: String? = null): SkillListEntry? {
-        val latch = CountDownLatch(if (cachedTitle == null) 2 else 1)
-        var skillPrice: Int? = null
+    fun analyzeSkillListEntry(bitmap: Bitmap, bIsObtained: Boolean, debugString: String = "", cachedTitle: String? = null, cachedPrice: Int? = null): SkillListEntry? {
+        // If the skill is already obtained, the price is effectively 0 for the purpose of purchase logic.
+        var skillPrice: Int? = if (bIsObtained) 0 else cachedPrice
+        val latch = CountDownLatch((if (cachedTitle == null) 1 else 0) + (if (skillPrice == null) 1 else 0))
         var skillName: String? = null
 
         // Start thread for title extraction if not cached.
@@ -847,22 +907,23 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             skillName = game.skillDatabase.checkSkillName(cachedTitle, fuzzySearch = true)
         }
 
-        // Start thread for price extraction.
-        Thread {
-            try {
-                // If the skill is already obtained, the price is effectively 0 for the purpose of purchase logic.
-                val tmpSkillPrice: Int? = if (bIsObtained) 0 else getSkillListEntryPrice(bitmap, debugString)
-                if (tmpSkillPrice == null) {
-                    Log.e(TAG, "[ERROR] analyzeSkillListEntry:: getSkillListEntryPrice() returned null.")
-                    return@Thread
+        // Start thread for price extraction if not cached.
+        if (skillPrice == null) {
+            Thread {
+                try {
+                    val tmpSkillPrice: Int? = getSkillListEntryPrice(bitmap, debugString)
+                    if (tmpSkillPrice == null) {
+                        Log.e(TAG, "[ERROR] analyzeSkillListEntry:: getSkillListEntryPrice() returned null.")
+                        return@Thread
+                    }
+                    skillPrice = tmpSkillPrice
+                } catch (e: Exception) {
+                    Log.e(TAG, "[ERROR] analyzeSkillListEntry:: Error processing skill price: ${e.stackTraceToString()}")
+                } finally {
+                    latch.countDown()
                 }
-                skillPrice = tmpSkillPrice
-            } catch (e: Exception) {
-                Log.e(TAG, "[ERROR] analyzeSkillListEntry:: Error processing skill price: ${e.stackTraceToString()}")
-            } finally {
-                latch.countDown()
-            }
-        }.apply { isDaemon = true }.start()
+            }.apply { isDaemon = true }.start()
+        }
 
         // Wait for both extraction operations to complete or timeout.
         try {
@@ -890,47 +951,6 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         }
 
         // Update the entry's status and detected price.
-        entry.bIsObtained = bIsObtained
-        entry.bIsVirtual = false
-        entry.updateScreenPrice(skillPrice)
-
-        return entry
-    }
-
-    /**
-     * Extracts and processes information for a single skill list entry in a thread-safe (synchronous) manner.
-     *
-     * This version is used when the caller is already running in a background thread
-     * and requires a synchronous result.
-     *
-     * @param bitmap A [Bitmap] containing a single cropped skill list entry.
-     * @param bIsObtained Whether the skill has already been purchased.
-     * @param debugString Identifier string for debugging files.
-     * @return The updated [SkillListEntry] object, or null if analysis fails.
-     */
-    fun analyzeSkillListEntryThreadSafe(bitmap: Bitmap, bIsObtained: Boolean, debugString: String = ""): SkillListEntry? {
-        // Synchronously extract the skill name.
-        var skillName: String? = getSkillListEntryTitle(bitmap, debugString)
-        if (skillName == null) {
-            MessageLog.e(TAG, "[ERROR] analyzeSkillListEntryThreadSafe:: getSkillListEntryTitle() returned null.")
-            return null
-        }
-        skillName = game.skillDatabase.checkSkillName(skillName, fuzzySearch = true)
-
-        // Synchronously extract the skill price if not already obtained.
-        val skillPrice: Int? = if (bIsObtained) 0 else getSkillListEntryPrice(bitmap, debugString)
-        if (skillPrice == null) {
-            MessageLog.e(TAG, "[ERROR] analyzeSkillListEntryThreadSafe:: getSkillListEntryPrice() returned null.")
-            return null
-        }
-
-        val entry: SkillListEntry? = entries[skillName]
-        if (entry == null) {
-            MessageLog.e(TAG, "[ERROR] analyzeSkillListEntryThreadSafe:: Failed to find \"$skillName\" in entries mapping.")
-            return null
-        }
-
-        // Update the entry with detected data.
         entry.bIsObtained = bIsObtained
         entry.bIsVirtual = false
         entry.updateScreenPrice(skillPrice)
@@ -996,8 +1016,17 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             game.imageUtils.saveBitmap(croppedSkillBox, filename = "bboxSkillBox_${entry.index}")
         }
 
+        // The price region of the skill box, moved into frame pixels.
+        val cachedPrice: Int? =
+            if (bIsObtained) {
+                null
+            } else {
+                val region: BoundingBox = priceRegion(croppedSkillBox.width, croppedSkillBox.height)
+                frameTextIn(region.copy(x = region.x + bboxSkillBox.x + entry.bbox.x, y = region.y + bboxSkillBox.y + entry.bbox.y))?.replace("[^0-9]".toRegex(), "")?.toIntOrNull()
+            }
+
         // Analyze the entry to extract name, price, and status.
-        val skillListEntry: SkillListEntry? = analyzeSkillListEntry(croppedSkillBox, bIsObtained, "${entry.index}", cachedTitle)
+        val skillListEntry: SkillListEntry? = analyzeSkillListEntry(croppedSkillBox, bIsObtained, "${entry.index}", cachedTitle, cachedPrice)
         if (skillListEntry == null) {
             MessageLog.e(TAG, "[ERROR] onScrollListEntry:: (${entry.index}) analysis returned null SkillListEntry.")
             return null
@@ -1032,22 +1061,175 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             return emptyMap()
         }
 
-        // Cache titles during the scan to optimize performance.
-        val skillTitleMap = mutableMapOf<Int, String>()
-        list.process(
-            keyExtractor = { entry ->
-                val title = getSkillListEntryTitle(entry.bitmap)
-                if (title != null) skillTitleMap[entry.index] = title
-                title
-            },
-        ) { _, entry: ScrollListEntry ->
-            // Process each entry bitmap found by the ScrollList.
-            val res: Pair<SkillListEntry, Point>? = onScrollListEntry(entry, skillTitleMap[entry.index])
-            // Fire the callback if provided.
-            if (onEntry != null && res != null) onEntry.onEntryDetected(this, res.first, res.second) else false
+        // Each frame overlaps the last one, so an entry seen before is recognized by its title crop instead of being read again.
+        clearScannedTitles()
+        val titlesByIndex: MutableMap<Int, ScannedTitle> = mutableMapOf()
+        try {
+            list.process(
+                settleSeconds = SKILL_LIST_SETTLE_SECONDS,
+                // ML Kit costs about the same per call whatever the size, so each frame is read once and every title and price is served from that.
+                onFrame = ::startFrame,
+                keyExtractor = { entry -> recallOrReadTitle(entry)?.also { titlesByIndex[entry.index] = it }?.title },
+            ) { _, entry: ScrollListEntry ->
+                // Process each entry bitmap found by the ScrollList.
+                val scanned: ScannedTitle? = titlesByIndex[entry.index]
+                val res: Pair<SkillListEntry, Point>? = onScrollListEntry(entry, scanned?.title)
+                if (res != null) scanned?.name = res.first.name
+                // Fire the callback if provided.
+                if (onEntry != null && res != null) onEntry.onEntryDetected(this, res.first, res.second) else false
+            }
+        } finally {
+            frameWords = null
         }
 
         return entries
+    }
+
+    /**
+     * Walks the list back up from where the last scan left it and fires [onEntry] for each planned skill. Entries are recognized by the title crops that scan kept, so a frame is
+     * read with OCR only when it shows an entry the scan saw clipped. Tapping "+" only redraws that one entry, so the list does not shift under the walk.
+     *
+     * @param names The skills to fire [onEntry] for. Other entries are passed over without looking for their "+" button.
+     * @param onEntry Callback fired for each planned entry with its "+" button. Return true to stop the walk.
+     */
+    fun revisitSkillListEntries(names: Collection<String>, onEntry: OnEntryDetectedCallback) {
+        val list: ScrollList =
+            ScrollList.create(game) ?: run {
+                MessageLog.e(TAG, "[ERROR] revisitSkillListEntries:: Failed to instantiate ScrollList.")
+                return
+            }
+
+        val namesByIndex: MutableMap<Int, String> = mutableMapOf()
+        try {
+            list.process(
+                bScrollBottomToTop = true,
+                settleSeconds = SKILL_LIST_SETTLE_SECONDS,
+                onFrame = ::startFrame,
+                keyExtractor = { entry ->
+                    // The scan saw some entries clipped at an edge of the list, so their crops will not match the whole entry. Those are read again.
+                    recallOrReadTitle(entry)?.also { scanned ->
+                        if (scanned.name == null) scanned.name = game.skillDatabase.checkSkillName(scanned.title, fuzzySearch = true)
+                        scanned.name?.let { namesByIndex[entry.index] = it }
+                    }?.title
+                },
+            ) { _, entry: ScrollListEntry ->
+                val name: String = namesByIndex[entry.index]?.takeIf { it in names } ?: return@process false
+                val skillEntry: SkillListEntry = entries[name] ?: return@process false
+                val skillUpLoc: Point = ButtonSkillUp.findImageWithBitmap(game.imageUtils, sourceBitmap = entry.bitmap) ?: return@process false
+                onEntry.onEntryDetected(this, skillEntry, Point(skillUpLoc.x + entry.bbox.x, skillUpLoc.y + entry.bbox.y))
+            }
+        } finally {
+            frameWords = null
+            // The walk is the last use of the scan's title crops.
+            clearScannedTitles()
+        }
+    }
+
+    /**
+     * Recognizes an entry from an earlier frame by its title crop, or reads its title with OCR and keeps the crop for later.
+     *
+     * @param entry The entry detected by the [ScrollList].
+     * @return The entry's title record, or null when the crop or the OCR failed.
+     */
+    private fun recallOrReadTitle(entry: ScrollListEntry): ScannedTitle? {
+        val cropBitmap: Bitmap = cropSkillListEntryTitle(entry.bitmap, "${entry.index}") ?: return null
+        val crop: Mat = toGrayMat(cropBitmap)
+        findScannedTitle(crop)?.let { known ->
+            crop.release()
+            return known
+        }
+        val region: BoundingBox = titleRegion(entry.bitmap.width, entry.bitmap.height)
+        val title: String =
+            readSkillListEntryTitle(cropBitmap, frameTextIn(region.copy(x = region.x + entry.bbox.x, y = region.y + entry.bbox.y))) ?: run {
+                crop.release()
+                return null
+            }
+        return ScannedTitle(crop, title).also { scannedTitles.add(it) }
+    }
+
+    /**
+     * Arms [frameWords] for a new frame. The words are read only when an entry first asks for them, so a frame whose entries are all recognized costs no OCR.
+     *
+     * @param bitmap The frame.
+     * @param frameEntries The entries detected on it.
+     */
+    private fun startFrame(bitmap: Bitmap, frameEntries: List<ScrollListEntry>) {
+        val left: Int = frameEntries.minOf { it.bbox.x }
+        val top: Int = frameEntries.minOf { it.bbox.y }
+        val region = BoundingBox(left, top, frameEntries.maxOf { it.bbox.x + it.bbox.w } - left, frameEntries.maxOf { it.bbox.y + it.bbox.h } - top)
+        frameWords = lazy { game.imageUtils.findWords(bitmap, region) }
+    }
+
+    /**
+     * Joins the words of the current frame whose centers fall inside a region, in reading order.
+     *
+     * @param region The region in frame pixels.
+     * @return The text, or null outside a scan or when no word falls inside.
+     */
+    private fun frameTextIn(region: BoundingBox): String? {
+        val words: List<OcrWord> = frameWords?.value ?: return null
+        return words
+            .filter { it.box.centerX() in region.x until (region.x + region.w) && it.box.centerY() in region.y until (region.y + region.h) }
+            .sortedWith(compareBy({ it.lineTop }, { it.box.left }))
+            .joinToString(" ") { it.text }
+            .ifBlank { null }
+    }
+
+    /**
+     * Finds the title crop from this scan that shows the same entry. Correlation finds where the stored crop sits, then a pixel diff rules out a near miss such as the same skill with
+     * a different rank glyph.
+     *
+     * @param crop The grayscale title crop of the entry to look up.
+     * @return The matching title record, or null when the entry is new.
+     */
+    private fun findScannedTitle(crop: Mat): ScannedTitle? {
+        // Check the newest first, since a repeat is almost always the overlap with the previous frame.
+        for (scanned in scannedTitles.asReversed()) {
+            val tplRect = Rect(TITLE_MATCH_INSET, TITLE_MATCH_INSET, scanned.crop.cols() - (2 * TITLE_MATCH_INSET), scanned.crop.rows() - (2 * TITLE_MATCH_INSET))
+            if (tplRect.width <= 0 || tplRect.height <= 0 || tplRect.width > crop.cols() || tplRect.height > crop.rows()) continue
+
+            val template = Mat(scanned.crop, tplRect)
+            val result = Mat()
+            Imgproc.matchTemplate(crop, template, result, Imgproc.TM_CCOEFF_NORMED)
+            val mmr = Core.minMaxLoc(result)
+            result.release()
+            if (mmr.maxVal < TITLE_MATCH_MIN_SCORE) {
+                template.release()
+                continue
+            }
+
+            val found = Mat(crop, Rect(mmr.maxLoc.x.toInt(), mmr.maxLoc.y.toInt(), tplRect.width, tplRect.height))
+            val diff = Mat()
+            Core.absdiff(found, template, diff)
+            Imgproc.threshold(diff, diff, TITLE_MATCH_DIFF_LEVEL, 255.0, Imgproc.THRESH_BINARY)
+            val changedPixels: Int = Core.countNonZero(diff)
+            diff.release()
+            found.release()
+            template.release()
+            if (changedPixels <= TITLE_MATCH_MAX_DIFF_PIXELS) return scanned
+        }
+        return null
+    }
+
+    /**
+     * Converts a bitmap to a grayscale [Mat].
+     *
+     * @param bitmap The bitmap to convert.
+     * @return A new single-channel [Mat] the caller must release.
+     */
+    private fun toGrayMat(bitmap: Bitmap): Mat {
+        val rgba = Mat()
+        Utils.bitmapToMat(bitmap, rgba)
+        val gray = Mat()
+        Imgproc.cvtColor(rgba, gray, Imgproc.COLOR_RGBA2GRAY)
+        rgba.release()
+        return gray
+    }
+
+    /** Releases the title crops of the last scan. */
+    private fun clearScannedTitles() {
+        scannedTitles.forEach { it.crop.release() }
+        scannedTitles.clear()
     }
 
     /**
