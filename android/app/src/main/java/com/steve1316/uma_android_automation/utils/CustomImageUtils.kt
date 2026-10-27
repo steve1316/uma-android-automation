@@ -217,7 +217,7 @@ internal fun parseTurnsRemaining(text: String): Int? {
 }
 
 /**
- * One word read by ML Kit, with where it sits.
+ * One word read by [CustomImageUtils.findWords].
  *
  * @property text The word.
  * @property box Where the word sits, in frame pixels.
@@ -3200,6 +3200,33 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     // //////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////
     // OCR Helper Functions
+
+    /**
+     * Reads every word in a region with one ML Kit call and returns each with its position. An ML Kit call costs about 0.4s however small the image is,
+     * so a caller with several fields on screen reads them all at once and sorts the words into fields by position.
+     *
+     * @param sourceBitmap The full frame.
+     * @param region The region to read, in frame pixels.
+     * @return The words found, with boxes in frame pixels. Empty when ML Kit found nothing or failed.
+     */
+    fun findWords(sourceBitmap: Bitmap, region: BoundingBox): List<OcrWord> {
+        val crop: Bitmap = createSafeBitmap(sourceBitmap, region, "findWords") ?: return emptyList()
+        return try {
+            val text = Tasks.await(googleTextRecognizer.process(InputImage.fromBitmap(crop, 0)), 5, TimeUnit.SECONDS)
+            text.textBlocks.flatMap { block -> block.lines }.flatMap { line ->
+                val lineTop: Int = (line.boundingBox?.top ?: 0) + region.y
+                line.elements.mapNotNull { element ->
+                    element.boundingBox?.let { box ->
+                        box.offset(region.x, region.y)
+                        OcrWord(element.text, box, lineTop)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "[ERROR] findWords:: ML Kit failed: ${e.message}")
+            emptyList()
+        }
+    }
 
     /**
      * Performs OCR on a cropped region by filtering pixels matching a specific RGB color.
