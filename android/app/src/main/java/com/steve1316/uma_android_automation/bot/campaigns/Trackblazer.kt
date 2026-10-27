@@ -1,6 +1,7 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.util.Log
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
@@ -55,8 +56,16 @@ import com.steve1316.uma_android_automation.types.TrackblazerShopList
 import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
+import com.steve1316.uma_android_automation.utils.grayOf
+import com.steve1316.uma_android_automation.utils.isSameGrayPicture
 import org.json.JSONArray
 import org.opencv.core.Point
+
+/**
+ * Share of the screen height, from the top, compared to tell when the screen under a closing dialog has settled. The trainee's idle animation
+ * stays below it, while the dialog's dim fade covers it.
+ */
+private const val SETTLE_BAND_FRACTION = 0.12
 
 /**
  * Handles the Trackblazer scenario with scenario-specific logic and handling.
@@ -1867,6 +1876,69 @@ class Trackblazer(game: Game) : Campaign(game) {
     }
 
     /**
+     * Samples the screen as gray pixels at 1/8 size, to tell when it holds still.
+     *
+     * @param sourceBitmap The screenshot.
+     * @param bandFraction Share of the screen height to sample, from the top.
+     * @return The sampled gray pixels.
+     */
+    private fun screenGray(sourceBitmap: Bitmap, bandFraction: Double = 1.0): IntArray {
+        // Crop the band before shrinking it, so only the rows that are compared get scaled.
+        val bandHeight = (sourceBitmap.height * bandFraction).toInt().coerceIn(8, sourceBitmap.height)
+        val thumbnail = Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.width, bandHeight, Matrix().apply { setScale(0.125f, 0.125f) }, true)
+        val pixels = IntArray(thumbnail.width * thumbnail.height)
+        thumbnail.getPixels(pixels, 0, thumbnail.width, 0, 0, thumbnail.width, thumbnail.height)
+        thumbnail.recycle()
+        for (i in pixels.indices) pixels[i] = grayOf(pixels[i])
+        return pixels
+    }
+
+    /**
+     * Waits for the item use animation to finish. It is done once the Close button shows and the screen holds still between two polls.
+     * Gives up after [maxSeconds], the fixed delay this replaces.
+     *
+     * @param maxSeconds The longest the animation can take.
+     */
+    private fun waitForItemAnimation(maxSeconds: Double) {
+        val deadline = System.currentTimeMillis() + (maxSeconds * 1000).toLong()
+        var previous: IntArray? = null
+        while (System.currentTimeMillis() < deadline) {
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            val current = screenGray(sourceBitmap)
+            if (ButtonClose.check(game.imageUtils, sourceBitmap = sourceBitmap) && previous != null && isSameGrayPicture(previous, current, diffLevel = 25, fitContrast = false)) return
+            previous = current
+            game.wait(0.25, skipWaitingForLoading = true)
+        }
+    }
+
+    /**
+     * Polls until the Training Items dialog is gone after tapping Close and the top of the screen holds still between two polls.
+     *
+     * The Confirm Use button drops out while the dialog is still fading. A training tap sent then is swallowed, so the wait goes on until the
+     * fade is done. Only the top band is compared, since the trainee's idle animation keeps the rest of the Training screen moving.
+     * If the band never holds still, the wait runs out the full 2 seconds.
+     *
+     * @return True if the dialog closed within 2 seconds.
+     */
+    private fun waitForItemDialogClosed(): Boolean {
+        val deadline = System.currentTimeMillis() + 2000
+        var closed = false
+        var previous: IntArray? = null
+        while (System.currentTimeMillis() < deadline) {
+            game.wait(0.2, skipWaitingForLoading = true)
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
+            if (!closed) {
+                if (ButtonConfirmUse.check(game.imageUtils, sourceBitmap = sourceBitmap)) continue
+                closed = true
+            }
+            val current = screenGray(sourceBitmap, SETTLE_BAND_FRACTION)
+            if (previous != null && isSameGrayPicture(previous, current, diffLevel = 25, fitContrast = false)) return true
+            previous = current
+        }
+        return closed
+    }
+
+    /**
      * Confirms the usage of items and closes the Training Items dialog.
      *
      * @param itemsUsedCount The number of items used during this pass to determine the animation delay.
@@ -1881,17 +1953,15 @@ class Trackblazer(game: Game) : Campaign(game) {
         // We increase the delay by a second for each additional item to be used after 3 items.
         val animationDelay = if (itemsUsedCount > 3) 4.0 + (itemsUsedCount - 3) else 4.0
         MessageLog.i(TAG, "[TRACKBLAZER] Waiting for animation to finish (Delay: $animationDelay seconds).")
-        game.wait(animationDelay)
+        waitForItemAnimation(animationDelay)
 
         // Finalize by closing the dialog.
         MessageLog.i(TAG, "[TRACKBLAZER] Closing training items dialog.")
         val maxCloseAttempts = 3
         var closeAttempt = 0
         while (closeAttempt < maxCloseAttempts) {
-            if (ButtonClose.check(game.imageUtils, tries = 50)) {
-                game.wait(1.0)
-                ButtonClose.click(game.imageUtils)
-                game.wait(1.0)
+            if (ButtonClose.click(game.imageUtils, tries = 50) && waitForItemDialogClosed()) {
+                break
             }
             if (!ButtonConfirmUse.check(game.imageUtils, tries = 5)) {
                 break
