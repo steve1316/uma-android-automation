@@ -26,6 +26,31 @@ def test_network_failure_after_retries_is_recorded():
     assert main._run_failures == ["_Offline: ConnectionError: no route"]
 
 
+def test_event_data_retries_a_dropped_connection(monkeypatch):
+    calls = []
+
+    def flaky_get(url, headers, timeout):
+        calls.append(url)
+        if len(calls) == 1:
+            raise requests.exceptions.ConnectionError("Remote end closed connection without response")
+        return _FakeResponse({"pageProps": {"eventData": {"en": '{"random": []}'}}})
+
+    monkeypatch.setattr(main, "_gametora_build_id", "build")
+    monkeypatch.setattr(main.requests, "get", flaky_get)
+    assert main.fetch_gametora_event_data("supports", "card", backoff=0) == {"random": []}
+    assert len(calls) == 2
+
+
+def test_event_data_gives_up_after_retries(monkeypatch):
+    def dead_get(url, headers, timeout):
+        raise requests.exceptions.ConnectionError("no route")
+
+    monkeypatch.setattr(main, "_gametora_build_id", "build")
+    monkeypatch.setattr(main.requests, "get", dead_get)
+    with pytest.raises(requests.exceptions.ConnectionError):
+        main.fetch_gametora_event_data("supports", "card", retries=1, backoff=0)
+
+
 def test_character_name_prefers_name_en():
     assert main.character_name({"name_en": "A", "en_name": "B"}) == "A"
     assert main.character_name({"en_name": "B"}) == "B"
