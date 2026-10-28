@@ -53,8 +53,8 @@ private const val SKILL_SCROLL_TRAVEL_Y = 190
 private const val SKILL_CELL_REF_HEIGHT = 100
 
 /**
- * The rank glyphs that can trail a skill name, mapped to their templates. Insertion order is load-bearing: the Skill List screen scans these first-match-wins, and the double circle has to be
- * tried before the single, since a single-ring template also matches the outer ring of a double circle.
+ * The rank glyphs that can trail a skill name, mapped to their templates. A single-ring template also scores well against the outer ring of a double circle, so callers pick the best
+ * score rather than the first match.
  */
 private val SKILL_GLYPH_COMPONENTS: Map<String, ComponentInterface> =
     linkedMapOf(
@@ -78,6 +78,15 @@ private const val SKILL_GLYPH_UPSCALE = 1.3
 
 /** Correlation a circle template must reach to be believed, sitting between the ~0.45 a glyph-less cell scores and the ~0.89 a real glyph scores. */
 private const val SKILL_GLYPH_MIN_CONFIDENCE = 0.60
+
+/**
+ * Upscale applied to a Skill List title crop before its rank glyph is scored. The list draws the glyph at ~0.95x the 32x32 templates, so at 1.0x no template clears 0.69 and the glyph was
+ * only recovered from OCR, which reads a double circle as a single one. Measured on a 1080x1920 capture: at this upscale the correct template scores 0.94-0.96 and the wrong one at most 0.71.
+ */
+private const val SKILL_LIST_GLYPH_UPSCALE = 1 / 0.95
+
+/** Correlation the Skill List glyph must reach, above the ~0.71 the wrong circle scores and the ~0.62 a title without a glyph scores. */
+private const val SKILL_LIST_GLYPH_MIN_CONFIDENCE = 0.85
 
 /** Matches any rank glyph. Hoisted so [skillBaseName] does not recompile it on every cell it strips. */
 private val SKILL_GLYPH_REGEX = Regex("[○◎×]")
@@ -463,14 +472,22 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
             skillName = skillName.drop("remove".length).trim()
         }
 
-        // Detect the special icon (double-circle, single-circle, cross) that indicates the skill's rank. The entry here draws the glyph at full size, so the templates match it directly.
-        var iconChar: String = SKILL_GLYPH_COMPONENTS.entries.firstOrNull { it.value.findImageWithBitmap(game.imageUtils, croppedTitle) != null }?.key ?: ""
+        // Detect the special icon (double-circle, single-circle, cross) that indicates the skill's rank. The crop is normalized to the 1080p width so the upscale holds on any device.
+        val glyphScale: Double = SKILL_LIST_GLYPH_UPSCALE * 1080.0 / SharedData.displayWidth
+        var iconChar: String =
+            game.imageUtils.findBestTemplateMatch(
+                croppedTitle,
+                SKILL_GLYPH_COMPONENTS,
+                (croppedTitle.width * glyphScale).toInt(),
+                (croppedTitle.height * glyphScale).toInt(),
+                minConfidence = SKILL_LIST_GLYPH_MIN_CONFIDENCE,
+            ) ?: ""
 
         // The base skill name with any trailing misread-glyph letter removed. The database stores glyphs as " <glyph>".
         val baseName: String = stripTrailingGlyphNoise(skillName)
 
         // Template match found no glyph, but OCR left a trailing letter that is really a misread rank glyph.
-        // Single-circle reads as "O"/"0"; cross reads as "x"/"X". Double-circle never appears in a scan, so it is not a case here.
+        // Single-circle reads as "O"/"0"; cross reads as "x"/"X". OCR has no stable misread for the double circle, so only the templates above can find it.
         // Only accept the recovery when "<base> <glyph>" is a real skill so a legit name ending in a letter is not mangled.
         if (iconChar.isEmpty()) {
             val candidateGlyph: String =
