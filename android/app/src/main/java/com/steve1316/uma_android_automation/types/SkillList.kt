@@ -20,6 +20,7 @@ import com.steve1316.uma_android_automation.utils.OcrWord
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
+import com.steve1316.uma_android_automation.utils.wordsTextIn
 import org.opencv.android.Utils
 import org.opencv.core.Core
 import org.opencv.core.Mat
@@ -605,10 +606,12 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
         var emptyPasses = 0
         for (pass in 0..MAX_SKILL_SCROLLS) {
             val bitmap = game.imageUtils.getSourceBitmap()
+            // One text read covers the whole grid and each word goes to the cell under its center. A text read costs about the same at any size, so this beats a read per cell.
+            val words: List<OcrWord> = game.imageUtils.findWords(bitmap, detailsSkillGridBbox(pass))
             var newFound = 0
             for (row in 0 until VISIBLE_SKILL_ROWS) {
                 for (col in 0 until SKILL_COLUMNS) {
-                    val read = readDetailsSkillCell(bitmap, row, col, pass) ?: continue
+                    val read = readDetailsSkillCell(bitmap, words, row, col, pass) ?: continue
                     val key = ownedSkillKey(read.name)
                     val seen = ownedNames[key]
                     if (seen == null) {
@@ -622,7 +625,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
                 }
             }
             if (pass == 0) {
-                uniqueLevel = readUniqueSkillLevel(bitmap)
+                uniqueLevel = readUniqueSkillLevel(bitmap, words)
                 if (scrollList == null) {
                     MessageLog.i(TAG, "[INFO] The Skills tab has no scrollbar, so every skill is already on screen. Reading it in one pass.")
                     break
@@ -688,21 +691,35 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
-     * OCRs and database-matches one skill cell of the Details "Skills" tab.
+     * The screen region of the whole visible Skills-tab grid, from the top-left cell to the bottom-right one.
+     *
+     * @param pass The scroll pass the grid is being read on.
+     * @return The grid's bounding box in screen coordinates.
+     */
+    private fun detailsSkillGridBbox(pass: Int): BoundingBox {
+        val first = detailsSkillCellBbox(0, 0, pass)
+        val last = detailsSkillCellBbox(VISIBLE_SKILL_ROWS - 1, SKILL_COLUMNS - 1, pass)
+        return BoundingBox(first.x, first.y, last.x + last.w - first.x, last.y + last.h - first.y)
+    }
+
+    /**
+     * Database-matches one skill cell of the Details "Skills" tab from the words read off the grid.
      *
      * @param bitmap The current screen bitmap.
+     * @param words The words read off the grid by one text read. When it is empty because that read failed, the cell is read on its own.
      * @param row The 0-indexed grid row.
      * @param col The grid column (0 = left, 1 = right).
      * @param pass The scroll pass this cell is being read on.
      * @return The canonical skill name and whether its rank glyph was legible, or null when the cell is empty or unmatched.
      */
-    private fun readDetailsSkillCell(bitmap: Bitmap, row: Int, col: Int, pass: Int): GlyphResolution? {
+    private fun readDetailsSkillCell(bitmap: Bitmap, words: List<OcrWord>, row: Int, col: Int, pass: Int): GlyphResolution? {
         val bbox = detailsSkillCellBbox(row, col, pass)
         val crop = game.imageUtils.createSafeBitmap(bitmap, bbox, "detailsSkill_${row}_$col") ?: return null
         if (game.debugMode) game.imageUtils.saveBitmap(crop, "detailsSkill_${row}_$col")
 
         // Collapse the newline between wrapped lines into a single space so a two-line name matches its one-line database key.
-        val text = extractText(crop).trim().replace(Regex("\\s+"), " ").replace(Regex("\\bl\\b"), "I")
+        val cellText: String = if (words.isEmpty()) extractText(crop) else wordsTextIn(words, bbox).orEmpty()
+        val text = cellText.trim().replace(Regex("\\s+"), " ").replace(Regex("\\bl\\b"), "I")
         if (text.length < 2) return null
         val base = skillBaseName(text)
         if (base.length < 2) return null
@@ -809,29 +826,33 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
     }
 
     /**
-     * OCRs the unique skill's level from the "Lvl N" region of the first Skills-tab cell.
+     * Reads the unique skill's level from the "Lvl N" region of the first Skills-tab cell.
      *
      * @param bitmap The current screen bitmap.
+     * @param words The words read off the grid. The level is read on its own only when none of them sit on it.
      * @return The unique skill level, or 0 when unread.
      */
-    private fun readUniqueSkillLevel(bitmap: Bitmap): Int {
+    private fun readUniqueSkillLevel(bitmap: Bitmap, words: List<OcrWord>): Int {
         val w = SharedData.displayWidth.toDouble()
-        // The unique level is a single digit shown as "Lvl N"; crop tightly on just the number and read it at high scale so ML Kit does not drop it.
+        val box = BoundingBox((w * 493 / 1080.0).toInt(), game.imageUtils.relY(1052, Anchor.CENTER), (w * 46 / 1080.0).toInt(), game.imageUtils.relHeight(48))
+        // Levels are 1-6, so take the last digit to shrug off any stray "Lvl" characters that bled into the crop.
+        val lastDigit = { text: String -> text.filter { it.isDigit() }.lastOrNull()?.digitToIntOrNull() }
+        lastDigit(wordsTextIn(words, box).orEmpty())?.let { return it }
+        // The fallback crops tightly on just the number and reads it at high scale so ML Kit does not drop it.
         val text =
             game.imageUtils.performOCROnRegion(
                 bitmap,
-                (w * 493 / 1080.0).toInt(),
-                game.imageUtils.relY(1052, Anchor.CENTER),
-                (w * 46 / 1080.0).toInt(),
-                game.imageUtils.relHeight(48),
+                box.x,
+                box.y,
+                box.w,
+                box.h,
                 useThreshold = false,
                 useGrayscale = true,
                 scale = 3.0,
                 ocrEngine = "mlKit",
                 debugName = "detailsUniqueLevel",
             )
-        // Levels are 1-6, so take the last digit to shrug off any stray "Lvl" characters that bled into the crop.
-        return text.filter { it.isDigit() }.lastOrNull()?.digitToIntOrNull() ?: 0
+        return lastDigit(text) ?: 0
     }
 
     /**
@@ -1168,11 +1189,7 @@ class SkillList(private val game: Game, private val campaign: Campaign) {
      */
     private fun frameTextIn(region: BoundingBox): String? {
         val words: List<OcrWord> = frameWords?.value ?: return null
-        return words
-            .filter { it.box.centerX() in region.x until (region.x + region.w) && it.box.centerY() in region.y until (region.y + region.h) }
-            .sortedWith(compareBy({ it.lineTop }, { it.box.left }))
-            .joinToString(" ") { it.text }
-            .ifBlank { null }
+        return wordsTextIn(words, region)
     }
 
     /**
