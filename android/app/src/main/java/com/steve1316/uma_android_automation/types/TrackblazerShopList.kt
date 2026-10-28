@@ -25,6 +25,7 @@ import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.CropMemory
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
+import com.steve1316.uma_android_automation.utils.ScrollListEntryDetectionConfig
 import com.steve1316.uma_android_automation.utils.toGrayMat
 import org.json.JSONArray
 import org.opencv.core.Mat
@@ -32,6 +33,12 @@ import org.opencv.core.Point
 
 /** Wait after each Shop list swipe, on top of the wait inside the swipe. The list stops dead after the swipe's edge tap, as the skill list does. */
 private const val SHOP_LIST_SETTLE_SECONDS = 0.2
+
+/**
+ * Blur applied before the Shop list's background flood fill. At the default 7 the glow of a NEW badge turns into a ramp gentle enough for the fill
+ * to climb into the card, mostly on the last card where the list's background is darkest, and that card is then missed.
+ */
+private const val SHOP_LIST_BLUR_SIZE = 5
 
 /**
  * Store a single scanned item's entry, name, and disabled state.
@@ -815,6 +822,7 @@ class TrackblazerShopList(private val game: Game) {
                 fallbackComponent = ButtonSkillUp,
                 listTopLeftComponent = topLeft,
                 listBottomRightComponent = bottomRight,
+                entryDetectionConfig = if (isTrainingItems) null else ScrollListEntryDetectionConfig(blurSize = SHOP_LIST_BLUR_SIZE),
                 onFrame = { _, frameEntries -> readFrameNames(frameEntries, bAmounts = isTrainingItems) },
                 settleSeconds = if (isTrainingItems) 0.5 else SHOP_LIST_SETTLE_SECONDS,
             ) { _, entry: ScrollListEntry ->
