@@ -855,14 +855,9 @@ abstract class Campaign(game: Game) : Task(game) {
             "umamusume_details" -> {
                 val prevRunningStyle = trainee.runningStyle
                 trainee.updateAptitudes(game.imageUtils)
-                trainee.updateStats(game.imageUtils, isAptitudeDialog = true)
-                trainee.updateStatCapsFromDialog(game.imageUtils)
+                // Also reads the trainee's name once per run while the dialog is open.
+                trainee.updateFromDetailsDialog(game.imageUtils)
                 trainee.bTemporaryRunningStyleAptitudesUpdated = false
-
-                // Read the trainee's name once per run while the dialog is still open.
-                if (trainee.name.isEmpty()) {
-                    trainee.readName(game.imageUtils)
-                }
 
                 if (trainee.runningStyle != prevRunningStyle) {
                     // Reset this flag since our preferred running style has changed.
@@ -2455,29 +2450,30 @@ abstract class Campaign(game: Game) : Task(game) {
             return
         }
 
-        // Run the per-turn reads in parallel. 5 stats + skill points + mood + energy = 8, plus racing requirements (outside summer) and the stat-cap OCR (only when dynamic caps are on).
+        // Run the per-turn reads in parallel: the stat table, mood, and energy, plus racing requirements outside summer.
+        // The stat table batches its numbers into one text read because text reads queue behind each other, so one thread per number gained nothing.
         val includeRacingThread = !date.isSummer() || (racing.skipSummerTrainingForAgenda && racing.enableUserInGameRaceAgenda)
-        val readStatCaps = training.useDynamicStatCaps
-        val latch = CountDownLatch(8 + (if (includeRacingThread) 1 else 0) + (if (readStatCaps) 1 else 0))
+        val latch = CountDownLatch(3 + (if (includeRacingThread) 1 else 0))
 
         MessageLog.disableOutput = true
         // Turn the log back on even when a pause aborts this step while it is starting the reads.
         try {
-            // Threads 1-5: Update stats.
-            trainee.updateStats(game.imageUtils, sourceBitmap, skillPointsLocation, latch)
-
-            // Thread 6: Update skill points.
+            // Thread 1: Update the stats, skill points, and the "/NNNN" caps. The caps are only read when dynamic caps are on, since they are unused otherwise.
             Thread {
                 try {
-                    trainee.updateSkillPoints(game.imageUtils, sourceBitmap, skillPointsLocation)
+                    if (skillPointsLocation != null) {
+                        trainee.updateStatTable(game.imageUtils, sourceBitmap, skillPointsLocation, readCaps = training.useDynamicStatCaps)
+                    } else {
+                        MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Could not find the skill points label to anchor the stat reads.")
+                    }
                 } catch (e: Exception) {
-                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateSkillPoints thread: ${e.stackTraceToString()}")
+                    MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatTable thread: ${e.stackTraceToString()}")
                 } finally {
                     latch.countDown()
                 }
             }.apply { isDaemon = true }.start()
 
-            // Thread 7: Update mood.
+            // Thread 2: Update mood.
             Thread {
                 try {
                     trainee.updateMood(game.imageUtils, sourceBitmap)
@@ -2488,7 +2484,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 }
             }.apply { isDaemon = true }.start()
 
-            // Thread 8: Update racing requirements.
+            // Thread 3: Update racing requirements.
             if (includeRacingThread) {
                 Thread {
                     try {
@@ -2501,7 +2497,7 @@ abstract class Campaign(game: Game) : Task(game) {
                 }.apply { isDaemon = true }.start()
             }
 
-            // Thread 9: Update energy.
+            // Thread 4: Update energy.
             Thread {
                 try {
                     trainee.updateEnergy(game.imageUtils)
@@ -2511,19 +2507,6 @@ abstract class Campaign(game: Game) : Task(game) {
                     latch.countDown()
                 }
             }.apply { isDaemon = true }.start()
-
-            // Thread 10: Update stat caps (only shown on the main / training screen, and only when dynamic caps are on - otherwise the 5 OCR reads and the misread caps in the log are wasted).
-            if (readStatCaps) {
-                Thread {
-                    try {
-                        trainee.updateStatCaps(game.imageUtils, sourceBitmap, skillPointsLocation)
-                    } catch (e: Exception) {
-                        MessageLog.e(TAG, "[ERROR] performTurnStartUpdates:: Error in updateStatCaps thread: ${e.stackTraceToString()}")
-                    } finally {
-                        latch.countDown()
-                    }
-                }.apply { isDaemon = true }.start()
-            }
 
             // Wait for all threads to complete.
             try {

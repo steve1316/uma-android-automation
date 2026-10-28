@@ -204,18 +204,16 @@ sequenceDiagram
 
 ### 4.1 Parallel Turn-Start Updates
 
-Every time the date changes, the bot reads the trainee's current state using up to **10 parallel OCR threads** coordinated by a `CountDownLatch` with a **10-second timeout**:
+Every time the date changes, the bot reads the trainee's current state using up to **4 parallel threads** coordinated by a `CountDownLatch` with a **10-second timeout**:
 
 | Thread | Reads | Method |
 |--------|-------|--------|
-| 1–5 | Speed, Stamina, Power, Guts, Wit | `trainee.updateStats()` |
-| 6 | Skill Points | `trainee.updateSkillPoints()` |
-| 7 | Mood (icon-based detection) | `trainee.updateMood()` |
-| 8 | Racing requirements (fans/trophies) | `racing.checkRacingRequirements()` |
-| 9 | Energy (bar position) | `trainee.updateEnergy()` |
-| 10 | Per-stat caps (the `/NNNN` denominators) | `trainee.updateStatCaps()` |
+| 1 | Stats, skill points, and per-stat caps (the `/NNNN` denominators) | `trainee.updateStatTable()` |
+| 2 | Mood (icon-based detection) | `trainee.updateMood()` |
+| 3 | Racing requirements (fans/trophies) | `racing.checkRacingRequirements()` |
+| 4 | Energy (bar position) | `trainee.updateEnergy()` |
 
-Threads 8 and 10 are conditional. Racing requirements are **skipped during summer** since no races are available, and the stat-cap thread is only spawned when **Read Stat Caps from Screen** is enabled — with the setting off those five extra OCR reads never run at all. Logging output is temporarily disabled during parallel reads to avoid garbled messages, then re-enabled after all threads complete.
+Thread 1 stacks every number's crop into one image and reads it with a single OCR call, since OCR calls queue behind each other and one call per number gained nothing. A number whose crop has not changed since the last turn reuses its previous read, and one that reads as implausible is read again on its own. The caps are only read when **Read Stat Caps from Screen** is enabled. Racing requirements are **skipped during summer** since no races are available. Logging output is temporarily disabled during parallel reads to avoid garbled messages, then re-enabled after all threads complete.
 
 > [!WARNING]
 > If any thread fails to complete within the 10-second timeout, the bot logs an error and continues with whatever data it managed to read. Stat values that timed out retain their previous values.
