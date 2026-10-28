@@ -1136,13 +1136,6 @@ const searchConfig: SearchOption[] = [
         description: "Rank which Songs the bot buys first in Lessons. A ranked Song is bought ahead of anything else learnable, whatever its effects.",
         page: "ScenarioOverridesSettings",
     },
-    {
-        id: "grand-live-lesson-rescan-interval",
-        title: "Grand Live Lessons Fallback Re-check",
-        description:
-            'How many turns without a Lessons visit before the bot opens Lessons even without its "!" badge. The badge normally shows when a purchase is affordable, so this only covers a missed badge.',
-        page: "ScenarioOverridesSettings",
-    },
 
     // ============================================================
     // Dailies Settings (DailiesSettings)

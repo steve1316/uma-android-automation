@@ -1324,14 +1324,14 @@ The five token totals live in a vertical panel anchored by the `grandlive_perfor
 
 ### 12.2 The Lessons Facility
 
-Lessons is a free side-action — opening it does not consume the turn — so the bot visits from the main screen on the first turn and then polls on the **Lessons Re-check Interval** (Scenario Overrides → Grand Live, default every 2 turns).
+Lessons is a free side-action — opening it does not consume the turn — so the bot checks for it on every main-screen turn. It opens Lessons only when the Lessons button shows the game's "!" badge, which appears when a purchase is affordable. With no badge there is nothing to buy, so the visit is skipped.
 
 > [!IMPORTANT]
 > **Purchasability comes only from the "Learnable!" ribbon.** A card is buyable exactly when it shows the gold "Learnable!" ribbon — the bot never infers affordability from token totals, because card costs mix multiple token types and the list's contents are hidden state. The ribbon is identical artwork on every card, so it is matched on its own and the card's kind (Song / Technique) is read separately off the kind tag. That split matters: the ribbon used to be matched together with the kind word baked in, so when the game reworded "Songs" to "Song" the match fell below threshold and every learnable Song read as locked. The ribbon template averages both card colours (purple Song, green Technique) because the card header tints the ribbon's lower rows, and is matched at **0.85 confidence** - low enough to clear both colours, far above the ~0.36 a non-ribbon scores.
 
 **Scanning.** Each card is anchored by its "Performance Point Cost" pill (`grandlive_performance_point_cost`); the name, kind tag, and two effect lines are OCR'd at fixed offsets from that anchor. Every card is logged with its Learnable/Locked state so a buy-nothing visit is always explainable. If zero anchors match, the scan re-probes at 0.7 confidence to tell a too-strict threshold (loose > 0) apart from a stale template crop (loose = 0), and dumps the frame in Debug Mode. The same probe runs when cards were found but no ribbon matched any of them, which is what a stale ribbon crop looks like from the outside.
 
-**The list is static until a purchase.** The card list only refreshes *after* buying something — never between turns on its own. This drives two behaviors: the bot re-scans after every single purchase (new cards may have appeared), and it does not bother re-opening Lessons every turn when nothing was bought (the configurable poll cadence above).
+**The list is static until a purchase.** The card list only refreshes *after* buying something — never between turns on its own. This drives two behaviors: the bot re-scans after every single purchase (new cards may have appeared), and it does not re-open Lessons on a turn without the "!" badge.
 
 **Purchase policy**, in order:
 
