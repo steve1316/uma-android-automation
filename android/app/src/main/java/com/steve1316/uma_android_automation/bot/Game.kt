@@ -98,6 +98,10 @@ class Game(val myContext: Context) {
 
     companion object {
         private val TAG: String = "[${MainActivity.loggerTag}]Game"
+
+        /** The most recent run's `Game`, set only while the developer MCP server runs so it can report the final state after the run ends. */
+        @Volatile
+        var current: Game? = null
     }
 
     // Initialize Discord settings from SQLite.

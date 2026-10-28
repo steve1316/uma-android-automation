@@ -351,6 +351,7 @@ ${buildCareerSetupSection(settings)}
 🔍 Custom Scale: ${settings.debug.templateMatchCustomScale}
 🖼️ Debug Image Quality: ${settings.debug.debugImageQuality}%
 💻 Remote Log Viewer: ${settings.debug.enableRemoteLogViewer ? "✅" : "❌"}
+🔌 Developer MCP Server: ${settings.debug.enableDevMcpServer ? "✅" : "❌"}
 📹 Enable Screen Recording: ${
         settings.debug.enableScreenRecording ? `✅ (${settings.debug.recordingBitRate} Mbps, ${settings.debug.recordingFrameRate} FPS, ${settings.debug.recordingResolutionScale}x scale)` : "❌"
     }

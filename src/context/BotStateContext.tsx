@@ -259,6 +259,7 @@ export interface Settings {
         recordingResolutionScale: number
         enableRemoteLogViewer: boolean
         remoteLogViewerPort: number
+        enableDevMcpServer: boolean
         enableMessageIdDisplay: boolean
     }
 
@@ -594,6 +595,7 @@ export const defaultSettings: Settings = {
         recordingResolutionScale: 1.0,
         enableRemoteLogViewer: false,
         remoteLogViewerPort: 9000,
+        enableDevMcpServer: false,
         enableMessageIdDisplay: false,
     },
     discord: {
