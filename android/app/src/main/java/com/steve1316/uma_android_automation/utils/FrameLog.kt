@@ -150,11 +150,12 @@ object FrameLog {
     }
 
     /**
-     * Starts a new session when a run starts.
+     * Starts a new session when a run starts. The priority puts it ahead of `StartModule`, whose handler blocks the posting thread until
+     * the run ends, so a default-priority reset would only land after the run.
      *
      * @param event The start event.
      */
-    @Subscribe
+    @Subscribe(priority = 1)
     fun onStartEvent(event: StartEvent) {
         if (event.message != "Entry Point ON") return
         sessionDir = null
