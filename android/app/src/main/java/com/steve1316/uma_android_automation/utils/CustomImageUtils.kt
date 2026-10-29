@@ -260,6 +260,9 @@ internal fun wordsTextIn(words: List<OcrWord>, region: BoundingBox): String? =
         .joinToString(" ") { it.text }
         .ifBlank { null }
 
+/** How many spots [CustomImageUtils] saves per template. A button sits at a few heights at most, one per dialog size it appears in. */
+private const val MAX_TEMPLATE_SPOTS = 6
+
 /** A digit run right before a "%" sign. */
 private val PERCENT_DIGITS_REGEX = Regex("(\\d+)\\s*%")
 
@@ -317,6 +320,15 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
     /** Whether to use YOLOv8 for stat detection. */
     private val useYolo: Boolean = SettingsHelper.getBooleanSetting("training", "enableYoloStatDetection")
+
+    /**
+     * Where each template was last matched on a full-screen frame, newest first. The key is the template name and size, since a caller can pass a shrunk copy under the same name.
+     * A template can keep several spots, because the same button sits at a different height in dialogs of different sizes.
+     */
+    private val templateSpots = ConcurrentHashMap<String, MutableList<Point>>()
+
+    /** The screen size the saved spots belong to. The spots are dropped when it changes. */
+    @Volatile private var templateSpotsScreen: Pair<Int, Int> = 0 to 0
 
     /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios.
      * Lazy because this class is constructed before `game.scenario` is initialized, so an eager read would cache an empty scenario. */
@@ -515,6 +527,100 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         Utils.matToBitmap(this, bitmap)
         return bitmap
     }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Template location cache
+
+    /**
+     * Matches a template, checking the spots it was last found at before searching the whole region. A spot is checked over a small box around it with the same confidence,
+     * so a hit there is a match the full search would also accept. Cropped frames, scale tests, debug mode, and screens that match at other scales skip the saved spots.
+     *
+     * @param sourceBitmap The frame to search.
+     * @param templateBitmap The template to look for.
+     * @param templateName The template's name.
+     * @param region The region (x, y, width, height) to search. All zeros means the whole frame.
+     * @param useSingleScale Whether to match at the single custom scale only.
+     * @param customConfidence The confidence to use, or 0.0 for the default.
+     * @param testScale The scale a scale test is using, or 0.0 outside a test.
+     * @return Whether the template matched, and where its center is.
+     */
+    override fun match(
+        sourceBitmap: Bitmap,
+        templateBitmap: Bitmap,
+        templateName: String,
+        region: IntArray,
+        useSingleScale: Boolean,
+        customConfidence: Double,
+        testScale: Double,
+    ): Pair<Boolean, Point?> {
+        val fullFrame = sourceBitmap.width == SharedData.displayWidth && sourceBitmap.height == SharedData.displayHeight
+        if (debugMode || testScale != 0.0 || !fullFrame || !is1080p || customScale != 1.0) {
+            return super.match(sourceBitmap, templateBitmap, templateName, region, useSingleScale, customConfidence, testScale)
+        }
+        val screen = sourceBitmap.width to sourceBitmap.height
+        if (screen != templateSpotsScreen) {
+            templateSpots.clear()
+            templateSpotsScreen = screen
+        }
+
+        val spots: MutableList<Point> = templateSpots.getOrPut("$templateName@${templateBitmap.width}x${templateBitmap.height}") { mutableListOf() }
+        for (spot in synchronized(spots) { spots.toList() }) {
+            val box = spotBox(spot, templateBitmap, region, sourceBitmap) ?: continue
+            val hit = super.match(sourceBitmap, templateBitmap, templateName, box, useSingleScale, customConfidence, testScale)
+            if (hit.first) {
+                rememberSpot(spots, hit.second!!, templateBitmap)
+                return hit
+            }
+        }
+        val result = super.match(sourceBitmap, templateBitmap, templateName, region, useSingleScale, customConfidence, testScale)
+        if (result.first) rememberSpot(spots, result.second!!, templateBitmap)
+        return result
+    }
+
+    /**
+     * The box around a saved spot that a template is checked in, clipped to the region the caller asked for.
+     *
+     * @param spot The template's center when it was last found.
+     * @param templateBitmap The template, whose size sets the box.
+     * @param region The region (x, y, width, height) the caller asked for. All zeros means the whole frame.
+     * @param sourceBitmap The frame being searched.
+     * @return The box as (x, y, width, height), or null when the region cuts it too small to hold the template.
+     */
+    private fun spotBox(spot: Point, templateBitmap: Bitmap, region: IntArray, sourceBitmap: Bitmap): IntArray? {
+        val margin = templateSpotMargin(templateBitmap)
+        val (rx, ry, rw, rh) = if (region.all { it == 0 }) listOf(0, 0, sourceBitmap.width, sourceBitmap.height) else region.toList()
+        val left = maxOf(rx, spot.x.toInt() - templateBitmap.width / 2 - margin, 0)
+        val top = maxOf(ry, spot.y.toInt() - templateBitmap.height / 2 - margin, 0)
+        val right = minOf(rx + rw, spot.x.toInt() + templateBitmap.width / 2 + margin, sourceBitmap.width)
+        val bottom = minOf(ry + rh, spot.y.toInt() + templateBitmap.height / 2 + margin, sourceBitmap.height)
+        if (right - left < templateBitmap.width || bottom - top < templateBitmap.height) return null
+        return intArrayOf(left, top, right - left, bottom - top)
+    }
+
+    /**
+     * Saves where a template was found as its newest spot. A saved spot this close to it is replaced, and the oldest spots past the limit are dropped.
+     *
+     * @param spots The template's saved spots, newest first.
+     * @param location The template's center where it was found.
+     * @param templateBitmap The template, whose size sets how close counts as the same spot.
+     */
+    private fun rememberSpot(spots: MutableList<Point>, location: Point, templateBitmap: Bitmap) {
+        val margin = templateSpotMargin(templateBitmap)
+        synchronized(spots) {
+            spots.removeAll { abs(it.x - location.x) <= margin && abs(it.y - location.y) <= margin }
+            spots.add(0, location)
+            while (spots.size > MAX_TEMPLATE_SPOTS) spots.removeAt(spots.lastIndex)
+        }
+    }
+
+    /**
+     * How far past a template's edges its spot box reaches, so a button that shifted a few pixels or drew at the smaller tall-screen scale still falls inside.
+     *
+     * @param templateBitmap The template.
+     * @return The margin in pixels.
+     */
+    private fun templateSpotMargin(templateBitmap: Bitmap): Int = maxOf(8, maxOf(templateBitmap.width, templateBitmap.height) / 10)
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
