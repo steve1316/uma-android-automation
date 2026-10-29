@@ -260,6 +260,44 @@ internal fun wordsTextIn(words: List<OcrWord>, region: BoundingBox): String? =
         .joinToString(" ") { it.text }
         .ifBlank { null }
 
+/** A digit run right before a "%" sign. */
+private val PERCENT_DIGITS_REGEX = Regex("(\\d+)\\s*%")
+
+/** Any digit run. */
+private val DIGITS_REGEX = Regex("\\d+")
+
+/** A training level label like "Lvl 4". */
+private val TRAINING_LEVEL_REGEX = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE_CASE)
+
+/**
+ * Parses a training failure chance read. Takes the digit run right before the "%" sign, falling back to the first digit run, instead of joining
+ * every digit. A low-contrast 0% bubble can make the recognizer emit stray digits, and joining them made phantom values like 10 or 12.
+ *
+ * @param text The OCR text from the failure chance bubble.
+ * @return The failure chance (0-100), or null when there are no digits or the number is above 100, which is an impossible misread.
+ */
+internal fun parseFailureChance(text: String): Int? {
+    val normalized = text.lowercase().replace("o", "0").replace("failure", "")
+    val digits = PERCENT_DIGITS_REGEX.find(normalized)?.groupValues?.get(1) ?: DIGITS_REGEX.find(normalized)?.value
+    return digits?.trim()?.toIntOrNull()?.takeIf { it <= 100 }
+}
+
+/**
+ * Parses a training level read like "Speed Lvl 4".
+ *
+ * @param text The OCR text from the training level label.
+ * @return The level (1-5), or null when no level was read.
+ */
+internal fun parseTrainingLevel(text: String): Int? = TRAINING_LEVEL_REGEX.find(text)?.groupValues?.getOrNull(1)?.toIntOrNull()
+
+/** The failure chance and training level read off one facility's frame by [CustomImageUtils.readTrainingFailureAndLevel]. */
+data class TrainingPanelRead(
+    /** The failure chance (0-100), or -1 for a failed read. */
+    val failureChance: Int,
+    /** The training level (1-5), or null when it was not asked for or could not be read. */
+    val level: Int?,
+)
+
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
     /** OCR threshold for text recognition. */
@@ -728,17 +766,15 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 return -1
             }
 
-            // Determine crop region and small adjustments for improved OCR rates.
-            val (offsetX, offsetY, width, height) = listOf(-50, 10, relWidth(100), relHeight(55))
-
             // Perform OCR with 2x scaling and no thresholding.
+            val region = failureChanceRegion(trainingSelectionLocation)
             val detectedText =
                 performOCROnRegion(
                     sourceBitmap!!,
-                    relX(trainingSelectionLocation.x, offsetX),
-                    relY(trainingSelectionLocation.y, offsetY),
-                    width,
-                    height,
+                    region.x,
+                    region.y,
+                    region.w,
+                    region.h,
                     useThreshold = false,
                     useGrayscale = true,
                     scale = 2.0,
@@ -746,26 +782,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     debugName = "TrainingFailureChance",
                 )
 
-            // Parse the result. Take the digit run immediately before the "%" sign (falling back to the first digit run) instead of concatenating every digit - a low-contrast 0% bubble can
-            // make the general recognizer emit stray digits, and blind concatenation fused them into phantom values like 10 / 12. The "o" -> "0" swap and the > 100 guard stay as backstops.
-            return try {
-                val normalized = detectedText.lowercase().replace("o", "0").replace("failure", "")
-                val cleanedResult = (Regex("(\\d+)\\s*%").find(normalized)?.groupValues?.get(1) ?: Regex("\\d+").find(normalized)?.value)?.trim().orEmpty()
-
-                val value = cleanedResult.toInt()
-
-                // A failure chance above 100% is an impossible OCR misread (e.g. a stray extra digit). Reject it as invalid rather than
-                // fabricating a value by dropping a digit; the retry gets a fresh bitmap and the caller's fallback + energy clamp handle it.
-                if (value > 100) {
-                    Log.w(TAG, "[WARN] findTrainingFailureChance:: Failure chance $value% exceeds 100%; treating as an invalid read.")
-                    return -1
-                }
-
-                value
-            } catch (_: NumberFormatException) {
-                MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to integer for training failure chance.")
-                -1
+            // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the retry gets a fresh bitmap.
+            val value = parseFailureChance(detectedText)
+            if (value == null) {
+                MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
+                return -1
             }
+            return value
         }
 
         val tries: Int = maxOf(1, tries)
@@ -794,6 +817,51 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
         return result
     }
+
+    /**
+     * Reads a facility's failure chance and training level with one ML Kit call. Each crop keeps the filter its own read uses, so the text matches
+     * what the separate reads see. A field the combined read misses falls back to its separate read.
+     *
+     * @param sourceBitmap The facility's frame.
+     * @param failureAnchor Where the failure chance label sits, or null to skip the failure chance.
+     * @param energyAnchor Where the Energy label sits, or null to skip the training level.
+     * @return The failure chance and training level read.
+     */
+    fun readTrainingFailureAndLevel(sourceBitmap: Bitmap, failureAnchor: Point?, energyAnchor: Point?): TrainingPanelRead {
+        val crops = LinkedHashMap<String, Bitmap?>()
+        if (failureAnchor != null) {
+            crops["failure"] = cropFiltered(sourceBitmap, failureChanceRegion(failureAnchor), "readTrainingFailureAndLevel failure") { toGrayscale(it, 2.0) }
+        }
+        if (energyAnchor != null) {
+            crops["level"] = cropFiltered(sourceBitmap, trainingLevelRegion(energyAnchor), "readTrainingFailureAndLevel level") { colorMask(it, 255, 255, 255, 30, 2.0, "trainingLevel") }
+        }
+        val texts = readStackedCrops(crops)
+
+        val failureChance =
+            if (failureAnchor == null) {
+                -1
+            } else {
+                texts["failure"]?.let { parseFailureChance(it) } ?: findTrainingFailureChance(sourceBitmap, failureAnchor)
+            }
+        val level = if (energyAnchor == null) null else texts["level"]?.let { parseTrainingLevel(it) } ?: extractTrainingLevel(sourceBitmap, energyAnchor)
+        return TrainingPanelRead(failureChance, level)
+    }
+
+    /**
+     * The failure chance bubble's text, relative to the failure chance label.
+     *
+     * @param anchor Where the failure chance label sits.
+     * @return The region to read.
+     */
+    private fun failureChanceRegion(anchor: Point): BoundingBox = BoundingBox(relX(anchor.x, -50), relY(anchor.y, 10), relWidth(100), relHeight(55))
+
+    /**
+     * The selected facility's "Lvl N" label, relative to the Energy label.
+     *
+     * @param anchor Where the Energy label sits.
+     * @return The region to read.
+     */
+    private fun trainingLevelRegion(anchor: Point): BoundingBox = BoundingBox(relX(anchor.x, -140), relY(anchor.y, 65), relWidth(240), relHeight(40))
 
     /**
      * Analyzes relationship bars for the currently selected training.
@@ -3114,55 +3182,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             return ""
         }
 
-        // Convert to Mat.
-        val cvImage = croppedBitmap.toMat()
-
-        // Save the cropped image for debugging.
-        if (debugMode) {
-            DebugCapture.save("debug_${debugName}_cropped", cvImage)
-        }
-
-        // Convert from RGBA to RGB for consistent color processing.
-        val rgbImage = Mat()
-        Imgproc.cvtColor(cvImage, rgbImage, Imgproc.COLOR_RGBA2RGB)
-
-        // Define the lower and upper bounds for the target color with tolerance.
-        val lowerBound =
-            Scalar(
-                maxOf(0, targetR - tolerance).toDouble(),
-                maxOf(0, targetG - tolerance).toDouble(),
-                maxOf(0, targetB - tolerance).toDouble(),
-            )
-        val upperBound =
-            Scalar(
-                minOf(255, targetR + tolerance).toDouble(),
-                minOf(255, targetG + tolerance).toDouble(),
-                minOf(255, targetB + tolerance).toDouble(),
-            )
-
-        // Create a mask where pixels matching the target color are white (255) and everything else is black (0).
-        val colorMask = Mat()
-        Core.inRange(rgbImage, lowerBound, upperBound, colorMask)
-
-        // Invert the mask so text pixels become black and background becomes white.
-        // This matches the expected input format for OCR engines.
-        val invertedMask = Mat()
-        Core.bitwise_not(colorMask, invertedMask)
-
-        // Save the filtered image for debugging.
-        if (debugMode) {
-            DebugCapture.save("debug_${debugName}_colorFiltered", invertedMask)
-        }
-
-        // Convert the processed Mat to Bitmap and apply scaling.
-        val clampedScale = max(0, scale.toInt()).toDouble().coerceAtLeast(1.0)
-        val baseBitmap = invertedMask.toBitmap()
-        val finalBitmap =
-            if (clampedScale != 1.0) {
-                baseBitmap.scale((baseBitmap.width * clampedScale).toInt(), (baseBitmap.height * clampedScale).toInt())
-            } else {
-                baseBitmap
-            }
+        val finalBitmap = colorMask(croppedBitmap, targetR, targetG, targetB, tolerance, scale, debugName)
 
         // Run ML Kit text recognition.
         val inputImage: InputImage = InputImage.fromBitmap(finalBitmap, 0)
@@ -3200,13 +3220,56 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             Log.d(TAG, "[DEBUG] findTextByColor:: Detected text: \"$result\".")
         }
 
-        // Clean up Mats.
-        cvImage.release()
-        rgbImage.release()
-        colorMask.release()
-        invertedMask.release()
-
         return result.trim()
+    }
+
+    /**
+     * Turns a crop into black text on white by keeping only the pixels near a target color, then enlarges it.
+     *
+     * @param crop The crop to filter.
+     * @param targetR The red component (0-255) of the text color.
+     * @param targetG The green component (0-255) of the text color.
+     * @param targetB The blue component (0-255) of the text color.
+     * @param tolerance The per-channel tolerance for color matching.
+     * @param scale How much to enlarge the result. Rounded down to a whole number of at least 1.
+     * @param debugName The name for debug image saving.
+     * @return The filtered bitmap.
+     */
+    private fun colorMask(crop: Bitmap, targetR: Int, targetG: Int, targetB: Int, tolerance: Int, scale: Double, debugName: String): Bitmap {
+        val cvImage = crop.toMat()
+        val rgbImage = Mat()
+        val inRangeMask = Mat()
+        val invertedMask = Mat()
+        try {
+            // Save the cropped image for debugging.
+            if (debugMode) {
+                DebugCapture.save("debug_${debugName}_cropped", cvImage)
+            }
+
+            // Convert from RGBA to RGB for consistent color processing.
+            Imgproc.cvtColor(cvImage, rgbImage, Imgproc.COLOR_RGBA2RGB)
+
+            // Mark the pixels within tolerance of the target color, then invert so the text is black on white as the OCR engines expect.
+            val lowerBound = Scalar(maxOf(0, targetR - tolerance).toDouble(), maxOf(0, targetG - tolerance).toDouble(), maxOf(0, targetB - tolerance).toDouble())
+            val upperBound = Scalar(minOf(255, targetR + tolerance).toDouble(), minOf(255, targetG + tolerance).toDouble(), minOf(255, targetB + tolerance).toDouble())
+            Core.inRange(rgbImage, lowerBound, upperBound, inRangeMask)
+            Core.bitwise_not(inRangeMask, invertedMask)
+
+            // Save the filtered image for debugging.
+            if (debugMode) {
+                DebugCapture.save("debug_${debugName}_colorFiltered", invertedMask)
+            }
+
+            val clampedScale = max(0, scale.toInt()).toDouble().coerceAtLeast(1.0)
+            val baseBitmap = invertedMask.toBitmap()
+            if (clampedScale == 1.0) return baseBitmap
+            return baseBitmap.scale((baseBitmap.width * clampedScale).toInt(), (baseBitmap.height * clampedScale).toInt()).also { if (it !== baseBitmap) baseBitmap.recycle() }
+        } finally {
+            cvImage.release()
+            rgbImage.release()
+            inRangeMask.release()
+            invertedMask.release()
+        }
     }
 
     /**
@@ -3322,17 +3385,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @return The parsed level (1-5), or null if OCR or parsing failed.
      */
     fun extractTrainingLevel(sourceBitmap: Bitmap, energyAnchor: Point): Int? {
-        val x = relX(energyAnchor.x, -140)
-        val y = relY(energyAnchor.y, 65)
-        val width = relWidth(240)
-        val height = relHeight(40)
+        val region = trainingLevelRegion(energyAnchor)
         val rawText =
             findTextByColor(
                 sourceBitmap = sourceBitmap,
-                x = x,
-                y = y,
-                width = width,
-                height = height,
+                x = region.x,
+                y = region.y,
+                width = region.w,
+                height = region.h,
                 targetR = 255,
                 targetG = 255,
                 targetB = 255,
@@ -3340,9 +3400,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 scale = 2.0,
                 debugName = "trainingLevel",
             )
-        if (rawText.isEmpty()) return null
-        val match = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE_CASE).find(rawText) ?: return null
-        return match.groupValues.getOrNull(1)?.toIntOrNull()
+        return parseTrainingLevel(rawText)
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
