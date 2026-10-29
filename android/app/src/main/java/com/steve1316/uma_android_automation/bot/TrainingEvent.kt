@@ -595,7 +595,11 @@ class TrainingEvent(private val game: Game, private val campaign: Campaign) {
                             }
                             sum
                         } else {
-                            formattedLine.toInt()
+                            try {
+                                formattedLine.toInt()
+                            } catch (_: NumberFormatException) {
+                                10
+                            }
                         }
                     selectionWeight[rewardIndex] += finalSkillPoints
                 } else {
