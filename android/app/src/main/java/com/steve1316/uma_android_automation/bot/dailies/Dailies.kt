@@ -10,6 +10,7 @@ import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandlerResult
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.GameConnectionStuckException
 import com.steve1316.uma_android_automation.bot.Task
 import com.steve1316.uma_android_automation.bot.TaskResult
 import com.steve1316.uma_android_automation.bot.TaskResultCode
@@ -592,7 +593,7 @@ class Dailies(game: Game) : Task(game) {
         DailiesRunner(
             parts,
             beforePart = ::goHome,
-            shouldRethrow = { it is InterruptedException || BotHold.isAbortRaised || !BotService.isRunning },
+            shouldRethrow = { it is InterruptedException || it is GameConnectionStuckException || BotHold.isAbortRaised || !BotService.isRunning },
             onFailure = { part, _ -> game.imageUtils.saveDebugScreenshot(game.imageUtils.getSourceBitmap(), "dailies_${part.name.lowercase().replace(' ', '_')}_failed") },
         )
 

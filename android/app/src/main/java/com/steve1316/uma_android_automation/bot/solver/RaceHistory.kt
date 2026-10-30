@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.GameConnectionStuckException
 import com.steve1316.uma_android_automation.components.ButtonBurger
 import com.steve1316.uma_android_automation.components.ButtonCareer
 import com.steve1316.uma_android_automation.components.ButtonClose
@@ -127,6 +128,8 @@ object RaceHistory {
                     false
                 },
             )
+        } catch (e: GameConnectionStuckException) {
+            throw e
         } catch (e: Exception) {
             MessageLog.e(TAG, "[ERROR] scrape:: Exception while iterating Race History entries: ${e.message}.")
             closeBackToMainScreen(game)

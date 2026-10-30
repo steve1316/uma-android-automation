@@ -195,4 +195,13 @@ class TaskLoopTest {
         assertEquals(0, hooks.resyncCalls)
         assertEquals(1, hooks.processCalls)
     }
+
+    @Test
+    fun stuckConnectingEndsTheRunWithAConnectionError() {
+        val hooks = FakeHooks(listOf<Step>({ throw GameConnectionStuckException("Stuck") }, { DONE }))
+        val result = runTaskLoop(hooks)
+        assertEquals(TaskResult.Error(TaskResultCode.TASK_RESULT_CONNECTION_ERROR, "Stuck"), result)
+        assertEquals(1, hooks.processCalls)
+        assertEquals(0, hooks.ackCalls)
+    }
 }
