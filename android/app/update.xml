@@ -1,32 +1,24 @@
 <AppUpdater>
   <update>
-    <latestVersion>5.9.1</latestVersion>
+    <latestVersion>5.9.2</latestVersion>
     <url>https://github.com/steve1316/uma-android-automation/releases</url>
     <releaseNotes>
-v5.9.1 - Changelog
-
-New
----
-- Add hand-picked races to the Schedule calendar. Pick a specific race for any turn and the bot runs it on that turn, and the Smart Race Solver plans the rest of the career around it.
-- Add a "Rest Instead of a Lone Low-Value Training" setting under Training, on by default. Below 50% energy, when every other training is too risky and the one left gives a small main stat gain, the bot takes the recreation date or rests instead. The training is kept if it still builds a bond, has a skill hint, is a rainbow or has a Spirit Explosion ready.
-- Add TP reading on Scenario Select. Career Setup now notices the TP Cost Halved event, stops before starting a career it cannot pay for, and ticks Event Boost only when the TP covers the doubled cost.
-- Add a warning under "Start the Next Career When Done" while the Career Complete skill plan is off, since leftover skill points are lost when the next career starts automatically.
-- Add basic fallback for when the `View Results` button could not be found.
+v5.9.2 - Changelog
 
 Adjustments
 ---
-- Update game data up to `Kitasan Black (New Year) 2026-10-20`.
-- Remove the game-in-front check at run start and on resume, so the bot no longer pauses a second time right after you resume it.
-- Recompute screen regions at the start of every run, so a run started while the screen was rotated no longer leaves later runs searching the wrong areas.
+- Update game data up to `Hokko Tarumae 2026-10-24`.
+- Make the Trackblazer Shop faster. The bot reads item names in one pass on the way down, then buys on the way back up instead of returning to the top first. It also waits for item animations and dialogs to finish instead of using fixed delays.
+- Give list scans up to 2 minutes before timing out, so long late-game skill lists are read in full.
+- Retry dropped GameTora event requests when updating game data.
 
 Fixes
 ---
-- Fix the bot getting stuck when started from Home with a career already in progress.
-- Fix the bot getting stuck on the "Career Complete" dialog when set to start the next career.
-- Fix a forced race from an Insufficient Fans or goal popup being lost when the popup shows at the start of a turn.
-- Fix a failed recreation date tapping the popup instead of closing it and resting.
-- Fix the bot not rereading the date after an infirmary visit used up the turn.
-- Fix the Club daily not requesting a new item when the expired request's label was missed.
+- Fix the Trackblazer Shop passing over a fresh copy of an item that was already bought earlier, leaving its coins unspent.
+- Fix the Trackblazer Shop missing the last item in the list when a NEW badge sits on it.
+- Fix the Race History scan skipping rows.
+- Fix the Skill List mistaking a double circle skill for its single circle version, which overspent the skill point plan.
+- Fix a crash on the "A Pleasant Practice Partner?" event.
 
 </releaseNotes>
   </update>
