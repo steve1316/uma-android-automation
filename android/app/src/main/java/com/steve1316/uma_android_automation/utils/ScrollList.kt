@@ -12,7 +12,6 @@ import com.steve1316.uma_android_automation.components.IconDialogScrollListTopLe
 import com.steve1316.uma_android_automation.components.IconScrollListBottomRight
 import com.steve1316.uma_android_automation.components.IconScrollListTopLeft
 import com.steve1316.uma_android_automation.types.BoundingBox
-import org.opencv.android.Utils
 import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.Point
@@ -52,20 +51,6 @@ private const val TRACKED_BAND_MIN_SCORE = 0.8
  * Height separates the two by a wide margin: that sliver is 4% of the screen height, while the shallowest real list measured is the Details skill grid at 34% (the skill shop is 44%).
  */
 private const val MIN_LIST_HEIGHT_FRACTION = 0.12
-
-/**
- * Converts a bitmap to a grayscale OpenCV mat.
- *
- * @return The grayscale mat. The caller releases it.
- */
-private fun Bitmap.toGrayMat(): Mat {
-    val rgba = Mat()
-    Utils.bitmapToMat(this, rgba)
-    val gray = Mat()
-    Imgproc.cvtColor(rgba, gray, Imgproc.COLOR_RGBA2GRAY)
-    rgba.release()
-    return gray
-}
 
 /**
  * Creates a [ScrollList] for a list that lives inside a dialog. A dialog draws its own rounded corner markers rather than the full-screen ones, so it needs its own pair of corner templates.
@@ -1139,8 +1124,8 @@ class ScrollList private constructor(
         val bandY = if (bDown) y + h - bandH - (h / 8) else y + (h / 8)
         val bandBitmap = game.imageUtils.createSafeBitmap(before, x, bandY, w, bandH, "trackedBand") ?: return 0
         val searchBitmap = game.imageUtils.createSafeBitmap(after, x, y, w, h, "trackedSearch") ?: return 0
-        val band = bandBitmap.toGrayMat()
-        val search = searchBitmap.toGrayMat()
+        val band = toGrayMat(bandBitmap)
+        val search = toGrayMat(searchBitmap)
         val result = Mat()
         Imgproc.matchTemplate(search, band, result, Imgproc.TM_CCOEFF_NORMED)
         val mmr = Core.minMaxLoc(result)
