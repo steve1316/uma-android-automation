@@ -263,6 +263,9 @@ internal fun wordsTextIn(words: List<OcrWord>, region: BoundingBox): String? =
 /** How many spots [CustomImageUtils] saves per template. A button sits at a few heights at most, one per dialog size it appears in. */
 private const val MAX_TEMPLATE_SPOTS = 6
 
+/** A half-res score below this skips the full search, since the template cannot be on screen. */
+private const val HALF_GATE_MIN_SCORE = 0.50
+
 /** A digit run right before a "%" sign. */
 private val PERCENT_DIGITS_REGEX = Regex("(\\d+)\\s*%")
 
@@ -327,8 +330,20 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      */
     private val templateSpots = ConcurrentHashMap<String, MutableList<Point>>()
 
-    /** The screen size the saved spots belong to. The spots are dropped when it changes. */
+    /** The screen size the saved spots and shrunk templates belong to. Both are dropped when it changes. */
     @Volatile private var templateSpotsScreen: Pair<Int, Int> = 0 to 0
+
+    /**
+     * The last frame shrunk to half size in gray, so every gated check on that frame shares one conversion. It is guarded by itself.
+     * The old Mat is released when a new frame replaces it, since the garbage collector does not see a Mat's native memory and lets it pile up.
+     */
+    private var halfFrame: Pair<Bitmap, Mat>? = null
+
+    /** Guards [halfFrame] and [halfTemplates], so one thread cannot release a Mat another is still matching against. */
+    private val halfFrameLock = Any()
+
+    /** Templates shrunk to half size in gray, by name, size and scale. */
+    private val halfTemplates = ConcurrentHashMap<String, Mat>()
 
     /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios.
      * Lazy because this class is constructed before `game.scenario` is initialized, so an eager read would cache an empty scenario. */
@@ -561,6 +576,11 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val screen = sourceBitmap.width to sourceBitmap.height
         if (screen != templateSpotsScreen) {
             templateSpots.clear()
+            // The shrunk templates are native memory the garbage collector does not see, so they go with the screen size they were made for.
+            synchronized(halfFrameLock) {
+                halfTemplates.values.forEach { it.release() }
+                halfTemplates.clear()
+            }
             templateSpotsScreen = screen
         }
 
@@ -573,10 +593,84 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 return hit
             }
         }
+        val halfScore: Double? = halfResScore(sourceBitmap, templateBitmap, templateName, region)
+        if (halfScore != null && halfScore < HALF_GATE_MIN_SCORE) return Pair(false, null)
         val result = super.match(sourceBitmap, templateBitmap, templateName, region, useSingleScale, customConfidence, testScale)
         if (result.first) rememberSpot(spots, result.second!!, templateBitmap)
         return result
     }
+
+    /**
+     * Scores a template against a region at half resolution, at each scale the full search would try. The frame and the template are shrunk once each
+     * and reused across checks.
+     *
+     * @param sourceBitmap The full-screen frame to search.
+     * @param templateBitmap The template to look for.
+     * @param templateName The template's name, which keys its shrunk copy.
+     * @param region The region (x, y, width, height) to search. All zeros means the whole frame.
+     * @return The best half-res score, or null when the template is too small to gate or the region cannot hold it.
+     */
+    private fun halfResScore(sourceBitmap: Bitmap, templateBitmap: Bitmap, templateName: String, region: IntArray): Double? {
+        if (minOf(templateBitmap.width, templateBitmap.height) < 24) return null
+        val (rx, ry, rw, rh) = if (region.all { it == 0 }) listOf(0, 0, sourceBitmap.width, sourceBitmap.height) else region.toList()
+        val left = rx.coerceIn(0, sourceBitmap.width) / 2
+        val top = ry.coerceIn(0, sourceBitmap.height) / 2
+        synchronized(halfFrameLock) {
+            val frame: Mat = halfGrayFrame(sourceBitmap)
+            val width = minOf(rw / 2, frame.cols() - left)
+            val height = minOf(rh / 2, frame.rows() - top)
+            if (width < templateBitmap.width / 2 || height < templateBitmap.height / 2) return null
+
+            val source = frame.submat(Rect(left, top, width, height))
+            val result = Mat()
+            try {
+                var best = -1.0
+                for (scale in if (isTall1080p) tall1080pScales else listOf(1.0)) {
+                    val template = halfTemplate(templateBitmap, templateName, scale)
+                    if (template.cols() <= source.cols() && template.rows() <= source.rows()) {
+                        Imgproc.matchTemplate(source, template, result, Imgproc.TM_CCOEFF_NORMED)
+                        best = maxOf(best, Core.minMaxLoc(result).maxVal)
+                    }
+                }
+                return best
+            } finally {
+                source.release()
+                result.release()
+            }
+        }
+    }
+
+    /**
+     * The frame shrunk to half size in gray, made once per frame. The caller must hold [halfFrameLock].
+     *
+     * @param sourceBitmap The full-screen frame.
+     * @return The half-size gray frame.
+     */
+    private fun halfGrayFrame(sourceBitmap: Bitmap): Mat {
+        halfFrame?.let { (bitmap, mat) -> if (bitmap === sourceBitmap) return mat }
+        val mat = sourceBitmap.toMat()
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY)
+        Imgproc.resize(mat, mat, Size(sourceBitmap.width / 2.0, sourceBitmap.height / 2.0), 0.0, 0.0, Imgproc.INTER_AREA)
+        halfFrame?.second?.release()
+        halfFrame = sourceBitmap to mat
+        return mat
+    }
+
+    /**
+     * A template shrunk to half of the given scale in gray, made once per template, size and scale.
+     *
+     * @param templateBitmap The template.
+     * @param templateName The template's name.
+     * @param scale The scale the full search tries.
+     * @return The shrunk gray template.
+     */
+    private fun halfTemplate(templateBitmap: Bitmap, templateName: String, scale: Double): Mat =
+        halfTemplates.getOrPut("$templateName:${templateBitmap.width}x${templateBitmap.height}@$scale") {
+            val mat = templateBitmap.toMat()
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY)
+            Imgproc.resize(mat, mat, Size(mat.cols() * scale / 2.0, mat.rows() * scale / 2.0), 0.0, 0.0, Imgproc.INTER_AREA)
+            mat
+        }
 
     /**
      * The box around a saved spot that a template is checked in, clipped to the region the caller asked for.
