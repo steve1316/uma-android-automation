@@ -61,18 +61,22 @@ private const val MIN_LIST_HEIGHT_FRACTION = 0.12
  * Details popup. And its scrollbar is not a control: the rail is painted over the scrollable content, so dragging it scrolls the list the OPPOSITE way, where a full-screen list's thumb is a
  * real handle that follows the finger. So a dialog list is swiped, and a full-screen one is dragged by the thumb.
  *
+ * Some dialogs are the exception: the Career Race History thumb is a real handle. Such a list passes `bThumbIsHandle = true` and is scrolled by its thumb, which stops where the finger
+ * lifts. A swipe there would drift on past the lift, since nothing can tap it still.
+ *
  * @param game Reference to the bot's [Game] instance.
  * @param bitmap Optional bitmap to detect against, so a caller holding the current frame does not force another screenshot.
+ * @param bThumbIsHandle Whether this dialog's scrollbar thumb is a real handle. Only set it for a dialog checked on device.
  * @return The [ScrollList], or null when no dialog list is on screen - in which case there was nothing scrollable there to begin with.
  */
-fun createDialogScrollList(game: Game, bitmap: Bitmap? = null): ScrollList? =
+fun createDialogScrollList(game: Game, bitmap: Bitmap? = null, bThumbIsHandle: Boolean = false): ScrollList? =
     ScrollList.create(
         game,
         bitmap = bitmap,
         listTopLeftComponent = IconDialogScrollListTopLeft,
         listBottomRightComponent = IconDialogScrollListBottomRight,
         bAllowInertiaTap = false,
-        bThumbIsHandle = false,
+        bThumbIsHandle = bThumbIsHandle,
     )
 
 /** Functional interface for a callback that is called whenever an entry is detected while processing the list. */
@@ -852,6 +856,22 @@ class ScrollList private constructor(
     }
 
     /**
+     * Moves the list content by dragging the scrollbar thumb. Unlike a swipe, a thumb drag stops where the finger lifts.
+     *
+     * @param contentPx How far the content should travel, in screen pixels. Positive reveals content further down the list.
+     * @return False when no thumb was found, so the caller should swipe the content instead.
+     */
+    private fun dragThumbBy(contentPx: Int): Boolean {
+        val bboxThumb: BoundingBox = getListScrollBarBoundingRegion().second ?: return false
+        // The thumb is to its track what the list is to its content, so the thumb travels the content distance scaled by the thumb height over the list height.
+        val thumbPx: Int = contentPx * bboxThumb.h / bboxList.h
+        val x: Float = (bboxThumb.x + (bboxThumb.w / 2.0)).toFloat()
+        val y0: Float = (bboxThumb.y + (bboxThumb.h / 2.0)).toFloat()
+        game.gestureUtils.swipe(x, y0, x, (y0 + thumbPx).coerceAtLeast(0f), duration = 300L)
+        return true
+    }
+
+    /**
      * Scrolls down the list.
      *
      * @param startLoc Optional swipe start location. Defaults to list center.
@@ -867,6 +887,8 @@ class ScrollList private constructor(
         val durationMs: Long = durationMs.coerceAtLeast(250L)
         val x0: Int = if (swipeMode) (bboxList.x + (bboxList.w / 2)) else ((startLoc?.x ?: (bboxList.x + (bboxList.w / 2)))).toInt()
         val y0: Int = ((startLoc?.y ?: (bboxList.y + (bboxList.h / 2)))).toInt()
+        // A list that cannot tap its inertia away is dragged by its thumb when it has a real one. That takes the swipe start to the top of the list and stops there.
+        if (!bAllowInertiaTap && bThumbIsHandle && dragThumbBy(y0 - bboxList.y)) return
         // Add some extra height since scrolling isn't accurate.
         val y1: Int = (bboxList.y - entryHeight).toInt().coerceAtLeast(0)
         game.gestureUtils.swipe(x0.toFloat(), y0.toFloat(), x0.toFloat(), y1.toFloat(), duration = durationMs)
@@ -889,6 +911,8 @@ class ScrollList private constructor(
         val durationMs: Long = durationMs.coerceAtLeast(250L)
         val x0: Int = if (swipeMode) (bboxList.x + (bboxList.w / 2)) else ((startLoc?.x ?: (bboxList.x + (bboxList.w / 2)))).toInt()
         val y0: Int = ((startLoc?.y ?: (bboxList.y + (bboxList.h / 2)))).toInt()
+        // See [scrollDown]. This takes the swipe start to the bottom of the list instead.
+        if (!bAllowInertiaTap && bThumbIsHandle && dragThumbBy(y0 - (bboxList.y + bboxList.h))) return
         // The mirror of [scrollDown]: a swipe started on an entry's bottom edge carries that entry just past the bottom of the list.
         val y1: Int = (bboxList.y + bboxList.h + entryHeight).toInt().coerceAtLeast(0)
         game.gestureUtils.swipe(x0.toFloat(), y0.toFloat(), x0.toFloat(), y1.toFloat(), duration = durationMs)

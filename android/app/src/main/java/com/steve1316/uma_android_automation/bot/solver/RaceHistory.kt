@@ -1,5 +1,6 @@
 package com.steve1316.uma_android_automation.bot.solver
 
+import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
@@ -97,7 +98,8 @@ object RaceHistory {
             // Use the Career dialog's own scroll-list corner icons so the bbox bounds
             // the actual race-history list region. Then let ScrollList iterate via
             // LabelStrategy as the per-row anchor and drive its own scrolling.
-            val list = createDialogScrollList(game)
+            // The Race History thumb is a real handle, so the list is scrolled by dragging it. A swipe here would drift on past the lift and skip rows.
+            val list = createDialogScrollList(game, bThumbIsHandle = true)
             if (list == null) {
                 MessageLog.w(TAG, "[WARN] scrape:: Failed to detect race history list bounds; aborting scrape.")
                 closeBackToMainScreen(game)
@@ -107,11 +109,14 @@ object RaceHistory {
             list.process(
                 entryComponent = LabelStrategy,
                 bForceComponentDetection = true,
-                keyExtractor = { entry -> "${entry.bbox.x}:${entry.bbox.y}:${entry.bbox.w}:${entry.bbox.h}" },
+                // No key extractor. A thumb drag lands every page's rows at the same screen positions, so a key built from the position would mark a whole
+                // new page as already seen. The overlap row is read again instead and dropped by name and date below.
                 onEntry = { _, entry ->
                     val parsed = parseEntry(game, entry)
-                    if (parsed != null) {
-                        val key = "${parsed.nameFormatted.lowercase()}|${parsed.dateString.lowercase()}"
+                    // A row cut off by the top of the list reads with no name, so it is skipped. Spaces are left out of the key, since OCR reads the same
+                    // "Right / Outer" as "Right/ Outer" on another page.
+                    if (parsed != null && parsed.nameFormatted.isNotEmpty()) {
+                        val key = "${parsed.nameFormatted}|${parsed.dateString}".lowercase().filterNot { it.isWhitespace() }
                         if (seenKeys.add(key)) results.add(parsed)
                     }
                     false
@@ -143,7 +148,8 @@ object RaceHistory {
      * Reads one crop region relative to an anchor point via OCR and trims the result.
      *
      * @param game Active Game instance for OCR.
-     * @param anchor The reference point the crop offsets are measured from.
+     * @param bitmap The row bitmap to read from.
+     * @param anchor The reference point the crop offsets are measured from, in [bitmap] pixels.
      * @param offsetX Horizontal offset of the crop from the anchor.
      * @param offsetY Vertical offset of the crop from the anchor.
      * @param w Crop width in reference pixels (scaled via relWidth).
@@ -151,7 +157,7 @@ object RaceHistory {
      * @param debugName Identifier used for debug image dumps.
      * @return The trimmed OCR text for the crop region.
      */
-    private fun ocrFromAnchor(game: Game, anchor: Point, offsetX: Int, offsetY: Int, w: Int, h: Int, debugName: String): String =
+    private fun ocrFromAnchor(game: Game, bitmap: Bitmap, anchor: Point, offsetX: Int, offsetY: Int, w: Int, h: Int, debugName: String): String =
         game.imageUtils
             .performOCRFromReference(
                 referencePoint = anchor,
@@ -160,30 +166,35 @@ object RaceHistory {
                 width = game.imageUtils.relWidth(w),
                 height = game.imageUtils.relHeight(h),
                 debugName = debugName,
+                bitmap = bitmap,
             ).trim()
 
     /**
      * Parse a single race history row by anchoring on its visible LabelStrategy chip and OCR-ing the crop regions relative to it.
+     *
+     * Everything is read from the row's own bitmap, cut from the frame the row was found in. A fresh screenshot would be off by however far the list moved since that frame,
+     * which puts the crops between two lines of text.
      *
      * @param game Active Game instance for OCR and image search.
      * @param entry The row produced by [ScrollList] component-detection mode.
      * @return The parsed entry, or null if the LabelStrategy anchor could not be located.
      */
     private fun parseEntry(game: Game, entry: ScrollListEntry): RaceHistoryEntry? {
-        val anchorInEntry: Point =
+        val bitmap: Bitmap = entry.bitmap
+        val anchor: Point =
             LabelStrategy.findImageWithBitmap(
                 imageUtils = game.imageUtils,
-                sourceBitmap = entry.bitmap,
+                sourceBitmap = bitmap,
             ) ?: return null
-        val anchorX: Int = entry.bbox.x + anchorInEntry.x.toInt()
-        val anchorY: Int = entry.bbox.y + anchorInEntry.y.toInt()
-        val anchor = Point(anchorX.toDouble(), anchorY.toDouble())
+        val anchorX: Int = anchor.x.toInt()
+        val anchorY: Int = anchor.y.toInt()
+        val screenY: Int = entry.bbox.y + anchorY
 
-        val nameFormatted = ocrFromAnchor(game, anchor, FORMATTED_NAME_OFFSET_X, FORMATTED_NAME_OFFSET_Y, FORMATTED_NAME_W, FORMATTED_NAME_H, "race_history_formatted_$anchorY")
+        val nameFormatted = ocrFromAnchor(game, bitmap, anchor, FORMATTED_NAME_OFFSET_X, FORMATTED_NAME_OFFSET_Y, FORMATTED_NAME_W, FORMATTED_NAME_H, "race_history_formatted_$screenY")
 
-        val dateString = ocrFromAnchor(game, anchor, DATE_OFFSET_X, DATE_OFFSET_Y, DATE_W, DATE_H, "race_history_date_$anchorY")
+        val dateString = ocrFromAnchor(game, bitmap, anchor, DATE_OFFSET_X, DATE_OFFSET_Y, DATE_W, DATE_H, "race_history_date_$screenY")
 
-        val strategy = ocrFromAnchor(game, anchor, STRATEGY_OFFSET_X, STRATEGY_OFFSET_Y, STRATEGY_W, STRATEGY_H, "race_history_strategy_$anchorY")
+        val strategy = ocrFromAnchor(game, bitmap, anchor, STRATEGY_OFFSET_X, STRATEGY_OFFSET_Y, STRATEGY_W, STRATEGY_H, "race_history_strategy_$screenY")
 
         val firstPlaceRegion =
             intArrayOf(
@@ -192,7 +203,7 @@ object RaceHistory {
                 game.imageUtils.relWidth(FIRST_PLACE_W),
                 game.imageUtils.relHeight(FIRST_PLACE_H),
             )
-        val won: Boolean = IconRaceHistory1st.find(game.imageUtils, region = firstPlaceRegion, tries = 1).first != null
+        val won: Boolean = IconRaceHistory1st.findImageWithBitmap(game.imageUtils, bitmap, region = firstPlaceRegion) != null
 
         return RaceHistoryEntry(nameFormatted, dateString, won, strategy)
     }
