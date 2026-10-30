@@ -18,7 +18,7 @@ import org.opencv.core.Point
 import org.opencv.imgproc.Imgproc
 
 /** Default maximum processing time in milliseconds. */
-const val MAX_PROCESS_TIME_DEFAULT_MS = 60000
+const val MAX_PROCESS_TIME_DEFAULT_MS = 120000
 
 /** Bound on the swipes [ScrollList.ensureAtTop] and [ScrollList.ensureAtBottom] will spend, so a thumb that never quite reaches an end cannot make them swipe forever. */
 private const val MAX_SCROLL_TO_END_SWIPES = 8
@@ -1201,9 +1201,8 @@ class ScrollList private constructor(
         // Go through the kind-aware helpers: this runs over dialog lists too (the Career race-history scrape), and dragging their rail scrolls them the wrong way.
         if (bScrollBottomToTop) ensureAtBottom() else ensureAtTop()
 
-        // Max time limit for the while loop to scroll through the list.
+        // Start of the `maxTimeMs` limit on the while loop that scrolls through the list.
         val startTime: Long = System.currentTimeMillis()
-        val maxTimeMs: Long = 60000
 
         // Track bounding boxes for average entry height calculation.
         val entryBboxes: MutableList<BoundingBox> = mutableListOf()
