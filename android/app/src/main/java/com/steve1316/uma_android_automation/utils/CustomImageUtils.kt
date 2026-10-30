@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.util.Log
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
+import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.BotService
@@ -214,6 +215,29 @@ internal fun parseTurnsRemaining(text: String): Int? {
     val digits = text.filter(Char::isDigit)
     return if (digits.isEmpty()) 0 else digits.toIntOrNull()
 }
+
+/**
+ * One word read by ML Kit, with where it sits.
+ *
+ * @property text The word.
+ * @property box Where the word sits, in frame pixels.
+ * @property lineTop The top of the line the word belongs to, so words can be put back in reading order.
+ */
+data class OcrWord(val text: String, val box: android.graphics.Rect, val lineTop: Int)
+
+/**
+ * Joins the words whose centers fall inside a region, in reading order.
+ *
+ * @param words The words to pick from.
+ * @param region The region in frame pixels.
+ * @return The text, or null when no word falls inside.
+ */
+internal fun wordsTextIn(words: List<OcrWord>, region: BoundingBox): String? =
+    words
+        .filter { it.box.centerX() in region.x until (region.x + region.w) && it.box.centerY() in region.y until (region.y + region.h) }
+        .sortedWith(compareBy({ it.lineTop }, { it.box.left }))
+        .joinToString(" ") { it.text }
+        .ifBlank { null }
 
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
@@ -3493,6 +3517,119 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val bitmap = bitmap ?: getSourceBitmap()
         val croppedBitmap = createSafeBitmap(bitmap, bbox.x, bbox.y, bbox.w, bbox.h, "saveBitmapWithBbox(filename=$filename, bbox=$bbox)")
         saveBitmap(bitmap = croppedBitmap, filename = filename)
+    }
+
+
+    /**
+     * Reads every word in an image with one ML Kit call.
+     *
+     * @param image The image to read.
+     * @param offsetX Added to every box so it lands in the caller's coordinates.
+     * @param offsetY Added to every box and line top so they land in the caller's coordinates.
+     * @param context The caller's name for the error log.
+     * @return The words found. Empty when ML Kit found nothing or failed.
+     */
+    private fun recognizeWords(image: Bitmap, offsetX: Int, offsetY: Int, context: String): List<OcrWord> {
+        return try {
+            val text = Tasks.await(googleTextRecognizer.process(InputImage.fromBitmap(image, 0)), 5, TimeUnit.SECONDS)
+            text.textBlocks.flatMap { block -> block.lines }.flatMap { line ->
+                val lineTop: Int = (line.boundingBox?.top ?: 0) + offsetY
+                line.elements.mapNotNull { element ->
+                    element.boundingBox?.let { box ->
+                        box.offset(offsetX, offsetY)
+                        OcrWord(element.text, box, lineTop)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "[ERROR] $context:: ML Kit failed: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /**
+     * Reads several small fields with one ML Kit call. Each field's crop is grayscaled, enlarged, and stacked on a white sheet with a gap below it, so ML Kit sees the same pixels a
+     * separate read of each crop would, without the neighboring text that a read of the whole region would merge in. Each word is mapped back to the field whose slot holds its center.
+     *
+     * @param sourceBitmap The full frame.
+     * @param fields The regions to read, in frame pixels, by name.
+     * @param scale How much to enlarge each crop before reading.
+     * @return The text read in each field, in reading order. A field with nothing read maps to an empty string.
+     */
+    fun readFields(sourceBitmap: Bitmap, fields: Map<String, BoundingBox>, scale: Double = 2.0): Map<String, String> = readFields(fields.mapValues { sourceBitmap to it.value }, scale)
+
+    /**
+     * Reads one region from each of several bitmaps with one ML Kit call, the same way the single-frame [readFields] does, for callers that hold each row as its own crop.
+     *
+     * @param fields The bitmap and the region in its pixels to read, by name.
+     * @param scale How much to enlarge each crop before reading.
+     * @return The text read in each field, in reading order. A field with nothing read maps to an empty string.
+     */
+    fun readFields(fields: Map<String, Pair<Bitmap, BoundingBox>>, scale: Double = 2.0): Map<String, String> {
+        return readStackedCrops(fields.mapValues { (name, field) -> cropFiltered(field.first, field.second, "readFields $name") { toGrayscale(it, scale) } })
+    }
+
+    /**
+     * Crops a region out of a frame and runs a filter on it. The unfiltered crop is recycled.
+     *
+     * @param sourceBitmap The full frame.
+     * @param box The region to crop, in frame pixels.
+     * @param label The name logged if the crop fails.
+     * @param filter Turns the crop into a new bitmap ready for OCR.
+     * @return The filtered crop, or null if the region could not be cropped.
+     */
+    private fun cropFiltered(sourceBitmap: Bitmap, box: BoundingBox, label: String, filter: (Bitmap) -> Bitmap): Bitmap? =
+        createSafeBitmap(sourceBitmap, box, label)?.let { crop -> filter(crop).also { if (crop !== sourceBitmap) crop.recycle() } }
+
+    /**
+     * Reads already-prepared crops with one ML Kit call by stacking them on a white sheet with a gap below each. The crops are recycled.
+     *
+     * @param crops The crops to read by name. A null crop reads as an empty string.
+     * @return The text read in each crop, in reading order. A crop with nothing read maps to an empty string.
+     */
+    private fun readStackedCrops(crops: Map<String, Bitmap?>): Map<String, String> {
+        val gap = 24
+        val placed = crops.values.filterNotNull()
+        if (placed.isEmpty()) return crops.mapValues { "" }
+        val sheet = createBitmap(placed.maxOf { it.width } + 2 * gap, placed.sumOf { it.height + gap } + gap)
+        val canvas = android.graphics.Canvas(sheet)
+        canvas.drawColor(Color.WHITE)
+        // The region of the sheet each crop was drawn into.
+        val slots = LinkedHashMap<String, BoundingBox>()
+        var y = gap
+        for ((name, crop) in crops) {
+            if (crop == null) continue
+            canvas.drawBitmap(crop, gap.toFloat(), y.toFloat(), null)
+            slots[name] = BoundingBox(0, y, sheet.width, crop.height)
+            y += crop.height + gap
+            crop.recycle()
+        }
+        if (debugMode) saveBitmap(sheet, "readFields")
+        val words: List<OcrWord> = recognizeWords(sheet, 0, 0, "readFields")
+        sheet.recycle()
+        return crops.mapValues { (name, _) -> slots[name]?.let { wordsTextIn(words, it) }.orEmpty() }
+    }
+
+    /**
+     * Converts a bitmap to grayscale and resizes it in one pass.
+     *
+     * @param bitmap The bitmap to convert.
+     * @param scale How much to resize it.
+     * @return A new grayscale bitmap.
+     */
+    private fun toGrayscale(bitmap: Bitmap, scale: Double): Bitmap {
+        val rgba = bitmap.toMat()
+        val gray = Mat()
+        try {
+            Imgproc.cvtColor(rgba, gray, Imgproc.COLOR_RGBA2GRAY)
+            Imgproc.resize(gray, gray, Size(gray.cols() * scale, gray.rows() * scale), 0.0, 0.0, Imgproc.INTER_LINEAR)
+            val result = createBitmap(gray.cols(), gray.rows())
+            Utils.matToBitmap(gray, result)
+            return result
+        } finally {
+            rgba.release()
+            gray.release()
+        }
     }
 
     /**
