@@ -163,3 +163,32 @@ def test_empty_source_page_is_recorded_as_a_failure():
     main._run_failures.clear()
     main.record_if_empty("Game8 skill tier list", {"Skill": 0})
     assert main._run_failures == []
+
+
+def _skill(skill_id, name, cost=100, versions=None, unreleased=None):
+    skill = {"id": skill_id, "name_en": name, "desc_en": name, "iconid": 10011, "cost": cost, "versions": versions or []}
+    if unreleased:
+        skill["unreleased"] = unreleased
+    return skill
+
+
+def _scrape_skills(monkeypatch, skills):
+    monkeypatch.setattr(main, "fetch_gametora_manifest_data", lambda name: skills)
+    monkeypatch.setattr(main, "download_image", lambda *args, **kwargs: None)
+    monkeypatch.setattr(main.SkillScraper, "scrape_skill_evaluation_points", lambda self: {})
+    monkeypatch.setattr(main.SkillScraper, "scrape_skill_tier_list", lambda self: {})
+    monkeypatch.setattr(main.SkillScraper, "save_data", lambda self: None)
+    scraper = main.SkillScraper()
+    scraper.start()
+    return scraper.data
+
+
+@pytest.mark.parametrize("jp_first", [False, True])
+def test_skill_keeps_global_id_when_a_jp_only_skill_shares_its_name(monkeypatch, jp_first):
+    global_skill = [_skill(201212, "Pressure", versions=[201211]), _skill(201211, "Overwhelming Pressure", versions=[201212])]
+    jp_skill = [_skill(202542, "Pressure", unreleased=["en"], versions=[202541]), _skill(202541, "Pressure Crown", unreleased=["en"], versions=[202542])]
+    data = _scrape_skills(monkeypatch, jp_skill + global_skill if jp_first else global_skill + jp_skill)
+    assert data["Pressure"]["id"] == 201212
+    assert data["Overwhelming Pressure"]["downgrade"] == 201212
+    # The JP-only id must not survive as a chain link.
+    assert data["Pressure Crown"]["downgrade"] is None
