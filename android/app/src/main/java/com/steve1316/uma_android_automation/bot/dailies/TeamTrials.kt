@@ -15,6 +15,7 @@ import com.steve1316.uma_android_automation.components.ButtonTeamTrials
 import com.steve1316.uma_android_automation.components.LabelSelectOpponent
 import com.steve1316.uma_android_automation.components.LabelTeamRankBadge
 import com.steve1316.uma_android_automation.components.LabelTopBarRp
+import com.steve1316.uma_android_automation.components.LabelWithEveryWin
 import org.opencv.core.Point
 
 /** From the Items Selected Race! button: the RP count before the race, the "x/5" left of the arrow. The "y/5" after it is left out. */
@@ -27,7 +28,7 @@ private val TOP_BAR_RP = intArrayOf(140, -20, 65, 34)
 private const val MAX_RACES = 6
 
 /**
- * Spends all RP on Team Trials against the weakest opponent.
+ * Spends all RP on Team Trials, preferring an opponent with the "With Every Win!" bonus and otherwise the weakest one.
  *
  * @property game The bot's [Game] instance.
  * @property flags Flags raised by the Dailies dialog handler.
@@ -50,7 +51,7 @@ class TeamTrials(private val game: Game, private val flags: DailiesFlags, overri
 
         repeat(MAX_RACES) {
             if (flags.rpExhausted) return finish(races)
-            if (!selectWeakestOpponent()) return leave(races)
+            if (!selectOpponent()) return leave(races)
             val raceButton = openItemsSelected()
             val rp = readRp(raceButton, ITEMS_SELECTED_RP, "team_trials_rp")
             MessageLog.i(TAG, "[DAILIES] RP before this race: ${rp ?: "unreadable"}.")
@@ -96,19 +97,25 @@ class TeamTrials(private val game: Game, private val flags: DailiesFlags, overri
     }
 
     /**
-     * Waits for opponent selection and taps the weakest opponent. Each card has a Team Rank badge and the cards run strongest to weakest, so
-     * the lowest badge is the weakest opponent.
+     * Waits for opponent selection and taps an opponent. A card with the "With Every Win!" bonus banner wins outright. Otherwise each card has
+     * a Team Rank badge and the cards run strongest to weakest, so the lowest badge is the weakest opponent.
      *
      * @return False when RP ran out before opponent selection appeared.
      * @throws DailyStepFailed When opponent selection or its cards never appear.
      */
-    private fun selectWeakestOpponent(): Boolean {
+    private fun selectOpponent(): Boolean {
         val header =
             game.waitForAny(LabelSelectOpponent, timeoutSec = 20.0, stopIf = { flags.rpExhausted })?.second
                 ?: if (flags.rpExhausted) return false else throw DailyStepFailed("Opponent selection did not appear")
         game.wait(1.0)
-        val weakest = LabelTeamRankBadge.findAll(game.imageUtils).filter { it.y > header.y }.maxByOrNull { it.y } ?: throw DailyStepFailed("Opponent cards not found")
-        game.tap(weakest.x, weakest.y)
+        val badges = LabelTeamRankBadge.findAll(game.imageUtils).filter { it.y > header.y }
+        // The banner plays a ~2 second animation on entry, so keep looking for it a little before falling back to the weakest opponent.
+        val bonus = game.waitForAny(LabelWithEveryWin, timeoutSec = 2.0, bHandleDialogs = false)?.second
+        // The banner sits at the bottom of its card, so that card's badge is the lowest one above it.
+        val bonusBadge = bonus?.let { banner -> badges.filter { it.y < banner.y }.maxByOrNull { it.y } }
+        if (bonusBadge != null) MessageLog.i(TAG, "[DAILIES] Picking the opponent with the \"With Every Win!\" bonus.")
+        val opponent = bonusBadge ?: badges.maxByOrNull { it.y } ?: throw DailyStepFailed("Opponent cards not found")
+        game.tap(opponent.x, opponent.y)
         game.wait(2.0)
         game.waitForLoading()
         return true
