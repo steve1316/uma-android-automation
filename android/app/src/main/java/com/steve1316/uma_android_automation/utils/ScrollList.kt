@@ -1130,6 +1130,8 @@ class ScrollList private constructor(
      * @return False when the list did not move.
      */
     private fun scrollTracked(travelPx: Int, bDown: Boolean): Boolean {
+        // The scrollable flag is only set by a scrollbar check. A list that is scrolled straight after it is created has not had one yet.
+        if (!bIsScrollable && !canScroll()) return false
         val before = game.imageUtils.getSourceBitmap()
         if (bDown) scrollContentDownBy(travelPx, TRACKED_SWIPE_MS) else scrollContentUpBy(travelPx, TRACKED_SWIPE_MS)
         game.wait(0.6)
