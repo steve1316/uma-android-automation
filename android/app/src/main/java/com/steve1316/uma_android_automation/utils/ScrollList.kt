@@ -1,8 +1,13 @@
 package com.steve1316.uma_android_automation.utils
 
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
 import android.graphics.Bitmap
+import android.graphics.Path
 import com.steve1316.automation_library.data.SharedData
+import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.MessageLog
+import com.steve1316.automation_library.utils.MyAccessibilityService
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
@@ -16,6 +21,8 @@ import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.Point
 import org.opencv.imgproc.Imgproc
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /** Default maximum processing time in milliseconds. */
 const val MAX_PROCESS_TIME_DEFAULT_MS = 120000
@@ -32,8 +39,21 @@ private const val SKIP_DRAG_TOLERANCE = 1
 /** The smallest measured move that counts as a tracked swipe having scrolled the list. */
 private const val TRACKED_MIN_MOVE_PX = 8
 
-/** Tracked swipe duration. A 700ms swipe flings the Legacy grid about 60% past its travel, which can carry the measured band out of view. */
+/** Tracked swipe duration for the fallback plain swipe. A 700ms swipe flings the Legacy grid about 60% past its travel, which can carry the measured band out of view. */
 private const val TRACKED_SWIPE_MS = 1500L
+
+/**
+ * A tracked drag's move, and how long the finger then rests before lifting. The game only bleeds the drag's speed off a little each frame of the rest.
+ * After a 400ms rest the list glides on by no more than 6px once it is measured.
+ */
+private const val TRACKED_DRAG_MS = 400L
+private const val TRACKED_HOLD_MS = 400L
+
+/** The wait after a tracked drag before the list is measured. */
+private const val TRACKED_SETTLE_S = 0.3
+
+/** A tracked swipe that moves less than this share of its travel ran into the end of the list. */
+private const val TRACKED_END_SHARE = 0.5
 
 /** Swipes allowed when bringing a content position into view. */
 private const val MAX_SEEK_SWIPES = 40
@@ -263,6 +283,10 @@ class ScrollList private constructor(
 
     /** How far the content has scrolled since [scrollToTopTracked], in screen pixels. Only the tracked scroll methods keep it up to date. */
     var contentOffset: Int = 0
+        private set
+
+    /** True when the last tracked swipe moved well short of its travel, which means it ran into the end of the list. A scan can stop after reading that page. */
+    var bHitEnd: Boolean = false
         private set
 
     companion object {
@@ -1064,6 +1088,7 @@ class ScrollList private constructor(
         ensureAtTop()
         game.wait(0.5)
         contentOffset = 0
+        bHitEnd = false
     }
 
     /**
@@ -1106,7 +1131,7 @@ class ScrollList private constructor(
             if (screenY in top..bottom) return screenY
             // Swipe no further than needed so the target does not overshoot out of the other edge.
             val needed = screenY - (top + bottom) / 2
-            val travel = kotlin.math.abs(needed).coerceIn(TRACKED_MIN_MOVE_PX * 4, defaultTrackedTravel())
+            val travel = kotlin.math.abs(needed).coerceIn(TRACKED_MIN_MOVE_PX * 4, maxSeekTravel())
             if (!(if (needed > 0) scrollDownTracked(travel) else scrollUpTracked(travel))) {
                 return (contentY - contentOffset).takeIf { it in top..bottom }
             }
@@ -1123,6 +1148,13 @@ class ScrollList private constructor(
     private fun defaultTrackedTravel(): Int = (readRegion[3] * 0.45).toInt()
 
     /**
+     * The longest swipe used to bring a position into view. It leaves room for the measured band to stay on screen.
+     *
+     * @return The travel in pixels.
+     */
+    private fun maxSeekTravel(): Int = (readRegion[3] * 0.7).toInt()
+
+    /**
      * Swipes the list one way and adds the measured movement to [contentOffset].
      *
      * @param travelPx How far to swipe.
@@ -1133,12 +1165,71 @@ class ScrollList private constructor(
         // The scrollable flag is only set by a scrollbar check. A list that is scrolled straight after it is created has not had one yet.
         if (!bIsScrollable && !canScroll()) return false
         val before = game.imageUtils.getSourceBitmap()
-        if (bDown) scrollContentDownBy(travelPx, TRACKED_SWIPE_MS) else scrollContentUpBy(travelPx, TRACKED_SWIPE_MS)
-        game.wait(0.6)
-        val moved = measureShift(before, game.imageUtils.getSourceBitmap(), bDown)
+        // The drag starts and ends where scrollContentDownBy and scrollContentUpBy would, so the content moves by the travel.
+        val x = (bboxList.x + bboxList.w / 2).toFloat()
+        val (y0, y1) = if (bDown) (bboxList.y + travelPx) to bboxList.y else (bboxList.y + bboxList.h - travelPx) to (bboxList.y + bboxList.h)
+        if (dragAndHold(x, y0.toFloat(), y1.toFloat())) {
+            game.wait(TRACKED_SETTLE_S)
+        } else {
+            if (bDown) scrollContentDownBy(travelPx, TRACKED_SWIPE_MS) else scrollContentUpBy(travelPx, TRACKED_SWIPE_MS)
+            game.wait(0.6)
+        }
+        val moved = measureShift(before, game.imageUtils.getSourceBitmap(), bDown, travelPx)
+        bHitEnd = moved < travelPx * TRACKED_END_SHARE
         if (moved < TRACKED_MIN_MOVE_PX) return false
         contentOffset += if (bDown) moved else -moved
         return true
+    }
+
+    /**
+     * Drags the content and rests the finger before lifting it, so the list stops where the finger stopped instead of flinging on.
+     *
+     * @param x The x of the drag.
+     * @param y0 Where the drag starts.
+     * @param y1 Where the drag ends and the finger rests.
+     * @return False if the drag could not be sent, so the caller can fall back to a plain slow swipe.
+     */
+    private fun dragAndHold(x: Float, y0: Float, y1: Float): Boolean {
+        if (!MyAccessibilityService.isGestureAllowed) return false
+        BotHold.checkpoint()
+        val move =
+            GestureDescription.StrokeDescription(
+                Path().apply {
+                    moveTo(x, y0)
+                    lineTo(x, y1)
+                },
+                0,
+                TRACKED_DRAG_MS,
+                true,
+            )
+        if (!dispatchAndWait(move)) return false
+        val rest = move.continueStroke(Path().apply { moveTo(x, y1) }, 0, TRACKED_HOLD_MS, false)
+        return dispatchAndWait(rest)
+    }
+
+    /**
+     * Sends one stroke and waits until the system reports it done.
+     *
+     * @param stroke The stroke to send.
+     * @return True if the stroke completed.
+     */
+    private fun dispatchAndWait(stroke: GestureDescription.StrokeDescription): Boolean {
+        val done = CountDownLatch(1)
+        var bCompleted = false
+        val callback =
+            object : AccessibilityService.GestureResultCallback() {
+                override fun onCompleted(gestureDescription: GestureDescription?) {
+                    bCompleted = true
+                    done.countDown()
+                }
+
+                override fun onCancelled(gestureDescription: GestureDescription?) {
+                    done.countDown()
+                }
+            }
+        if (!game.gestureUtils.dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), callback, null)) return false
+        done.await(stroke.duration + 1000L, TimeUnit.MILLISECONDS)
+        return bCompleted
     }
 
     /**
@@ -1147,13 +1238,17 @@ class ScrollList private constructor(
      * @param before The frame before the swipe.
      * @param after The frame after the swipe.
      * @param bDown True when the swipe revealed content further down, so the content moved up the screen.
+     * @param travelPx How far the swipe meant to move the content.
      * @return The distance moved in pixels, or 0 if the band could not be found.
      */
-    private fun measureShift(before: Bitmap, after: Bitmap, bDown: Boolean): Int {
+    private fun measureShift(before: Bitmap, after: Bitmap, bDown: Boolean, travelPx: Int): Int {
         val (x, y, w, h) = readRegion.toList()
         // Take a band from the side the content moves away from, so it is still on screen after the swipe, and look for it anywhere in the new frame.
-        val bandH = (h / 4).coerceAtLeast(40)
-        val bandY = if (bDown) y + h - bandH - (h / 8) else y + (h / 8)
+        // A long swipe leaves less room, so the band shrinks and moves toward that edge. The tenth of slack covers a swipe that flings a little further.
+        val room = h - travelPx - travelPx / 10
+        val bandH = minOf(h / 4, room).coerceAtLeast(40)
+        val edgeGap = minOf(h / 8, room - bandH).coerceAtLeast(0)
+        val bandY = if (bDown) y + h - bandH - edgeGap else y + edgeGap
         val bandBitmap = game.imageUtils.createSafeBitmap(before, x, bandY, w, bandH, "trackedBand") ?: return 0
         val searchBitmap = game.imageUtils.createSafeBitmap(after, x, y, w, h, "trackedSearch") ?: return 0
         val band = toGrayMat(bandBitmap)

@@ -132,7 +132,7 @@ class FriendPicker(private val game: Game, private val settings: CareerSetupSett
                 rows.add(row)
                 if (stopAt(row)) return rows
             }
-            if (!scroll.scrollDownTracked()) return rows
+            if (scroll.bHitEnd || !scroll.scrollDownTracked()) return rows
         }
         return rows
     }
