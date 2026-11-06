@@ -704,10 +704,15 @@ class Trainee {
      * @param newValue The newly OCR-read value for the stat.
      * @param viaSequential True when called from the sequential fallback, which annotates the log messages accordingly.
      */
-    private fun applyStatUpdate(statName: StatName, newValue: Int, viaSequential: Boolean) {
+    internal fun applyStatUpdate(statName: StatName, newValue: Int, viaSequential: Boolean) {
         val via = if (viaSequential) " via sequential processing" else ""
 
         val oldValue = getStat(statName)
+        // A failed read is -1, which would pass the window below for any held value under 149. Real stats are at least 1.
+        if (newValue < 1 && oldValue > 0) {
+            Log.d(TAG, "[DEBUG] updateStats:: Unusable $statName reading ($newValue)$via; keeping $oldValue.")
+            return
+        }
         val diff = abs(newValue - oldValue)
 
         // Reject updates that vary too wildly unless the previous value was unset (<= 0).
