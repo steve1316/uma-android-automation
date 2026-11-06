@@ -194,13 +194,15 @@ internal fun parseStatCap(text: String): Int? {
 
 /**
  * Parse a fan count from OCR text such as "201,486". A comma-grouped number is preferred so stray digits fused onto the read are ignored, falling back to the
- * longest plain digit run for counts under 1,000.
+ * longest plain digit run for counts under 1,000. A space inside a group is skipped, since OCR can read "265,171" as "265,17 1".
  *
  * @param text Raw OCR text of the fan count region.
- * @return The fan count, or null if no number is found or it does not fit in an Int.
+ * @return The fan count, or null if no number is found, a separator is not followed by a full group, or it does not fit in an Int.
  */
 internal fun parseFanCount(text: String): Int? {
-    val grouped = Regex("\\d{1,3}(?:[,.]\\d{3})+").find(text)?.value?.filter(Char::isDigit)
+    val grouped = Regex("\\d{1,3}(?:[,.](?:\\d ?){3})+").find(text)?.value?.filter(Char::isDigit)
+    // Without a full group after the separator, the longest digit run would only be the leading digits of the real count.
+    if (grouped == null && Regex("\\d[,.]\\d").containsMatchIn(text)) return null
     val number = grouped ?: Regex("\\d+").findAll(text).maxByOrNull { it.value.length }?.value
     return number?.toIntOrNull()
 }
