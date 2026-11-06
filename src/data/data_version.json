@@ -1,15 +1,15 @@
 {
-    "version": "2026-10-24T15:40:38Z",
-    "label": "Hokko Tarumae 2026-10-24",
+    "version": "2026-11-06T19:07:44Z",
+    "label": "Daitaku Helios 2026-11-05",
     "minAppVersion": "5.8.8",
     "files": {
-        "characters.json": "e745b8b8b00b81f110ce83f998234617",
-        "supports.json": "1740bd20914fa64d0f7023e7d16f938f",
-        "skills.json": "23e7423d9b90708e6bc6ec2e7ea2c8a3",
-        "epithets.json": "eeabfde3cc0ffaedc5b6cd0fde1eefb9",
-        "characterPresets.json": "80ddd472c05d8b6e3960ea3b31945dad",
-        "character_objectives.json": "3fbfc12cfe6e938895d2ae37b1bdcdc6",
-        "traineeCards.json": "ab2dc1cbe4799b98d56de95e021d6f82",
-        "supportCards.json": "632e83deb3d8305d63d132344833b74f"
+        "characters.json": "2a3ee725a2d55f4736f6e21dc8fb7294",
+        "supports.json": "551e079cb00f8918ddb3ebe0529dd16a",
+        "skills.json": "1a01a86d3a1f1b55c20f7d7d256ab4ee",
+        "epithets.json": "bb3a4ae25c0308e9452f49994ad0e3b0",
+        "characterPresets.json": "4443f003153a9b04ea4caa2b88228681",
+        "character_objectives.json": "cc86cb5008c7c3d9ecb6dba44aa03e36",
+        "traineeCards.json": "2904f8b0d3ea9980fd3c4aac8e4a2860",
+        "supportCards.json": "1072ef9e1363b0aad79320ca38c8d4a8"
     }
 }

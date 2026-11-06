@@ -3383,7 +3383,7 @@
         "condition": "distance_type==1&phase_laterhalf_random==1&order_rate<=50@distance_type==2&phase_laterhalf_random==1&order_rate<=50@distance_type==3&phase_laterhalf_random==1&order_rate<=50@distance_type==4&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -6701,7 +6701,7 @@
         "condition": "distance_type==2&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202502
     },
