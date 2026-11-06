@@ -1136,13 +1136,6 @@ const searchConfig: SearchOption[] = [
         description: "Rank which Songs the bot buys first in Lessons. A ranked Song is bought ahead of anything else learnable, whatever its effects.",
         page: "ScenarioOverridesSettings",
     },
-    {
-        id: "grand-live-lesson-rescan-interval",
-        title: "Grand Live Lessons Fallback Re-check",
-        description:
-            'How many turns without a Lessons visit before the bot opens Lessons even without its "!" badge. The badge normally shows when a purchase is affordable, so this only covers a missed badge.',
-        page: "ScenarioOverridesSettings",
-    },
 
     // ============================================================
     // Dailies Settings (DailiesSettings)
@@ -1422,7 +1415,7 @@ const searchConfig: SearchOption[] = [
         id: "debug-skill-list-buy-test",
         title: "Start Skill List Buy Test",
         description:
-            "Processes the list of skills in the Skills screen, reads all skills in the list, logs a summary and then logs another summary of which skills it will buy to bring down the current Skill Points as close to zero as possible and then it will stop there without actually doing the buying.",
+            'Processes the list of skills in the Skills screen, reads all skills in the list, logs a summary and then logs another summary of which skills it will buy to bring down the current Skill Points as close to zero as possible. It then taps "+" on each of them to time the purchase pass, and presses Reset so no Skill Points are spent.',
         page: "DebugSettings",
     },
     {

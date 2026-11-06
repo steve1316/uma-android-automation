@@ -84,9 +84,6 @@ const GRAND_LIVE_SONGS = [
     { id: "Sky-Blue Spring", label: "Sky-Blue Spring", description: "Guts +22, Friendship Training Effectiveness +5%" },
 ]
 
-/** Options for the Grand Live Lessons fallback re-check picker, in turns. */
-const GRAND_LIVE_INTERVAL_OPTIONS = [2, 4, 6, 8, 10] as const
-
 /**
  * Resolves the bot's active scenario to a campaign this page can render overrides for.
  *
@@ -197,7 +194,6 @@ const ScenarioOverridesSettings = () => {
     const [lessonStatPriorityPickerOpen, setLessonStatPriorityPickerOpen] = useState(false)
     const [lessonHintPriorityPickerOpen, setLessonHintPriorityPickerOpen] = useState(false)
     const [songPriorityPickerOpen, setSongPriorityPickerOpen] = useState(false)
-    const [lessonIntervalPickerOpen, setLessonIntervalPickerOpen] = useState(false)
 
     // Built once so the memoized priority list is not handed a fresh array on every render, matching the module-level constants its sibling pickers use.
     const statPriorityItems = useMemo(() => defaultSettings.training.statPrioritization.map((stat) => ({ id: stat, label: stat })), [defaultSettings.training.statPrioritization])
@@ -337,7 +333,6 @@ const ScenarioOverridesSettings = () => {
         updateOverrideSetting("grandLiveLessonStatPriority", defaultSettings.scenarioOverrides.grandLiveLessonStatPriority)
         updateOverrideSetting("grandLiveLessonHintPriority", defaultSettings.scenarioOverrides.grandLiveLessonHintPriority)
         updateOverrideSetting("grandLiveSongPriority", defaultSettings.scenarioOverrides.grandLiveSongPriority)
-        updateOverrideSetting("grandLiveLessonRescanInterval", defaultSettings.scenarioOverrides.grandLiveLessonRescanInterval)
     }, [updateOverrideSetting, defaultSettings])
 
     /** Reset the currently-edited scenario's overrides to defaults. */
@@ -1036,18 +1031,6 @@ const ScenarioOverridesSettings = () => {
                                                 right={<ValuePill label={scenarioOverrides.grandLiveSongPriority.length === 0 ? "None" : `${scenarioOverrides.grandLiveSongPriority.length} ranked`} />}
                                             />
                                         </SearchableItem>
-                                        <SearchableItem
-                                            id="grand-live-lesson-rescan-interval"
-                                            title="Lessons Fallback Re-check"
-                                            description='How many turns without a Lessons visit before the bot opens Lessons even without its "!" badge. The badge normally shows when a purchase is affordable, so this only covers a missed badge.'
-                                        >
-                                            <Row
-                                                title="Lessons Fallback Re-check"
-                                                description='Turns without a visit before Lessons opens even without its "!" badge.'
-                                                onPress={() => setLessonIntervalPickerOpen(true)}
-                                                right={<ValuePill label={`After ${scenarioOverrides.grandLiveLessonRescanInterval} turns`} />}
-                                            />
-                                        </SearchableItem>
                                     </Section>
                                 )}
 
@@ -1179,27 +1162,6 @@ const ScenarioOverridesSettings = () => {
                 selected={scenarioOverrides.grandLiveSongPriority}
                 onChange={(next) => updateOverrideSetting("grandLiveSongPriority", next)}
             />
-
-            <SheetModal
-                visible={lessonIntervalPickerOpen}
-                onRequestClose={() => setLessonIntervalPickerOpen(false)}
-                header={<ModalHeader title="LESSONS FALLBACK RE-CHECK" onClose={() => setLessonIntervalPickerOpen(false)} />}
-                footer={null}
-            >
-                <View style={modalShellStyles.modalBodyList}>
-                    {GRAND_LIVE_INTERVAL_OPTIONS.map((n) => (
-                        <ModalRadioRow
-                            key={n}
-                            label={`After ${n} turns`}
-                            selected={n === scenarioOverrides.grandLiveLessonRescanInterval}
-                            onPress={() => {
-                                updateOverrideSetting("grandLiveLessonRescanInterval", n)
-                                setLessonIntervalPickerOpen(false)
-                            }}
-                        />
-                    ))}
-                </View>
-            </SheetModal>
         </View>
     )
 }

@@ -331,7 +331,6 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🎚️ Grand Live Lesson Stat Priority: ${(settings.scenarioOverrides?.grandLiveLessonStatPriority ?? []).length === 0 ? "Global" : (settings.scenarioOverrides?.grandLiveLessonStatPriority ?? []).join(" > ")}
 💡 Grand Live Lesson Skill Hint Priority: ${(settings.scenarioOverrides?.grandLiveLessonHintPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveLessonHintPriority ?? []).join(" > ")}
 🎵 Grand Live Song Priority: ${(settings.scenarioOverrides?.grandLiveSongPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveSongPriority ?? []).join(" > ")}
-🎶 Grand Live Lessons Fallback Re-check: After ${settings.scenarioOverrides?.grandLiveLessonRescanInterval ?? 6} turns without a badge
 
 ${buildCareerSetupSection(settings)}
 
