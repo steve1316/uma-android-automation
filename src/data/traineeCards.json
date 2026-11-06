@@ -2276,6 +2276,29 @@
             "wit": 0
         }
     },
+    "106501": {
+        "name": "Daitaku Helios",
+        "title": "[Fun☆Fun☆Party Night]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "B",
+            "long": "E",
+            "front": "A",
+            "pace": "A",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 0,
+            "power": 15,
+            "guts": 0,
+            "wit": 0
+        }
+    },
     "106701": {
         "name": "Satono Diamond",
         "title": "[Natural Brilliance]",

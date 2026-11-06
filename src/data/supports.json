@@ -186,6 +186,25 @@
             "Wit +18\nSkill points +18\nMood +1\nShake It Out hint +1/+3\nAoi Kiryuin bond +5"
         ]
     },
+    "Aston Machan": {
+        "At Your Side, Always Watching You": [
+            "Energy +15\nAston Machan bond +5",
+            "Energy -5\nSpeed +20\nAston Machan bond +5"
+        ],
+        "In Your Photos, Always Watching You": [
+            "Skill points +30\nAston Machan bond +5",
+            "Light as a Feather hint +2\nAston Machan bond +5"
+        ],
+        "(❯)\nI'll See You Off to the Sea": [
+            "Energy +10\nMood +1\nMeticulous Measures hint +1\nAston Machan bond +10",
+            "Speed +10\nCountermeasure hint +1\nAston Machan bond +10",
+            "Skill points +20\nMaverick ○ hint +3\nAston Machan bond +5"
+        ],
+        "(❯❯)\nI'll Fight a Losing Battle": [
+            "Energy +10\nIntimidate hint +3\nAston Machan bond +10",
+            "Speed +7\nPower +7\nMad Dash hint +3\nAston Machan bond +5"
+        ]
+    },
     "Bamboo Memory": {
         "Overthrow the Rival!": [
             "Guts +10\nBamboo Memory bond +5",
@@ -800,6 +819,16 @@
         "(❯❯)\nOn Thin Ice": [
             "Skill points +35\nK.S.Miracle bond +5",
             "Energy +30\nK.S.Miracle bond +5"
+        ],
+        "(❯)\nWhat I Can Do": [
+            "Speed +10\nGuts +10\nK.S.Miracle bond +5"
+        ],
+        "(❯❯)\nWhat I Can Try": [
+            "Energy +15\nSkill points +15\nK.S.Miracle bond +5",
+            "Speed +7\nPower +7\nGuts +7\nCorner Acceleration ○ hint +1\nK.S.Miracle bond +5"
+        ],
+        "(❯❯❯)\nWhat I Want to Do": [
+            "Speed +7\nPower +7\nGuts +7\nNeck and Neck hint +2\nK.S.Miracle bond +5"
         ]
     },
     "Kawakami Princess": {
