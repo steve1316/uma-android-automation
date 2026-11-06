@@ -137,6 +137,10 @@ open class DialogHandler(val game: Game) {
                 game.wait(0.5)
             }
 
+            "date_changed" -> {
+                dialog.ok(game.imageUtils)
+            }
+
             "display_settings" -> {
                 dialog.close(game.imageUtils)
             }
