@@ -47,8 +47,8 @@ class Game(val myContext: Context) {
     /** The utility class for image processing and template matching. */
     val imageUtils: CustomImageUtils = CustomImageUtils(myContext, this)
 
-    /** The Accessibility Service for performing screen gestures. */
-    val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
+    /** The Accessibility Service for performing screen gestures. Read on every access, since a restarted service is a new instance. */
+    val gestureUtils: MyAccessibilityService get() = MyAccessibilityService.getInstance()
 
     /** The database for skill-related information. */
     val skillDatabase: SkillDatabase = SkillDatabase(this)
