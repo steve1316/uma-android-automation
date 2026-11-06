@@ -217,6 +217,53 @@ internal fun parseTurnsRemaining(text: String): Int? {
 }
 
 /**
+ * Share of a stat gain template's pixels whose gray equals the screen. The single-row URA Finale templates count only their fully opaque pixels, since their soft edges
+ * are premultiplied and never equal the screen, which kept narrow glyphs like "+" and "1" under the threshold. The two-row "_mini" templates keep the whole-box share.
+ *
+ * @param templateName Name of the template.
+ * @param equal One byte per template pixel, non-zero where the gray equals the screen (row-major, as `Core.compare` with `CMP_EQ` gives it).
+ * @param alpha The template's alpha channel, in the same order.
+ * @return The share from 0.0 to 1.0, or 0.0 if the template has no fully opaque pixel.
+ */
+internal fun statGainPixelMatchRatio(templateName: String, equal: ByteArray, alpha: ByteArray): Double {
+    if ("_mini" in templateName) return equal.count { it.toInt() != 0 }.toDouble() / equal.size
+
+    var opaquePixels = 0
+    var matchingPixels = 0
+    for (i in alpha.indices) {
+        if (alpha[i] != 0xFF.toByte()) continue
+        opaquePixels++
+        if (equal[i].toInt() != 0) matchingPixels++
+    }
+    return if (opaquePixels == 0) 0.0 else matchingPixels.toDouble() / opaquePixels
+}
+
+/**
+ * One stat gain template hit.
+ *
+ * @property template Name of the template.
+ * @property x The centre x of the hit in the row.
+ * @property score The hit's pixel correlation.
+ */
+internal class StatGainMatch(val template: String, val x: Double, val score: Double)
+
+/**
+ * Keeps one template hit per glyph. A narrow template can also match inside a wider digit, like a "1" on the stem of a "4" or a "0" on a "9", a few pixels from the
+ * real hit, while separate digits sit over 30 pixels apart. A hit closer than [maxDx] to a better-scoring one is dropped.
+ *
+ * @param matches The hits of every template in one row.
+ * @param maxDx How close two hits can be and still be the same glyph.
+ * @return The kept hits, sorted by x.
+ */
+internal fun keepBestMatchPerGlyph(matches: List<StatGainMatch>, maxDx: Double): List<StatGainMatch> {
+    val kept = mutableListOf<StatGainMatch>()
+    for (match in matches.sortedByDescending { it.score }) {
+        if (kept.none { kotlin.math.abs(it.x - match.x) < maxDx }) kept.add(match)
+    }
+    return kept.sortedBy { it.x }
+}
+
+/**
  * One word read by ML Kit, with where it sits.
  *
  * @property text The word.
@@ -2083,6 +2130,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                                         Log.i(TAG, "[YOLO] Detections for $statName ${row.rowName}: $resultString")
                                     }
                                 } else {
+                                    val rowScores = mutableListOf<StatGainMatch>()
                                     // Process templates for this row using the row's specific suffix.
                                     for (templateName in rowTemplates) {
                                         // Check before each template processing operation.
@@ -2102,6 +2150,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                                                     },
                                                     row.rowName,
                                                     trainingContext,
+                                                    rowScores,
                                                 )
                                             // Store original matches for this row (for debug visualization).
                                             processedMatches[templateName]?.forEach { point ->
@@ -2110,6 +2159,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                                         } else {
                                             Log.e(TAG, "[ERROR] determineStatGainFromTraining:: Could not load template \"$templateName\" to process stat gains for $trainingName training.")
                                         }
+                                    }
+
+                                    // Keep one digit per glyph, since a narrow template can also match inside a wider digit.
+                                    val kept = keepBestMatchPerGlyph(rowScores, relWidth(12).toDouble())
+                                    if (kept.size < rowScores.size) {
+                                        Log.d(TAG, "[DEBUG] determineStatGainFromTraining:: Dropped ${rowScores.size - kept.size} match(es) on a matched glyph for $trainingContext.")
+                                        rowMatches.forEach { (template, points) -> points.retainAll { point -> kept.any { it.template == template && it.x == point.x } } }
                                     }
                                 }
 
@@ -2234,6 +2290,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @param matchResults Map to store match results, organized by template name.
      * @param rowName The name of the row being processed (e.g., "row 1", "row 2").
      * @param trainingContext The training context (e.g., "SPEED training for POWER side effect").
+     * @param scores Receives each valid match with its pixel correlation.
      * @return The modified matchResults mapping containing all valid matches found for this template
      */
     private fun processStatGainTemplateWithTransparency(
@@ -2243,6 +2300,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         matchResults: MutableMap<String, MutableList<Point>>,
         rowName: String = "",
         trainingContext: String = "",
+        scores: MutableList<StatGainMatch>,
     ): MutableMap<String, MutableList<Point>> {
         // These values have been tested for the best results against the dynamic background.
         val matchConfidence = 0.9
@@ -2271,6 +2329,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         // Create binary mask for non-transparent pixels.
         val validPixels = Mat()
         Core.compare(alphaMask, Scalar(0.0), validPixels, Core.CMP_GT)
+        val alphaPixels = ByteArray(alphaMask.total().toInt()).also { alphaMask.get(0, 0, it) }
 
         // Check transparency ratio.
         val nonZeroPixels = Core.countNonZero(alphaMask)
@@ -2326,8 +2385,8 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                         // For the first test, compare pixel-by-pixel equality between the matched region and template to calculate match ratio.
                         val templateComparison = Mat()
                         Core.compare(matchedRegion, templateGray, templateComparison, Core.CMP_EQ)
-                        val matchingPixels = Core.countNonZero(templateComparison)
-                        val pixelMatchRatio = matchingPixels.toDouble() / (w * h)
+                        val equalPixels = ByteArray(templateComparison.total().toInt()).also { templateComparison.get(0, 0, it) }
+                        val pixelMatchRatio = statGainPixelMatchRatio(templateName, equalPixels, alphaPixels)
                         if (pixelMatchRatio < minPixelMatchRatio) {
                             failedPixelMatchRatio = true
                         }
@@ -2379,6 +2438,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                                     }
                                 Log.d(TAG, "[DEBUG] processStatGainTemplateWithTransparency:: Found valid match for template \"$templateName\" at ($centerX, $centerY)$rowSuffix.")
                                 matchResults[templateName]?.add(Point(centerX.toDouble(), centerY.toDouble()))
+                                scores.add(StatGainMatch(templateName, centerX.toDouble(), pixelCorrelation))
 
                                 // If it found the + symbol, then there is no need to look for additional pluses.
                                 if (templateName in listOf("+", "+_mini")) {
