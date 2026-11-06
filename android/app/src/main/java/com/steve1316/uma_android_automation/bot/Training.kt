@@ -121,6 +121,38 @@ internal fun isStaminaFloorActive(stamina: Int, turnsToGoal: Int?): Boolean = tu
  */
 internal fun staminaFirst(priority: List<StatName>): List<StatName> = listOf(StatName.STAMINA) + (priority - StatName.STAMINA)
 
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Training tab switch
+
+/**
+ * Taps a training button, then waits for its header without tapping again. A tap on the training that is already selected starts it, so a header that is slow to show
+ * must not lead to a second tap.
+ *
+ * @param tap Finds and taps the button. False when the button was not found, so nothing was tapped and it is safe to look again.
+ * @param headerShown Whether the training's header shows.
+ * @param pause Waits between looks.
+ * @param timeoutMs How long to wait for the header after the tap.
+ * @param nowMs The current time in milliseconds.
+ * @return True if the header showed in time.
+ */
+internal fun tapTrainingOnce(tap: () -> Boolean, headerShown: () -> Boolean, pause: () -> Unit, timeoutMs: Long = 3000L, nowMs: () -> Long = System::currentTimeMillis): Boolean {
+    var tapped = false
+    for (i in 0..2) {
+        tapped = tap()
+        if (tapped) break
+        pause()
+    }
+    if (!tapped) return false
+
+    val deadline = nowMs() + timeoutMs
+    do {
+        if (headerShown()) return true
+        pause()
+    } while (nowMs() < deadline)
+    return false
+}
+
 /**
  * Handle the training process, including analysis of options, scoring recommendations, and execution.
  *
@@ -1546,17 +1578,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // If this option isn't enabled, then we just do a fast lazy validation.
             if (!enableTrainingAnalysisValidation) {
-                for (i in 0..2) {
-                    button.click(game.imageUtils)
-
-                    // Wait for screen to finish updating before proceeding.
-                    game.wait(0.2, skipWaitingForLoading = true)
-                    if (header.check(game.imageUtils)) {
-                        return true
-                    }
+                if (tapTrainingOnce({ button.click(game.imageUtils) }, { header.check(game.imageUtils) }, { game.wait(0.2, skipWaitingForLoading = true) })) {
+                    return true
                 }
 
-                MessageLog.w(TAG, "[WARN] goToStat:: Failed to go to $statName on training screen after 3 attempts.")
+                MessageLog.w(TAG, "[WARN] goToStat:: Failed to go to $statName on training screen.")
                 return false
             }
 
