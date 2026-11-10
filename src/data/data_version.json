@@ -1,15 +1,15 @@
 {
-    "version": "2026-11-06T19:07:44Z",
-    "label": "Daitaku Helios 2026-11-05",
+    "version": "2026-11-10T19:31:44Z",
+    "label": "Ines Fujin (Valentine) 2026-11-09",
     "minAppVersion": "5.8.8",
     "files": {
-        "characters.json": "2a3ee725a2d55f4736f6e21dc8fb7294",
-        "supports.json": "551e079cb00f8918ddb3ebe0529dd16a",
-        "skills.json": "1a01a86d3a1f1b55c20f7d7d256ab4ee",
+        "characters.json": "c883c5dc79c94a64fc5058ab8767070b",
+        "supports.json": "b739079cff3a53887b176a1b0c17a523",
+        "skills.json": "64a8ae4c4bd10c6ca46abc31ee6bbdc1",
         "epithets.json": "bb3a4ae25c0308e9452f49994ad0e3b0",
         "characterPresets.json": "4443f003153a9b04ea4caa2b88228681",
         "character_objectives.json": "cc86cb5008c7c3d9ecb6dba44aa03e36",
-        "traineeCards.json": "2904f8b0d3ea9980fd3c4aac8e4a2860",
-        "supportCards.json": "1072ef9e1363b0aad79320ca38c8d4a8"
+        "traineeCards.json": "4852c54034c561ee8523edfcbd464893",
+        "supportCards.json": "db15e57575091c878c3ffd9b98712470"
     }
 }
