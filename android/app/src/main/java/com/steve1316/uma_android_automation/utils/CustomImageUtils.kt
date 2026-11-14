@@ -488,6 +488,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         SharedData.templateSubfolderPathName = "images/"
     }
 
+    /**
+     * Grabs the source frame and hands it to the developer frame log, which keeps only a reference.
+     *
+     * @param saveImage Whether to save the frame to storage.
+     * @returns The source frame.
+     */
+    override fun getSourceBitmap(saveImage: Boolean): Bitmap = super.getSourceBitmap(saveImage).also { FrameLog.offerFrame(it) }
+
     /** Converts this bitmap to a new OpenCV [Mat]. */
     private fun Bitmap.toMat(): Mat {
         val mat = Mat()

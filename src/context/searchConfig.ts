@@ -102,6 +102,25 @@ const searchConfig: SearchOption[] = [
         page: "DebugSettings",
     },
     {
+        id: "settings-enable-remote-log-viewer",
+        title: "Enable Remote Log Viewer",
+        description: "Starts an HTTP server on this device when the bot runs. Open the URL shown below in a browser on your computer to view logs in real-time.",
+        page: "DebugSettings",
+    },
+    {
+        id: "settings-remote-log-viewer-port",
+        title: "Server Port",
+        description: "Port number for the log stream server. Change only if the default conflicts with another service.",
+        page: "DebugSettings",
+        parentId: "settings-enable-remote-log-viewer",
+    },
+    {
+        id: "settings-enable-dev-mcp-server",
+        title: "Enable Developer MCP Server",
+        description: "Lets an AI coding assistant on your computer read the bot's status, logs, screen, and saved frames over ADB, and hold it to tap through screens. For development only.",
+        page: "DebugSettings",
+    },
+    {
         id: "settings-wait-delay",
         title: "Wait Delay",
         description:
