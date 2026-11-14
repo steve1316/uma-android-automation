@@ -5,6 +5,7 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Campaign
+import com.steve1316.uma_android_automation.components.ButtonReset
 import com.steve1316.uma_android_automation.types.RunningStyle
 import com.steve1316.uma_android_automation.types.SkillList
 import com.steve1316.uma_android_automation.types.SkillListEntry
@@ -505,7 +506,9 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
         // Scan the skill list and parse all available entries.
         // Use mock data if enabled for logic testing without a game instance.
         MessageLog.i(TAG, "[TEST] Scanning skill list...")
+        val scanStartMs: Long = System.currentTimeMillis()
         val allSkills: Map<String, SkillListEntry> = skillList.parseSkillListEntries(bUseMockData = USE_MOCK_DATA)
+        MessageLog.i(TAG, "[SKILLS] Scanned ${allSkills.values.count { !it.bIsVirtual }} skill entries in ${elapsedSeconds(scanStartMs)}s.")
 
         val availableSkills: Map<String, SkillListEntry> = allSkills.filter { !it.value.bIsObtained && !it.value.bIsVirtual }
 
@@ -541,6 +544,13 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
             }
         }
         MessageLog.i(TAG, "[TEST] Expected remaining Skill Points: $remainingPoints")
+
+        // Tap through the real purchase pass to time it, then reset so nothing is spent.
+        if (!USE_MOCK_DATA && skillsToBuy.isNotEmpty()) {
+            purchaseSkills(skillList, skillsToBuy.keys.toList())
+            ButtonReset.click(game.imageUtils)
+            MessageLog.i(TAG, "[TEST] Reset the selections, so no skill points were spent.")
+        }
         MessageLog.i(TAG, "[TEST] Skill List Buy test complete.")
     }
 
@@ -1145,6 +1155,44 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
         return false
     }
 
+    /**
+     * Taps "+" on every planned skill in the list. The caller confirms or resets afterwards.
+     *
+     * @param skillList The [SkillList] that already scanned the list.
+     * @param skillsToBuy The names of the skills to buy.
+     */
+    private fun purchaseSkills(skillList: SkillList, skillsToBuy: List<String>) {
+        val startMs: Long = System.currentTimeMillis()
+
+        // Reset the internal purchase state before starting the actual buying process.
+        skillList.sellAllSkills()
+
+        // The scan left the list at the bottom, so buy on the way back up.
+        skillList.revisitSkillListEntries(skillsToBuy) { currentList: SkillList, entry: SkillListEntry, point: Point ->
+            onSkillListEntryDetected(entry = entry, point = point, skillsToBuy = skillsToBuy, skillList = currentList)
+        }
+
+        // Anything the walk could not recognize gets the old full pass, which reads every title again.
+        val remaining: List<String> = skillsToBuy.filter { it !in skillList.getObtainedSkills() }
+        if (remaining.isNotEmpty()) {
+            MessageLog.w(TAG, "[WARN] purchaseSkills:: ${remaining.size} planned skill(s) were not found on the way up. Rescanning from the top for: ${remaining.joinToString()}")
+            skillList.parseSkillListEntries { currentList: SkillList, entry: SkillListEntry, point: Point ->
+                onSkillListEntryDetected(entry = entry, point = point, skillsToBuy = remaining, skillList = currentList)
+            }
+        }
+
+        val bought: Int = skillsToBuy.count { it in skillList.getObtainedSkills() }
+        MessageLog.i(TAG, "[SKILLS] Bought $bought of ${skillsToBuy.size} planned skill(s) in ${elapsedSeconds(startMs)}s.")
+    }
+
+    /**
+     * Formats the time since a start point for the timing logs.
+     *
+     * @param startMs The start, from [System.currentTimeMillis].
+     * @return The elapsed seconds with one decimal place.
+     */
+    private fun elapsedSeconds(startMs: Long): String = "%.1f".format((System.currentTimeMillis() - startMs) / 1000.0)
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1217,7 +1265,9 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
         }
 
         // Gather and parse all skill entries from the screen.
+        val scanStartMs: Long = System.currentTimeMillis()
         skillList.parseSkillListEntries(bUseMockData = USE_MOCK_DATA)
+        MessageLog.i(TAG, "[SKILLS] Scanned ${skillList.getAllSkills().values.count { !it.bIsVirtual }} skill entries in ${elapsedSeconds(scanStartMs)}s.")
         if (skillList.getAllSkills().isEmpty()) {
             MessageLog.e(TAG, "[ERROR] start:: Failed to detect skills.")
             skillList.cancelAndExit()
@@ -1242,18 +1292,7 @@ class SkillPlan(private val game: Game, private val campaign: Campaign) {
             return true
         }
 
-        // Reset the internal purchase state before starting the actual buying process.
-        skillList.sellAllSkills()
-
-        // Iterate through the list again and perform the confirmed purchases.
-        skillList.parseSkillListEntries { currentList: SkillList, entry: SkillListEntry, point: Point ->
-            onSkillListEntryDetected(
-                entry = entry,
-                point = point,
-                skillsToBuy = skillsToPurchase.keys.toList(),
-                skillList = currentList,
-            )
-        }
+        purchaseSkills(skillList, skillsToPurchase.keys.toList())
 
         skillList.confirmAndExit()
         campaign.trainee.skillPoints = skillList.skillPoints

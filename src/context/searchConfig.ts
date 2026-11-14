@@ -102,6 +102,25 @@ const searchConfig: SearchOption[] = [
         page: "DebugSettings",
     },
     {
+        id: "settings-enable-remote-log-viewer",
+        title: "Enable Remote Log Viewer",
+        description: "Starts an HTTP server on this device when the bot runs. Open the URL shown below in a browser on your computer to view logs in real-time.",
+        page: "DebugSettings",
+    },
+    {
+        id: "settings-remote-log-viewer-port",
+        title: "Server Port",
+        description: "Port number for the log stream server. Change only if the default conflicts with another service.",
+        page: "DebugSettings",
+        parentId: "settings-enable-remote-log-viewer",
+    },
+    {
+        id: "settings-enable-dev-mcp-server",
+        title: "Enable Developer MCP Server",
+        description: "Lets an AI coding assistant on your computer read the bot's status, logs, screen, and saved frames over ADB, and hold it to tap through screens. For development only.",
+        page: "DebugSettings",
+    },
+    {
         id: "settings-wait-delay",
         title: "Wait Delay",
         description:
@@ -1136,13 +1155,6 @@ const searchConfig: SearchOption[] = [
         description: "Rank which Songs the bot buys first in Lessons. A ranked Song is bought ahead of anything else learnable, whatever its effects.",
         page: "ScenarioOverridesSettings",
     },
-    {
-        id: "grand-live-lesson-rescan-interval",
-        title: "Grand Live Lessons Fallback Re-check",
-        description:
-            'How many turns without a Lessons visit before the bot opens Lessons even without its "!" badge. The badge normally shows when a purchase is affordable, so this only covers a missed badge.',
-        page: "ScenarioOverridesSettings",
-    },
 
     // ============================================================
     // Dailies Settings (DailiesSettings)
@@ -1422,7 +1434,7 @@ const searchConfig: SearchOption[] = [
         id: "debug-skill-list-buy-test",
         title: "Start Skill List Buy Test",
         description:
-            "Processes the list of skills in the Skills screen, reads all skills in the list, logs a summary and then logs another summary of which skills it will buy to bring down the current Skill Points as close to zero as possible and then it will stop there without actually doing the buying.",
+            'Processes the list of skills in the Skills screen, reads all skills in the list, logs a summary and then logs another summary of which skills it will buy to bring down the current Skill Points as close to zero as possible. It then taps "+" on each of them to time the purchase pass, and presses Reset so no Skill Points are spent.',
         page: "DebugSettings",
     },
     {

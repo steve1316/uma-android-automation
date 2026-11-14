@@ -44,6 +44,13 @@ enum class TaskResultCode {
     TASK_RESULT_CONNECTION_ERROR,
 }
 
+/**
+ * Thrown when the game sits on its Connecting label for too long. The task loop ends the run with a connection error.
+ *
+ * @param message What the game was stuck on, shown as the run's stop reason.
+ */
+class GameConnectionStuckException(message: String) : Exception(message)
+
 /** Represents the final result of a task's execution. */
 sealed interface TaskResult {
     val code: TaskResultCode
@@ -136,6 +143,8 @@ internal fun runTaskLoop(hooks: TaskLoopHooks): TaskResult {
             }
             val result = hooks.process()
             if (result != null) return result
+        } catch (e: GameConnectionStuckException) {
+            return TaskResult.Error(TaskResultCode.TASK_RESULT_CONNECTION_ERROR, e.message ?: "The game is stuck on Connecting.")
         } catch (e: Exception) {
             // StepAbortedException is an InterruptedException and a stop always wins. Other abort fallout, like a missing screenshot, restarts the same way.
             if (hooks.isStopRequested() || !hooks.acknowledgeAbort()) {

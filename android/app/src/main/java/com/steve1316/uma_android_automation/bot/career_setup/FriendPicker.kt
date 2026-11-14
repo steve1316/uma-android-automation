@@ -57,11 +57,17 @@ class FriendPicker(private val game: Game, private val settings: CareerSetupSett
         val isSsr: Boolean,
         val level: Int,
         val isDuplicate: Boolean,
-    )
+    ) {
+        /** The row as it reads in the log. The title is empty when it was not read. */
+        val label: String get() = "$title $name".trim()
+    }
 
     /** The cards to look for, most wanted first: the card chosen in settings, else the scenario's favorites. */
     private val targets: List<String> =
         settings.friendCard.takeIf { it.isNotEmpty() }?.let { listOf(it) } ?: settings.friendFavorites[settings.scenario]?.favorites.orEmpty()
+
+    /** The character names of the target cards. */
+    private val targetNames: List<String> = targets.mapNotNull { settings.supportCards[it]?.name }.distinct()
 
     /**
      * Borrows the most wanted target card, refreshing the list when none is there, then falls back to the best card of the type the deck lacks.
@@ -96,7 +102,7 @@ class FriendPicker(private val game: Game, private val settings: CareerSetupSett
             MessageLog.w(TAG, "[CAREER SETUP] No borrowable ${type ?: ""} support card in the list.")
             return false
         }
-        MessageLog.i(TAG, "[CAREER SETUP] Falling back to ${fallback.title} ${fallback.name} (${fallback.type ?: "unknown type"}, Lvl ${fallback.level}).")
+        MessageLog.i(TAG, "[CAREER SETUP] Falling back to ${fallback.label} (${fallback.type ?: "unknown type"}, Lvl ${fallback.level}).")
         return borrow(scroll ?: return false, fallback)
     }
 
@@ -132,7 +138,7 @@ class FriendPicker(private val game: Game, private val settings: CareerSetupSett
                 rows.add(row)
                 if (stopAt(row)) return rows
             }
-            if (!scroll.scrollDownTracked()) return rows
+            if (scroll.bHitEnd || !scroll.scrollDownTracked()) return rows
         }
         return rows
     }
@@ -164,9 +170,11 @@ class FriendPicker(private val game: Game, private val settings: CareerSetupSett
         if (LabelCareerStartDuplicateSupport.check(game.imageUtils, region = field(anchor, DUPLICATE_TAG), sourceBitmap = bitmap)) {
             return Row(contentY, anchor.x.toInt(), null, "", "", null, isSsr = false, level = 0, isDuplicate = true)
         }
-        val title = ocr(bitmap, anchor, TITLE_LINE, "friendTitle")
         val name = ocr(bitmap, anchor, NAME_LINE, "friendName")
-        val card = CareerCatalog.match(title, name, settings.supportCards.values)
+        // The title only tells a target card apart from other cards of the same character, so it is read only when the name is a target's.
+        val isTarget = targetNames.any { NameMatching.matches(name, it) }
+        val title = if (isTarget) ocr(bitmap, anchor, TITLE_LINE, "friendTitle") else ""
+        val card = if (isTarget) CareerCatalog.match(title, name, settings.supportCards.values) else null
         val type = card?.type ?: IconCareerStartSupportTypes.entries.firstOrNull { (_, icon) -> icon.check(game.imageUtils, region = field(anchor, TYPE_ICON), sourceBitmap = bitmap) }?.key
         val isSsr = IconCareerStartSupportSsr.check(game.imageUtils, region = field(anchor, SSR_BADGE), sourceBitmap = bitmap)
         // The level only ranks fallback cards, so it is read only for a card of the fallback type.
@@ -184,7 +192,7 @@ class FriendPicker(private val game: Game, private val settings: CareerSetupSett
      */
     private fun borrow(scroll: ScrollList, row: Row): Boolean {
         val screenY = scroll.bringIntoView(row.contentY, margin = game.imageUtils.relHeight(-DUPLICATE_TAG[1])) ?: return false
-        MessageLog.i(TAG, "[CAREER SETUP] Borrowing ${row.title} ${row.name}.")
+        MessageLog.i(TAG, "[CAREER SETUP] Borrowing ${row.label}.")
         tapAnchored(game, Point(row.anchorX.toDouble(), screenY.toDouble()), TAP_DX, TAP_DY)
         game.wait(1.5)
         return true

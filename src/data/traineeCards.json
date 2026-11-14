@@ -1195,6 +1195,29 @@
             "wit": 10
         }
     },
+    "102702": {
+        "name": "Mejiro Ryan",
+        "title": "[Marguerite Latte]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "E",
+            "mile": "C",
+            "medium": "A",
+            "long": "B",
+            "front": "F",
+            "pace": "A",
+            "late": "A",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 20,
+            "stamina": 0,
+            "power": 0,
+            "guts": 0,
+            "wit": 10
+        }
+    },
     "102801": {
         "name": "Hishi Akebono",
         "title": "[Buono ☆ Alla Moda]",
@@ -1308,6 +1331,29 @@
             "power": 0,
             "guts": 15,
             "wit": 0
+        }
+    },
+    "103102": {
+        "name": "Ines Fujin",
+        "title": "[Melt Your Heart]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "G",
+            "mile": "A",
+            "medium": "A",
+            "long": "C",
+            "front": "A",
+            "pace": "C",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 14,
+            "stamina": 0,
+            "power": 0,
+            "guts": 8,
+            "wit": 8
         }
     },
     "103201": {
@@ -2273,6 +2319,29 @@
             "stamina": 10,
             "power": 0,
             "guts": 10,
+            "wit": 0
+        }
+    },
+    "106501": {
+        "name": "Daitaku Helios",
+        "title": "[Fun☆Fun☆Party Night]",
+        "aptitudes": {
+            "turf": "A",
+            "dirt": "G",
+            "sprint": "B",
+            "mile": "A",
+            "medium": "B",
+            "long": "E",
+            "front": "A",
+            "pace": "A",
+            "late": "G",
+            "end": "G"
+        },
+        "growth": {
+            "speed": 15,
+            "stamina": 0,
+            "power": 15,
+            "guts": 0,
             "wit": 0
         }
     },

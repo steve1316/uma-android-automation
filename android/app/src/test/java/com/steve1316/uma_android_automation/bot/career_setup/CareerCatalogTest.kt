@@ -80,18 +80,24 @@ class CareerCatalogTest {
     }
 
     @Test
-    @DisplayName("A page decides whether the wanted name is on it, above it or below it")
-    fun testPageMove() {
-        // Ascending, as in the failed run: the page shows Mayano Top Gun to Matikanetannhauser while looking for Inari One.
-        assertEquals(PageMove.UP, CareerCatalog.pageMove("Mayano Top Gun", "Matikanetannhauser", "Inari One", descending = false))
-        assertEquals(PageMove.DOWN, CareerCatalog.pageMove("Agnes Digital", "Haru Urara", "Inari One", descending = false))
-        assertEquals(PageMove.HERE, CareerCatalog.pageMove("Haru Urara", "King Halo", "Inari One", descending = false))
-        // Descending flips which way is up.
-        assertEquals(PageMove.DOWN, CareerCatalog.pageMove("Matikanetannhauser", "Mayano Top Gun", "Inari One", descending = true))
-        assertEquals(PageMove.UP, CareerCatalog.pageMove("Haru Urara", "Agnes Digital", "Inari One", descending = true))
-        // An edge card with the wanted name may have the wanted outfit's siblings beside it, so the page is searched.
-        assertEquals(PageMove.HERE, CareerCatalog.pageMove("Inari One", "King Halo", "Inari One", descending = false))
-        assertEquals(PageMove.HERE, CareerCatalog.pageMove("Agnes Digital", "Inari One", "Inari One", descending = false))
+    @DisplayName("A name sorts before, with or after the wanted name in the list's order")
+    fun testListOrder() {
+        assertTrue(CareerCatalog.listOrder("Agnes Digital", "Inari One", descending = false) < 0)
+        assertTrue(CareerCatalog.listOrder("Mayano Top Gun", "Inari One", descending = false) > 0)
+        assertEquals(0, CareerCatalog.listOrder("Inari One", "Inari One", descending = false))
+        // Descending flips the order.
+        assertTrue(CareerCatalog.listOrder("Mayano Top Gun", "Inari One", descending = true) < 0)
+        assertTrue(CareerCatalog.listOrder("Agnes Digital", "Inari One", descending = true) > 0)
+    }
+
+    @Test
+    @DisplayName("An OCR'd trainee name is read as the catalog name it matches")
+    fun testMatchName() {
+        val names = trainees.map { it.name }
+        assertEquals("Haru Urara", CareerCatalog.matchName("Haru Urara", names))
+        assertEquals("Inari One", CareerCatalog.matchName("lnari One", names))
+        assertNull(CareerCatalog.matchName("Special Week", names))
+        assertNull(CareerCatalog.matchName("", names))
     }
 
     @Test

@@ -10,6 +10,7 @@ import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.DialogHandlerResult
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.GameConnectionStuckException
 import com.steve1316.uma_android_automation.bot.Task
 import com.steve1316.uma_android_automation.bot.TaskResult
 import com.steve1316.uma_android_automation.bot.TaskResultCode
@@ -34,6 +35,7 @@ import com.steve1316.uma_android_automation.components.ButtonSortAsc
 import com.steve1316.uma_android_automation.components.ButtonSortRating
 import com.steve1316.uma_android_automation.components.ButtonSortToggle
 import com.steve1316.uma_android_automation.components.ButtonTeamTrials
+import com.steve1316.uma_android_automation.components.ComponentInterface
 import com.steve1316.uma_android_automation.components.DialogInterface
 import com.steve1316.uma_android_automation.components.DialogUtils
 import com.steve1316.uma_android_automation.components.LabelDailyPrograms
@@ -382,6 +384,21 @@ internal fun openRaceTab(game: Game) {
 }
 
 /**
+ * Waits for a button by time rather than by tries, then taps it. A count of tries shrinks in real time whenever template matching gets faster.
+ *
+ * @param game The bot's [Game] instance.
+ * @param button The button to wait for.
+ * @param failure The message for the [DailyStepFailed] thrown on timeout.
+ * @param timeoutSec How long to wait for the button.
+ * @throws DailyStepFailed When the button never appears.
+ */
+internal fun tapWhenShown(game: Game, button: ComponentInterface, failure: String, timeoutSec: Double = 20.0) {
+    val at = game.waitForAny(button, timeoutSec = timeoutSec)?.second ?: throw DailyStepFailed(failure)
+    // Callers wait for loading themselves right after, so the tap skips its own check.
+    game.tap(at.x, at.y, button.template.path, ignoreWaiting = true)
+}
+
+/**
  * Opens the Race tab and checks whether its Daily Program card says "Done for today!", meaning every Daily Program ticket is spent.
  *
  * @param game The bot's [Game] instance.
@@ -479,8 +496,7 @@ internal fun tapTopRaceRow(game: Game) {
  * @throws DailyStepFailed When the skip button or the end of the results never appears.
  */
 internal fun skipRace(game: Game, vararg ends: BaseComponentInterface) {
-    val skip = game.waitForAny(ButtonSkip, timeoutSec = 45.0)?.second ?: throw DailyStepFailed("Race skip button did not appear")
-    game.tap(skip.x, skip.y)
+    tapWhenShown(game, ButtonSkip, "Race skip button did not appear", timeoutSec = 45.0)
     game.wait(1.0)
     game.waitForLoading()
     game.tapUntil(*ends) ?: throw DailyStepFailed("End of race results did not appear")
@@ -592,7 +608,7 @@ class Dailies(game: Game) : Task(game) {
         DailiesRunner(
             parts,
             beforePart = ::goHome,
-            shouldRethrow = { it is InterruptedException || BotHold.isAbortRaised || !BotService.isRunning },
+            shouldRethrow = { it is InterruptedException || it is GameConnectionStuckException || BotHold.isAbortRaised || !BotService.isRunning },
             onFailure = { part, _ -> game.imageUtils.saveDebugScreenshot(game.imageUtils.getSourceBitmap(), "dailies_${part.name.lowercase().replace(' ', '_')}_failed") },
         )
 

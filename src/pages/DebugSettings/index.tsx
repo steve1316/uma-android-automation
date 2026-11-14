@@ -1,7 +1,6 @@
-import { useMemo, useCallback, useContext, useRef, useState, useEffect } from "react"
+import { useMemo, useContext, useRef, useState, useEffect } from "react"
 import { View, Text, ScrollView, StyleSheet, NativeModules, Pressable } from "react-native"
 import Ionicons from "@react-native-vector-icons/ionicons"
-import * as Clipboard from "expo-clipboard"
 import { useTheme } from "../../context/ThemeContext"
 import { DebugContext, BotMetaContext } from "../../context/BotStateContext"
 import CustomSlider from "../../components/CustomSlider"
@@ -24,6 +23,8 @@ import { SPACING } from "../../lib/spacing"
 import { RADII } from "../../lib/radii"
 import { Snackbar } from "react-native-paper"
 import { useLogcatDump } from "../../hooks/useLogcatDump"
+import { DEV_MCP_PORT, devMcpBridge, type DevMcpStatus } from "../../lib/devMcpBridge"
+import { copyToClipboard } from "../../lib/utils"
 import { DEBUG_TESTS, type DebugTestDescriptor } from "./debugTests"
 
 /** Available recording frame rate options surfaced in the Row+chip selector. */
@@ -74,6 +75,34 @@ const DebugSettings = () => {
         }
     }, [debug.enableRemoteLogViewer])
 
+    const [devMcpStatus, setDevMcpStatus] = useState<DevMcpStatus | null>(null)
+
+    // Poll while the server is on, so the status line shows when an AI coding assistant's bridge connects or drops.
+    useEffect(() => {
+        const refresh = () => {
+            devMcpBridge
+                .getStatus()
+                .then(setDevMcpStatus)
+                .catch(() => {})
+        }
+        refresh()
+        if (!debug.enableDevMcpServer) return
+        const timer = setInterval(refresh, 5000)
+        return () => clearInterval(timer)
+    }, [debug.enableDevMcpServer])
+
+    /**
+     * Saves the developer MCP server setting and starts or stops the server right away.
+     * @param checked Whether the server should run.
+     */
+    const handleDevMcpToggle = (checked: boolean) => {
+        updateDebug({ enableDevMcpServer: checked })
+        devMcpBridge
+            .setEnabled(checked)
+            .then(setDevMcpStatus)
+            .catch((e: Error) => setDevMcpStatus({ running: false, port: DEV_MCP_PORT, error: e.message, clientConnected: false }))
+    }
+
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -89,19 +118,12 @@ const DebugSettings = () => {
                     borderRadius: RADII.pill,
                     overflow: "hidden",
                 },
+                copyRow: { padding: SPACING.sm, backgroundColor: colors.surfaceRaised, borderRadius: RADII.md, flexDirection: "row", alignItems: "center", gap: SPACING.sm },
             }),
         [colors]
     )
 
     const rlvUrl = `http://${deviceIp === "10.0.2.15" ? "localhost" : deviceIp}:${debug.remoteLogViewerPort}`
-
-    const handleCopyRlvUrl = useCallback(async () => {
-        try {
-            await Clipboard.setStringAsync(rlvUrl)
-        } catch {
-            // swallow - clipboard may fail silently on web/sim
-        }
-    }, [rlvUrl])
 
     const currentFrameRateLabel = FRAME_RATE_OPTIONS.find((o) => o.value === debug.recordingFrameRate)?.label ?? "30 FPS"
 
@@ -232,11 +254,7 @@ const DebugSettings = () => {
                                 </View>
                                 {debug.enableRemoteLogViewer && (
                                     <>
-                                        <Pressable
-                                            onPress={handleCopyRlvUrl}
-                                            android_ripple={{ color: colors.ripple, foreground: true }}
-                                            style={{ padding: SPACING.sm, backgroundColor: colors.surfaceRaised, borderRadius: RADII.md, flexDirection: "row", alignItems: "center", gap: SPACING.sm }}
-                                        >
+                                        <Pressable onPress={() => copyToClipboard(rlvUrl).catch(() => {})} android_ripple={{ color: colors.ripple, foreground: true }} style={styles.copyRow}>
                                             <Text style={{ ...TYPE.monoLabel, color: colors.brand, flex: 1 }}>{rlvUrl}</Text>
                                             <Ionicons name="copy-outline" size={14} color={colors.textMuted} />
                                         </Pressable>
@@ -265,6 +283,29 @@ const DebugSettings = () => {
                                     </>
                                 )}
                             </View>
+                        </Section>
+
+                        {/* //////////////////////////////////////////////////////////////////////////////////////////////////
+                            //////////////////////////////////////////////////////////////////////////////////////////////////
+                            Developer MCP Server */}
+                        <Section label="Developer MCP Server">
+                            <ToggleSetting
+                                id="settings-enable-dev-mcp-server"
+                                title="Enable Developer MCP Server"
+                                description="Lets an AI coding assistant on your computer read the bot's status, logs, screen, and saved frames over ADB, and hold it to tap through screens. For development only."
+                                checked={debug.enableDevMcpServer}
+                                onCheckedChange={handleDevMcpToggle}
+                            />
+                            {debug.enableDevMcpServer && (
+                                <View style={{ padding: SPACING.md, gap: SPACING.sm }}>
+                                    <Text style={{ ...TYPE.caption, color: devMcpStatus?.running ? colors.textMuted : colors.warningText }}>
+                                        {devMcpStatus?.running
+                                            ? `Running on 127.0.0.1:${devMcpStatus.port} · ${devMcpStatus.clientConnected ? "Assistant connected" : "Waiting for an assistant"}`
+                                            : `Not running${devMcpStatus?.error ? `: ${devMcpStatus.error}` : ""}`}
+                                    </Text>
+                                    <Text style={{ ...TYPE.caption, color: colors.textMuted }}>Add scripts/uma_mcp.py as an MCP server in your AI coding assistant, or open the repo in one that reads .mcp.json. The bridge runs adb forward on its own.</Text>
+                                </View>
+                            )}
                         </Section>
 
                         {/* //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -316,7 +357,7 @@ const DebugSettings = () => {
                                     />
                                 </SearchableItem>
                             )}
-                            <View style={styles.hostPad}>
+                            <View style={debug.enableScreenRecording ? styles.hostPad : undefined}>
                                 <CustomSlider
                                     searchId="recording-resolution-scale"
                                     searchCondition={debug.enableScreenRecording}

@@ -83,6 +83,11 @@ describe("buildSettingsBanner", () => {
         expect(banner).toContain("🔍 Start Rainbow Detection Test: ❌")
     })
 
+    it("shows the developer MCP server state", () => {
+        const debug = { enableDebugMode: false, enableDevMcpServer: true }
+        expect(buildSettingsBanner(withSlices({ dailies: DAILIES, debug }))).toContain("🔌 Developer MCP Server: ✅")
+    })
+
     it("names the career run mode", () => {
         const banner = buildSettingsBanner(withSlices({ dailies: DAILIES }))
         expect(banner).toContain("🗓️ Run Mode: Career")

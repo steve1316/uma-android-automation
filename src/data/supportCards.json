@@ -515,6 +515,12 @@
         "type": "Guts",
         "rarity": "R"
     },
+    "10087": {
+        "name": "Aston Machan",
+        "title": "[Tracen Academy]",
+        "type": "Speed",
+        "rarity": "R"
+    },
     "20001": {
         "name": "Fuji Kiseki",
         "title": "[Well, Look Who's Home]",
@@ -831,6 +837,12 @@
         "name": "TM Opera O",
         "title": "[Mighty Fotografia]",
         "type": "Stamina",
+        "rarity": "SR"
+    },
+    "20055": {
+        "name": "Aston Machan",
+        "title": "[A Clip to Keep Your Heart Warm]",
+        "type": "Speed",
         "rarity": "SR"
     },
     "30001": {
@@ -1551,6 +1563,30 @@
         "name": "Grass Wonder",
         "title": "[From Icy Blues to Verdant Hues]",
         "type": "Power",
+        "rarity": "SSR"
+    },
+    "30130": {
+        "name": "K.S.Miracle",
+        "title": "[To You]",
+        "type": "Guts",
+        "rarity": "SSR"
+    },
+    "30131": {
+        "name": "Marvelous Sunday",
+        "title": "[Marvelous☆Chocolate Show]",
+        "type": "Speed",
+        "rarity": "SSR"
+    },
+    "30132": {
+        "name": "Biko Pegasus",
+        "title": "[Transform! Garçon Form!]",
+        "type": "Power",
+        "rarity": "SSR"
+    },
+    "30133": {
+        "name": "Hishi Akebono",
+        "title": "[Fondente Smile]",
+        "type": "Wit",
         "rarity": "SSR"
     },
     "30145": {

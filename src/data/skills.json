@@ -177,7 +177,7 @@
         "condition": "distance_rate>=60&slope==2&phase==1&order>=2&distance_diff_top<=10&distance_type==3@distance_rate>=60&slope==2&phase==1&order>=2&distance_diff_top<=10&distance_type!=3",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": null
     },
@@ -1521,7 +1521,7 @@
         "condition": "running_style==1&all_corner_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 201252,
         "downgrade": null
     },
@@ -2795,7 +2795,7 @@
         "condition": "phase_firsthalf_random==1&order_rate<=30",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -3383,7 +3383,7 @@
         "condition": "distance_type==1&phase_laterhalf_random==1&order_rate<=50@distance_type==2&phase_laterhalf_random==1&order_rate<=50@distance_type==3&phase_laterhalf_random==1&order_rate<=50@distance_type==4&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": null,
         "downgrade": null
     },
@@ -3929,7 +3929,7 @@
         "condition": "phase==1&change_order_onetime>0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 200472
     },
@@ -4965,7 +4965,7 @@
         "condition": "down_slope_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": 202172
     },
@@ -6015,7 +6015,7 @@
         "condition": "phase==1&change_order_onetime>0",
         "precondition": "",
         "inherited": false,
-        "community_tier": 0,
+        "community_tier": 1,
         "upgrade": 200471,
         "downgrade": null
     },
@@ -6701,7 +6701,7 @@
         "condition": "distance_type==2&phase_laterhalf_random==1&order_rate<=50",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 1,
         "upgrade": null,
         "downgrade": 202502
     },
@@ -7289,7 +7289,7 @@
         "condition": "running_style==3&all_corner_random==1",
         "precondition": "",
         "inherited": false,
-        "community_tier": null,
+        "community_tier": 0,
         "upgrade": 201392,
         "downgrade": null
     },

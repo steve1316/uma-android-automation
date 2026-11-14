@@ -51,18 +51,6 @@ data class FriendFavorites(
     val types: List<String>,
 )
 
-/** Where the wanted trainee is relative to the visible page of a Name-sorted list. */
-enum class PageMove {
-    /** Earlier in the list, so scroll up. */
-    UP,
-
-    /** Later in the list, so scroll down. */
-    DOWN,
-
-    /** On this page, if the user owns it. */
-    HERE,
-}
-
 /** Loose matching for names and titles read by OCR on the Career Setup screens. */
 object NameMatching {
     /** The similarity a name must reach to match. */
@@ -163,21 +151,22 @@ object CareerCatalog {
         solverCharacter?.takeIf { outfit != null && !it.equals(outfit.name, ignoreCase = true) }
 
     /**
-     * Decides which way to scroll a Name-sorted list from the names at the edges of the visible page.
+     * Compares a name with the wanted one in the order of a Name-sorted list.
      *
-     * @param firstName The name of the first card on the page.
-     * @param lastName The name of the last card on the page.
+     * @param name The name of a card in the list.
      * @param target The wanted trainee's name.
      * @param descending True when the list is sorted Z to A.
-     * @returns Whether the target is above the page, below it, or on it.
+     * @returns Negative when the name comes before the target in the list, 0 for the same name, and positive when it comes after.
      */
-    fun pageMove(firstName: String, lastName: String, target: String, descending: Boolean): PageMove {
-        // Distance along the list: negative means the name comes before the target in the list's order.
-        val along = { name: String -> gameNameOrder.compare(name, target).let { if (descending) -it else it } }
-        return when {
-            along(firstName) > 0 -> PageMove.UP
-            along(lastName) < 0 -> PageMove.DOWN
-            else -> PageMove.HERE
-        }
-    }
+    fun listOrder(name: String, target: String, descending: Boolean): Int = gameNameOrder.compare(name, target).let { if (descending) -it else it }
+
+    /**
+     * Finds the catalog name that a name read by OCR stands for.
+     *
+     * @param ocrName The name line read off the screen.
+     * @param names The catalog's trainee names.
+     * @returns The closest matching name, or null if none matches.
+     */
+    fun matchName(ocrName: String, names: Collection<String>): String? =
+        names.filter { NameMatching.matches(ocrName, it) }.maxByOrNull { NameMatching.similarity(ocrName, it) }
 }
