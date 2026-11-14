@@ -26,11 +26,21 @@ class CountParsingTest {
     }
 
     @Test
+    @DisplayName("parseFanCount joins a group split by a space")
+    fun testParseFanCountSplitGroup() {
+        assertEquals(265171, parseFanCount("265,17 1"), "last digit split off")
+        assertEquals(270711, parseFanCount("270,71 1"), "last digit split off")
+        assertEquals(1234567, parseFanCount("1,23 4,567"), "split inside the middle group")
+    }
+
+    @Test
     @DisplayName("parseFanCount returns null for empty or overflowing reads")
     fun testParseFanCountRejects() {
         assertNull(parseFanCount(""), "empty text")
         assertNull(parseFanCount("fans"), "no digits")
         assertNull(parseFanCount("123456789012"), "too large for an Int")
+        assertNull(parseFanCount("236,29 ]"), "group cut short")
+        assertNull(parseFanCount("236,29"), "group cut short at the end")
     }
 
     @Test
