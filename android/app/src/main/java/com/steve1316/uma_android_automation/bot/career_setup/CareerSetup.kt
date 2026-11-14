@@ -81,8 +81,14 @@ private val SCENARIO_TP_COUNTER = intArrayOf(279, -219, 135, 47)
 private val TRAINEE_OUTFIT_LINE = intArrayOf(-53, 321, 420, 32)
 private val TRAINEE_NAME_LINE = intArrayOf(-53, 353, 420, 36)
 
-/** A trainee card's portrait sits this far above its "Potential Lvl" label. */
-private const val TRAINEE_PORTRAIT_DY = -110
+/** A trainee card is tapped this far above its "Potential Lvl" label, on the bottom of its portrait. */
+private const val TRAINEE_TAP_DY = -40
+
+/** How far below the grid's top a card's label must sit for its tap to land inside the grid. */
+private const val TRAINEE_LABEL_MIN_DY = 60
+
+/** How much shorter than the readable window a page scroll is, so a swipe that flings a little further skips no row. */
+private const val TRAINEE_PAGE_SLACK = 30
 
 /** The "Deck N" title on Support Formation, from the screen's header. */
 private val DECK_TITLE = intArrayOf(-74, 71, 300, 60)
@@ -367,6 +373,9 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
 
     /** The outfit chosen in settings, or null when the preselected trainee is kept. */
     private val wantedOutfit: TraineeCard? = settings.trainee.takeIf { !settings.usePreselectedTrainee }?.let { settings.traineeCards[it] }
+
+    /** Every trainee name in the catalog, which names read off Trainee Select are matched to. */
+    private val traineeNames: List<String> by lazy { settings.traineeCards.values.map { it.name }.distinct() }
 
     /** The outfit the career starts with, read on Trainee Select. Smart Auto-Select derives its sparks from it. */
     private var selectedOutfit: TraineeCard? = wantedOutfit
@@ -742,68 +751,79 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
     /**
      * Reads which outfit is selected at the top of Trainee Select.
      *
+     * @param knownName The trainee's name when it was already read, so only the outfit line is read.
      * @returns The outfit, or null if the text matched no outfit in the catalog.
      */
-    private fun readSelectedOutfit(): TraineeCard? {
+    private fun readSelectedOutfit(knownName: String? = null): TraineeCard? {
         val bitmap = game.imageUtils.getSourceBitmap()
-        val header = traineeHeader ?: anchorOf(LabelCareerStartTraineeSelectHeader, bitmap).also { traineeHeader = it }
-        // The trainee panel is centered on screen while the header is pinned to the top, so on a tall screen the lines sit farther below it.
-        val name = ocr(bitmap, header, ScreenLayout.region(TRAINEE_NAME_LINE, Anchor.CENTER, relativeTo = Anchor.TOP), "traineeName")
-        val title = ocr(bitmap, header, ScreenLayout.region(TRAINEE_OUTFIT_LINE, Anchor.CENTER, relativeTo = Anchor.TOP), "traineeOutfit")
+        val name = knownName ?: readTraineeLine(bitmap, TRAINEE_NAME_LINE, "traineeName")
+        val title = readTraineeLine(bitmap, TRAINEE_OUTFIT_LINE, "traineeOutfit")
         return CareerCatalog.match(title, name, settings.traineeCards.values).also { MessageLog.d(TAG, "[DEBUG] readSelectedOutfit:: \"$title $name\" -> ${it?.id}") }
     }
 
     /**
-     * Finds the wanted outfit on Trainee Select. The grid is sorted by Name from whichever end is nearer the trainee. Each page's first and last
-     * cards are read to decide whether to scroll up, scroll down, or search that page, so the search works from wherever the list starts.
+     * Reads one line of the selected trainee's panel at the top of Trainee Select.
+     *
+     * @param bitmap The current screenshot.
+     * @param line The line as dx, dy, width and height from the header, measured at 1080x1920.
+     * @param debugName Name for debug images.
+     * @returns The text read.
+     */
+    private fun readTraineeLine(bitmap: Bitmap, line: IntArray, debugName: String): String {
+        val header = traineeHeader ?: anchorOf(LabelCareerStartTraineeSelectHeader, bitmap).also { traineeHeader = it }
+        // The trainee panel is centered on screen while the header is pinned to the top, so on a tall screen the lines sit farther below it.
+        return ocr(bitmap, header, ScreenLayout.region(line, Anchor.CENTER, relativeTo = Anchor.TOP), debugName)
+    }
+
+    /**
+     * Finds the wanted outfit on Trainee Select. The grid is sorted by Name from whichever end is nearer the trainee and starts at its top, so the
+     * search only walks down. A page is passed after reading its last card alone, until that card reaches the wanted name and the page is searched.
      *
      * @param wanted The outfit to select.
      * @returns The wanted outfit once it is selected, or null if it is not owned.
      */
     private fun findTrainee(wanted: TraineeCard): TraineeCard? {
-        val descending = CareerCatalog.searchDescending(wanted.name, settings.traineeCards.values.map { it.name })
+        val descending = CareerCatalog.searchDescending(wanted.name, traineeNames)
         val next = sortTraineesByName(descending)
         // Like the Legacy grid, the scrollbar is painted over the cards and is not a handle.
         val list = ScrollList.create(game, bThumbIsHandle = false) ?: return null
         list.readBottom = game.imageUtils.relY(next.y, TRAINEE_GRID_READ_BOTTOM_DY)
         MessageLog.i(TAG, "[CAREER SETUP] Searching the Name-sorted trainee list ${if (descending) "descending" else "ascending"} for ${wanted.label}.")
+        val order = { name: String -> CareerCatalog.listOrder(name, wanted.name, descending) }
+        // Each page scrolls by nearly the whole window that cards are read from, so each page shows mostly new rows.
+        val labelTop = list.listBoundingBox.y + game.imageUtils.relHeight(TRAINEE_LABEL_MIN_DY)
+        val slack = game.imageUtils.relHeight(TRAINEE_PAGE_SLACK)
+        val pageTravel = list.readRegion[1] + list.readRegion[3] - labelTop - slack
 
-        var lastMove: PageMove? = null
+        // Kept apart from the list's flag, since a walk-back swipe is short on purpose and would set it.
+        var bAtEnd = false
         repeat(MAX_TRAINEE_PAGES) {
-            val cards = visibleTraineeCards(list)
-            if (cards.isEmpty()) {
-                if (!list.scrollDownTracked()) return null
-                return@repeat
+            val cards = visibleTraineeCards(list, labelTop)
+            if (cards.isNotEmpty()) {
+                val lastName = selectTraineeName(cards.last())
+                MessageLog.i(TAG, "[CAREER SETUP] Trainee page ends at ${lastName ?: "an unreadable trainee"}.")
+                // The last card is still selected, so its outfit is read straight away when it carries the wanted name.
+                if (lastName == wanted.name && readSelectedOutfit(lastName)?.id == wanted.id) return wanted
+                // An unreadable last card cannot rule the page out, so the page is searched.
+                if (lastName == null || order(lastName) >= 0) {
+                    searchTraineePage(cards.dropLast(1), wanted, order)?.let { return if (it) wanted else null }
+                    // Past the wanted name without finding the outfit, so it is not owned. Other outfits of the trainee can carry on to the next page.
+                    if (lastName != null && order(lastName) > 0) return null
+                }
             }
-            val first = selectTraineeCard(cards.first())
-            if (first?.id == wanted.id) return wanted
-            val last = if (cards.size > 1) selectTraineeCard(cards.last()) else first
-            if (last?.id == wanted.id) return wanted
-
-            // An unreadable edge card cannot steer the search, so the page is searched and the list stepped down.
-            var move = if (first == null || last == null) PageMove.HERE else CareerCatalog.pageMove(first.name, last.name, wanted.name, descending)
-            MessageLog.i(TAG, "[CAREER SETUP] Page shows ${first?.label ?: "an unreadable trainee"} to ${last?.label ?: "an unreadable trainee"}: ${move.name.lowercase()}.")
-            if (move == PageMove.HERE) {
-                if (cards.drop(1).dropLast(1).any { selectTraineeCard(it)?.id == wanted.id }) return wanted
-                // Other outfits of the same trainee can carry on past either edge. Otherwise the outfit is not owned.
-                move =
-                    when {
-                        first == null || last == null -> PageMove.DOWN
-                        first.name == wanted.name && lastMove != PageMove.DOWN -> PageMove.UP
-                        last.name == wanted.name && lastMove != PageMove.UP -> PageMove.DOWN
-                        else -> return null
-                    }
-            }
-            // Turning back means the wanted name falls between two pages already read, so the outfit is not owned.
-            if (lastMove != null && move != lastMove) return null
-            lastMove = move
-            if (!(if (move == PageMove.UP) list.scrollUpTracked() else list.scrollDownTracked())) return null
+            val offset = list.contentY(0)
+            if (bAtEnd || !list.scrollDownTracked(pageTravel)) return null
+            bAtEnd = list.bHitEnd
+            // A swipe that flings past the whole window could carry a row over it unread, so the extra is walked back.
+            val overshoot = list.contentY(0) - offset - pageTravel
+            MessageLog.d(TAG, "[DEBUG] findTrainee:: Scrolled ${pageTravel + overshoot}px of $pageTravel.")
+            if (overshoot > slack) list.scrollUpTracked(overshoot)
         }
         return null
     }
 
     /**
-     * Sorts the trainee grid by Name in the given direction, opening Display Settings only when the sort is not already Name.
+     * Sorts the trainee grid by Name in the given direction and leaves it at its top, opening Display Settings only when the sort is not already Name.
      *
      * @param descending True for Z to A.
      * @returns The Next button's center, which the grid's sort bar is measured from.
@@ -827,7 +847,8 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
             game.wait(1.5)
         }
         val isDescending = ocr(game.imageUtils.getSourceBitmap(), next, TRAINEE_ORDER_TOGGLE, "traineeOrder").contains("Desc", ignoreCase = true)
-        if (isDescending != descending) {
+        // The game reopens the grid at the last selected trainee, and flipping the order is what takes it back to the top. A right order is flipped twice.
+        repeat(if (isDescending != descending) 1 else 2) {
             tapCenter(next, TRAINEE_ORDER_TOGGLE)
             game.wait(1.5)
         }
@@ -835,28 +856,66 @@ class CareerSetup(private val game: Game, private val bDryRun: Boolean = false) 
     }
 
     /**
-     * Finds the trainee cards whose portrait is fully inside the readable part of the grid.
+     * Searches the cards of a page for the wanted outfit. The cards are in list order, so the first card at the wanted name is found by halving the
+     * page, and the outfits from there on are checked one by one.
+     *
+     * @param cards The page's cards in reading order, without the last card that was already read.
+     * @param wanted The outfit to select.
+     * @param order Compares a name with the wanted one in the list's order.
+     * @returns True once the wanted outfit is selected, false when a card past the wanted name shows it is not owned, or null if neither is known yet.
+     */
+    private fun searchTraineePage(cards: List<Point>, wanted: TraineeCard, order: (String) -> Int): Boolean? {
+        val names = HashMap<Int, String?>()
+        // Taps a card the first time it is asked about and reports whether it is the wanted outfit. Later asks reuse the name read.
+        val isWanted = { i: Int ->
+            if (i in names) {
+                false
+            } else {
+                selectTraineeName(cards[i]).also { names[i] = it } == wanted.name && readSelectedOutfit(wanted.name)?.id == wanted.id
+            }
+        }
+
+        var lo = 0
+        var hi = cards.size
+        while (lo < hi) {
+            val mid = (lo + hi) / 2
+            if (isWanted(mid)) return true
+            // An unreadable card cannot tell which half to keep, so the walk below takes over from the lower bound.
+            val name = names[mid] ?: break
+            if (order(name) < 0) lo = mid + 1 else hi = mid
+        }
+        for (i in lo until cards.size) {
+            if (isWanted(i)) return true
+            val name = names[i] ?: continue
+            if (order(name) > 0) return false
+        }
+        return null
+    }
+
+    /**
+     * Finds the trainee cards that can be tapped inside the readable part of the grid.
      *
      * @param list The trainee grid.
+     * @param labelTop The highest a card's label may sit for its tap to land inside the grid.
      * @returns Each card's "Potential Lvl" label center, in reading order.
      */
-    private fun visibleTraineeCards(list: ScrollList): List<Point> {
-        val portraitTop = list.listBoundingBox.y + game.imageUtils.relHeight(-TRAINEE_PORTRAIT_DY)
+    private fun visibleTraineeCards(list: ScrollList, labelTop: Int): List<Point> {
         return LabelCareerStartPotentialLvl.findAll(game.imageUtils, region = list.readRegion, sourceBitmap = game.imageUtils.getSourceBitmap())
-            .filter { it.y.toInt() >= portraitTop }
+            .filter { it.y.toInt() >= labelTop }
             .sortedWith(compareBy({ it.y.toInt() / game.imageUtils.relHeight(40) }, { it.x }))
     }
 
     /**
-     * Taps a trainee card and reads which outfit is now selected.
+     * Taps a trainee card and reads the name of the trainee now selected. The outfit line is left unread, since only a matching name needs it.
      *
      * @param label The card's "Potential Lvl" label center.
-     * @returns The selected outfit, or null if it is not in the catalog.
+     * @returns The catalog name read, or null if it matched none.
      */
-    private fun selectTraineeCard(label: Point): TraineeCard? {
-        game.tap(label.x, label.y + game.imageUtils.relHeight(TRAINEE_PORTRAIT_DY))
+    private fun selectTraineeName(label: Point): String? {
+        game.tap(label.x, label.y + game.imageUtils.relHeight(TRAINEE_TAP_DY))
         game.wait(0.8)
-        return readSelectedOutfit()
+        val ocrName = readTraineeLine(game.imageUtils.getSourceBitmap(), TRAINEE_NAME_LINE, "traineeName")
+        return CareerCatalog.matchName(ocrName, traineeNames).also { MessageLog.d(TAG, "[DEBUG] selectTraineeName:: \"$ocrName\" -> $it") }
     }
 
     /**

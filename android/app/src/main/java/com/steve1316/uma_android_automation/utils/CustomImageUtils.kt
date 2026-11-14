@@ -53,6 +53,7 @@ import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.lang.Integer.max
+import java.text.Normalizer
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -217,13 +218,33 @@ internal fun parseTurnsRemaining(text: String): Int? {
 }
 
 /**
- * One word read by ML Kit, with where it sits.
+ * One word read by [CustomImageUtils.findWords].
  *
  * @property text The word.
  * @property box Where the word sits, in frame pixels.
  * @property lineTop The top of the line the word belongs to, so words can be put back in reading order.
  */
 data class OcrWord(val text: String, val box: android.graphics.Rect, val lineTop: Int)
+
+/** The numbers in the Main screen stat row, read by [CustomImageUtils.determineStatTable]. */
+data class StatTable(
+    /** Each stat's value, or -1 for a failed read. */
+    val values: Map<StatName, Int>,
+    /** The caps that were read plausibly. A stat whose cap failed is left out, and the map is empty when the caps were not read. */
+    val caps: Map<StatName, Int>,
+    /** The skill points, or -1 for a failed read. */
+    val skillPoints: Int,
+)
+
+/** What the Umamusume Details dialog shows above its tabs, read by [CustomImageUtils.determineDetailsHeader]. */
+data class DetailsHeader(
+    /** Each stat's value, or -1 for a failed read. */
+    val values: Map<StatName, Int>,
+    /** The caps that were read plausibly. A stat whose cap failed is left out. */
+    val caps: Map<StatName, Int>,
+    /** The trainee's name, or empty when it was not asked for or could not be read. */
+    val name: String,
+)
 
 /**
  * Joins the words whose centers fall inside a region, in reading order.
@@ -238,6 +259,50 @@ internal fun wordsTextIn(words: List<OcrWord>, region: BoundingBox): String? =
         .sortedWith(compareBy({ it.lineTop }, { it.box.left }))
         .joinToString(" ") { it.text }
         .ifBlank { null }
+
+/** How many spots [CustomImageUtils] saves per template. A button sits at a few heights at most, one per dialog size it appears in. */
+private const val MAX_TEMPLATE_SPOTS = 6
+
+/** A half-res score below this skips the full search, since the template cannot be on screen. */
+private const val HALF_GATE_MIN_SCORE = 0.50
+
+/** A digit run right before a "%" sign. */
+private val PERCENT_DIGITS_REGEX = Regex("(\\d+)\\s*%")
+
+/** Any digit run. */
+private val DIGITS_REGEX = Regex("\\d+")
+
+/** A training level label like "Lvl 4". */
+private val TRAINING_LEVEL_REGEX = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE_CASE)
+
+/**
+ * Parses a training failure chance read. Takes the digit run right before the "%" sign, falling back to the first digit run, instead of joining
+ * every digit. A low-contrast 0% bubble can make the recognizer emit stray digits, and joining them made phantom values like 10 or 12.
+ *
+ * @param text The OCR text from the failure chance bubble.
+ * @return The failure chance (0-100), or null when there are no digits or the number is above 100, which is an impossible misread.
+ */
+internal fun parseFailureChance(text: String): Int? {
+    val normalized = text.lowercase().replace("o", "0").replace("failure", "")
+    val digits = PERCENT_DIGITS_REGEX.find(normalized)?.groupValues?.get(1) ?: DIGITS_REGEX.find(normalized)?.value
+    return digits?.trim()?.toIntOrNull()?.takeIf { it <= 100 }
+}
+
+/**
+ * Parses a training level read like "Speed Lvl 4".
+ *
+ * @param text The OCR text from the training level label.
+ * @return The level (1-5), or null when no level was read.
+ */
+internal fun parseTrainingLevel(text: String): Int? = TRAINING_LEVEL_REGEX.find(text)?.groupValues?.getOrNull(1)?.toIntOrNull()
+
+/** The failure chance and training level read off one facility's frame by [CustomImageUtils.readTrainingFailureAndLevel]. */
+data class TrainingPanelRead(
+    /** The failure chance (0-100), or -1 for a failed read. */
+    val failureChance: Int,
+    /** The training level (1-5), or null when it was not asked for or could not be read. */
+    val level: Int?,
+)
 
 /** Utility functions for image processing via CV like OpenCV. */
 class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(context) {
@@ -259,6 +324,27 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     /** Whether to use YOLOv8 for stat detection. */
     private val useYolo: Boolean = SettingsHelper.getBooleanSetting("training", "enableYoloStatDetection")
 
+    /**
+     * Where each template was last matched on a full-screen frame, newest first. The key is the template name and size, since a caller can pass a shrunk copy under the same name.
+     * A template can keep several spots, because the same button sits at a different height in dialogs of different sizes.
+     */
+    private val templateSpots = ConcurrentHashMap<String, MutableList<Point>>()
+
+    /** The screen size the saved spots and shrunk templates belong to. Both are dropped when it changes. */
+    @Volatile private var templateSpotsScreen: Pair<Int, Int> = 0 to 0
+
+    /**
+     * The last frame shrunk to half size in gray, so every gated check on that frame shares one conversion. It is guarded by itself.
+     * The old Mat is released when a new frame replaces it, since the garbage collector does not see a Mat's native memory and lets it pile up.
+     */
+    private var halfFrame: Pair<Bitmap, Mat>? = null
+
+    /** Guards [halfFrame] and [halfTemplates], so one thread cannot release a Mat another is still matching against. */
+    private val halfFrameLock = Any()
+
+    /** Templates shrunk to half size in gray, by name, size and scale. */
+    private val halfTemplates = ConcurrentHashMap<String, Mat>()
+
     /** Unity Cup and Grand Live add an extra top-left box (spirit / concert countdown) that shifts the date banner and turns box, so their crops differ from the other scenarios.
      * Lazy because this class is constructed before `game.scenario` is initialized, so an eager read would cache an empty scenario. */
     private val scenarioHasCompactTopLeftBox: Boolean by lazy { game.scenario == "Unity Cup" || game.scenario == "Grand Live" }
@@ -274,6 +360,22 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
     /** Cached Main screen numbers keyed like "SPEED value" or "SPEED cap". Each text read takes about 0.5s and they run one at a time, so unchanged numbers are not read again. */
     private val numberCache = ConcurrentHashMap<String, CachedNumber>()
+
+    /** One number read by a batched text read. */
+    private class NumberField(
+        /** Names the number in the cache and the log, such as "SPEED value". */
+        val key: String,
+        /** Where the number sits, in frame pixels. */
+        val box: BoundingBox,
+        /** Width of the part of the crop the cache compares. */
+        val compareW: Int,
+        /** Height of the part of the crop the cache compares. */
+        val compareH: Int,
+        /** Turns the text read into the number, or -1 when the text is not a plausible read. */
+        val parse: (String) -> Int,
+        /** Reads the crop on its own, for when the batched read is not plausible. */
+        val readAlone: () -> String,
+    )
 
     /**
      * Defines the details of a race.
@@ -440,6 +542,179 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         Utils.matToBitmap(this, bitmap)
         return bitmap
     }
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Template location cache
+
+    /**
+     * Matches a template, checking the spots it was last found at before searching the whole region. A spot is checked over a small box around it with the same confidence,
+     * so a hit there is a match the full search would also accept. Cropped frames, scale tests, debug mode, and screens that match at other scales skip the saved spots.
+     *
+     * @param sourceBitmap The frame to search.
+     * @param templateBitmap The template to look for.
+     * @param templateName The template's name.
+     * @param region The region (x, y, width, height) to search. All zeros means the whole frame.
+     * @param useSingleScale Whether to match at the single custom scale only.
+     * @param customConfidence The confidence to use, or 0.0 for the default.
+     * @param testScale The scale a scale test is using, or 0.0 outside a test.
+     * @return Whether the template matched, and where its center is.
+     */
+    override fun match(
+        sourceBitmap: Bitmap,
+        templateBitmap: Bitmap,
+        templateName: String,
+        region: IntArray,
+        useSingleScale: Boolean,
+        customConfidence: Double,
+        testScale: Double,
+    ): Pair<Boolean, Point?> {
+        val fullFrame = sourceBitmap.width == SharedData.displayWidth && sourceBitmap.height == SharedData.displayHeight
+        if (debugMode || testScale != 0.0 || !fullFrame || !is1080p || customScale != 1.0) {
+            return super.match(sourceBitmap, templateBitmap, templateName, region, useSingleScale, customConfidence, testScale)
+        }
+        val screen = sourceBitmap.width to sourceBitmap.height
+        if (screen != templateSpotsScreen) {
+            templateSpots.clear()
+            // The shrunk templates are native memory the garbage collector does not see, so they go with the screen size they were made for.
+            synchronized(halfFrameLock) {
+                halfTemplates.values.forEach { it.release() }
+                halfTemplates.clear()
+            }
+            templateSpotsScreen = screen
+        }
+
+        val spots: MutableList<Point> = templateSpots.getOrPut("$templateName@${templateBitmap.width}x${templateBitmap.height}") { mutableListOf() }
+        for (spot in synchronized(spots) { spots.toList() }) {
+            val box = spotBox(spot, templateBitmap, region, sourceBitmap) ?: continue
+            val hit = super.match(sourceBitmap, templateBitmap, templateName, box, useSingleScale, customConfidence, testScale)
+            if (hit.first) {
+                rememberSpot(spots, hit.second!!, templateBitmap)
+                return hit
+            }
+        }
+        val halfScore: Double? = halfResScore(sourceBitmap, templateBitmap, templateName, region)
+        if (halfScore != null && halfScore < HALF_GATE_MIN_SCORE) return Pair(false, null)
+        val result = super.match(sourceBitmap, templateBitmap, templateName, region, useSingleScale, customConfidence, testScale)
+        if (result.first) rememberSpot(spots, result.second!!, templateBitmap)
+        return result
+    }
+
+    /**
+     * Scores a template against a region at half resolution, at each scale the full search would try. The frame and the template are shrunk once each
+     * and reused across checks.
+     *
+     * @param sourceBitmap The full-screen frame to search.
+     * @param templateBitmap The template to look for.
+     * @param templateName The template's name, which keys its shrunk copy.
+     * @param region The region (x, y, width, height) to search. All zeros means the whole frame.
+     * @return The best half-res score, or null when the template is too small to gate or the region cannot hold it.
+     */
+    private fun halfResScore(sourceBitmap: Bitmap, templateBitmap: Bitmap, templateName: String, region: IntArray): Double? {
+        if (minOf(templateBitmap.width, templateBitmap.height) < 24) return null
+        val (rx, ry, rw, rh) = if (region.all { it == 0 }) listOf(0, 0, sourceBitmap.width, sourceBitmap.height) else region.toList()
+        val left = rx.coerceIn(0, sourceBitmap.width) / 2
+        val top = ry.coerceIn(0, sourceBitmap.height) / 2
+        synchronized(halfFrameLock) {
+            val frame: Mat = halfGrayFrame(sourceBitmap)
+            val width = minOf(rw / 2, frame.cols() - left)
+            val height = minOf(rh / 2, frame.rows() - top)
+            if (width < templateBitmap.width / 2 || height < templateBitmap.height / 2) return null
+
+            val source = frame.submat(Rect(left, top, width, height))
+            val result = Mat()
+            try {
+                var best = -1.0
+                for (scale in if (isTall1080p) tall1080pScales else listOf(1.0)) {
+                    val template = halfTemplate(templateBitmap, templateName, scale)
+                    if (template.cols() <= source.cols() && template.rows() <= source.rows()) {
+                        Imgproc.matchTemplate(source, template, result, Imgproc.TM_CCOEFF_NORMED)
+                        best = maxOf(best, Core.minMaxLoc(result).maxVal)
+                    }
+                }
+                return best
+            } finally {
+                source.release()
+                result.release()
+            }
+        }
+    }
+
+    /**
+     * The frame shrunk to half size in gray, made once per frame. The caller must hold [halfFrameLock].
+     *
+     * @param sourceBitmap The full-screen frame.
+     * @return The half-size gray frame.
+     */
+    private fun halfGrayFrame(sourceBitmap: Bitmap): Mat {
+        halfFrame?.let { (bitmap, mat) -> if (bitmap === sourceBitmap) return mat }
+        val mat = sourceBitmap.toMat()
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY)
+        Imgproc.resize(mat, mat, Size(sourceBitmap.width / 2.0, sourceBitmap.height / 2.0), 0.0, 0.0, Imgproc.INTER_AREA)
+        halfFrame?.second?.release()
+        halfFrame = sourceBitmap to mat
+        return mat
+    }
+
+    /**
+     * A template shrunk to half of the given scale in gray, made once per template, size and scale.
+     *
+     * @param templateBitmap The template.
+     * @param templateName The template's name.
+     * @param scale The scale the full search tries.
+     * @return The shrunk gray template.
+     */
+    private fun halfTemplate(templateBitmap: Bitmap, templateName: String, scale: Double): Mat =
+        halfTemplates.getOrPut("$templateName:${templateBitmap.width}x${templateBitmap.height}@$scale") {
+            val mat = templateBitmap.toMat()
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY)
+            Imgproc.resize(mat, mat, Size(mat.cols() * scale / 2.0, mat.rows() * scale / 2.0), 0.0, 0.0, Imgproc.INTER_AREA)
+            mat
+        }
+
+    /**
+     * The box around a saved spot that a template is checked in, clipped to the region the caller asked for.
+     *
+     * @param spot The template's center when it was last found.
+     * @param templateBitmap The template, whose size sets the box.
+     * @param region The region (x, y, width, height) the caller asked for. All zeros means the whole frame.
+     * @param sourceBitmap The frame being searched.
+     * @return The box as (x, y, width, height), or null when the region cuts it too small to hold the template.
+     */
+    private fun spotBox(spot: Point, templateBitmap: Bitmap, region: IntArray, sourceBitmap: Bitmap): IntArray? {
+        val margin = templateSpotMargin(templateBitmap)
+        val (rx, ry, rw, rh) = if (region.all { it == 0 }) listOf(0, 0, sourceBitmap.width, sourceBitmap.height) else region.toList()
+        val left = maxOf(rx, spot.x.toInt() - templateBitmap.width / 2 - margin, 0)
+        val top = maxOf(ry, spot.y.toInt() - templateBitmap.height / 2 - margin, 0)
+        val right = minOf(rx + rw, spot.x.toInt() + templateBitmap.width / 2 + margin, sourceBitmap.width)
+        val bottom = minOf(ry + rh, spot.y.toInt() + templateBitmap.height / 2 + margin, sourceBitmap.height)
+        if (right - left < templateBitmap.width || bottom - top < templateBitmap.height) return null
+        return intArrayOf(left, top, right - left, bottom - top)
+    }
+
+    /**
+     * Saves where a template was found as its newest spot. A saved spot this close to it is replaced, and the oldest spots past the limit are dropped.
+     *
+     * @param spots The template's saved spots, newest first.
+     * @param location The template's center where it was found.
+     * @param templateBitmap The template, whose size sets how close counts as the same spot.
+     */
+    private fun rememberSpot(spots: MutableList<Point>, location: Point, templateBitmap: Bitmap) {
+        val margin = templateSpotMargin(templateBitmap)
+        synchronized(spots) {
+            spots.removeAll { abs(it.x - location.x) <= margin && abs(it.y - location.y) <= margin }
+            spots.add(0, location)
+            while (spots.size > MAX_TEMPLATE_SPOTS) spots.removeAt(spots.lastIndex)
+        }
+    }
+
+    /**
+     * How far past a template's edges its spot box reaches, so a button that shifted a few pixels or drew at the smaller tall-screen scale still falls inside.
+     *
+     * @param templateBitmap The template.
+     * @return The margin in pixels.
+     */
+    private fun templateSpotMargin(templateBitmap: Bitmap): Int = maxOf(8, maxOf(templateBitmap.width, templateBitmap.height) / 10)
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -691,17 +966,15 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 return -1
             }
 
-            // Determine crop region and small adjustments for improved OCR rates.
-            val (offsetX, offsetY, width, height) = listOf(-50, 10, relWidth(100), relHeight(55))
-
             // Perform OCR with 2x scaling and no thresholding.
+            val region = failureChanceRegion(trainingSelectionLocation)
             val detectedText =
                 performOCROnRegion(
                     sourceBitmap!!,
-                    relX(trainingSelectionLocation.x, offsetX),
-                    relY(trainingSelectionLocation.y, offsetY),
-                    width,
-                    height,
+                    region.x,
+                    region.y,
+                    region.w,
+                    region.h,
                     useThreshold = false,
                     useGrayscale = true,
                     scale = 2.0,
@@ -709,26 +982,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                     debugName = "TrainingFailureChance",
                 )
 
-            // Parse the result. Take the digit run immediately before the "%" sign (falling back to the first digit run) instead of concatenating every digit - a low-contrast 0% bubble can
-            // make the general recognizer emit stray digits, and blind concatenation fused them into phantom values like 10 / 12. The "o" -> "0" swap and the > 100 guard stay as backstops.
-            return try {
-                val normalized = detectedText.lowercase().replace("o", "0").replace("failure", "")
-                val cleanedResult = (Regex("(\\d+)\\s*%").find(normalized)?.groupValues?.get(1) ?: Regex("\\d+").find(normalized)?.value)?.trim().orEmpty()
-
-                val value = cleanedResult.toInt()
-
-                // A failure chance above 100% is an impossible OCR misread (e.g. a stray extra digit). Reject it as invalid rather than
-                // fabricating a value by dropping a digit; the retry gets a fresh bitmap and the caller's fallback + energy clamp handle it.
-                if (value > 100) {
-                    Log.w(TAG, "[WARN] findTrainingFailureChance:: Failure chance $value% exceeds 100%; treating as an invalid read.")
-                    return -1
-                }
-
-                value
-            } catch (_: NumberFormatException) {
-                MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to integer for training failure chance.")
-                -1
+            // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the retry gets a fresh bitmap.
+            val value = parseFailureChance(detectedText)
+            if (value == null) {
+                MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
+                return -1
             }
+            return value
         }
 
         val tries: Int = maxOf(1, tries)
@@ -757,6 +1017,51 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
         return result
     }
+
+    /**
+     * Reads a facility's failure chance and training level with one ML Kit call. Each crop keeps the filter its own read uses, so the text matches
+     * what the separate reads see. A field the combined read misses falls back to its separate read.
+     *
+     * @param sourceBitmap The facility's frame.
+     * @param failureAnchor Where the failure chance label sits, or null to skip the failure chance.
+     * @param energyAnchor Where the Energy label sits, or null to skip the training level.
+     * @return The failure chance and training level read.
+     */
+    fun readTrainingFailureAndLevel(sourceBitmap: Bitmap, failureAnchor: Point?, energyAnchor: Point?): TrainingPanelRead {
+        val crops = LinkedHashMap<String, Bitmap?>()
+        if (failureAnchor != null) {
+            crops["failure"] = cropFiltered(sourceBitmap, failureChanceRegion(failureAnchor), "readTrainingFailureAndLevel failure") { toGrayscale(it, 2.0) }
+        }
+        if (energyAnchor != null) {
+            crops["level"] = cropFiltered(sourceBitmap, trainingLevelRegion(energyAnchor), "readTrainingFailureAndLevel level") { colorMask(it, 255, 255, 255, 30, 2.0, "trainingLevel") }
+        }
+        val texts = readStackedCrops(crops)
+
+        val failureChance =
+            if (failureAnchor == null) {
+                -1
+            } else {
+                texts["failure"]?.let { parseFailureChance(it) } ?: findTrainingFailureChance(sourceBitmap, failureAnchor)
+            }
+        val level = if (energyAnchor == null) null else texts["level"]?.let { parseTrainingLevel(it) } ?: extractTrainingLevel(sourceBitmap, energyAnchor)
+        return TrainingPanelRead(failureChance, level)
+    }
+
+    /**
+     * The failure chance bubble's text, relative to the failure chance label.
+     *
+     * @param anchor Where the failure chance label sits.
+     * @return The region to read.
+     */
+    private fun failureChanceRegion(anchor: Point): BoundingBox = BoundingBox(relX(anchor.x, -50), relY(anchor.y, 10), relWidth(100), relHeight(55))
+
+    /**
+     * The selected facility's "Lvl N" label, relative to the Energy label.
+     *
+     * @param anchor Where the Energy label sits.
+     * @return The region to read.
+     */
+    private fun trainingLevelRegion(anchor: Point): BoundingBox = BoundingBox(relX(anchor.x, -140), relY(anchor.y, 65), relWidth(240), relHeight(40))
 
     /**
      * Analyzes relationship bars for the currently selected training.
@@ -1465,96 +1770,16 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
-     * Reads a single stat value from the Main screen or Aptitude dialog.
-     *
-     * @param statName The name of the stat to read.
-     * @param sourceBitmap Optional source bitmap to use. Defaults to null.
-     * @param skillPointsLocation Optional point location of the skill points icon. Defaults to null.
-     * @param isAptitudeDialog Whether reading from the Aptitude dialog instead of the Main screen.
-     * @return The integer value of the stat, or -1 if detection fails.
-     */
-    fun determineSingleStatValue(statName: StatName, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null, isAptitudeDialog: Boolean = false): Int {
-        val (finalLocation, finalSourceBitmap) =
-            if (sourceBitmap == null && skillPointsLocation == null) {
-                if (isAptitudeDialog) {
-                    LabelStatTrackSurface.find(this)
-                } else {
-                    LabelStatTableHeaderSkillPoints.find(this)
-                }
-            } else {
-                Pair(skillPointsLocation, sourceBitmap)
-            }
-
-        if (finalLocation == null || finalSourceBitmap == null) {
-            MessageLog.e(TAG, "[ERROR] determineSingleStatValue:: Could not start the process of detecting stat value for $statName.")
-            return -1
-        }
-
-        // Each stat is evenly spaced at 170 pixel intervals starting at offset -862 for the main screen.
-        // For the aptitude dialog, each stat is spaced at 200 pixel intervals starting at offset 10 from LabelStatTrackSurface top-left.
-        val index = statName.ordinal
-        val offsetX: Int
-        val offsetY: Int
-        val width: Int
-        val height: Int
-
-        if (isAptitudeDialog) {
-            // Get the template bitmap to find its top-left corner from the center point.
-            val templateBitmap = LabelStatTrackSurface.template.getBitmap(this)
-            if (templateBitmap == null) {
-                MessageLog.e(TAG, "[ERROR] determineSingleStatValue:: Could not get template bitmap for LabelStatTrackSurface.")
-                return -1
-            }
-
-            val halfW = templateBitmap.width / 2
-            val halfH = templateBitmap.height / 2
-
-            offsetX = -halfW + 10 + (index * 200)
-            offsetY = -halfH - 110
-            width = 105
-            height = 40
-        } else {
-            offsetX = -860 + (index * 170)
-            offsetY = 20
-            width = 100
-            height = 50
-        }
-
-        val x = relX(finalLocation.x, offsetX)
-        val y = relY(finalLocation.y, offsetY)
-        // Perform OCR with no thresholding (stats are on solid background).
-        val readValue = {
-            val text =
-                performOCROnRegion(
-                    finalSourceBitmap,
-                    x,
-                    y,
-                    relWidth(width),
-                    relHeight(height),
-                    useThreshold = false,
-                    useGrayscale = true,
-                    scale = 2.0,
-                    ocrEngine = "tesseract_digits",
-                    debugName = "${statName}StatValue",
-                )
-            parseStatValueText(statName, text)
-        }
-        if (isAptitudeDialog) return readValue()
-        // The crop's last 12px are the panel border, which the animated background shows through, so they are left out of the comparison.
-        return readNumberCached("$statName value", finalSourceBitmap, x, y, relWidth(width - 12), relHeight(height), readValue)
-    }
-
-    /**
-     * Parses the OCR text of a stat value.
+     * Parses the OCR text of a Main screen stat value.
      *
      * @param statName The stat that was read, for the log.
      * @param text The OCR text.
      * @return The stat value, or -1 if it could not be parsed or is above the manual stat cap.
      */
     private fun parseStatValueText(statName: StatName, text: String): Int {
-        Log.d(TAG, "[DEBUG] determineSingleStatValue:: Detected number of stats for $statName from Tesseract before formatting: $text")
+        Log.d(TAG, "[DEBUG] parseStatValueText:: Detected number of stats for $statName before formatting: $text")
         if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
-            Log.d(TAG, "[DEBUG] determineSingleStatValue:: $statName seems to be maxed out. Setting it to $manualStatCap.")
+            Log.d(TAG, "[DEBUG] parseStatValueText:: $statName seems to be maxed out. Setting it to $manualStatCap.")
             val cleanedText = text.replace(Regex("[^0-9]"), "")
             return try {
                 val parsed = cleanedText.toInt()
@@ -1564,11 +1789,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             }
         } else {
             try {
-                Log.d(TAG, "[DEBUG] determineSingleStatValue:: Converting $text to integer for $statName stat value")
                 val cleanedText = text.replace(Regex("[^0-9]"), "")
                 val parsed = cleanedText.toInt()
                 if (manualStatCap > 0 && parsed > manualStatCap) {
-                    Log.d(TAG, "[DEBUG] determineSingleStatValue:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
+                    Log.d(TAG, "[DEBUG] parseStatValueText:: Parsed value $parsed for $statName exceeds stat cap $manualStatCap, likely an OCR misread. Rejecting.")
                     return -1
                 }
                 return parsed.coerceAtLeast(0)
@@ -1579,249 +1803,201 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     }
 
     /**
-     * Reads all five stat values from the Main screen or Aptitude dialog.
+     * Parses the OCR text of a stat value in the Umamusume Details dialog.
      *
-     * @param sourceBitmap Optional source bitmap to use. Defaults to null.
-     * @param skillPointsLocation Optional point location of the skill points icon. Defaults to null.
-     * @param isAptitudeDialog Whether reading from the Aptitude dialog instead of the Main screen.
-     * @return A map of stat names to their detected integer values.
+     * @param text The OCR text.
+     * @return The stat value, or -1 if it could not be parsed or is implausible.
      */
-    fun determineStatValues(sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null, isAptitudeDialog: Boolean = false): Map<StatName, Int> {
-        val (finalLocation, finalSourceBitmap) =
-            if (sourceBitmap == null && skillPointsLocation == null) {
-                if (isAptitudeDialog) {
-                    LabelStatTrackSurface.find(this)
-                } else {
-                    LabelStatTableHeaderSkillPoints.find(this)
-                }
-            } else {
-                Pair(skillPointsLocation, sourceBitmap)
-            }
-
-        val result: MutableMap<StatName, Int> = mutableMapOf()
-
-        if (finalLocation != null && finalSourceBitmap != null) {
-            // Process all stats at once using the mapping.
-            StatName.entries.forEachIndexed { index, statName ->
-                // Each stat is evenly spaced.
-                val offsetX: Int
-                val offsetY: Int
-                val width: Int
-                val height: Int
-
-                if (isAptitudeDialog) {
-                    // Get the template bitmap to find its top-left corner from the center point.
-                    val templateBitmap = LabelStatTrackSurface.template.getBitmap(this)
-                    if (templateBitmap == null) {
-                        MessageLog.e(TAG, "[ERROR] determineStatValues:: Could not get template bitmap for LabelStatTrackSurface.")
-                        return@forEachIndexed
-                    }
-
-                    val halfW = templateBitmap.width / 2
-                    val halfH = templateBitmap.height / 2
-
-                    offsetX = -halfW + 10 + (index * 200)
-                    offsetY = -halfH - 110
-                    width = 105
-                    height = 40
-                } else {
-                    // Minor adjustments for OCR accuracy.
-                    offsetX = -862 + (index * 170)
-                    offsetY = 20
-                    width = 98
-                    height = 50
-                }
-
-                // Perform OCR with no thresholding (stats are on solid background).
-                val text =
-                    performOCROnRegion(
-                        finalSourceBitmap,
-                        relX(finalLocation.x, offsetX),
-                        relY(finalLocation.y, offsetY),
-                        relWidth(width),
-                        relHeight(height),
-                        useThreshold = false,
-                        useGrayscale = true,
-                        scale = 2.0,
-                        ocrEngine = "tesseract_digits",
-                        debugName = "${statName}StatValue",
-                    )
-
-                // Parse the text.
-                MessageLog.d(TAG, "[DEBUG] determineStatValues:: Raw OCR text for $statName: '$text' (length: ${text.length})")
-
-                if (text.lowercase().contains("max") || text.lowercase().contains("ax")) {
-                    Log.d(TAG, "[DEBUG] determineStatValues:: $statName seems to be maxed out. Setting it to $manualStatCap.")
-                    result[statName] = if (manualStatCap > 0) manualStatCap else 1200
-                } else {
-                    try {
-                        // Extract all numbers from the text
-                        val numbers = Regex("\\d+").findAll(text).map { it.value.toInt() }.toList()
-
-                        if (numbers.isEmpty()) {
-                            MessageLog.w(TAG, "[WARN] determineStatValues:: No numbers found in '$text' for $statName")
-                            result[statName] = -1
-                        } else if (isAptitudeDialog) {
-                            // The value crop covers only the value line (the cap below is read separately), but OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value
-                            // by concatenating every digit in reading order rather than treating the pieces as separate numbers. The 2500 ceiling drops a clearly-bogus read.
-                            val value = text.replace(Regex("[^0-9]"), "").toIntOrNull() ?: -1
-                            result[statName] = if (value in 1..2500) value else -1
-                        } else {
-                            // The Main screen shows only the value, so anything over the cap is an OCR misread.
-                            val cap = if (manualStatCap > 0) manualStatCap else 1200
-                            val validNumbers = numbers.filter { it in 0..cap }
-                            if (validNumbers.isNotEmpty()) {
-                                result[statName] = validNumbers.max()
-                            } else {
-                                Log.d(TAG, "[DEBUG] determineStatValues:: All parsed numbers $numbers for $statName exceed stat cap $cap, likely an OCR misread. Rejecting.")
-                                result[statName] = -1
-                            }
-                        }
-                    } catch (e: Exception) {
-                        MessageLog.e(TAG, "[ERROR] determineStatValues:: Failed to parse '$text' for $statName: ${e.message}")
-                        result[statName] = -1
-                    }
-                }
-            }
-        } else {
-            MessageLog.e(TAG, "[ERROR] determineStatValues:: Could not start the process of detecting stat values.")
-        }
-
-        return result.toMap()
+    private fun parseDetailsStatValue(text: String): Int {
+        if (text.lowercase().contains("max") || text.lowercase().contains("ax")) return if (manualStatCap > 0) manualStatCap else 1200
+        // OCR can split the digits (e.g. "1279" -> "1 279"), so rebuild the value by joining every digit in reading order. The 2500 ceiling drops a clearly-bogus read.
+        val value = text.replace(Regex("[^0-9]"), "").toIntOrNull() ?: return -1
+        return if (value in 1..2500) value else -1
     }
 
     /**
-     * Read the per-stat cap denominators ("/NNNN") from the Umamusume Details dialog, one line below each stat value. Anchored on the same LabelStatTrackSurface as the dialog value
-     * read, so it only works while that dialog is open. Each cap is parsed via `parseStatCap`, with implausible reads rejected. Used at end of run to stamp the trainee's true final
-     * caps for the log and dashboard, independent of the live main-screen cap reads.
+     * Parses the OCR text of the skill points.
      *
-     * @return A map of stat names to their detected cap, omitting any stat whose cap could not be read plausibly.
+     * @param text The OCR text.
+     * @return The skill points, or -1 if no number was read.
      */
-    fun determineStatCapsFromDialog(): Map<StatName, Int> {
-        val (finalLocation, finalSourceBitmap) = LabelStatTrackSurface.find(this)
-        val result: MutableMap<StatName, Int> = mutableMapOf()
-
-        if (finalLocation == null) {
-            MessageLog.e(TAG, "[ERROR] determineStatCapsFromDialog:: Could not anchor the cap reads on LabelStatTrackSurface.")
-            return result.toMap()
-        }
-
-        val templateBitmap = LabelStatTrackSurface.template.getBitmap(this)
-        if (templateBitmap == null) {
-            MessageLog.e(TAG, "[ERROR] determineStatCapsFromDialog:: Could not get template bitmap for LabelStatTrackSurface.")
-            return result.toMap()
-        }
-
-        val halfW = templateBitmap.width / 2
-        val halfH = templateBitmap.height / 2
-
-        StatName.entries.forEachIndexed { index, statName ->
-            // The cap ("/NNNN") sits one line below the value in the same column: same offsetX as the value read, 44px lower (measured on-device against the saved cap crop).
-            val text =
-                performOCROnRegion(
-                    finalSourceBitmap,
-                    relX(finalLocation.x, -halfW + 10 + (index * 200)),
-                    relY(finalLocation.y, -halfH - 66),
-                    relWidth(105),
-                    relHeight(26),
-                    useThreshold = false,
-                    useGrayscale = true,
-                    scale = 2.0,
-                    ocrEngine = "tesseract_digits",
-                    debugName = "${statName}StatCapDialog",
-                )
-
-            MessageLog.d(TAG, "[DEBUG] determineStatCapsFromDialog:: Raw OCR text for $statName cap: '$text'")
-
-            val cap = parseStatCap(text)
-            if (cap != null) {
-                result[statName] = cap
-            } else {
-                MessageLog.w(TAG, "[WARN] determineStatCapsFromDialog:: Implausible cap '$text' for $statName. Skipping.")
-            }
-        }
-
-        return result.toMap()
-    }
+    private fun parseSkillPoints(text: String): Int = text.replace(Regex("[^0-9]"), "").toIntOrNull() ?: -1
 
     /**
-     * Read the cap denominator ("/NNNN") shown under a single stat on the career / training main screen. Anchored on the same skill-points label as the value read, offset one line
-     * down. Caps appear only on the main / training screen (not the aptitude dialog), so this reads the main-screen layout. Returns the parsed cap, or -1 when no plausible cap is
-     * found so the caller keeps the per-scenario table cap. NOTE: the cap-region vertical offset is a starting point tuned on-device against the saved `${statName}StatCap` crop.
+     * Reads the digits in one crop on its own, with the grayscale and 2x scale that suit the stat numbers.
      *
-     * @param statName The stat whose cap to read.
-     * @param sourceBitmap Optional shared source bitmap (enables thread-safe parallel reads).
-     * @param skillPointsLocation Optional pre-found skill-points label location.
-     * @return The parsed stat cap, or -1 if none is plausible.
-     */
-    fun determineSingleStatCap(statName: StatName, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null): Int {
-        val (finalLocation, finalSourceBitmap) =
-            if (sourceBitmap == null && skillPointsLocation == null) {
-                LabelStatTableHeaderSkillPoints.find(this)
-            } else {
-                Pair(skillPointsLocation, sourceBitmap)
-            }
-
-        if (finalLocation == null || finalSourceBitmap == null) {
-            MessageLog.e(TAG, "[ERROR] determineSingleStatCap:: Could not start the process of detecting the stat cap for $statName.")
-            return -1
-        }
-
-        // The cap sits one line below the stat value (value region is offsetY 20, height 50). Same 170px horizontal spacing; the vertical offset is tuned on-device via the crop.
-        val index = statName.ordinal
-        val offsetX = -862 + (index * 170)
-        val offsetY = 64
-        val width = 110
-        val height = 44
-
-        val x = relX(finalLocation.x, offsetX)
-        val y = relY(finalLocation.y, offsetY)
-        // Only the top 28px of the 110px wide crop hold the digits. Below them and past 92px the animated background shows through, so those parts are left out of the comparison.
-        return readNumberCached("$statName cap", finalSourceBitmap, x, y, relWidth(92), relHeight(28)) {
-            val text =
-                performOCROnRegion(
-                    finalSourceBitmap,
-                    x,
-                    y,
-                    relWidth(width),
-                    relHeight(height),
-                    useThreshold = false,
-                    useGrayscale = true,
-                    scale = 2.0,
-                    ocrEngine = "tesseract_digits",
-                    debugName = "${statName}StatCap",
-                )
-            Log.d(TAG, "[DEBUG] determineSingleStatCap:: Raw OCR text for $statName cap: '$text'")
-            parseStatCap(text) ?: -1
-        }
-    }
-
-    /**
-     * Reads a Main screen number, reusing the last read when its crop has not changed. A turn usually changes only a stat or two and caps rarely change, so most reads are skipped.
-     *
-     * @param key Which number this is, such as "SPEED value".
      * @param sourceBitmap The screenshot.
-     * @param x Left edge of the number's crop.
-     * @param y Top edge of the number's crop.
-     * @param compareW Width of the part of the crop that is compared.
-     * @param compareH Height of the part of the crop that is compared.
-     * @param read Reads the number fresh. A negative result is a failed read and is not cached.
-     * @return The number.
+     * @param box The crop, in frame pixels.
+     * @param debugName The name for debug images.
+     * @return The text read.
      */
-    private fun readNumberCached(key: String, sourceBitmap: Bitmap, x: Int, y: Int, compareW: Int, compareH: Int, read: () -> Int): Int {
-        val crop = createSafeBitmap(sourceBitmap, x, y, compareW, compareH, key) ?: return read()
-        val argb = IntArray(crop.width * crop.height)
-        crop.getPixels(argb, 0, crop.width, 0, 0, crop.width, crop.height)
-        val pixels = IntArray(argb.size) { grayOf(argb[it]) }
-        val cached = numberCache[key]
-        if (cached != null && cached.reuses < NUMBER_CACHE_MAX_REUSES && isSameNumberCrop(cached.pixels, pixels)) {
-            numberCache[key] = cached.copy(reuses = cached.reuses + 1)
-            Log.d(TAG, "[DEBUG] readNumberCached:: $key is unchanged, reusing ${cached.value}.")
-            return cached.value
+    private fun readDigits(sourceBitmap: Bitmap, box: BoundingBox, debugName: String): String =
+        performOCROnRegion(sourceBitmap, box.x, box.y, box.w, box.h, useThreshold = false, useGrayscale = true, scale = 2.0, ocrEngine = "tesseract_digits", debugName = debugName)
+
+    /**
+     * Reads the Main screen stat row: the five stat values, optionally their caps, and the skill points.
+     *
+     * @param sourceBitmap The screenshot.
+     * @param skillPointsLocation Where the skill points label sits, which anchors every crop.
+     * @param readCaps Whether to read the "/NNNN" caps under the values.
+     * @return The numbers read.
+     */
+    fun determineStatTable(sourceBitmap: Bitmap, skillPointsLocation: Point, readCaps: Boolean): StatTable {
+        val fields = mutableListOf<NumberField>()
+        StatName.entries.forEachIndexed { index, statName ->
+            // The value crop's last 12px are the panel border, which the animated background shows through, so they are left out of the comparison.
+            val valueBox = BoundingBox(relX(skillPointsLocation.x, -860 + index * 170), relY(skillPointsLocation.y, 20), relWidth(100), relHeight(50))
+            fields.add(digitField(sourceBitmap, "$statName value", valueBox, relWidth(88), relHeight(50), "${statName}StatValue") { parseStatValueText(statName, it) })
+            if (readCaps) {
+                // The cap sits one line below the value. Only the top 28px of the crop hold the digits, and past 92px the animated background shows through, so the comparison skips both.
+                val capBox = BoundingBox(relX(skillPointsLocation.x, -862 + index * 170), relY(skillPointsLocation.y, 64), relWidth(110), relHeight(44))
+                fields.add(digitField(sourceBitmap, "$statName cap", capBox, relWidth(92), relHeight(28), "${statName}StatCap") { parseStatCap(it) ?: -1 })
+            }
         }
-        val value = read()
-        if (value >= 0) numberCache[key] = CachedNumber(pixels, value, reuses = 0) else numberCache.remove(key)
-        return value
+        val pointsBox = BoundingBox(relX(skillPointsLocation.x, -70), relY(skillPointsLocation.y, 28), relWidth(135), relHeight(70))
+        fields.add(
+            NumberField("skill points", pointsBox, pointsBox.w, pointsBox.h, ::parseSkillPoints) {
+                performOCROnRegion(
+                    sourceBitmap,
+                    pointsBox.x,
+                    pointsBox.y,
+                    pointsBox.w,
+                    pointsBox.h,
+                    useThreshold = true,
+                    useGrayscale = true,
+                    scale = 1.0,
+                    ocrEngine = "mlkit",
+                    debugName = "SkillPoints",
+                )
+            },
+        )
+
+        val numbers = readNumbers(sourceBitmap, fields)
+        return StatTable(
+            values = StatName.entries.associateWith { numbers["$it value"] ?: -1 },
+            caps = StatName.entries.mapNotNull { statName -> numbers["$statName cap"]?.takeIf { it > 0 }?.let { statName to it } }.toMap(),
+            skillPoints = numbers["skill points"] ?: -1,
+        )
+    }
+
+    /**
+     * Reads Main screen numbers with at most one batched text read. A number whose crop has not changed since its last good read reuses that read, since a turn usually changes
+     * only a stat or two and caps rarely change. The rest are read together with [readFields], and any that come back implausible are read again on their own.
+     *
+     * @param sourceBitmap The screenshot.
+     * @param fields The numbers to read.
+     * @return Each number by its key, or -1 for a failed read.
+     */
+    private fun readNumbers(sourceBitmap: Bitmap, fields: List<NumberField>): Map<String, Int> {
+        val result = mutableMapOf<String, Int>()
+        val misses = mutableListOf<Pair<NumberField, IntArray?>>()
+        for (field in fields) {
+            val crop = createSafeBitmap(sourceBitmap, field.box.x, field.box.y, field.compareW, field.compareH, field.key)
+            val pixels: IntArray? =
+                crop?.let {
+                    val argb = IntArray(it.width * it.height)
+                    it.getPixels(argb, 0, it.width, 0, 0, it.width, it.height)
+                    IntArray(argb.size) { i -> grayOf(argb[i]) }
+                }
+            val cached = numberCache[field.key]
+            if (pixels != null && cached != null && cached.reuses < NUMBER_CACHE_MAX_REUSES && isSameNumberCrop(cached.pixels, pixels)) {
+                numberCache[field.key] = cached.copy(reuses = cached.reuses + 1)
+                Log.d(TAG, "[DEBUG] readNumbers:: ${field.key} is unchanged, reusing ${cached.value}.")
+                result[field.key] = cached.value
+            } else {
+                misses.add(field to pixels)
+            }
+        }
+        if (misses.isEmpty()) return result
+
+        val texts: Map<String, String> = readFields(sourceBitmap, misses.associate { (field, _) -> field.key to field.box })
+        for ((field, pixels) in misses) {
+            val value = parseOrReadAlone(field, texts[field.key])
+            if (value >= 0 && pixels != null) numberCache[field.key] = CachedNumber(pixels, value, reuses = 0) else numberCache.remove(field.key)
+            result[field.key] = value
+        }
+        return result
+    }
+
+    /**
+     * Builds a number field whose fallback reads its crop with [readDigits].
+     *
+     * @param sourceBitmap The screenshot.
+     * @param key Names the number in the cache and the log.
+     * @param box Where the number sits, in frame pixels.
+     * @param compareW Width of the part of the crop the cache compares.
+     * @param compareH Height of the part of the crop the cache compares.
+     * @param debugName The name for debug images of the fallback read.
+     * @param parse Turns the text read into the number, or -1 when the text is not a plausible read.
+     * @return The field.
+     */
+    private fun digitField(sourceBitmap: Bitmap, key: String, box: BoundingBox, compareW: Int, compareH: Int, debugName: String, parse: (String) -> Int): NumberField =
+        NumberField(key, box, compareW, compareH, parse) { readDigits(sourceBitmap, box, debugName) }
+
+    /**
+     * Parses a field's batched read, and reads the field on its own when that read is not plausible.
+     *
+     * @param field The number.
+     * @param text The field's text from the batched read.
+     * @return The number, or -1 when neither read is plausible.
+     */
+    private fun parseOrReadAlone(field: NumberField, text: String?): Int {
+        val value = field.parse(text.orEmpty())
+        if (value >= 0) return value
+        Log.d(TAG, "[DEBUG] parseOrReadAlone:: The batched read of ${field.key} was \"$text\", so it is read on its own.")
+        return field.parse(field.readAlone())
+    }
+
+    /**
+     * Reads the stat values, their caps, and optionally the trainee's name from the Umamusume Details dialog with one batched text read. A field that comes back implausible is
+     * read again on its own. Every crop is placed relative to the track surface label, so this only works while that dialog is open.
+     *
+     * @param bReadName Whether to read the trainee's name too.
+     * @return What was read, or null when the track surface label was not found.
+     */
+    fun determineDetailsHeader(bReadName: Boolean): DetailsHeader? {
+        val (anchor, sourceBitmap) = LabelStatTrackSurface.find(this)
+        val templateBitmap = LabelStatTrackSurface.template.getBitmap(this)
+        if (anchor == null || templateBitmap == null) {
+            MessageLog.e(TAG, "[ERROR] determineDetailsHeader:: Could not anchor the reads on LabelStatTrackSurface.")
+            return null
+        }
+
+        // The stat columns start just inside the label's left edge and sit above it. The cap ("/NNNN") sits one line below the value in the same column.
+        val left = -templateBitmap.width / 2 + 10
+        val top = -templateBitmap.height / 2
+        // The cache is not used here because the dialog is read once per visit, so compareW and compareH do not matter.
+        val valueFields = mutableMapOf<StatName, NumberField>()
+        val capFields = mutableMapOf<StatName, NumberField>()
+        StatName.entries.forEachIndexed { index, statName ->
+            val valueBox = BoundingBox(relX(anchor.x, left + index * 200), relY(anchor.y, top - 110), relWidth(105), relHeight(40))
+            val capBox = BoundingBox(relX(anchor.x, left + index * 200), relY(anchor.y, top - 66), relWidth(105), relHeight(26))
+            valueFields[statName] = digitField(sourceBitmap, "$statName value", valueBox, valueBox.w, valueBox.h, "${statName}StatValue", ::parseDetailsStatValue)
+            capFields[statName] = digitField(sourceBitmap, "$statName cap", capBox, capBox.w, capBox.h, "${statName}StatCapDialog") { parseStatCap(it) ?: -1 }
+        }
+        val nameBox = BoundingBox((anchor.x + relWidth(385)).toInt(), (anchor.y - relHeight(370)).toInt(), relWidth(335), relHeight(50))
+        val boxes = (valueFields.values + capFields.values).associate { it.key to it.box }
+        val texts: Map<String, String> = readFields(sourceBitmap, if (bReadName) boxes + ("name" to nameBox) else boxes)
+
+        val values: Map<StatName, Int> = valueFields.mapValues { (_, field) -> parseOrReadAlone(field, texts[field.key]) }
+        val caps = LinkedHashMap<StatName, Int>()
+        for ((statName, field) in capFields) {
+            val cap = parseOrReadAlone(field, texts[field.key])
+            if (cap > 0) caps[statName] = cap else MessageLog.w(TAG, "[WARN] determineDetailsHeader:: Implausible cap \"${texts[field.key]}\" for $statName. Skipping.")
+        }
+        // The name text uses a uniform brown (#794016), so a read filtered to that color is the fallback when the batched read finds nothing.
+        // The batched read can put accents on plain letters ("Daiwa" -> "Daîwa"), and the name keys the saved run, so the accents are stripped.
+        val name: String =
+            if (!bReadName) {
+                ""
+            } else {
+                val read =
+                    texts["name"].orEmpty().trim().ifEmpty {
+                        findTextByColor(sourceBitmap, nameBox.x, nameBox.y, nameBox.w, nameBox.h, targetR = 121, targetG = 64, targetB = 22, debugName = "trainee_name").trim()
+                    }
+                Normalizer.normalize(read, Normalizer.Form.NFD).replace(Regex("\\p{Mn}+"), "")
+            }
+        return DetailsHeader(values, caps, name)
     }
 
     /**
@@ -2695,57 +2871,6 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     // Main Screen Helper Functions
 
     /**
-     * Determines the current number of skill points.
-     *
-     * @param sourceBitmap Optional source bitmap to use. Defaults to null.
-     * @param skillPointsLocation Optional point location of the skill points icon. Defaults to null.
-     * @return The number of skill points, or -1 if detection fails.
-     */
-    fun determineSkillPoints(sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null): Int {
-        val (skillPointsLocation, sourceBitmap) =
-            if (skillPointsLocation == null) {
-                LabelStatTableHeaderSkillPoints.find(this)
-            } else if (sourceBitmap == null) {
-                Pair(skillPointsLocation, getSourceBitmap())
-            } else {
-                Pair(skillPointsLocation, sourceBitmap)
-            }
-
-        if (skillPointsLocation == null) {
-            MessageLog.e(TAG, "[ERROR] determineSkillPoints:: skillPointsLocation is null.")
-            return -1
-        }
-
-        // Determine crop region.
-        val (offsetX, offsetY, width, height) = listOf(-70, 28, relWidth(135), relHeight(70))
-
-        // Perform OCR with thresholding.
-        val detectedText =
-            performOCROnRegion(
-                sourceBitmap,
-                relX(skillPointsLocation.x, offsetX),
-                relY(skillPointsLocation.y, offsetY),
-                width,
-                height,
-                useThreshold = true,
-                useGrayscale = true,
-                scale = 1.0,
-                ocrEngine = "mlkit",
-                debugName = "SkillPoints",
-            )
-
-        // Parse the result.
-        Log.d(TAG, "[DEBUG] determineSkillPoints:: Detected number of skill points before formatting: $detectedText")
-        return try {
-            Log.d(TAG, "[DEBUG] determineSkillPoints:: Converting $detectedText to integer for skill points")
-            val cleanedResult = detectedText.replace(Regex("[^0-9]"), "")
-            cleanedResult.toInt()
-        } catch (_: NumberFormatException) {
-            -1
-        }
-    }
-
-    /**
      * Detects the number of fans from the Umamusume Class dialog.
      *
      * @param bitmap The source bitmap to analyze.
@@ -3202,6 +3327,19 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     // OCR Helper Functions
 
     /**
+     * Reads every word in a region with one ML Kit call and returns each with its position. An ML Kit call costs about 0.4s however small the image is,
+     * so a caller with several fields on screen reads them all at once and sorts the words into fields by position.
+     *
+     * @param sourceBitmap The full frame.
+     * @param region The region to read, in frame pixels.
+     * @return The words found, with boxes in frame pixels. Empty when ML Kit found nothing or failed.
+     */
+    fun findWords(sourceBitmap: Bitmap, region: BoundingBox): List<OcrWord> {
+        val crop: Bitmap = createSafeBitmap(sourceBitmap, region, "findWords") ?: return emptyList()
+        return recognizeWords(crop, region.x, region.y, "findWords")
+    }
+
+    /**
      * Performs OCR on a cropped region by filtering pixels matching a specific RGB color.
      *
      * Instead of the standard grayscale + threshold preprocessing, this method isolates text by selecting only pixels within a tolerance of the target color.
@@ -3244,55 +3382,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             return ""
         }
 
-        // Convert to Mat.
-        val cvImage = croppedBitmap.toMat()
-
-        // Save the cropped image for debugging.
-        if (debugMode) {
-            DebugCapture.save("debug_${debugName}_cropped", cvImage)
-        }
-
-        // Convert from RGBA to RGB for consistent color processing.
-        val rgbImage = Mat()
-        Imgproc.cvtColor(cvImage, rgbImage, Imgproc.COLOR_RGBA2RGB)
-
-        // Define the lower and upper bounds for the target color with tolerance.
-        val lowerBound =
-            Scalar(
-                maxOf(0, targetR - tolerance).toDouble(),
-                maxOf(0, targetG - tolerance).toDouble(),
-                maxOf(0, targetB - tolerance).toDouble(),
-            )
-        val upperBound =
-            Scalar(
-                minOf(255, targetR + tolerance).toDouble(),
-                minOf(255, targetG + tolerance).toDouble(),
-                minOf(255, targetB + tolerance).toDouble(),
-            )
-
-        // Create a mask where pixels matching the target color are white (255) and everything else is black (0).
-        val colorMask = Mat()
-        Core.inRange(rgbImage, lowerBound, upperBound, colorMask)
-
-        // Invert the mask so text pixels become black and background becomes white.
-        // This matches the expected input format for OCR engines.
-        val invertedMask = Mat()
-        Core.bitwise_not(colorMask, invertedMask)
-
-        // Save the filtered image for debugging.
-        if (debugMode) {
-            DebugCapture.save("debug_${debugName}_colorFiltered", invertedMask)
-        }
-
-        // Convert the processed Mat to Bitmap and apply scaling.
-        val clampedScale = max(0, scale.toInt()).toDouble().coerceAtLeast(1.0)
-        val baseBitmap = invertedMask.toBitmap()
-        val finalBitmap =
-            if (clampedScale != 1.0) {
-                baseBitmap.scale((baseBitmap.width * clampedScale).toInt(), (baseBitmap.height * clampedScale).toInt())
-            } else {
-                baseBitmap
-            }
+        val finalBitmap = colorMask(croppedBitmap, targetR, targetG, targetB, tolerance, scale, debugName)
 
         // Run ML Kit text recognition.
         val inputImage: InputImage = InputImage.fromBitmap(finalBitmap, 0)
@@ -3330,13 +3420,56 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             Log.d(TAG, "[DEBUG] findTextByColor:: Detected text: \"$result\".")
         }
 
-        // Clean up Mats.
-        cvImage.release()
-        rgbImage.release()
-        colorMask.release()
-        invertedMask.release()
-
         return result.trim()
+    }
+
+    /**
+     * Turns a crop into black text on white by keeping only the pixels near a target color, then enlarges it.
+     *
+     * @param crop The crop to filter.
+     * @param targetR The red component (0-255) of the text color.
+     * @param targetG The green component (0-255) of the text color.
+     * @param targetB The blue component (0-255) of the text color.
+     * @param tolerance The per-channel tolerance for color matching.
+     * @param scale How much to enlarge the result. Rounded down to a whole number of at least 1.
+     * @param debugName The name for debug image saving.
+     * @return The filtered bitmap.
+     */
+    private fun colorMask(crop: Bitmap, targetR: Int, targetG: Int, targetB: Int, tolerance: Int, scale: Double, debugName: String): Bitmap {
+        val cvImage = crop.toMat()
+        val rgbImage = Mat()
+        val inRangeMask = Mat()
+        val invertedMask = Mat()
+        try {
+            // Save the cropped image for debugging.
+            if (debugMode) {
+                DebugCapture.save("debug_${debugName}_cropped", cvImage)
+            }
+
+            // Convert from RGBA to RGB for consistent color processing.
+            Imgproc.cvtColor(cvImage, rgbImage, Imgproc.COLOR_RGBA2RGB)
+
+            // Mark the pixels within tolerance of the target color, then invert so the text is black on white as the OCR engines expect.
+            val lowerBound = Scalar(maxOf(0, targetR - tolerance).toDouble(), maxOf(0, targetG - tolerance).toDouble(), maxOf(0, targetB - tolerance).toDouble())
+            val upperBound = Scalar(minOf(255, targetR + tolerance).toDouble(), minOf(255, targetG + tolerance).toDouble(), minOf(255, targetB + tolerance).toDouble())
+            Core.inRange(rgbImage, lowerBound, upperBound, inRangeMask)
+            Core.bitwise_not(inRangeMask, invertedMask)
+
+            // Save the filtered image for debugging.
+            if (debugMode) {
+                DebugCapture.save("debug_${debugName}_colorFiltered", invertedMask)
+            }
+
+            val clampedScale = max(0, scale.toInt()).toDouble().coerceAtLeast(1.0)
+            val baseBitmap = invertedMask.toBitmap()
+            if (clampedScale == 1.0) return baseBitmap
+            return baseBitmap.scale((baseBitmap.width * clampedScale).toInt(), (baseBitmap.height * clampedScale).toInt()).also { if (it !== baseBitmap) baseBitmap.recycle() }
+        } finally {
+            cvImage.release()
+            rgbImage.release()
+            inRangeMask.release()
+            invertedMask.release()
+        }
     }
 
     /**
@@ -3452,17 +3585,14 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      * @return The parsed level (1-5), or null if OCR or parsing failed.
      */
     fun extractTrainingLevel(sourceBitmap: Bitmap, energyAnchor: Point): Int? {
-        val x = relX(energyAnchor.x, -140)
-        val y = relY(energyAnchor.y, 65)
-        val width = relWidth(240)
-        val height = relHeight(40)
+        val region = trainingLevelRegion(energyAnchor)
         val rawText =
             findTextByColor(
                 sourceBitmap = sourceBitmap,
-                x = x,
-                y = y,
-                width = width,
-                height = height,
+                x = region.x,
+                y = region.y,
+                width = region.w,
+                height = region.h,
                 targetR = 255,
                 targetG = 255,
                 targetB = 255,
@@ -3470,9 +3600,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
                 scale = 2.0,
                 debugName = "trainingLevel",
             )
-        if (rawText.isEmpty()) return null
-        val match = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE_CASE).find(rawText) ?: return null
-        return match.groupValues.getOrNull(1)?.toIntOrNull()
+        return parseTrainingLevel(rawText)
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////

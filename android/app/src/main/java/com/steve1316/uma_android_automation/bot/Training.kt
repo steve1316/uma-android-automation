@@ -37,6 +37,7 @@ import com.steve1316.uma_android_automation.types.TrackDistance
 import com.steve1316.uma_android_automation.types.applyRunningStyleStaminaFactor
 import com.steve1316.uma_android_automation.types.fuzzyBestMatchIndex
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
+import com.steve1316.uma_android_automation.utils.TrainingPanelRead
 import com.steve1316.uma_scoring.RawScoreBreakdown
 import com.steve1316.uma_scoring.TrainingScoringConstants
 import org.opencv.core.Point
@@ -315,6 +316,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
     /** Cached screen location of the Energy label, used as the anchor for training level OCR. Resolved lazily on first use, reused for the rest of the bot session. */
     private var cachedEnergyLocation: Point? = null
+
+    /** Where each facility button was found while it was not the selected one. The buttons do not move, so a switch taps the saved spot instead of matching again. */
+    private val unselectedButtonLocations = mutableMapOf<StatName, Point>()
 
     /** Whether to enable validation of training analysis. */
     private val enableTrainingAnalysisValidation: Boolean = SettingsHelper.getBooleanSetting("training", "enableTrainingAnalysisValidation")
@@ -1426,6 +1430,20 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Taps a facility button that is not the selected one, reusing the spot it was last found at. Only call this for a facility that is not on screen,
+     * since that is the state the spot was saved in.
+     *
+     * @param statName The facility to tap.
+     * @return True if the button was tapped.
+     */
+    private fun tapUnselectedTrainingButton(statName: StatName): Boolean {
+        val button: ComponentInterface = trainingButtons[statName]!!
+        val location: Point = unselectedButtonLocations[statName] ?: button.find(game.imageUtils).first?.also { unselectedButtonLocations[statName] = it } ?: return false
+        button.tap(location.x, location.y, button.template.path)
+        return true
+    }
+
+    /**
      * Analyze all available training options to determine their stat gains, relationship progress, and other details.
      *
      * @param args A map containing optional parameters:
@@ -1529,9 +1547,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
          *
          * @param statName The stat to switch to.
          * @param timeoutMs The max time (in milliseconds) for the operation to run before it times out.
+         * @param selectedStat The stat whose header was last confirmed on screen, or null if unknown. A known stat skips the early header check.
          * @return Whether we successfully navigated to the specified training page.
          */
-        fun goToStat(statName: StatName, timeoutMs: Int = 5000): Boolean {
+        fun goToStat(statName: StatName, timeoutMs: Int = 5000, selectedStat: StatName? = null): Boolean {
             val startTime = System.currentTimeMillis()
 
             // KeyError indicates programmer error.
@@ -1540,14 +1559,16 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // Fast early check if we're already at the stat.
             // Helps to do this before calling getActiveStat so we can save time.
-            if (header.check(game.imageUtils)) {
+            if (selectedStat == statName || (selectedStat == null && header.check(game.imageUtils))) {
                 return true
             }
 
             // If this option isn't enabled, then we just do a fast lazy validation.
             if (!enableTrainingAnalysisValidation) {
                 for (i in 0..2) {
-                    button.click(game.imageUtils)
+                    // A retry means the tap at the saved spot did not land, so the button is matched again.
+                    if (i > 0) unselectedButtonLocations.remove(statName)
+                    tapUnselectedTrainingButton(statName)
 
                     // Wait for screen to finish updating before proceeding.
                     game.wait(0.2, skipWaitingForLoading = true)
@@ -1645,9 +1666,24 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         // List to store all training analysis results for parallel processing.
         val analysisResults = mutableListOf<TrainingAnalysisResult>()
 
-        // Check if failure chance is acceptable: either within regular threshold or within risky threshold (if enabled).
-        // This acts as an early exit from training analysis to speed up training.
-        var failureChance: Int = game.imageUtils.findTrainingFailureChance(tries = 3)
+        // The training level only feeds the Year 2+ Stat Efficiency boost, and Summer puts every facility at Lvl 5, so it is skipped before Year 2 and in Summer.
+        val readLevels = enableTrainingLevelWeighting && !campaign.date.bIsPreDebut && campaign.date.year != DateYear.JUNIOR && !campaign.date.isSummer()
+        val levelAnchor: Point? = if (readLevels) cachedEnergyLocation ?: LabelEnergy.find(game.imageUtils).first?.also { cachedEnergyLocation = it } else null
+        if (readLevels && levelAnchor == null) {
+            MessageLog.w(TAG, "[WARN] analyzeTrainings:: Failed to locate Energy label anchor for training level OCR. Falling back to no level boost.")
+        }
+
+        // Read Speed's failure chance and level with one OCR call. The Speed step below reuses this read instead of reading the same panel again.
+        var speedRead: TrainingPanelRead? = null
+        if (!singleTraining) {
+            game.waitForLoading()
+            val speedBitmap = game.imageUtils.getSourceBitmap()
+            val failureAnchor = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, speedBitmap)
+            if (failureAnchor != null) {
+                speedRead = game.imageUtils.readTrainingFailureAndLevel(speedBitmap, failureAnchor, levelAnchor).takeIf { it.failureChance != -1 }
+            }
+        }
+        var failureChance = speedRead?.failureChance ?: game.imageUtils.findTrainingFailureChance(tries = 3)
         if (failureChance == -1 && !singleTraining) {
             MessageLog.w(
                 TAG,
@@ -1735,6 +1771,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
         // Now analyze each stat. The effective blacklist is empty in the Pre-Debut / Junior Friendship window, so blacklisted facilities are still analyzed to build bonds.
         val activeBlacklist = effectiveBlacklist()
+        // The stat table does not move between facilities, so its anchor is found once per analysis.
+        var skillPointsAnchor: Point? = null
+        // The facility whose header the loop last confirmed. Nothing is tapped between facilities, so the next switch can skip its early header check.
+        var selectedStat: StatName? = null
         for (statName in StatName.entries) {
             if (!test && statName in activeBlacklist) {
                 MessageLog.i(TAG, "[TRAINING] Skipping $statName training due to being blacklisted.")
@@ -1751,22 +1791,24 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
 
             // Only go to a different stat if we aren't doing single training.
-            if (!singleTraining && !goToStat(statName)) {
+            if (!singleTraining && !goToStat(statName, selectedStat = selectedStat)) {
                 MessageLog.e(TAG, "[ERROR] analyzeTrainings:: Failed to click training button for $statName. Aborting training...")
                 return
             }
+            selectedStat = statName
+
+            // Take one frame for this facility. The restricted check, the anchors, and the reads on the threads below all use it.
+            val sourceBitmap = game.imageUtils.getSourceBitmap()
 
             // Check if the currently selected training is restricted.
-            if (LabelTrainingCannotPerform.check(game.imageUtils)) {
+            if (LabelTrainingCannotPerform.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
                 MessageLog.i(TAG, "[TRAINING] The currently selected $statName training is restricted and cannot be performed.")
                 restrictedTrainingNames.add(statName)
                 continue
             }
 
-            // Get bitmaps and locations before starting threads to make them safe for parallel processing.
-            val sourceBitmap = game.imageUtils.getSourceBitmap()
-            val skillPointsLocation = LabelStatTableHeaderSkillPoints.find(game.imageUtils).first
-            val failureChanceLocation = LabelTrainingFailureChance.find(game.imageUtils).first
+            val skillPointsLocation = skillPointsAnchor ?: LabelStatTableHeaderSkillPoints.findImageWithBitmap(game.imageUtils, sourceBitmap).also { skillPointsAnchor = it }
+            val failureChanceLocation = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, sourceBitmap)
 
             // Record start time for elapsed time measurement.
             val startTime = System.currentTimeMillis()
@@ -1795,31 +1837,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 MessageLog.i(TAG, "[TRAINING] Skipping $statName training: $exclusionReason.")
                 restrictedTrainingNames.add(statName)
                 continue
-            }
-
-            // OCR the displayed training level (1-5) for this stat while its panel is on screen.
-            // Skipped during Pre-Debut, Junior, and Summer since the level boost only fires in Year 2+ Stat Efficiency scoring,
-            // and Summer forces every training to Lvl 5 (the boost would equalize across stats).
-            if (enableTrainingLevelWeighting && !campaign.date.bIsPreDebut && campaign.date.year != DateYear.JUNIOR && !campaign.date.isSummer()) {
-                val energyAnchor =
-                    cachedEnergyLocation ?: run {
-                        val located = LabelEnergy.find(game.imageUtils).first
-                        if (located != null) {
-                            cachedEnergyLocation = located
-                        }
-                        located
-                    }
-                if (energyAnchor != null) {
-                    val detectedLevel = game.imageUtils.extractTrainingLevel(sourceBitmap, energyAnchor)
-                    result.trainingLevel = detectedLevel
-                    if (detectedLevel == null) {
-                        MessageLog.w(TAG, "[WARN] analyzeTrainings:: Training level OCR failed for $statName. Falling back to no level boost.")
-                    } else {
-                        MessageLog.i(TAG, "[TRAINING] $statName training level detected as Lvl $detectedLevel.")
-                    }
-                } else {
-                    MessageLog.w(TAG, "[WARN] analyzeTrainings:: Failed to locate Energy label anchor for training level OCR. Falling back to no level boost.")
-                }
             }
 
             // Check if bot is still running before starting parallel threads.
@@ -1854,23 +1871,30 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 }
             }.start()
 
-            // Thread 2: Find failure chance.
+            // Thread 2: Read the failure chance and training level with one OCR call. Speed reuses the read taken on entry.
             Thread {
                 val startTimeFailureChance = System.currentTimeMillis()
                 try {
-                    if (failureChanceLocation != null) {
-                        result.failureChance = game.imageUtils.findTrainingFailureChance(sourceBitmap, failureChanceLocation)
-                    } else {
+                    if (failureChanceLocation == null) {
                         MessageLog.w(TAG, "[WARN] analyzeTrainings:: Failure chance location was not found during OCR. Skipping failure chance detection for $statName.")
-                        result.failureChance = -1
+                    }
+                    val panelRead = speedRead?.takeIf { statName == StatName.SPEED } ?: game.imageUtils.readTrainingFailureAndLevel(sourceBitmap, failureChanceLocation, levelAnchor)
+                    result.failureChance = panelRead.failureChance
+                    if (levelAnchor != null) {
+                        result.trainingLevel = panelRead.level
+                        if (panelRead.level == null) {
+                            MessageLog.w(TAG, "[WARN] analyzeTrainings:: Training level OCR failed for $statName. Falling back to no level boost.")
+                        } else {
+                            MessageLog.i(TAG, "[TRAINING] $statName training level detected as Lvl ${panelRead.level}.")
+                        }
                     }
                 } catch (e: Exception) {
-                    MessageLog.e(TAG, "[ERROR] analyzeTrainings:: Error in findTrainingFailureChance: ${e.stackTraceToString()}")
+                    MessageLog.e(TAG, "[ERROR] analyzeTrainings:: Error in readTrainingFailureAndLevel: ${e.stackTraceToString()}")
                     result.failureChance = -1
                 } finally {
                     latch.countDown()
                     val elapsedTime = System.currentTimeMillis() - startTimeFailureChance
-                    Log.d(TAG, "[DEBUG] analyzeTrainings:: Total time to determine failure chance for $statName: ${elapsedTime}ms")
+                    Log.d(TAG, "[DEBUG] analyzeTrainings:: Total time to read failure chance and level for $statName: ${elapsedTime}ms")
                 }
             }.start()
 

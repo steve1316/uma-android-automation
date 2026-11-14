@@ -293,13 +293,19 @@ class SparkReader(private val imageUtils: CustomImageUtils) {
             .filter { it.type == SparkType.STAT }
             .mapNotNull { blue ->
                 // A card is its blue badge plus the pink and optional green badge one and two pitches to the right.
-                val row =
-                    listOf(blue) +
-                        listOf(SparkType.APTITUDE to 1, SparkType.UNIQUE to 2).mapNotNull { (type, step) ->
-                            badges.firstOrNull { it.type == type && abs(it.x - (blue.x + pitch * step)) <= tolerance && abs(it.y - blue.y) <= tolerance }
-                        }
-                if (row.none { it.type == SparkType.APTITUDE }) return@mapNotNull null
-                val sparks = row.map { readBadge(bitmap, it) ?: return@mapNotNull null }
+                val sparks = mutableListOf(readBadge(bitmap, blue) ?: return@mapNotNull null)
+                for ((type, step) in listOf(SparkType.APTITUDE to 1, SparkType.UNIQUE to 2)) {
+                    val x = blue.x + pitch * step
+                    val found = badges.firstOrNull { it.type == type && abs(it.x - x) <= tolerance && abs(it.y - blue.y) <= tolerance }
+                    // Card art in the badge's color, like pink hair over the pink badge, merges with it and hides it from the color search.
+                    // A badge that was not found is read at its slot instead, and only a missing green badge is allowed.
+                    val spark = readBadge(bitmap, found ?: Badge(type, x, blue.y))
+                    if (spark != null) {
+                        sparks.add(spark)
+                    } else if (found != null || type == SparkType.APTITUDE) {
+                        return@mapNotNull null
+                    }
+                }
                 SparkCard(blue.x, blue.y, sparks)
             }.sortedWith(compareBy({ it.badgeY / imageUtils.relHeight(40) }, { it.badgeX }))
     }
