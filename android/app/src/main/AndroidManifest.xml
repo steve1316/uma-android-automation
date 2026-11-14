@@ -44,6 +44,8 @@
         android:theme="@style/Theme.AppTheme"
         tools:ignore="AllowBackup"
         android:usesCleartextTraffic="true">
+        <!--Lets Perfetto profile a release build's memory. Off unless the build sets -PuaaProfileable=true.-->
+        <profileable android:shell="${profileableByShell}" tools:targetApi="29" />
 
         <!-- cleartext traffic required for React Native to communicate with Metro via HTTP -->
 

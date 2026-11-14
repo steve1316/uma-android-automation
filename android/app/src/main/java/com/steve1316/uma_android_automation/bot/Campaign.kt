@@ -7,6 +7,7 @@ import com.steve1316.automation_library.utils.BotHold
 import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.DiscordUtils
 import com.steve1316.automation_library.utils.ImageUtils.ScaleConfidenceResult
+import com.steve1316.automation_library.utils.MemoryLog
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.career_setup.CareerCompletion
@@ -1600,6 +1601,7 @@ abstract class Campaign(game: Game) : Task(game) {
             return false
         } else {
             MessageLog.v(TAG, "[DATE] New date: $date")
+            MemoryLog.log("day=${date.day}")
             return true
         }
     }
