@@ -186,6 +186,25 @@
             "Wit +18\nSkill points +18\nMood +1\nShake It Out hint +1/+3\nAoi Kiryuin bond +5"
         ]
     },
+    "Aston Machan": {
+        "At Your Side, Always Watching You": [
+            "Energy +15\nAston Machan bond +5",
+            "Energy -5\nSpeed +20\nAston Machan bond +5"
+        ],
+        "In Your Photos, Always Watching You": [
+            "Skill points +30\nAston Machan bond +5",
+            "Light as a Feather hint +2\nAston Machan bond +5"
+        ],
+        "(❯)\nI'll See You Off to the Sea": [
+            "Energy +10\nMood +1\nMeticulous Measures hint +1\nAston Machan bond +10",
+            "Speed +10\nCountermeasure hint +1\nAston Machan bond +10",
+            "Skill points +20\nMaverick ○ hint +3\nAston Machan bond +5"
+        ],
+        "(❯❯)\nI'll Fight a Losing Battle": [
+            "Energy +10\nIntimidate hint +3\nAston Machan bond +10",
+            "Speed +7\nPower +7\nMad Dash hint +3\nAston Machan bond +5"
+        ]
+    },
     "Bamboo Memory": {
         "Overthrow the Rival!": [
             "Guts +10\nBamboo Memory bond +5",
@@ -234,6 +253,16 @@
         ],
         "(❯❯❯)\nShowdown! Glorious Victory!": [
             "Speed +5\nPower +5\nGuts +5\nPlan X hint +1"
+        ],
+        "(❯)\nOur Everlasting Bond! Becoming Heroes with Bono!": [
+            "Speed +10\nPower +10\nFrenzied Late Surgers hint +1\nBiko Pegasus bond +5",
+            "Maximum Energy +4\nBiko Pegasus bond +10"
+        ],
+        "(❯❯)\nA Recipe for Communication": [
+            "Maximum Energy +4\nSkill points +10\nSlick Surge hint +1\nBiko Pegasus bond +5"
+        ],
+        "(❯❯❯)\nNature Transforms Into... Princess Fighter?!": [
+            "Speed +7\nPower +7\nGuts +7\nSharp Arc hint +2\nBiko Pegasus bond +5"
         ]
     },
     "Biwa Hayahide": {
@@ -686,6 +715,16 @@
         ],
         "(❯❯❯)\nBuono For You, Buono For Me ☆": [
             "Stamina +10\nGuts +20\nSixth Sense hint +3 or Dodging Danger hint +3"
+        ],
+        "(❯)\nBono's Eatery: Everything's On the Menu!": [
+            "Power +5\nWit +10\nHishi Akebono bond +5"
+        ],
+        "(❯❯)\nBono's Eatery: A Place to Relax": [
+            "Sunny Days ○ hint +2\nHishi Akebono bond +5",
+            "Energy +10\nWit +5\nHishi Akebono bond +5"
+        ],
+        "(❯❯❯)\nBono's Eatery: Always with You": [
+            "Power +5\nWit +5\nSkill points +10\nPlan X hint +1\nHishi Akebono bond +5"
         ]
     },
     "Hishi Amazon": {
@@ -800,6 +839,16 @@
         "(❯❯)\nOn Thin Ice": [
             "Skill points +35\nK.S.Miracle bond +5",
             "Energy +30\nK.S.Miracle bond +5"
+        ],
+        "(❯)\nWhat I Can Do": [
+            "Speed +10\nGuts +10\nK.S.Miracle bond +5"
+        ],
+        "(❯❯)\nWhat I Can Try": [
+            "Energy +15\nSkill points +15\nK.S.Miracle bond +5",
+            "Speed +7\nPower +7\nGuts +7\nCorner Acceleration ○ hint +1\nK.S.Miracle bond +5"
+        ],
+        "(❯❯❯)\nWhat I Want to Do": [
+            "Speed +7\nPower +7\nGuts +7\nNeck and Neck hint +2\nK.S.Miracle bond +5"
         ]
     },
     "Kawakami Princess": {
@@ -1009,6 +1058,17 @@
         ],
         "(❯❯❯)\nMarvelous☆Victory!": [
             "Energy -10\nGuts +10\nWit +10\nSkill points +20\nAdrenaline Rush hint +3\nMarvelous Sunday bond +5"
+        ],
+        "(❯)\nA Marvelous Cultural Exchange": [
+            "Mood +1\nSkill points +10\nMarvelous Sunday bond +5"
+        ],
+        "(❯❯)\nMarvelously Limitless Energy! ☆": [
+            "Skill points +30\nStraightaway Recovery hint +1\nMarvelous Sunday bond +5",
+            "Mood +1\nEnergy +15\nHeal a negative status effect\nMarvelous Sunday bond +5",
+            "All stats +7\nGet Practice Perfect ○ status\nMarvelous Sunday bond +5"
+        ],
+        "(❯❯❯)\nOut of Marvelousness": [
+            "Randomly either\n----------\nSpeed +10\nStamina +10\nPower +10\nIndomitable hint +3\nMarvelous Sunday bond +5\n----------\n\n----------\nSpeed +5\nStamina +5\nPower +5\nIndomitable hint +1\nMarvelous Sunday bond +5"
         ]
     },
     "Matikanefukukitaru": {

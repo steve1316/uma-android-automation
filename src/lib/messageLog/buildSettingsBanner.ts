@@ -331,7 +331,6 @@ ${longTargetsString}${formatAdvancedScoringSection(settings.training)}
 🎚️ Grand Live Lesson Stat Priority: ${(settings.scenarioOverrides?.grandLiveLessonStatPriority ?? []).length === 0 ? "Global" : (settings.scenarioOverrides?.grandLiveLessonStatPriority ?? []).join(" > ")}
 💡 Grand Live Lesson Skill Hint Priority: ${(settings.scenarioOverrides?.grandLiveLessonHintPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveLessonHintPriority ?? []).join(" > ")}
 🎵 Grand Live Song Priority: ${(settings.scenarioOverrides?.grandLiveSongPriority ?? []).length === 0 ? "None" : (settings.scenarioOverrides?.grandLiveSongPriority ?? []).join(" > ")}
-🎶 Grand Live Lessons Fallback Re-check: After ${settings.scenarioOverrides?.grandLiveLessonRescanInterval ?? 6} turns without a badge
 
 ${buildCareerSetupSection(settings)}
 
@@ -352,6 +351,7 @@ ${buildCareerSetupSection(settings)}
 🔍 Custom Scale: ${settings.debug.templateMatchCustomScale}
 🖼️ Debug Image Quality: ${settings.debug.debugImageQuality}%
 💻 Remote Log Viewer: ${settings.debug.enableRemoteLogViewer ? "✅" : "❌"}
+🔌 Developer MCP Server: ${settings.debug.enableDevMcpServer ? "✅" : "❌"}
 📹 Enable Screen Recording: ${
         settings.debug.enableScreenRecording ? `✅ (${settings.debug.recordingBitRate} Mbps, ${settings.debug.recordingFrameRate} FPS, ${settings.debug.recordingResolutionScale}x scale)` : "❌"
     }
