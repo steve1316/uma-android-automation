@@ -1,8 +1,6 @@
 package com.steve1316.uma_android_automation.types
 
 import android.graphics.Bitmap
-import android.util.Log
-import com.steve1316.automation_library.utils.BotService
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.MainActivity
@@ -35,9 +33,6 @@ import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_scoring.RankResult
 import com.steve1316.uma_scoring.getScenarioStatCap
 import org.opencv.core.Point
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlin.enums.enumEntries
 import kotlin.math.abs
 
@@ -229,9 +224,6 @@ class Trainee {
 
     /** The name of the trainee detected from the UI. */
     var name: String = ""
-
-    /** The screen-space location of the track surface label used as an OCR reference point. */
-    var statTrackLocation: Point? = null
 
     /** The list of currently active positive statuses for the trainee. */
     val currentPositiveStatuses = mutableListOf<String>()
@@ -536,17 +528,7 @@ class Trainee {
      * @param imageUtils A reference to a [CustomImageUtils] instance.
      */
     private fun updateTrackSurfaceAptitudes(imageUtils: CustomImageUtils) {
-        val aptitudes = findAptitudesInBitmap<TrackSurface>(imageUtils = imageUtils, label = LabelStatTrackSurface)
-
-        // Cache the location of the label for use with readName().
-        if (statTrackLocation == null) {
-            statTrackLocation = LabelStatTrackSurface.find(imageUtils = imageUtils).first
-        }
-
-        if (aptitudes == null) {
-            return
-        }
-
+        val aptitudes = findAptitudesInBitmap<TrackSurface>(imageUtils = imageUtils, label = LabelStatTrackSurface) ?: return
         for ((key, value) in aptitudes) {
             trackSurfaceAptitudes[key] = value
         }
@@ -623,78 +605,30 @@ class Trainee {
     fun hasNegativeStatus(name: String): Boolean = fuzzyMatchesAny(name, currentNegativeStatuses, STATUS_QUERY_THRESHOLD)
 
     /**
-     * Reads the trainee's name from the Umamusume Details dialog using color-filtered OCR.
+     * Updates the stats, the caps, and the name if it is still unknown from the Umamusume Details dialog in one batched read. These caps are the true current ones, so the
+     * end-of-run log and dashboard show the caps the trainee actually finished with. A failed cap read keeps the previous cap for that stat.
      *
-     * The name text uses a uniform color #794016 (Brown-ish). This method uses [LabelStatTrackSurface] as a dynamic reference point to calculate the name's position on the screen.
-     *
-     * If successful, it also updates the [MessageLog]'s file name prefix so logs can be categorized by trainee.
+     * Once the name is read, the [MessageLog] file name prefix is set to it so logs can be grouped by trainee.
      *
      * @param imageUtils Reference to a [CustomImageUtils] instance.
      */
-    fun readName(imageUtils: CustomImageUtils) {
-        val sourceBitmap = imageUtils.getSourceBitmap()
+    fun updateFromDetailsDialog(imageUtils: CustomImageUtils) {
+        val bReadName = name.isEmpty()
+        val header = imageUtils.determineDetailsHeader(bReadName) ?: return
+        for ((statName, value) in header.values) applyStatUpdate(statName, value, viaSequential = true)
+        statCaps.putAll(header.caps)
+        if (!bReadName) return
 
-        // Extract reference point coordinates from cached location or find it if not available.
-        val refPoint = statTrackLocation ?: LabelStatTrackSurface.find(imageUtils = imageUtils).first
-        if (refPoint == null) {
-            // Leave the name empty so the caller's isEmpty() guard retries next time. A placeholder here would block every later attempt.
-            MessageLog.w(TAG, "[WARN] readName:: Could not find the stat track surface label to anchor the name crop.")
-            return
-        }
-
-        // Extract the coordinates from the reference point and cache the location.
-        val refX = refPoint.x.toDouble()
-        val refY = refPoint.y.toDouble()
-        if (statTrackLocation == null) {
-            statTrackLocation = refPoint
-        }
-
-        // Calculate name position relative to the reference point.
-        val nameX = refX + imageUtils.relWidth(385)
-        val nameY = refY - imageUtils.relHeight(370)
-        val nameWidth = imageUtils.relWidth(335)
-        val nameHeight = imageUtils.relHeight(50)
-
-        // Use color-filtered OCR with the target text color #794016.
-        val detectedName =
-            imageUtils.findTextByColor(
-                sourceBitmap = sourceBitmap,
-                x = nameX.toInt(),
-                y = nameY.toInt(),
-                width = nameWidth,
-                height = nameHeight,
-                targetR = 121,
-                targetG = 64,
-                targetB = 22,
-                debugName = "trainee_name",
-            )
-
-        if (detectedName.isNotEmpty()) {
-            name = detectedName
+        if (header.name.isNotEmpty()) {
+            name = header.name
             MessageLog.i(TAG, "[TRAINEE] Name: $name")
 
             // Set the log file name prefix to the trainee name with spaces replaced by underscores.
             // This is done to differentiate which logs belong to which trainee.
             MessageLog.logFileNamePrefix = name.replace(" ", "_")
         } else {
-            MessageLog.w(TAG, "[WARN] readName:: Could not detect Trainee name from the aptitude dialog.")
+            MessageLog.w(TAG, "[WARN] updateFromDetailsDialog:: Could not detect Trainee name from the aptitude dialog.")
         }
-    }
-
-    /**
-     * Updates the trainee's skill points from the current screen.
-     *
-     * @param imageUtils A reference to a [CustomImageUtils] instance.
-     * @param sourceBitmap Optional pre-captured bitmap to analyze.
-     * @param skillPointsLocation Optional pre-determined location of skill points on screen.
-     */
-    fun updateSkillPoints(imageUtils: CustomImageUtils, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null) {
-        val res = imageUtils.determineSkillPoints(sourceBitmap, skillPointsLocation)
-        if (res != -1) {
-            skillPoints = res
-        }
-
-        bHasUpdatedSkillPoints = skillPoints != -1
     }
 
     /**
@@ -752,70 +686,26 @@ class Trainee {
     }
 
     /**
-     * Updates the trainee's stats by performing OCR on the screen.
+     * Updates the stats, the skill points, and optionally the caps from the Main screen stat row in one batched read.
      *
-     * To prevent "jumping" to incorrect values due to OCR misreads, this method implements a verification process:
+     * To prevent "jumping" to incorrect values due to OCR misreads, every value passes through [applyStatUpdate]:
      * 1. If a new value differs from the old one by >150, it is flagged as a potential error and rejected initially.
      * 2. The bot tracks consecutive "mismatches" for that stat.
      * 3. If the "mismatched" value remains consistent across multiple updates, the bot recovers by trusting the new value (assuming the previous one was the actual error).
      *
+     * A failed cap or skill points read keeps the previous value, so a transient OCR miss does not drop a good one.
+     *
      * @param imageUtils Reference to a [CustomImageUtils] instance.
-     * @param sourceBitmap Optional bitmap to use (enables parallel processing).
-     * @param skillPointsLocation Reference coordinate for parallel stat sub-crops.
-     * @param externalLatch Latch for thread synchronization.
-     * @param isAptitudeDialog True if reading from the Umamusume Details dialog instead of the Training screen.
+     * @param sourceBitmap The shared Main screen bitmap.
+     * @param skillPointsLocation The skill points label location that anchors every crop.
+     * @param readCaps Whether to read the "/NNNN" caps under the values too.
      */
-    fun updateStats(imageUtils: CustomImageUtils, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null, externalLatch: CountDownLatch? = null, isAptitudeDialog: Boolean = false) {
-        // If sourceBitmap and skillPointsLocation are provided, use threading for parallel processing.
-        if (sourceBitmap != null && skillPointsLocation != null) {
-            val statLatch = externalLatch ?: CountDownLatch(5)
-            val waitLatch = CountDownLatch(5) // Internal latch for waiting, regardless of external latch.
-            val threadSafeResults = ConcurrentHashMap<StatName, Int>()
-
-            // Create 5 threads, one for each stat.
-            for (statName in StatName.entries) {
-                Thread {
-                    try {
-                        if (!BotService.isRunning) {
-                            return@Thread
-                        }
-                        val statValue = imageUtils.determineSingleStatValue(statName, sourceBitmap, skillPointsLocation, isAptitudeDialog)
-                        threadSafeResults[statName] = statValue
-                    } catch (e: Exception) {
-                        Log.e(TAG, "[ERROR] updateStats:: Error processing stat $statName: ${e.stackTraceToString()}")
-                        threadSafeResults[statName] = -1
-                    } finally {
-                        statLatch.countDown()
-                        waitLatch.countDown()
-                    }
-                }.apply { isDaemon = true }.start()
-            }
-
-            // Wait for all threads to complete using the internal wait latch.
-            try {
-                waitLatch.await(10, TimeUnit.SECONDS)
-            } catch (_: InterruptedException) {
-                MessageLog.e(TAG, "[ERROR] updateStats:: Stat processing timed out.")
-            }
-
-            // Update stats with thread-safe results.
-            val statMapping = threadSafeResults.toMap()
-            for ((statName, newValue) in statMapping) {
-                applyStatUpdate(statName, newValue, viaSequential = false)
-            }
-        } else {
-            // Sequential processing (fallback).
-            val statMapping: Map<StatName, Int> =
-                imageUtils.determineStatValues(
-                    sourceBitmap = null,
-                    skillPointsLocation = skillPointsLocation,
-                    isAptitudeDialog = isAptitudeDialog,
-                )
-
-            for ((statName, newValue) in statMapping) {
-                applyStatUpdate(statName, newValue, viaSequential = true)
-            }
-        }
+    fun updateStatTable(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, skillPointsLocation: Point, readCaps: Boolean) {
+        val table = imageUtils.determineStatTable(sourceBitmap, skillPointsLocation, readCaps)
+        for ((statName, value) in table.values) applyStatUpdate(statName, value, viaSequential = false)
+        statCaps.putAll(table.caps)
+        if (table.skillPoints != -1) skillPoints = table.skillPoints
+        bHasUpdatedSkillPoints = skillPoints != -1
     }
 
     /**
@@ -846,36 +736,6 @@ class Trainee {
                 IconMoodGreat.check(imageUtils = imageUtils) -> Mood.GREAT
                 else -> null
             }
-        }
-    }
-
-    /**
-     * Read the live per-stat caps from the "/NNNN" denominators on the main / training screen and store the plausible ones in [statCaps]. A failed read keeps the previous cap for
-     * that stat, so a transient OCR miss does not drop a good value. This is the live per-turn read. The end-of-run dialog caps are read separately by [updateStatCapsFromDialog].
-     * Runs sequentially (five small reads) as one parallel task within `performTurnStartUpdates`.
-     *
-     * @param imageUtils Reference to a [CustomImageUtils] instance.
-     * @param sourceBitmap The shared main-screen bitmap.
-     * @param skillPointsLocation The pre-found skill-points label location used as the OCR anchor.
-     */
-    fun updateStatCaps(imageUtils: CustomImageUtils, sourceBitmap: Bitmap? = null, skillPointsLocation: Point? = null) {
-        if (sourceBitmap == null || skillPointsLocation == null) return
-        for (statName in StatName.entries) {
-            if (!BotService.isRunning) return
-            val cap = imageUtils.determineSingleStatCap(statName, sourceBitmap, skillPointsLocation)
-            if (cap > 0) statCaps[statName] = cap
-        }
-    }
-
-    /**
-     * Read the true final per-stat caps straight from the Umamusume Details dialog and store the plausible ones in [statCaps]. Called once at end of run while that dialog is open,
-     * so the final log and dashboard show the caps the trainee actually finished with rather than the last main-screen read. A failed read keeps the previous cap for that stat.
-     *
-     * @param imageUtils Reference to a [CustomImageUtils] instance.
-     */
-    fun updateStatCapsFromDialog(imageUtils: CustomImageUtils) {
-        for ((statName, cap) in imageUtils.determineStatCapsFromDialog()) {
-            if (cap > 0) statCaps[statName] = cap
         }
     }
 

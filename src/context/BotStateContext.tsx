@@ -259,6 +259,7 @@ export interface Settings {
         recordingResolutionScale: number
         enableRemoteLogViewer: boolean
         remoteLogViewerPort: number
+        enableDevMcpServer: boolean
         enableMessageIdDisplay: boolean
     }
 
@@ -315,7 +316,6 @@ export interface Settings {
         grandLiveLessonStatPriority: string[]
         grandLiveLessonHintPriority: string[]
         grandLiveSongPriority: string[]
-        grandLiveLessonRescanInterval: number
     }
 }
 
@@ -595,6 +595,7 @@ export const defaultSettings: Settings = {
         recordingResolutionScale: 1.0,
         enableRemoteLogViewer: false,
         remoteLogViewerPort: 9000,
+        enableDevMcpServer: false,
         enableMessageIdDisplay: false,
     },
     discord: {
@@ -643,7 +644,6 @@ export const defaultSettings: Settings = {
         grandLiveLessonStatPriority: [],
         grandLiveLessonHintPriority: [],
         grandLiveSongPriority: [],
-        grandLiveLessonRescanInterval: 6,
     },
 }
 

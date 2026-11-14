@@ -598,6 +598,7 @@ class SkillScraper(BaseScraper):
 
             skill_id_to_name = {}
             versions_by_name = {}
+            global_by_name = {}
             for skill in skill_data:
                 try:
                     # Every record below is keyed and read by its English name, so there is nothing to build without one. See exists_on_global() for the release check.
@@ -673,8 +674,18 @@ class SkillScraper(BaseScraper):
                         "upgrade": None,
                         "downgrade": None,
                     }
+                    # The file is keyed by English name, so a skill Global does not have yet must never displace a Global one of the same name ("Pressure" 202542 hid 201212).
+                    if skill_name_en in self.data:
+                        kept = self.data[skill_name_en]
+                        if global_by_name[skill_name_en] and not bIsOnGlobal:
+                            logging.warning(f"Skill name collision: keeping Global {skill_name_en} ({kept['id']}), skipping {skill_id}.")
+                            continue
+                        logging.warning(f"Skill name collision: {skill_name_en} ({skill_id}) replaces {kept['id']}.")
+                        skill_id_to_name.pop(kept["id"], None)
+
                     skill_id_to_name[skill["id"]] = skill_name_en
                     versions_by_name[skill_name_en] = sorted(skill.get("versions", []))
+                    global_by_name[skill_name_en] = bIsOnGlobal
 
                     self.data[skill_name_en] = tmp
                 except KeyError as exc:

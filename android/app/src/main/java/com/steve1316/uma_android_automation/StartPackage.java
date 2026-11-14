@@ -31,6 +31,7 @@ public class StartPackage implements ReactPackage {
         modules.add(new SmartRaceSolverModule(reactContext));
         modules.add(new StorageBridgeModule(reactContext));
         modules.add(new LogcatModule(reactContext));
+        modules.add(new DevMcpModule(reactContext));
 
         return modules;
     }

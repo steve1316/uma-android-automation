@@ -35,6 +35,12 @@ import org.opencv.core.Point
 import java.text.DecimalFormat
 import kotlin.intArrayOf
 
+/** The loading reason shown while the game waits on its server. */
+private const val CONNECTING_REASON = "The game is awaiting a response from the server."
+
+/** How long the game may sit on its Connecting label with nothing else showing before the run stops with an error. */
+private const val CONNECTING_TIMEOUT_MS = 5 * 60 * 1000L
+
 /**
  * Main driver for bot activity and navigation.
  *
@@ -47,8 +53,8 @@ class Game(val myContext: Context) {
     /** The utility class for image processing and template matching. */
     val imageUtils: CustomImageUtils = CustomImageUtils(myContext, this)
 
-    /** The Accessibility Service for performing screen gestures. */
-    val gestureUtils: MyAccessibilityService = MyAccessibilityService.getInstance()
+    /** The Accessibility Service for performing screen gestures. Read on every access, since a restarted service is a new instance. */
+    val gestureUtils: MyAccessibilityService get() = MyAccessibilityService.getInstance()
 
     /** The database for skill-related information. */
     val skillDatabase: SkillDatabase = SkillDatabase(this)
@@ -92,6 +98,10 @@ class Game(val myContext: Context) {
 
     companion object {
         private val TAG: String = "[${MainActivity.loggerTag}]Game"
+
+        /** The most recent run's `Game`, set only while the developer MCP server runs so it can report the final state after the run ends. */
+        @Volatile
+        var current: Game? = null
     }
 
     // Initialize Discord settings from SQLite.
@@ -151,15 +161,26 @@ class Game(val myContext: Context) {
      *
      * Note that this function is responsible for dictating how fast the bot will run so adjusting this should be done with caution.
      * It logs once when a load starts and once when it ends, not on every check.
+     * If the game shows Connecting for 5 minutes straight, the server is not answering and the run stops with an error.
+     *
+     * @throws GameConnectionStuckException When Connecting stays up for 5 minutes with nothing else showing.
      */
     fun waitForLoading() {
         var reason = loadingReason() ?: return
         MessageLog.i(TAG, "[LOADING] $reason Waiting...")
         val startTime = System.currentTimeMillis()
+        var reasonSince = startTime
         while (true) {
             // Avoid an infinite loop by skipping the loading check inside wait().
             wait(waitDelay, skipWaitingForLoading = true)
-            reason = loadingReason() ?: break
+            val next = loadingReason() ?: break
+            if (next != reason) {
+                reason = next
+                reasonSince = System.currentTimeMillis()
+            }
+            if (reason == CONNECTING_REASON && System.currentTimeMillis() - reasonSince >= CONNECTING_TIMEOUT_MS) {
+                throw GameConnectionStuckException("The game was stuck on Connecting for 5 minutes. Stopping bot...")
+            }
         }
         MessageLog.i(TAG, "[LOADING] Finished loading after ${"%.1f".format((System.currentTimeMillis() - startTime) / 1000.0)}s.")
     }
@@ -225,7 +246,7 @@ class Game(val myContext: Context) {
     private fun loadingReason(): String? {
         val sourceBitmap = imageUtils.getSourceBitmap()
         return when {
-            LabelConnecting.check(imageUtils, sourceBitmap = sourceBitmap) -> "The game is awaiting a response from the server."
+            LabelConnecting.check(imageUtils, sourceBitmap = sourceBitmap) -> CONNECTING_REASON
             LabelNowLoading.check(imageUtils, sourceBitmap = sourceBitmap) -> "The game is on a Now Loading screen."
             else -> null
         }

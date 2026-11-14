@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "uma": {
+            "command": "uv",
+            "args": ["run", "--quiet", "--script", "scripts/uma_mcp.py"]
+        }
+    }
+}

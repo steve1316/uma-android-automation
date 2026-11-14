@@ -4,11 +4,14 @@ import android.graphics.Bitmap
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.uma_android_automation.MainActivity
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.GameConnectionStuckException
 import com.steve1316.uma_android_automation.components.ButtonBurger
 import com.steve1316.uma_android_automation.components.ButtonCareer
 import com.steve1316.uma_android_automation.components.ButtonClose
 import com.steve1316.uma_android_automation.components.IconRaceHistory1st
 import com.steve1316.uma_android_automation.components.LabelStrategy
+import com.steve1316.uma_android_automation.types.BoundingBox
+import com.steve1316.uma_android_automation.utils.CustomImageUtils
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
@@ -94,6 +97,8 @@ object RaceHistory {
 
         val results = mutableListOf<RaceHistoryEntry>()
         val seenKeys = mutableSetOf<String>()
+        // The rows of the frame being processed, read in one go by its onFrame hook, by entry index.
+        var frameRows: Map<Int, RaceHistoryEntry> = emptyMap()
         try {
             // Use the Career dialog's own scroll-list corner icons so the bbox bounds
             // the actual race-history list region. Then let ScrollList iterate via
@@ -111,8 +116,9 @@ object RaceHistory {
                 bForceComponentDetection = true,
                 // No key extractor. A thumb drag lands every page's rows at the same screen positions, so a key built from the position would mark a whole
                 // new page as already seen. The overlap row is read again instead and dropped by name and date below.
+                onFrame = { frame, frameEntries -> frameRows = parseFrame(game, frame, frameEntries) },
                 onEntry = { _, entry ->
-                    val parsed = parseEntry(game, entry)
+                    val parsed = frameRows[entry.index]
                     // A row cut off by the top of the list reads with no name, so it is skipped. Spaces are left out of the key, since OCR reads the same
                     // "Right / Outer" as "Right/ Outer" on another page.
                     if (parsed != null && parsed.nameFormatted.isNotEmpty()) {
@@ -122,6 +128,8 @@ object RaceHistory {
                     false
                 },
             )
+        } catch (e: GameConnectionStuckException) {
+            throw e
         } catch (e: Exception) {
             MessageLog.e(TAG, "[ERROR] scrape:: Exception while iterating Race History entries: ${e.message}.")
             closeBackToMainScreen(game)
@@ -145,66 +153,52 @@ object RaceHistory {
     }
 
     /**
-     * Reads one crop region relative to an anchor point via OCR and trims the result.
+     * Turns a crop given as an offset and size from an anchor into a frame region.
      *
-     * @param game Active Game instance for OCR.
-     * @param bitmap The row bitmap to read from.
-     * @param anchor The reference point the crop offsets are measured from, in [bitmap] pixels.
+     * @param imageUtils For scaling the reference offsets to this screen.
+     * @param anchor The reference point the offsets are measured from, in frame pixels.
      * @param offsetX Horizontal offset of the crop from the anchor.
      * @param offsetY Vertical offset of the crop from the anchor.
-     * @param w Crop width in reference pixels (scaled via relWidth).
-     * @param h Crop height in reference pixels (scaled via relHeight).
-     * @param debugName Identifier used for debug image dumps.
-     * @return The trimmed OCR text for the crop region.
+     * @param w Crop width in reference pixels.
+     * @param h Crop height in reference pixels.
+     * @return The crop region in frame pixels.
      */
-    private fun ocrFromAnchor(game: Game, bitmap: Bitmap, anchor: Point, offsetX: Int, offsetY: Int, w: Int, h: Int, debugName: String): String =
-        game.imageUtils
-            .performOCRFromReference(
-                referencePoint = anchor,
-                offsetX = offsetX,
-                offsetY = offsetY,
-                width = game.imageUtils.relWidth(w),
-                height = game.imageUtils.relHeight(h),
-                debugName = debugName,
-                bitmap = bitmap,
-            ).trim()
+    private fun fieldBox(imageUtils: CustomImageUtils, anchor: Point, offsetX: Int, offsetY: Int, w: Int, h: Int): BoundingBox =
+        BoundingBox(imageUtils.relX(anchor.x, offsetX), imageUtils.relY(anchor.y, offsetY), imageUtils.relWidth(w), imageUtils.relHeight(h))
 
     /**
-     * Parse a single race history row by anchoring on its visible LabelStrategy chip and OCR-ing the crop regions relative to it.
+     * Parses every race history row of one frame, anchoring each on its LabelStrategy chip. All of the frame's text is read with a single OCR call, since each
+     * call costs about the same however small its crop is.
      *
-     * Everything is read from the row's own bitmap, cut from the frame the row was found in. A fresh screenshot would be off by however far the list moved since that frame,
-     * which puts the crops between two lines of text.
+     * Everything is read from the frame the rows were found in. A fresh screenshot would be off by however far the list moved since that frame, which puts the
+     * crops between two lines of text.
      *
      * @param game Active Game instance for OCR and image search.
-     * @param entry The row produced by [ScrollList] component-detection mode.
-     * @return The parsed entry, or null if the LabelStrategy anchor could not be located.
+     * @param frame The frame the rows were found in.
+     * @param entries The rows found in [frame] by [ScrollList] component-detection mode.
+     * @return The parsed rows by entry index. A row whose LabelStrategy anchor could not be found again is left out.
      */
-    private fun parseEntry(game: Game, entry: ScrollListEntry): RaceHistoryEntry? {
-        val bitmap: Bitmap = entry.bitmap
-        val anchor: Point =
-            LabelStrategy.findImageWithBitmap(
-                imageUtils = game.imageUtils,
-                sourceBitmap = bitmap,
-            ) ?: return null
-        val anchorX: Int = anchor.x.toInt()
-        val anchorY: Int = anchor.y.toInt()
-        val screenY: Int = entry.bbox.y + anchorY
+    private fun parseFrame(game: Game, frame: Bitmap, entries: List<ScrollListEntry>): Map<Int, RaceHistoryEntry> {
+        val imageUtils = game.imageUtils
+        // Each row's LabelStrategy anchor, in frame pixels.
+        val anchors: Map<Int, Point> =
+            entries
+                .mapNotNull { entry ->
+                    LabelStrategy.findImageWithBitmap(imageUtils, entry.bitmap)?.let { entry.index to Point(entry.bbox.x + it.x, entry.bbox.y + it.y) }
+                }.toMap()
 
-        val nameFormatted = ocrFromAnchor(game, bitmap, anchor, FORMATTED_NAME_OFFSET_X, FORMATTED_NAME_OFFSET_Y, FORMATTED_NAME_W, FORMATTED_NAME_H, "race_history_formatted_$screenY")
+        val fields = mutableMapOf<String, BoundingBox>()
+        for ((index, anchor) in anchors) {
+            fields["name$index"] = fieldBox(imageUtils, anchor, FORMATTED_NAME_OFFSET_X, FORMATTED_NAME_OFFSET_Y, FORMATTED_NAME_W, FORMATTED_NAME_H)
+            fields["date$index"] = fieldBox(imageUtils, anchor, DATE_OFFSET_X, DATE_OFFSET_Y, DATE_W, DATE_H)
+            fields["strategy$index"] = fieldBox(imageUtils, anchor, STRATEGY_OFFSET_X, STRATEGY_OFFSET_Y, STRATEGY_W, STRATEGY_H)
+        }
+        val texts: Map<String, String> = imageUtils.readFields(frame, fields)
 
-        val dateString = ocrFromAnchor(game, bitmap, anchor, DATE_OFFSET_X, DATE_OFFSET_Y, DATE_W, DATE_H, "race_history_date_$screenY")
-
-        val strategy = ocrFromAnchor(game, bitmap, anchor, STRATEGY_OFFSET_X, STRATEGY_OFFSET_Y, STRATEGY_W, STRATEGY_H, "race_history_strategy_$screenY")
-
-        val firstPlaceRegion =
-            intArrayOf(
-                anchorX + game.imageUtils.relWidth(FIRST_PLACE_OFFSET_X),
-                anchorY + game.imageUtils.relHeight(FIRST_PLACE_OFFSET_Y),
-                game.imageUtils.relWidth(FIRST_PLACE_W),
-                game.imageUtils.relHeight(FIRST_PLACE_H),
-            )
-        val won: Boolean = IconRaceHistory1st.findImageWithBitmap(game.imageUtils, bitmap, region = firstPlaceRegion) != null
-
-        return RaceHistoryEntry(nameFormatted, dateString, won, strategy)
+        return anchors.mapValues { (index, anchor) ->
+            val firstPlaceRegion = fieldBox(imageUtils, anchor, FIRST_PLACE_OFFSET_X, FIRST_PLACE_OFFSET_Y, FIRST_PLACE_W, FIRST_PLACE_H).toIntArray()
+            val won: Boolean = IconRaceHistory1st.findImageWithBitmap(imageUtils, frame, region = firstPlaceRegion) != null
+            RaceHistoryEntry(texts["name$index"].orEmpty().trim(), texts["date$index"].orEmpty().trim(), won, texts["strategy$index"].orEmpty().trim())
+        }
     }
 }

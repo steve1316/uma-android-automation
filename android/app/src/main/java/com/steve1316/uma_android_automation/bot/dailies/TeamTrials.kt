@@ -78,18 +78,19 @@ class TeamTrials(private val game: Game, private val flags: DailiesFlags, overri
      */
     private fun openTeamRace() {
         openRaceTab(game)
-        if (!ButtonTeamTrials.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Team Trials button not found")
+        tapWhenShown(game, ButtonTeamTrials, "Team Trials button not found")
         game.wait(2.0)
         game.waitForLoading()
-        val (screen, next) = game.waitForAny(ButtonTeamRace, ButtonNext, timeoutSec = 15.0) ?: throw DailyStepFailed("Team Trials screen did not appear")
+        val (screen, at) = game.waitForAny(ButtonTeamRace, ButtonNext, timeoutSec = 15.0) ?: throw DailyStepFailed("Team Trials screen did not appear")
         // Once a week, entering Team Trials first shows the Class Retention rewards, which close with Next.
         if (screen == ButtonNext) {
             MessageLog.i(TAG, "[DAILIES] Closing the weekly Class Retention rewards.")
-            game.tap(next.x, next.y)
+            game.tap(at.x, at.y)
             game.wait(1.0)
-            game.waitForAny(ButtonTeamRace, timeoutSec = 15.0) ?: throw DailyStepFailed("Team Trials screen did not appear after the Class Retention rewards")
+            tapWhenShown(game, ButtonTeamRace, "Team Trials screen did not appear after the Class Retention rewards")
+        } else {
+            game.tap(at.x, at.y)
         }
-        if (!ButtonTeamRace.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Team Race button not found")
         game.wait(1.0)
         game.waitForLoading()
     }
@@ -120,7 +121,7 @@ class TeamTrials(private val game: Game, private val flags: DailiesFlags, overri
      * @throws DailyStepFailed When Next or Items Selected never appears.
      */
     private fun openItemsSelected(): Point {
-        if (!ButtonNext.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Team line-up Next not found")
+        tapWhenShown(game, ButtonNext, "Team line-up Next not found")
         game.wait(1.0)
         val raceButton = game.waitForAny(ButtonRaceExclamationShiftedUp)?.second ?: throw DailyStepFailed("Items Selected did not appear")
         game.wait(0.5)
@@ -193,7 +194,7 @@ class TeamTrials(private val game: Game, private val flags: DailiesFlags, overri
         game.waitForLoading()
         game.wait(2.0)
 
-        if (!ButtonSeeAllRaceResults.click(game.imageUtils, tries = 30)) throw DailyStepFailed("See All Race Results not found")
+        tapWhenShown(game, ButtonSeeAllRaceResults, "See All Race Results not found")
         game.wait(2.0)
         skipRace(game, ButtonNext, ButtonNextWithImage, ButtonRaceAgain)
     }
