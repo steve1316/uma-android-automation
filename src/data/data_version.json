@@ -1,11 +1,11 @@
 {
-    "version": "2026-11-10T19:31:44Z",
-    "label": "Ines Fujin (Valentine) 2026-11-09",
+    "version": "2026-11-15T18:40:33Z",
+    "label": "2026-11-15",
     "minAppVersion": "5.8.8",
     "files": {
         "characters.json": "c883c5dc79c94a64fc5058ab8767070b",
         "supports.json": "b739079cff3a53887b176a1b0c17a523",
-        "skills.json": "64a8ae4c4bd10c6ca46abc31ee6bbdc1",
+        "skills.json": "bd359744d013b9474bc7f9ba4acf8e79",
         "epithets.json": "bb3a4ae25c0308e9452f49994ad0e3b0",
         "characterPresets.json": "4443f003153a9b04ea4caa2b88228681",
         "character_objectives.json": "cc86cb5008c7c3d9ecb6dba44aa03e36",
