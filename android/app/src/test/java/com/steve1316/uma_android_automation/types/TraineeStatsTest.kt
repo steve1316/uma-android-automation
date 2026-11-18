@@ -96,4 +96,37 @@ class TraineeStatsTest {
             assertEquals("Spd=252, Sta=104, Pow=155/1400, Gut=108/1400, Wit=187/1400", stats.toStringWithCaps(caps))
         }
     }
+
+    @Nested
+    @DisplayName("applyStatUpdate")
+    inner class ApplyStatUpdateTests {
+        @Test
+        fun `a failed read keeps the held value`() {
+            val trainee = Trainee().apply { stats.wit = 126 }
+            trainee.applyStatUpdate(StatName.WIT, -1, viaSequential = false)
+            assertEquals(126, trainee.stats.wit)
+        }
+
+        @Test
+        fun `a failed read keeps a held value inside the accept window`() {
+            val trainee = Trainee().apply { stats.speed = 143 }
+            trainee.applyStatUpdate(StatName.SPEED, -1, viaSequential = true)
+            assertEquals(143, trainee.stats.speed)
+        }
+
+        @Test
+        fun `a close read is still accepted`() {
+            val trainee = Trainee().apply { stats.power = 200 }
+            trainee.applyStatUpdate(StatName.POWER, 230, viaSequential = false)
+            assertEquals(230, trainee.stats.power)
+        }
+
+        @Test
+        fun `a first read is accepted when no value is held`() {
+            val trainee = Trainee()
+            trainee.applyStatUpdate(StatName.GUTS, 85, viaSequential = false)
+            assertEquals(85, trainee.stats.guts)
+            assertTrue(trainee.bHasUpdatedStats)
+        }
+    }
 }
