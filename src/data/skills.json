@@ -6272,17 +6272,17 @@
         "downgrade": null
     },
     "Pressure": {
-        "id": 202542,
+        "id": 201212,
         "name_en": "Pressure",
-        "desc_en": "When positioned midpack or further back on the final corner, minimally decrease the velocity of 3 runners ahead and 3 behind. Slightly increase skill user's velocity. (Late Surger)",
+        "desc_en": "Slightly increase velocity and very minimally increase acceleration after passing another runner late-race. (Long)",
         "icon_id": 20011,
-        "cost": 190,
+        "cost": 160,
         "eval_pt": 217,
-        "condition": "running_style==3&order_rate>=40&is_finalcorner_random==1",
+        "condition": "distance_type==4&phase==2&change_order_onetime<0",
         "precondition": "",
         "inherited": false,
         "community_tier": 1,
-        "upgrade": 202541,
+        "upgrade": 201211,
         "downgrade": null
     },
     "Prideful King": {
@@ -9321,7 +9321,7 @@
         "inherited": false,
         "community_tier": null,
         "upgrade": null,
-        "downgrade": 202542
+        "downgrade": null
     },
     "Wait-and-See": {
         "id": 200662,

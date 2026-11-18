@@ -72,6 +72,7 @@ open class DialogHandler(val game: Game) {
      * @param dialog An optional dialog to evaluate. This allows chaining dialog handler calls for improved performance.
      * @param args Optional arguments mapping for dialog handling behavior.
      * @return The [DialogHandlerResult] for this operation.
+     * @throws BotStopException When the "Date Changed" dialog shows, since the game then returns to the title screen.
      */
     open fun handleDialogs(dialog: DialogInterface? = null, args: Map<String, Any> = mapOf()): DialogHandlerResult {
         val bShouldWait = args["bShouldWait"] as? Boolean ?: false
@@ -135,6 +136,11 @@ open class DialogHandler(val game: Game) {
                 game.connectionErrorRetryAttempts++
                 dialog.ok(game.imageUtils)
                 game.wait(0.5)
+            }
+
+            "date_changed" -> {
+                // OK sends the game back to the title screen, which the bot cannot recover from. Leave the dialog up so the user sees why it stopped.
+                throw BotStopException("The date changed and the game will return to the title screen. Stopping bot...")
             }
 
             "display_settings" -> {
