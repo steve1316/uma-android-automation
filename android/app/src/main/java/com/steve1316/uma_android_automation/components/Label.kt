@@ -124,6 +124,7 @@ val LabelSelectOpponent = label("select_opponent", Region.topQuarter)
 val LabelStarUnlockText = label("star_unlock_text", confidence = 0.85)
 val LabelTeamRankBadge = label("team_rank_badge", Region.leftHalf)
 val LabelTopBarRp = label("top_bar_rp", Region.topQuarter)
+val LabelWithEveryWin = label("with_every_win", Region.rightHalf)
 
 // Career Setup
 val LabelCareerStartScenarioSelectHeader = label("career_start_scenario_select_header", Region.topQuarter, confidence = 0.9)
