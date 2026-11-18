@@ -113,6 +113,7 @@ val LabelDailyLegendRacesHeader = label("daily_legend_races_header", Region.topQ
 val LabelDailyPrograms = label("daily_programs", Region.middle)
 val LabelDailyRacesHeader = label("daily_races_header", Region.topQuarter, confidence = 0.9)
 val LabelDoneForToday = label("done_for_today", Region.bottomHalf)
+val LabelItemRequestActive = label("item_request_active", Region.topHalf)
 val LabelItemRequestExpired = label("item_request_expired", Region.bottomHalf)
 val LabelItemRequestHeld = label("item_request_held")
 val LabelItemRequestSelectPrompt = label("item_request_select_prompt", Region.bottomHalf)
