@@ -620,7 +620,16 @@ val DialogFeaturedCards = dialog("featured_cards", "Featured Cards", buttons = l
 val DialogFinalConfirmation = dialog("final_confirmation", "Final Confirmation", buttons = listOf(ButtonCancel, ButtonStartCareer), okButton = ButtonStartCareer)
 
 /** Career */
-val DialogFollowTrainer = dialog("follow_trainer", "Follow Trainer", buttons = listOf(ButtonCancel, ButtonFollow), okButton = ButtonFollow)
+object DialogFollowTrainer : DialogInterface {
+    override val name: String = "follow_trainer"
+    override val title: String = "Follow Trainer"
+    override val closeButton = null
+    override val okButton = ButtonFollow
+    override val buttons: List<BaseComponentInterface> = listOf(ButtonCancel, ButtonFollow)
+
+    // When the trainer is at maximum followers, the dialog only has a Close button.
+    override fun close(imageUtils: CustomImageUtils, tries: Int): Boolean = ButtonCancel.click(imageUtils, tries = tries) || ButtonClose.click(imageUtils, tries = tries)
+}
 
 /** Career */
 val DialogGiveUp = dialog("give_up", "Give Up", buttons = listOf(ButtonCancel, ButtonGiveUp), okButton = ButtonGiveUp)
