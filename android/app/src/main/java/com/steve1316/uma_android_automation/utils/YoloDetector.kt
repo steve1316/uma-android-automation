@@ -277,9 +277,9 @@ class YoloDetector(private val context: Context) {
         val inputName = ortSession?.inputNames?.iterator()?.next() ?: "images"
 
         try {
-            // Create input tensor and run inference.
+            // Create input tensor and run inference. The tensor is only freed by close(), so close it once the run is done.
             val inputTensor = OnnxTensor.createTensor(ortEnv, floatBuffer, longArrayOf(1, 3, INPUT_SIZE.toLong(), INPUT_SIZE.toLong()))
-            val results = ortSession?.run(Collections.singletonMap(inputName, inputTensor))
+            val results = inputTensor.use { ortSession?.run(Collections.singletonMap(inputName, it)) }
 
             results?.use {
                 val outputValue = it.get(0).value
