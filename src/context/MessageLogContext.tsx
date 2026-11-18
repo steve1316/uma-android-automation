@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo, useState } from "react"
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 /**
  * Represents a single entry in the message log.
@@ -33,6 +33,12 @@ export interface MessageLogDispatchProps {
 export const MessageLogDataContext = createContext<MessageLogDataProps>({} as MessageLogDataProps)
 export const MessageLogDispatchContext = createContext<MessageLogDispatchProps>({} as MessageLogDispatchProps)
 
+/** Most entries kept on screen. The full log still goes to the saved log file. */
+const MAX_LOG_ENTRIES = 2000
+
+/** How long new lines are collected before they are added to the log in one update. */
+const LOG_FLUSH_MS = 300
+
 /**
  * Provider component for the message log contexts. Splits the log array and the setters into
  * two separate contexts so high-frequency log pushes from the Kotlin bot service do not
@@ -45,18 +51,46 @@ export const MessageLogDispatchContext = createContext<MessageLogDispatchProps>(
  */
 export const MessageLogProvider = ({ children }: any): React.ReactElement => {
     const [messageLog, setMessageLog] = useState<MessageLogEntry[]>([])
+    const pendingRef = useRef<MessageLogEntry[]>([])
+    const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    useEffect(
+        () => () => {
+            if (flushTimerRef.current !== null) clearTimeout(flushTimerRef.current)
+        },
+        []
+    )
+
+    /** Adds the collected lines to the log in one update, keeping only the newest `MAX_LOG_ENTRIES`. */
+    const flushPending = useCallback(() => {
+        flushTimerRef.current = null
+        const batch = pendingRef.current
+        pendingRef.current = []
+        if (batch.length > 0) setMessageLog((prev) => prev.concat(batch).slice(-MAX_LOG_ENTRIES))
+    }, [])
 
     /**
      * Add to the message log while keeping track of the sequential message IDs to prevent duplication.
+     * Lines are collected for `LOG_FLUSH_MS` and added together, so a burst of lines copies the log once instead of once per line.
      * @param id The sequential message ID from the bot service.
      * @param message The text content of the log message.
      */
-    const addMessageToLog = useCallback((id: number, message: string) => {
-        setMessageLog((prev) => [...prev, { id, message }])
+    const addMessageToLog = useCallback(
+        (id: number, message: string) => {
+            pendingRef.current.push({ id, message })
+            if (flushTimerRef.current === null) flushTimerRef.current = setTimeout(flushPending, LOG_FLUSH_MS)
+        },
+        [flushPending]
+    )
+
+    /** Replaces the whole log. Lines still waiting for the next flush are dropped so they do not show up after a clear. */
+    const replaceMessageLog = useCallback<React.Dispatch<React.SetStateAction<MessageLogEntry[]>>>((value) => {
+        pendingRef.current = []
+        setMessageLog(value)
     }, [])
 
     const dataValue = useMemo<MessageLogDataProps>(() => ({ messageLog }), [messageLog])
-    const dispatchValue = useMemo<MessageLogDispatchProps>(() => ({ setMessageLog, addMessageToLog }), [addMessageToLog])
+    const dispatchValue = useMemo<MessageLogDispatchProps>(() => ({ setMessageLog: replaceMessageLog, addMessageToLog }), [replaceMessageLog, addMessageToLog])
 
     return (
         <MessageLogDataContext.Provider value={dataValue}>
