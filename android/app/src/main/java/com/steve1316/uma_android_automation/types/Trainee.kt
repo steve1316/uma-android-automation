@@ -644,7 +644,7 @@ class Trainee {
         val oldValue = getStat(statName)
         // A failed read is -1, which would pass the window below for any held value under 149. Real stats are at least 1.
         if (newValue < 1 && oldValue > 0) {
-            Log.d(TAG, "[DEBUG] updateStats:: Unusable $statName reading ($newValue)$via; keeping $oldValue.")
+            MessageLog.d(TAG, "[DEBUG] updateStats:: Unusable $statName reading ($newValue)$via. Keeping $oldValue.")
             return
         }
         val diff = abs(newValue - oldValue)
