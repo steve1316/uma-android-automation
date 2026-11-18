@@ -197,10 +197,19 @@ class TaskLoopTest {
     }
 
     @Test
-    fun stuckConnectingEndsTheRunWithAConnectionError() {
+    fun stuckConnectingEndsTheRunWithABotStop() {
         val hooks = FakeHooks(listOf<Step>({ throw GameConnectionStuckException("Stuck") }, { DONE }))
         val result = runTaskLoop(hooks)
-        assertEquals(TaskResult.Error(TaskResultCode.TASK_RESULT_CONNECTION_ERROR, "Stuck"), result)
+        assertEquals(TaskResult.Error(TaskResultCode.TASK_RESULT_BOT_STOPPED, "Stuck"), result)
+        assertEquals(1, hooks.processCalls)
+        assertEquals(0, hooks.ackCalls)
+    }
+
+    @Test
+    fun botStopEndsTheRunWithItsMessage() {
+        val hooks = FakeHooks(listOf<Step>({ throw BotStopException("Date changed") }, { DONE }))
+        val result = runTaskLoop(hooks)
+        assertEquals(TaskResult.Error(TaskResultCode.TASK_RESULT_BOT_STOPPED, "Date changed"), result)
         assertEquals(1, hooks.processCalls)
         assertEquals(0, hooks.ackCalls)
     }

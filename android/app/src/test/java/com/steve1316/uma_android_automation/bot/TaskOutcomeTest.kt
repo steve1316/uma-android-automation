@@ -38,8 +38,8 @@ class TaskOutcomeTest {
     }
 
     @Test
-    fun connectionErrorIsStoppedByTheBot() {
-        assertEquals(BotStatus.Outcome.STOPPED_BY_BOT to "Too many connection errors.", outcomeFor(TaskResult.Error(TaskResultCode.TASK_RESULT_CONNECTION_ERROR, "Too many connection errors.")))
+    fun botStopIsStoppedByTheBot() {
+        assertEquals(BotStatus.Outcome.STOPPED_BY_BOT to "Too many connection errors.", outcomeFor(TaskResult.Error(TaskResultCode.TASK_RESULT_BOT_STOPPED, "Too many connection errors.")))
     }
 
     /** Unit tests for deciding whether a career that reached its end screen finished or failed. */
