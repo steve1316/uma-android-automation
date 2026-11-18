@@ -8,7 +8,7 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
-import com.steve1316.uma_android_automation.bot.tapTrainingOnce
+import com.steve1316.uma_android_automation.bot.switchTrainingTab
 import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonCancel
 import com.steve1316.uma_android_automation.components.ButtonCareerEndSkillsMini
@@ -169,15 +169,15 @@ class GrandLive(game: Game) : Campaign(game) {
         }
 
     /**
-     * Select a training facility for the token-gain test by tapping its button once and waiting for its header (mirrors the training analyzer's goToStat).
+     * Select a training facility for the token-gain test by tapping its button and waiting for its header (mirrors the training analyzer's goToStat).
      *
      * @param button The facility's training selection button.
      * @param header The facility's header icon, used to confirm the facility is selected.
-     * @return True once the facility is selected, false if its header did not show.
+     * @return True once the facility is selected, false if its header never showed.
      */
     private fun goToTrainingFacility(button: ComponentInterface, header: ComponentInterface): Boolean {
         if (header.check(game.imageUtils)) return true
-        return tapTrainingOnce({ button.click(game.imageUtils) }, { header.check(game.imageUtils) }, { game.wait(0.3, skipWaitingForLoading = true) })
+        return switchTrainingTab({ button.click(game.imageUtils) }, { header.check(game.imageUtils) }, { game.wait(0.3, skipWaitingForLoading = true) })
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
