@@ -299,7 +299,7 @@ class Game(val myContext: Context) {
      * Builds the career task for the selected scenario.
      *
      * @return The scenario's career task.
-     * @throws InterruptedException When the scenario setting is not a known scenario.
+     * @throws BotStopException When the scenario setting is not a known scenario.
      */
     private fun createCareerTask(): Task =
         when (scenario) {
@@ -307,7 +307,7 @@ class Game(val myContext: Context) {
             "Unity Cup" -> UnityCup(this)
             "Trackblazer" -> Trackblazer(this)
             "Grand Live" -> GrandLive(this)
-            else -> throw InterruptedException("Invalid scenario: $scenario")
+            else -> throw BotStopException("Invalid scenario: $scenario")
         }
 
     /**
