@@ -216,8 +216,9 @@ interface ComponentInterface : BaseComponentInterface {
     override fun findImageWithBitmap(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, region: IntArray?, confidence: Double?): Point? {
         // If we are searching within a cropped bitmap (like an entry bitmap), we should default to searching the entire bitmap
         // if no specific region is provided. This prevents out-of-bounds errors from default regions intended for full-screen use.
+        // Only a narrower bitmap is a crop: on devices whose ImageReader pads rows, a full screenshot is wider than the screen.
         val searchRegion =
-            if (region == null && (sourceBitmap.width != SharedData.displayWidth || sourceBitmap.height != SharedData.displayHeight)) {
+            if (region == null && (sourceBitmap.width < SharedData.displayWidth || sourceBitmap.height != SharedData.displayHeight)) {
                 intArrayOf(0, 0, 0, 0)
             } else {
                 region ?: template.region
@@ -246,8 +247,9 @@ interface ComponentInterface : BaseComponentInterface {
 
         // If we are searching within a cropped bitmap (like an entry bitmap), we should default to searching the entire bitmap
         // if no specific region is provided.
+        // Only a narrower bitmap is a crop: on devices whose ImageReader pads rows, a full screenshot is wider than the screen.
         val searchRegion =
-            if (region == null && (bitmap.width != SharedData.displayWidth || bitmap.height != SharedData.displayHeight)) {
+            if (region == null && (bitmap.width < SharedData.displayWidth || bitmap.height != SharedData.displayHeight)) {
                 intArrayOf(0, 0, 0, 0)
             } else {
                 region ?: template.region
@@ -472,8 +474,9 @@ interface ComplexComponentInterface : BaseComponentInterface {
     }
 
     override fun findImageWithBitmap(imageUtils: CustomImageUtils, sourceBitmap: Bitmap, region: IntArray?, confidence: Double?): Point? {
+        // Only a narrower bitmap is a crop: on devices whose ImageReader pads rows, a full screenshot is wider than the screen.
         val searchRegion =
-            if (region == null && (sourceBitmap.width != SharedData.displayWidth || sourceBitmap.height != SharedData.displayHeight)) {
+            if (region == null && (sourceBitmap.width < SharedData.displayWidth || sourceBitmap.height != SharedData.displayHeight)) {
                 intArrayOf(0, 0, 0, 0)
             } else {
                 region

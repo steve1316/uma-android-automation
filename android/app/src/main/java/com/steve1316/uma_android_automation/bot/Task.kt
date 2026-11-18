@@ -40,9 +40,23 @@ enum class TaskResultCode {
     /** An unhandled exception occurred during task execution. */
     TASK_RESULT_UNHANDLED_EXCEPTION,
 
-    /** A connection error occurred during task execution. */
-    TASK_RESULT_CONNECTION_ERROR,
+    /** The game reached a state the bot cannot continue from, like a stuck Connecting label or a date change. */
+    TASK_RESULT_BOT_STOPPED,
 }
+
+/**
+ * Thrown when the game reaches a state the bot cannot continue from. The task loop ends the run and shows the message as the stop reason.
+ *
+ * @param message Why the bot stopped, shown as the run's stop reason.
+ */
+open class BotStopException(message: String) : Exception(message)
+
+/**
+ * Thrown when the game sits on its Connecting label for too long. The task loop ends the run like any other [BotStopException].
+ *
+ * @param message What the game was stuck on, shown as the run's stop reason.
+ */
+class GameConnectionStuckException(message: String) : BotStopException(message)
 
 /** Represents the final result of a task's execution. */
 sealed interface TaskResult {
@@ -79,7 +93,7 @@ fun outcomeFor(result: TaskResult, completeReason: String = CAREER_COMPLETE_REAS
         TaskResultCode.TASK_RESULT_BREAKPOINT_REACHED -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
         TaskResultCode.TASK_RESULT_MANUALLY_STOPPED -> BotStatus.Outcome.STOPPED_BY_USER to "You stopped the bot"
         TaskResultCode.TASK_RESULT_UNHANDLED_EXCEPTION -> BotStatus.Outcome.CRASHED to result.message
-        TaskResultCode.TASK_RESULT_CONNECTION_ERROR -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
+        TaskResultCode.TASK_RESULT_BOT_STOPPED -> BotStatus.Outcome.STOPPED_BY_BOT to result.message
     }
 
 /** What the task loop needs from the bot, so the loop itself can be unit tested with fakes. */
@@ -136,6 +150,8 @@ internal fun runTaskLoop(hooks: TaskLoopHooks): TaskResult {
             }
             val result = hooks.process()
             if (result != null) return result
+        } catch (e: BotStopException) {
+            return TaskResult.Error(TaskResultCode.TASK_RESULT_BOT_STOPPED, e.message ?: "The bot could not continue.")
         } catch (e: Exception) {
             // StepAbortedException is an InterruptedException and a stop always wins. Other abort fallout, like a missing screenshot, restarts the same way.
             if (hooks.isStopRequested() || !hooks.acknowledgeAbort()) {

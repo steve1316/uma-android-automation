@@ -31,6 +31,7 @@ import com.steve1316.automation_library.utils.RunReport
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.RunAnalytics
+import com.steve1316.uma_android_automation.utils.DevMcpServer
 import com.steve1316.uma_android_automation.utils.LogStreamServer
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -467,7 +468,9 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
                 Thread {
                     try {
                         // Build the run on this thread, so a crash while setting it up reaches the run-end report like any other crash.
-                        Game(context).start()
+                        val game = Game(context)
+                        if (DevMcpServer.isRunning) Game.current = game
+                        game.start()
                     } catch (e: Exception) {
                         EventBus.getDefault().postSticky(ExceptionEvent(e))
                     }

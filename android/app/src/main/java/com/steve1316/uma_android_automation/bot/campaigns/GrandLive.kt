@@ -8,6 +8,7 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
 import com.steve1316.uma_android_automation.bot.Campaign
 import com.steve1316.uma_android_automation.bot.Game
+import com.steve1316.uma_android_automation.bot.switchTrainingTab
 import com.steve1316.uma_android_automation.components.ButtonBack
 import com.steve1316.uma_android_automation.components.ButtonCancel
 import com.steve1316.uma_android_automation.components.ButtonCareerEndSkillsMini
@@ -70,9 +71,6 @@ class GrandLive(game: Game) : Campaign(game) {
     // The race-day bottom row is Skills / Race / Lessons, so the Race button is smaller than the standard race-day template.
     override val raceDayButton: ComponentInterface = ButtonRaceDayMini
 
-    /** Career day of the last Lessons scan, or -1 if never scanned. Paces how often Lessons is re-opened to poll for newly-learnable cards. */
-    private var lastLessonScanDay: Int = -1
-
     /** Whether the Hype gauge is currently maxed (read off the main screen). When maxed, no Song needs buying for Hype, so tokens can be saved for a sought-after locked Lesson. */
     private var isHypeMaxed: Boolean = false
 
@@ -90,9 +88,6 @@ class GrandLive(game: Game) : Campaign(game) {
 
     /** User-ranked Song titles (Scenario Overrides). A ranked Song is bought ahead of anything else learnable. Empty means no song preference. */
     private val lessonSongPriority: List<String> = SettingsHelper.getStringArraySetting("scenarioOverrides", "grandLiveSongPriority")
-
-    /** Turns without a Lessons visit before Lessons opens without its "!" badge (Scenario Overrides), as a fallback for a missed badge. */
-    private val lessonRescanInterval: Int = SettingsHelper.getIntSetting("scenarioOverrides", "grandLiveLessonRescanInterval", 6)
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,20 +169,15 @@ class GrandLive(game: Game) : Campaign(game) {
         }
 
     /**
-     * Select a training facility for the token-gain test by tapping its button until its header appears (mirrors the training analyzer's goToStat).
+     * Select a training facility for the token-gain test by tapping its button and waiting for its header (mirrors the training analyzer's goToStat).
      *
      * @param button The facility's training selection button.
      * @param header The facility's header icon, used to confirm the facility is selected.
-     * @return True once the facility is selected, false after three failed attempts.
+     * @return True once the facility is selected, false if its header never showed.
      */
     private fun goToTrainingFacility(button: ComponentInterface, header: ComponentInterface): Boolean {
         if (header.check(game.imageUtils)) return true
-        for (attempt in 0..2) {
-            button.click(game.imageUtils)
-            game.wait(0.3, skipWaitingForLoading = true)
-            if (header.check(game.imageUtils)) return true
-        }
-        return false
+        return switchTrainingTab({ button.click(game.imageUtils) }, { header.check(game.imageUtils) }, { game.wait(0.3, skipWaitingForLoading = true) })
     }
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,12 +205,6 @@ class GrandLive(game: Game) : Campaign(game) {
         }
     }
 
-    override fun onResumeAfterAbort() {
-        super.onResumeAfterAbort()
-        // Re-open Lessons on the next main screen, since a purchase may have been cut short or made by hand while paused.
-        lastLessonScanDay = -1
-    }
-
     override fun checkCampaignSpecificConditions(): Boolean {
         // The concert-day screen shows only the Lessons + Concert buttons (not the main screen), so it is reached here. Handle the live flow.
         // The final concert uses a distinct "Grand Concert" button and a skip-cutscene confirmation, so check it first.
@@ -237,8 +221,7 @@ class GrandLive(game: Game) : Campaign(game) {
     }
 
     /**
-     * Whether to open Lessons this turn. The game badges the Lessons button with a "!" when a purchase is affordable, so Lessons opens on that.
-     * As a fallback for a missed badge, it also opens once no visit has happened for [lessonRescanInterval] turns.
+     * Whether to open Lessons this turn. The game badges the Lessons button with a "!" when a purchase is affordable, so Lessons opens only on that.
      *
      * @param sourceBitmap The Main screen screenshot.
      * @return True when the per-turn Lessons side-action should run.
@@ -247,19 +230,8 @@ class GrandLive(game: Game) : Campaign(game) {
         val lessonsButton = ButtonGrandLiveLessons.findImageWithBitmap(game.imageUtils, sourceBitmap) ?: return false
         val badgeRegion = anchoredRect(lessonsButton, LESSONS_BADGE_REGION)
         if (IconNotificationBadge.findImageWithBitmap(game.imageUtils, sourceBitmap, region = badgeRegion, confidence = LESSONS_BADGE_CONFIDENCE) != null) return true
-
-        // A misread date can land ahead of the real turn, which would otherwise hold the fallback closed for as many turns as the date overshot.
-        if (lastLessonScanDay > date.day) {
-            MessageLog.i(TAG, "[GRAND_LIVE] Last Lessons scan is dated after the current turn (day ${date.day} < $lastLessonScanDay); re-checking now.")
-            lastLessonScanDay = -1
-        }
-        val turnsSinceVisit = if (lastLessonScanDay < 0) null else date.day - lastLessonScanDay
-        if (turnsSinceVisit != null && turnsSinceVisit < lessonRescanInterval) {
-            MessageLog.i(TAG, "[GRAND_LIVE] Skipping Lessons: the Lessons button has no \"!\" badge, so nothing is affordable.")
-            return false
-        }
-        MessageLog.i(TAG, "[GRAND_LIVE] Opening Lessons without a \"!\" badge as a fallback, since the last visit was ${turnsSinceVisit?.let { "$it turn(s) ago" } ?: "never"}.")
-        return true
+        MessageLog.i(TAG, "[GRAND_LIVE] Skipping Lessons: the Lessons button has no \"!\" badge, so nothing is affordable.")
+        return false
     }
 
     /**
@@ -364,9 +336,6 @@ class GrandLive(game: Game) : Campaign(game) {
             game.waitForLoading()
             waitForLessonsRefresh(listBefore)
         }
-
-        // Record the day to pace the next re-open.
-        lastLessonScanDay = date.day
 
         when (returnTo) {
             // Lessons was opened from the concert screen, so back out until its Concert / Grand Concert button reappears.

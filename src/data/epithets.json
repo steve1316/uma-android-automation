@@ -4155,6 +4155,34 @@
             }
         ]
     },
+    "Ultra-Hyped Partyer": {
+        "name": "Ultra-Hyped Partyer",
+        "bullet_points": [
+            "Daitaku Helios only",
+            "Win the Milers Cup",
+            "Win the Mile Championship twice",
+            "Have a Mood level of Perfect in all races",
+            "Reach 1200 or more Power",
+            "Complete the Career"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Daitaku Helios"
+        ],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "Milers Cup",
+                "displayLabel": "Win the Milers Cup"
+            },
+            {
+                "type": "winRaceTimes",
+                "name": "Mile Championship",
+                "times": 2,
+                "displayLabel": "Win the Mile Championship (2 times)"
+            }
+        ]
+    },
     "Umatastic": {
         "name": "Umatastic",
         "bullet_points": [

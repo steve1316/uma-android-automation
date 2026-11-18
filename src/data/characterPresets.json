@@ -129,6 +129,19 @@
             "Dirt": "F"
         }
     },
+    "Daitaku Helios": {
+        "name": "Daitaku Helios",
+        "distanceAptitudes": {
+            "Sprint": "B",
+            "Mile": "A",
+            "Medium": "B",
+            "Long": "E"
+        },
+        "surfaceAptitudes": {
+            "Turf": "A",
+            "Dirt": "G"
+        }
+    },
     "Daiwa Scarlet": {
         "name": "Daiwa Scarlet",
         "distanceAptitudes": {

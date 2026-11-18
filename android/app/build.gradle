@@ -108,6 +108,9 @@ android {
         versionName libs.versions.app.versionName.get()
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+
+        // Off by default so normal releases cannot be profiled. Set -PuaaProfileable=true to record a run with Perfetto.
+        manifestPlaceholders.profileableByShell = (findProperty('uaaProfileable') ?: false).toBoolean().toString()
     }
     signingConfigs {
         debug {

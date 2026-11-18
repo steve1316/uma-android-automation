@@ -1,0 +1,31 @@
+# Perfetto recording of the bot's memory: who allocated the native memory still held. Used by `uma_mem.py`.
+# The trace is written by the system's traced service, so what has reached the file survives the bot being killed.
+# Do not add android.java_hprof here. A recording with it froze the app's main thread until the profiler was detached.
+
+buffers { size_kb: 131072 fill_policy: RING_BUFFER }
+
+data_sources {
+  config {
+    name: "android.heapprofd"
+    target_buffer: 0
+    heapprofd_config {
+      process_cmdline: "com.steve1316.uma_android_automation"
+      # Allocations this size and larger are always recorded. Smaller ones are sampled and scaled up.
+      sampling_interval_bytes: 65536
+      shmem_size_bytes: 33554432
+      block_client: true
+      # If the profiler falls behind for this long, drop the profile rather than freeze the bot.
+      block_client_timeout_us: 30000000
+      continuous_dump_config {
+        dump_phase_ms: 60000
+        dump_interval_ms: 60000
+      }
+    }
+  }
+}
+
+write_into_file: true
+file_write_period_ms: 30000
+flush_period_ms: 30000
+max_file_size_bytes: 4294967296
+duration_ms: 14400000

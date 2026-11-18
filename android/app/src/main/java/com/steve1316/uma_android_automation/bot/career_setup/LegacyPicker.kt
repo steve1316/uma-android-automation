@@ -180,7 +180,7 @@ class LegacyPicker(private val game: Game, private val settings: CareerSetupSett
                 if (isTaken(bitmap, card)) continue
                 seen.add(Seen(isGuest, contentY, card.badgeX, card.sparks))
             }
-            if (!scroll.scrollDownTracked()) return seen.also { MessageLog.i(TAG, "[CAREER SETUP] Read ${it.size} ${if (isGuest) "guest" else "veteran"} legacies.") }
+            if (scroll.bHitEnd || !scroll.scrollDownTracked()) return seen.also { MessageLog.i(TAG, "[CAREER SETUP] Read ${it.size} ${if (isGuest) "guest" else "veteran"} legacies.") }
         }
         return seen
     }
