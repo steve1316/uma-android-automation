@@ -73,6 +73,9 @@ internal const val LONG_GOAL_FLOOR_WINDOW = 12
 /** How closely the OCR'd trainee name must match a character name to use that character's Long goal races. */
 private const val LONG_GOAL_NAME_MATCH = 0.9
 
+/** How many times a training tab switch taps or looks for the button before it gives up. */
+private const val TAB_SWITCH_ATTEMPTS = 3
+
 /**
  * Finds the turns of a trainee's goal races that are always Long. A choice only counts when every option is Long, since otherwise the shorter race can be taken.
  *
@@ -121,6 +124,47 @@ internal fun isStaminaFloorActive(stamina: Int, turnsToGoal: Int?): Boolean = tu
  * @return The list with Stamina first.
  */
 internal fun staminaFirst(priority: List<StatName>): List<StatName> = listOf(StatName.STAMINA) + (priority - StatName.STAMINA)
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Training tab switch
+
+/**
+ * Taps a training button and waits for its header, tapping again only after the header had [headerWaitMs] to show.
+ *
+ * A tap on the training that is already selected starts it, so a header that is merely slow must not lead to a second tap. A tap that did not land is still
+ * retried, so one dropped tap does not cost the switch.
+ *
+ * @param tap Finds and taps the button. False when the button was not found, so nothing was tapped and it is safe to look again.
+ * @param headerShown Whether the training's header shows.
+ * @param pause Waits between looks.
+ * @param onMiss Runs after each attempt that did not show the header, like forgetting a saved tap spot so the button is matched again.
+ * @param headerWaitMs How long to wait for the header after each tap before tapping again.
+ * @param nowMs The current time in milliseconds.
+ * @return True if the header showed.
+ */
+internal fun switchTrainingTab(
+    tap: () -> Boolean,
+    headerShown: () -> Boolean,
+    pause: () -> Unit,
+    onMiss: () -> Unit = {},
+    headerWaitMs: Long = 1000L,
+    nowMs: () -> Long = System::currentTimeMillis,
+): Boolean {
+    repeat(TAB_SWITCH_ATTEMPTS) {
+        if (tap()) {
+            val deadline = nowMs() + headerWaitMs
+            do {
+                if (headerShown()) return true
+                pause()
+            } while (nowMs() < deadline)
+        } else {
+            pause()
+        }
+        onMiss()
+    }
+    return false
+}
 
 /**
  * Handle the training process, including analysis of options, scoring recommendations, and execution.
@@ -1565,19 +1609,19 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // If this option isn't enabled, then we just do a fast lazy validation.
             if (!enableTrainingAnalysisValidation) {
-                for (i in 0..2) {
-                    // A retry means the tap at the saved spot did not land, so the button is matched again.
-                    if (i > 0) unselectedButtonLocations.remove(statName)
-                    tapUnselectedTrainingButton(statName)
-
-                    // Wait for screen to finish updating before proceeding.
-                    game.wait(0.2, skipWaitingForLoading = true)
-                    if (header.check(game.imageUtils)) {
-                        return true
-                    }
+                // A miss means the tap at the saved spot did not land, so the next tap matches the button again.
+                if (
+                    switchTrainingTab(
+                        { tapUnselectedTrainingButton(statName) },
+                        { header.check(game.imageUtils) },
+                        { game.wait(0.2, skipWaitingForLoading = true) },
+                        onMiss = { unselectedButtonLocations.remove(statName) },
+                    )
+                ) {
+                    return true
                 }
 
-                MessageLog.w(TAG, "[WARN] goToStat:: Failed to go to $statName on training screen after 3 attempts.")
+                MessageLog.w(TAG, "[WARN] goToStat:: Failed to go to $statName on training screen after $TAB_SWITCH_ATTEMPTS attempts.")
                 return false
             }
 
