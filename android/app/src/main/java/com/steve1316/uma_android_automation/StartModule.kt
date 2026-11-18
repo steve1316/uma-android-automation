@@ -29,6 +29,7 @@ import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.MyAccessibilityService
 import com.steve1316.automation_library.utils.RunReport
 import com.steve1316.automation_library.utils.SettingsHelper
+import com.steve1316.uma_android_automation.bot.BotStopException
 import com.steve1316.uma_android_automation.bot.Game
 import com.steve1316.uma_android_automation.bot.RunAnalytics
 import com.steve1316.uma_android_automation.utils.DevMcpServer
@@ -471,6 +472,11 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
                         val game = Game(context)
                         if (DevMcpServer.isRunning) Game.current = game
                         game.start()
+                    } catch (e: BotStopException) {
+                        // A stop raised outside the task loop, like an unknown scenario while building the run, ends it the same way as one inside it.
+                        val reason = e.message ?: "The bot could not continue."
+                        MessageLog.e(TAG, "[ERROR] $reason")
+                        BotStatus.setOutcome(BotStatus.Outcome.STOPPED_BY_BOT, reason)
                     } catch (e: Exception) {
                         EventBus.getDefault().postSticky(ExceptionEvent(e))
                     }

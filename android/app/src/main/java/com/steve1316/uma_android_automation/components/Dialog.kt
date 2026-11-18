@@ -52,6 +52,7 @@ import com.steve1316.automation_library.data.SharedData
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.TextUtils
 import com.steve1316.uma_android_automation.MainActivity
+import com.steve1316.uma_android_automation.bot.BotStopException
 import com.steve1316.uma_android_automation.components.BaseComponentInterface
 import com.steve1316.uma_android_automation.types.BoundingBox
 import com.steve1316.uma_android_automation.utils.CustomImageUtils
@@ -254,13 +255,13 @@ object DialogUtils {
     /**
      * Stop the bot if the specified dialog is in the hardcoded [dangerousDialogs] list.
      *
-     * Some dialogs are dangerous because they could lead to real-world purchases. This function throws an InterruptedException to immediately stop the bot if a dangerous dialog is detected.
+     * Some dialogs are dangerous because they could lead to real-world purchases. This function throws a [BotStopException] to immediately stop the bot if a dangerous dialog is detected.
      *
      * @param dialog The dialog to check.
      */
     private fun handleDangerousDialogs(dialog: DialogInterface) {
         if (dialog in dangerousDialogs) {
-            throw InterruptedException("Stopping bot due to a dangerous dialog: ${dialog.name}")
+            throw BotStopException("Stopping bot due to a dangerous dialog: ${dialog.name}")
         }
     }
 

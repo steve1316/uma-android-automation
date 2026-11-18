@@ -72,7 +72,7 @@ open class DialogHandler(val game: Game) {
      * @param dialog An optional dialog to evaluate. This allows chaining dialog handler calls for improved performance.
      * @param args Optional arguments mapping for dialog handling behavior.
      * @return The [DialogHandlerResult] for this operation.
-     * @throws BotStopException When the "Date Changed" dialog shows, since the game then returns to the title screen.
+     * @throws BotStopException When the game reaches a dialog the bot cannot continue from, like "Date Changed", a session error, or running out of alarm clocks.
      */
     open fun handleDialogs(dialog: DialogInterface? = null, args: Map<String, Any> = mapOf()): DialogHandlerResult {
         val bShouldWait = args["bShouldWait"] as? Boolean ?: false
@@ -130,7 +130,7 @@ open class DialogHandler(val game: Game) {
                     if (DiscordUtils.enableDiscordNotifications) {
                         DiscordUtils.queue.add("```diff\n- ${MessageLog.getSystemTimeString()} Max connection error retry attempts reached. Stopping bot...\n```")
                     }
-                    throw InterruptedException("Max connection error retry attempts reached. Stopping bot...")
+                    throw BotStopException("Max connection error retry attempts reached. Stopping bot...")
                 }
 
                 game.connectionErrorRetryAttempts++
@@ -152,7 +152,7 @@ open class DialogHandler(val game: Game) {
             }
 
             "session_error" -> {
-                throw InterruptedException("Session error. Stopping bot...")
+                throw BotStopException("Session error. Stopping bot...")
             }
 
             // Racing Dialogs.
@@ -283,7 +283,7 @@ open class DialogHandler(val game: Game) {
             }
 
             "purchase_alarm_clock" -> {
-                throw InterruptedException("Ran out of alarm clocks. Stopping bot...")
+                throw BotStopException("Ran out of alarm clocks. Stopping bot...")
             }
 
             "quick_mode_settings" -> {
