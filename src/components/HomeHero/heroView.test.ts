@@ -82,11 +82,12 @@ describe("heroView with a result", () => {
         })
     })
 
-    it("crash opens to the error and the result pill wins over OVERLAY ON", () => {
+    it("crash opens to the error and keeps the OVERLAY ON pill while the overlay is on", () => {
         const v = heroView({ overlayOn: true, health: "ready", report: report({ outcome: "CRASHED", reason: "IllegalStateException", turn: 41, error: crash }) })
         expect(v).toMatchObject({
             cardTone: "error",
-            pillLabel: "! CRASHED",
+            pillLabel: "● OVERLAY ON",
+            pillTone: "brand",
             title: "Bot crashed",
             sub: "IllegalStateException on turn 41",
             buttonMode: "openGame",
@@ -96,7 +97,7 @@ describe("heroView with a result", () => {
     })
 
     it("bot stop shows the reason", () => {
-        const v = heroView({ overlayOn: true, health: "ready", report: report({ outcome: "STOPPED_BY_BOT", reason: "Mandatory race detected. Stopping bot..." }) })
+        const v = heroView({ overlayOn: false, health: "ready", report: report({ outcome: "STOPPED_BY_BOT", reason: "Mandatory race detected. Stopping bot..." }) })
         expect(v).toMatchObject({ cardTone: "warning", pillLabel: "■ STOPPED", title: "Bot stopped itself", sub: "Mandatory race detected. Stopping bot...", details: "reason" })
     })
 

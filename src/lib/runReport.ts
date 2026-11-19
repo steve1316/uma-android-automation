@@ -1,3 +1,5 @@
+import type { RunMode } from "../context/BotStateContext"
+
 /** Shape version of the run-end report JSON written by the automation library. */
 const SCHEMA_VERSION = 1
 
@@ -300,6 +302,29 @@ export function formatRunReport(report: RunReport): RunReportView {
         sub,
         facts,
     }
+}
+
+/**
+ * Works out which mode produced a report. Only Dailies runs carry Dailies parts and only careers carry a summary.
+ * @param report The parsed report.
+ * @returns The run mode, or null when the report carries neither, such as a crash before the first turn.
+ */
+export function reportMode(report: RunReport): RunMode | null {
+    if (report.dailies) return "dailies"
+    if (report.summary) return "career"
+    return null
+}
+
+/**
+ * Hides a report while the other run mode is selected, so the Home card always describes the selected mode. The report itself is kept.
+ * @param report The last run's report, or null.
+ * @param runMode The selected run mode.
+ * @returns The report when it matches the selected mode or its mode is unknown, otherwise null.
+ */
+export function reportForMode(report: RunReport | null, runMode: RunMode): RunReport | null {
+    if (!report) return null
+    const mode = reportMode(report)
+    return mode === null || mode === runMode ? report : null
 }
 
 /**
