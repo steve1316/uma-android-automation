@@ -97,6 +97,9 @@ import java.util.concurrent.TimeUnit
 /** Stop reason when the bot cannot find a known career screen while recovering after a pause. */
 private const val STUCK_AFTER_RESUME_REASON = "Could not find a known career screen after resume"
 
+/** How many Main screen passes in a row can read the same turn before the game is treated as frozen. Taps on a frozen game do nothing, so the turn never moves. */
+private const val FROZEN_TURN_LIMIT = 30
+
 /** Every career debug test's setting key, across Campaign and the scenarios, so a Dailies run can tell when one is armed for the wrong run mode. */
 val CAREER_DEBUG_TEST_KEYS: Set<String> =
     setOf(
@@ -443,6 +446,12 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Number of consecutive [ButtonCancel] matches required to confirm a real warning popup. */
     private val WARNING_POPUP_CONFIRM_THRESHOLD: Int = 5
+
+    /** The turn the last Main screen date read gave, or -1 before the first read. */
+    private var lastMainScreenDay: Int = -1
+
+    /** How many Main screen date reads in a row gave [lastMainScreenDay]. */
+    private var sameTurnMainScreenReads: Int = 0
 
     /** Decides when the bot is lost and should back out to the main screen or stop. Reset when resuming after a pause. */
     private val recoveryPolicy: RecoveryPolicy = RecoveryPolicy()
@@ -2340,7 +2349,7 @@ abstract class Campaign(game: Game) : Task(game) {
         // Skip if we've already checked the date this turn and no game-advancing action was taken.
         if (!bHasCheckedDateThisTurn) {
             // Returning from the aptitudes or fans dialog the bot opened itself is still the same turn, so the date read is skipped.
-            val dateChanged = if (bDateReadBeforeOwnDialog) false else updateDate()
+            val dateChanged = if (bDateReadBeforeOwnDialog) false else updateDate().also { checkFrozenTurn() }
             bDateReadBeforeOwnDialog = false
             val bRacingPopupThisTurn = bRacingPopupBeforeDateRead
             bRacingPopupBeforeDateRead = false
@@ -2419,6 +2428,24 @@ abstract class Campaign(game: Game) : Task(game) {
         val action = decideNextAction()
         val bIsScheduledRaceDay = LabelScheduledRace.check(game.imageUtils)
         return executeAction(action, bIsScheduledRaceDay)
+    }
+
+    /**
+     * Stops the bot when the Main screen keeps showing the same turn. Each date read here follows an action that should end the turn, so
+     * [FROZEN_TURN_LIMIT] reads of one turn in a row mean the game stopped taking taps, like a frozen game that still shows its last frame.
+     *
+     * @throws BotStopException When the same turn was read [FROZEN_TURN_LIMIT] times in a row.
+     */
+    private fun checkFrozenTurn() {
+        if (date.day != lastMainScreenDay) {
+            lastMainScreenDay = date.day
+            sameTurnMainScreenReads = 1
+            return
+        }
+        sameTurnMainScreenReads++
+        if (sameTurnMainScreenReads >= FROZEN_TURN_LIMIT) {
+            throw BotStopException("The game looks frozen: the Main screen showed turn ${date.day} $FROZEN_TURN_LIMIT times in a row. Stopping bot...")
+        }
     }
 
     /**
