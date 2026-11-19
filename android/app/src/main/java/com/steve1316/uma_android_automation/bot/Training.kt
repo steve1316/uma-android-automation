@@ -1083,6 +1083,15 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         /** Skip reason for a training over its failure-chance ceiling. The raised-ceiling variants append a suffix, so match it as a prefix. */
         const val SKIP_HIGH_FAILURE_CHANCE = "high failure chance"
 
+        /** How long to keep taking frames for a facility's failure bubble after switching to it, in milliseconds. */
+        const val FAILURE_BUBBLE_WAIT_MS = 600L
+
+        /** How long to wait after the failure label shows before reading it, in seconds. The label shows before its number renders. */
+        const val FAILURE_BUBBLE_SETTLE_S = 0.2
+
+        /** Skip reason for a training whose failure chance could not be read. */
+        const val SKIP_UNREADABLE_FAILURE_CHANCE = "unreadable failure chance"
+
         /** Skip reason for a training whose total gain is poor value for its failure chance. */
         const val SKIP_POOR_VALUE_FOR_RISK = "poor value for risk"
 
@@ -1488,6 +1497,53 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     }
 
     /**
+     * Switches the Training screen to a facility that is not selected, checking its header after each tap.
+     *
+     * @param statName The facility to switch to.
+     * @return True once the facility's header shows.
+     */
+    private fun switchToFacility(statName: StatName): Boolean {
+        val header: ComponentInterface = iconTrainingHeaders[statName]!!
+        // A miss means the tap at the saved spot did not land, so the next tap matches the button again.
+        if (
+            switchTrainingTab(
+                { tapUnselectedTrainingButton(statName) },
+                { header.check(game.imageUtils) },
+                { game.wait(0.2, skipWaitingForLoading = true) },
+                onMiss = { unselectedButtonLocations.remove(statName) },
+            )
+        ) {
+            return true
+        }
+        MessageLog.w(TAG, "[WARN] switchToFacility:: Failed to go to $statName on training screen after $TAB_SWITCH_ATTEMPTS attempts.")
+        return false
+    }
+
+    /**
+     * Finds the failure chance bubble of the selected facility. The bubble fades in after the facility header shows, so a frame taken right after the
+     * switch can miss it. Fresh frames are taken until the bubble shows or [FAILURE_BUBBLE_WAIT_MS] passes. The label shows before its number renders,
+     * so once it is found a fresh frame is taken after [FAILURE_BUBBLE_SETTLE_S].
+     *
+     * @param firstFrame The frame taken right after the switch.
+     * @return The settled frame with the bubble's label location, or the last frame taken with null if the bubble never showed.
+     */
+    private fun waitForFailureBubble(firstFrame: Bitmap): Pair<Bitmap, Point?> {
+        var frame = firstFrame
+        var location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame)
+        val deadline = System.currentTimeMillis() + FAILURE_BUBBLE_WAIT_MS
+        while (location == null && System.currentTimeMillis() < deadline) {
+            game.wait(0.1, skipWaitingForLoading = true)
+            frame = game.imageUtils.getSourceBitmap()
+            location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame)
+        }
+        if (location != null) {
+            game.wait(FAILURE_BUBBLE_SETTLE_S, skipWaitingForLoading = true)
+            frame = game.imageUtils.getSourceBitmap()
+        }
+        return Pair(frame, location)
+    }
+
+    /**
      * Analyze all available training options to determine their stat gains, relationship progress, and other details.
      *
      * @param args A map containing optional parameters:
@@ -1609,20 +1665,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
 
             // If this option isn't enabled, then we just do a fast lazy validation.
             if (!enableTrainingAnalysisValidation) {
-                // A miss means the tap at the saved spot did not land, so the next tap matches the button again.
-                if (
-                    switchTrainingTab(
-                        { tapUnselectedTrainingButton(statName) },
-                        { header.check(game.imageUtils) },
-                        { game.wait(0.2, skipWaitingForLoading = true) },
-                        onMiss = { unselectedButtonLocations.remove(statName) },
-                    )
-                ) {
-                    return true
-                }
-
-                MessageLog.w(TAG, "[WARN] goToStat:: Failed to go to $statName on training screen after $TAB_SWITCH_ATTEMPTS attempts.")
-                return false
+                return switchToFacility(statName)
             }
 
             // Perform full validation.
@@ -1841,18 +1884,17 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
             selectedStat = statName
 
-            // Take one frame for this facility. The restricted check, the anchors, and the reads on the threads below all use it.
-            val sourceBitmap = game.imageUtils.getSourceBitmap()
-
-            // Check if the currently selected training is restricted.
-            if (LabelTrainingCannotPerform.check(game.imageUtils, sourceBitmap = sourceBitmap)) {
+            // Check if the currently selected training is restricted. A restricted facility has no failure bubble, so this runs before waiting for one.
+            val firstFrame = game.imageUtils.getSourceBitmap()
+            if (LabelTrainingCannotPerform.check(game.imageUtils, sourceBitmap = firstFrame)) {
                 MessageLog.i(TAG, "[TRAINING] The currently selected $statName training is restricted and cannot be performed.")
                 restrictedTrainingNames.add(statName)
                 continue
             }
 
+            // One frame with the failure bubble on it. The anchors and the reads on the threads below all use it.
+            val (sourceBitmap, failureChanceLocation) = waitForFailureBubble(firstFrame)
             val skillPointsLocation = skillPointsAnchor ?: LabelStatTableHeaderSkillPoints.findImageWithBitmap(game.imageUtils, sourceBitmap).also { skillPointsAnchor = it }
-            val failureChanceLocation = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, sourceBitmap)
 
             // Record start time for elapsed time measurement.
             val startTime = System.currentTimeMillis()
@@ -2005,14 +2047,10 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                         maximumFailureChance
                     }
 
-                // If we failed to detect a failure chance, fallback to the initial failure chance that was read as we first entered the training screen.
-                if (result.failureChance == -1) {
-                    MessageLog.w(TAG, "[WARN] analyzeTrainings:: ${result.name} failure chance OCR failed. Falling back to the initial robustly read value of $failureChance%.")
-                    result.failureChance = failureChance
-                }
-
+                // Another facility's value says nothing about this one, so an unread failure chance leaves the training out.
                 if (result.failureChance == -1) {
                     MessageLog.w(TAG, "[WARN] analyzeTrainings:: Failed to analyze failure chance for $statName.")
+                    skippedTrainingMap[statName] = result.toSkippedOption(SKIP_UNREADABLE_FAILURE_CHANCE)
                     continue
                 }
 
@@ -2094,14 +2132,6 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 applyContextualStatGainBoost(result)
             }
 
-            // Apply the initial failure chance as a fallback if OCR failed during individual stat analysis.
-            for (result in analysisResults) {
-                if (result.failureChance == -1) {
-                    MessageLog.i(TAG, "[TRAINING] [${result.name}] Failure chance OCR failed. Falling back to the initial robustly read value of $failureChance%.")
-                    result.failureChance = failureChance
-                }
-            }
-
             // Cross-validate failure chances across trainings to correct OCR misreads. Skipped for debug reads (test): the trainee's
             // energy is not the live value there, so the energy-based estimate would wrongly clamp genuinely-high reads down to 0%.
             if (!test) normalizeFailureChances(analysisResults)
@@ -2163,6 +2193,13 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             val readyToExtremeBurst = if (extremeBurstAllowed(burstAllowed, mainStatGain, unityCupExtremeBurstMinStatGain)) rawReadyToExtremeBurst else 0
             val readyToBurst = if (burstFailureExemptionAllowed(burstAllowed, enableRiskyTraining, mainStatGain, riskyTrainingMinStatGain)) rawReadyToBurst else 0
             val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance, readyToExtremeBurst)
+
+            // A training whose failure chance could not be read is left out. Copying another facility's value once trained a 32% facility read as 1%.
+            if (!test && !ignoreFailureChance && result.failureChance < 0) {
+                MessageLog.w(TAG, "[WARN] Skipping ${result.name} training because its failure chance could not be read.")
+                skippedTrainingMap[result.name] = result.toSkippedOption(SKIP_UNREADABLE_FAILURE_CHANCE)
+                continue
+            }
 
             // Filter out trainings that exceed the effective failure chance threshold. The ceiling reported here is the one actually applied, which a ready burst may have raised.
             if (!test && !ignoreFailureChance && result.failureChance > effectiveFailureChance) {
@@ -3016,7 +3053,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     MessageLog.i(TAG, "[TRAINING] forceStat override active - selecting $forceStat without running recommendTraining.")
                     forceStat
                 } else {
-                    recommendTraining()
+                    confirmPickedFailureChance(recommendTraining())
                 }
 
             if (trainingMap.isEmpty()) {
@@ -3120,6 +3157,33 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         }
         MessageLog.v(TAG, "********************")
         return trainingSelected
+    }
+
+    /**
+     * Reads the picked facility's failure chance again on a fresh frame before it is trained. A read taken while the bubble was still fading in once
+     * gave 1% for a 32% facility, and the training failed. A higher re-read replaces the analyzed value and the pick is made again.
+     *
+     * @param picked The training the analysis picked, or null when none was picked.
+     * @return The training to execute, or null when none is left.
+     */
+    private fun confirmPickedFailureChance(picked: StatName?): StatName? {
+        var pick = picked
+        // Each pass either confirms the pick or raises one facility's value, so the passes are bounded by the facility count.
+        repeat(StatName.entries.size) {
+            val stat = pick ?: return null
+            val analyzed = cachedAnalysisResults?.find { it.name == stat } ?: return stat
+            if (!iconTrainingHeaders[stat]!!.check(game.imageUtils) && !switchToFacility(stat)) return stat
+            waitForFailureBubble(game.imageUtils.getSourceBitmap())
+            // Let the bubble finish fading in, so this read cannot land mid-fade like the one it checks.
+            game.wait(0.3, skipWaitingForLoading = true)
+            val reread = game.imageUtils.findTrainingFailureChance(tries = 2)
+            if (reread <= analyzed.failureChance) return stat
+            MessageLog.w(TAG, "[WARN] confirmPickedFailureChance:: $stat failure chance re-read as $reread%, above the ${analyzed.failureChance}% analyzed. Picking again.")
+            analyzed.failureChance = reread
+            processAnalysisResults(cachedAnalysisResults!!, ignoreFailureChance = false, test = false)
+            pick = recommendTraining()
+        }
+        return pick
     }
 
     /**
