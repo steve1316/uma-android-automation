@@ -1,7 +1,6 @@
 package com.steve1316.uma_android_automation.bot.campaigns
 
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.util.Log
 import com.steve1316.automation_library.utils.MessageLog
 import com.steve1316.automation_library.utils.SettingsHelper
@@ -56,8 +55,8 @@ import com.steve1316.uma_android_automation.types.TrackblazerShopList
 import com.steve1316.uma_android_automation.types.Trainee
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.ScrollListEntry
-import com.steve1316.uma_android_automation.utils.grayOf
 import com.steve1316.uma_android_automation.utils.isSameGrayPicture
+import com.steve1316.uma_android_automation.utils.screenGray
 import org.json.JSONArray
 import org.opencv.core.Point
 
@@ -1873,24 +1872,6 @@ class Trackblazer(game: Game) : Campaign(game) {
             MessageLog.i(TAG, "[TRACKBLAZER] Decremented $itemName. Remaining: ${nextInventory[itemName]}.")
         }
         currentInventory = nextInventory.toMap()
-    }
-
-    /**
-     * Samples the screen as gray pixels at 1/8 size, to tell when it holds still.
-     *
-     * @param sourceBitmap The screenshot.
-     * @param bandFraction Share of the screen height to sample, from the top.
-     * @return The sampled gray pixels.
-     */
-    private fun screenGray(sourceBitmap: Bitmap, bandFraction: Double = 1.0): IntArray {
-        // Crop the band before shrinking it, so only the rows that are compared get scaled.
-        val bandHeight = (sourceBitmap.height * bandFraction).toInt().coerceIn(8, sourceBitmap.height)
-        val thumbnail = Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.width, bandHeight, Matrix().apply { setScale(0.125f, 0.125f) }, true)
-        val pixels = IntArray(thumbnail.width * thumbnail.height)
-        thumbnail.getPixels(pixels, 0, thumbnail.width, 0, 0, thumbnail.width, thumbnail.height)
-        thumbnail.recycle()
-        for (i in pixels.indices) pixels[i] = grayOf(pixels[i])
-        return pixels
     }
 
     /**

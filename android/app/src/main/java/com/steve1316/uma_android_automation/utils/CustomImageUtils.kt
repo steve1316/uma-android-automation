@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Matrix
 import android.util.Log
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
@@ -111,6 +112,24 @@ private const val NUMBER_CACHE_MAX_REUSES = 5
  * @return The gray level, 0-255.
  */
 internal fun grayOf(argb: Int): Int = (((argb shr 16) and 0xFF) * 299 + ((argb shr 8) and 0xFF) * 587 + (argb and 0xFF) * 114) / 1000
+
+/**
+ * Samples the screen as gray pixels at 1/8 size, to tell when it holds still.
+ *
+ * @param sourceBitmap The screenshot.
+ * @param bandFraction Share of the screen height to sample, from the top.
+ * @return The sampled gray pixels.
+ */
+internal fun screenGray(sourceBitmap: Bitmap, bandFraction: Double = 1.0): IntArray {
+    // Crop the band before shrinking it, so only the rows that are compared get scaled.
+    val bandHeight = (sourceBitmap.height * bandFraction).toInt().coerceIn(8, sourceBitmap.height)
+    val thumbnail = Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.width, bandHeight, Matrix().apply { setScale(0.125f, 0.125f) }, true)
+    val pixels = IntArray(thumbnail.width * thumbnail.height)
+    thumbnail.getPixels(pixels, 0, thumbnail.width, 0, 0, thumbnail.width, thumbnail.height)
+    thumbnail.recycle()
+    for (i in pixels.indices) pixels[i] = grayOf(pixels[i])
+    return pixels
+}
 
 /**
  * Whether two same-size gray pictures match, meaning few enough of their pixels moved by more than a gray level. Pure so it is unit-testable.
