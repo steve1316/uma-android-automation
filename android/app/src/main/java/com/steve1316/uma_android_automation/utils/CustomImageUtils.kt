@@ -2826,9 +2826,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (energyTextLocation != null) {
             // Scenarios with the extra top-left box use a higher, narrower crop that targets the turns box above it.
+            // The crop keeps a margin above the digit. Clipping its top edge read an 8 as "38".
             val (offsetX, offsetY, width, height) =
                 if (scenarioHasCompactTopLeftBox) {
-                    listOf(-260, -137, relWidth(100), relHeight(80))
+                    listOf(-260, -147, relWidth(100), relHeight(90))
                 } else {
                     listOf(-246, -100, relWidth(140), relHeight(95))
                 }
