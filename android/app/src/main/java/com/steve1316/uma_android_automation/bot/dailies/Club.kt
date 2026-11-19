@@ -15,6 +15,7 @@ import com.steve1316.uma_android_automation.components.ButtonHomeClub
 import com.steve1316.uma_android_automation.components.ButtonItemRequestSashTab
 import com.steve1316.uma_android_automation.components.ButtonItemRequestShoesTab
 import com.steve1316.uma_android_automation.components.LabelClubMenu
+import com.steve1316.uma_android_automation.components.LabelItemRequestActive
 import com.steve1316.uma_android_automation.components.LabelItemRequestExpired
 import com.steve1316.uma_android_automation.components.LabelItemRequestHeld
 import com.steve1316.uma_android_automation.components.LabelItemRequestSelectPrompt
@@ -86,7 +87,14 @@ class Club(private val game: Game, private val requestEnabled: Boolean, private 
 
             LabelItemRequestSelectPrompt.check(game.imageUtils, sourceBitmap = sourceBitmap) -> pickItem()
 
-            // Neither expired nor asking for a pick, so a request looks to be running. Close also collects an expired request whose label was
+            LabelItemRequestActive.check(game.imageUtils, sourceBitmap = sourceBitmap) -> {
+                MessageLog.i(TAG, "[DAILIES] The item request is still running. Closing it.")
+                ButtonClose.click(game.imageUtils, sourceBitmap = sourceBitmap)
+                game.wait(1.0)
+                "request still active"
+            }
+
+            // No state label matched, so the request is probably running. Close also collects an expired request whose label was
             // missed, so reopen once and request a new item if the picker shows now.
             else -> {
                 ButtonClose.click(game.imageUtils)
@@ -204,6 +212,8 @@ class Club(private val game: Game, private val requestEnabled: Boolean, private 
         val donate = ButtonDonateToAll.findImageWithBitmap(game.imageUtils, sourceBitmap)
         if (donate == null || ButtonDonateToAll.checkDisabled(game.imageUtils, sourceBitmap) != false) {
             ButtonClose.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            // Let the list close before the next part looks at the screen.
+            game.wait(1.0)
             return "nothing to donate"
         }
         game.tap(donate.x, donate.y)
