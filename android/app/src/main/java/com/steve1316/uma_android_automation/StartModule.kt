@@ -48,6 +48,9 @@ import org.json.JSONObject
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * Takes care of setting up internal processes such as the Accessibility and MediaProjection services, receiving and sending messages over to the Javascript frontend, and handle tests involving
@@ -62,10 +65,16 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
 
         /** How long after the screen-capture prompt is accepted the overlay counts as on, while its service is still starting. */
         private const val OVERLAY_START_GRACE_MS = 5000L
+
+        /** Most events waiting to be sent to the frontend. The oldest are dropped while it is full. */
+        private const val JS_EVENT_QUEUE_SIZE = 512
     }
 
     private val context: Context = reactContext.applicationContext
     private var messageId = 1
+
+    /** The single thread that sends events to the frontend, with a bounded queue that drops the oldest events when full. */
+    private val jsEventSender = ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(JS_EVENT_QUEUE_SIZE), ThreadPoolExecutor.DiscardOldestPolicy())
 
     /** When the overlay service was last asked to start, or 0 after a stop. */
     @Volatile private var overlayStartSentAtMs = 0L
@@ -84,6 +93,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
      */
     override fun invalidate() {
         EventBus.getDefault().unregister(this)
+        jsEventSender.shutdown()
         super.invalidate()
     }
 
@@ -733,7 +743,12 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
         params.putString("message", message)
         params.putInt("id", messageId++)
         // React Native caches the emitter per context, so fetching it each time always targets the live context.
-        reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
+        try {
+            reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
+        } catch (e: RuntimeException) {
+            // Not through MessageLog: that would send another event that fails the same way.
+            Log.w(TAG, "sendEvent:: Could not send $eventName to the frontend: ${e.message}")
+        }
     }
 
     /**
@@ -745,8 +760,9 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     fun onJSEvent(event: JSEvent) {
         // Only send the event to the React Native frontend if it's not internal.
         // This prevents flooding the bridge during parallel operations where disableOutput is true.
+        // This runs on the logging thread inside the message log lock, so the bridge call is made on its own thread.
         if (!event.isInternal) {
-            sendEvent(event.eventName, event.message)
+            jsEventSender.execute { sendEvent(event.eventName, event.message) }
         }
     }
 
