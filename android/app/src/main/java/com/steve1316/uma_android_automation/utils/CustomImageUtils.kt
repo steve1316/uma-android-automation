@@ -44,7 +44,6 @@ import com.steve1316.uma_android_automation.components.LabelRivalRacer
 import com.steve1316.uma_android_automation.components.LabelStatMaxed
 import com.steve1316.uma_android_automation.components.LabelStatTableHeaderSkillPoints
 import com.steve1316.uma_android_automation.components.LabelStatTrackSurface
-import com.steve1316.uma_android_automation.components.LabelTrainingFailureChance
 import com.steve1316.uma_android_automation.components.Region
 import com.steve1316.uma_android_automation.types.BoundingBox
 import com.steve1316.uma_android_automation.types.StatName
@@ -1003,80 +1002,42 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     // Training Helper Functions
 
     /**
-     * Finds the failure percentage chance for the currently selected training.
+     * Reads the failure chance from the bubble whose label sits at [anchor]. The caller finds the label, so it can limit the search to the selected
+     * facility and never read another facility's bubble.
      *
-     * @param sourceBitmap Optional source bitmap to use. Defaults to null.
-     * @param trainingSelectionLocation Optional point location of the training selection icon. Defaults to null.
-     * @param tries The number of retry attempts to make. Defaults to 1.
-     * @return Integer representing the failure percentage, or -1 if detection fails.
+     * @param sourceBitmap The frame with the bubble on it.
+     * @param anchor Where the failure chance label sits.
+     * @return The failure chance, or -1 if the read is not a valid percentage.
      */
-    fun findTrainingFailureChance(sourceBitmap: Bitmap? = null, trainingSelectionLocation: Point? = null, tries: Int = 1): Int {
-        fun detectTrainingFailureChance(sourceBitmap: Bitmap? = null, trainingSelectionLocation: Point? = null): Int {
-            // Crop the source screenshot to hold the success percentage only.
-            // Delay for failure bubble tween.
-            game.waitForLoading()
+    fun findTrainingFailureChance(sourceBitmap: Bitmap, anchor: Point): Int {
+        // Perform OCR with 2x scaling and no thresholding.
+        val region = failureChanceRegion(anchor)
+        val detectedText =
+            performOCROnRegion(
+                sourceBitmap,
+                region.x,
+                region.y,
+                region.w,
+                region.h,
+                useThreshold = false,
+                useGrayscale = true,
+                scale = 2.0,
+                ocrEngine = "tesseract_digits",
+                debugName = "TrainingFailureChance",
+            )
 
-            val (trainingSelectionLocation, sourceBitmap) =
-                if (sourceBitmap == null && trainingSelectionLocation == null) {
-                    LabelTrainingFailureChance.find(this)
-                } else {
-                    Pair(trainingSelectionLocation, sourceBitmap)
-                }
-
-            if (trainingSelectionLocation == null) {
-                return -1
-            }
-
-            // Perform OCR with 2x scaling and no thresholding.
-            val region = failureChanceRegion(trainingSelectionLocation)
-            val detectedText =
-                performOCROnRegion(
-                    sourceBitmap!!,
-                    region.x,
-                    region.y,
-                    region.w,
-                    region.h,
-                    useThreshold = false,
-                    useGrayscale = true,
-                    scale = 2.0,
-                    ocrEngine = "tesseract_digits",
-                    debugName = "TrainingFailureChance",
-                )
-
-            // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the retry gets a fresh bitmap.
-            val value = parseFailureChance(detectedText)
-            if (value == null) {
-                MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
-                return -1
-            }
-            return value
+        // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the caller retries on a fresh frame.
+        val value = parseFailureChance(detectedText)
+        if (value == null) {
+            MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
+            return -1
         }
-
-        val tries: Int = maxOf(1, tries)
-        var result: Int = -1
-        for (i in 1..tries) {
-            // Use the passed parameters on the first attempt only; a retry wants a fresh source bitmap.
-            val attempt =
-                if (i == 1) {
-                    detectTrainingFailureChance(sourceBitmap, trainingSelectionLocation)
-                } else {
-                    detectTrainingFailureChance()
-                }
-
-            // Keep the first valid read and stop; an invalid one (-1, or a > 100 read rejected above) is retried with a fresh bitmap.
-            if (attempt in 0..100) {
-                result = attempt
-                break
-            }
-            MessageLog.w(TAG, "[WARN] findTrainingFailureChance:: Failed to detect a valid training failure chance (attempt $i of $tries, read=$attempt)")
-        }
-
         if (debugMode) {
-            MessageLog.i(TAG, "[INFO] Failure chance of '$result'% at $trainingSelectionLocation")
+            MessageLog.i(TAG, "[INFO] Failure chance of '$value'% at $anchor")
         } else {
-            Log.i(TAG, "[INFO] Failure chance of '$result'% at $trainingSelectionLocation")
+            Log.i(TAG, "[INFO] Failure chance of '$value'% at $anchor")
         }
-        return result
+        return value
     }
 
     /**
@@ -3721,7 +3682,6 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val croppedBitmap = createSafeBitmap(bitmap, bbox.x, bbox.y, bbox.w, bbox.h, "saveBitmapWithBbox(filename=$filename, bbox=$bbox)")
         saveBitmap(bitmap = croppedBitmap, filename = filename)
     }
-
 
     /**
      * Reads every word in an image with one ML Kit call.

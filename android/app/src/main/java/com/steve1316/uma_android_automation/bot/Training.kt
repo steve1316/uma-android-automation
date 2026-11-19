@@ -1530,27 +1530,68 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     }
 
     /**
+     * Where a facility's failure bubble can show: the column above its button, in the bottom half. On a switch, the old facility's bubble fades out
+     * above its own button while the header already shows the new one. Searching only this column keeps that fading bubble from being read.
+     *
+     * @param statName The facility whose bubble to look for.
+     * @return The search region, or the whole bottom half while the button's spot is not known yet.
+     */
+    private fun failureBubbleRegion(statName: StatName): IntArray {
+        val bottomHalf = game.imageUtils.regionBottomHalf
+        val buttonX = unselectedButtonLocations[statName]?.x?.toInt() ?: return bottomHalf
+        val columnWidth = game.imageUtils.displayWidth / StatName.entries.size
+        val left = (buttonX - columnWidth / 2).coerceIn(0, game.imageUtils.displayWidth - columnWidth)
+        return intArrayOf(left, bottomHalf[1], columnWidth, bottomHalf[3])
+    }
+
+    /**
      * Finds the failure chance bubble of the selected facility. The bubble fades in after the facility header shows, so a frame taken right after the
      * switch can miss it. Fresh frames are taken until the bubble shows or [FAILURE_BUBBLE_WAIT_MS] passes. The label shows before its number renders,
      * so once it is found a fresh frame is taken after [FAILURE_BUBBLE_SETTLE_S].
      *
      * @param firstFrame The frame taken right after the switch.
+     * @param statName The selected facility. Only the column above its button is searched, see [failureBubbleRegion].
+     * @param settleS How long to let the number render once the label shows.
      * @return The settled frame with the bubble's label location, or the last frame taken with null if the bubble never showed.
      */
-    private fun waitForFailureBubble(firstFrame: Bitmap): Pair<Bitmap, Point?> {
+    private fun waitForFailureBubble(firstFrame: Bitmap, statName: StatName, settleS: Double = FAILURE_BUBBLE_SETTLE_S): Pair<Bitmap, Point?> {
+        val region = failureBubbleRegion(statName)
         var frame = firstFrame
-        var location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame)
+        var location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame, region)
         val deadline = System.currentTimeMillis() + FAILURE_BUBBLE_WAIT_MS
         while (location == null && System.currentTimeMillis() < deadline) {
             game.wait(0.1, skipWaitingForLoading = true)
             frame = game.imageUtils.getSourceBitmap()
-            location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame)
+            location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame, region)
         }
         if (location != null) {
-            game.wait(FAILURE_BUBBLE_SETTLE_S, skipWaitingForLoading = true)
+            game.wait(settleS, skipWaitingForLoading = true)
             frame = game.imageUtils.getSourceBitmap()
         }
         return Pair(frame, location)
+    }
+
+    /**
+     * Reads the selected facility's failure chance from its own bubble. Only the facility's column is searched, so a bubble still fading out
+     * over the previous facility is never read. The bubble is waited for once, and each retry takes a fresh frame.
+     *
+     * @param statName The selected facility.
+     * @param tries The number of frames to try.
+     * @param settleS How long to let the number render once the label shows.
+     * @return The failure chance, or -1 if no try gave a valid read.
+     */
+    private fun readFailureChance(statName: StatName, tries: Int, settleS: Double = FAILURE_BUBBLE_SETTLE_S): Int {
+        var (frame, location) = waitForFailureBubble(game.imageUtils.getSourceBitmap(), statName, settleS)
+        for (attempt in 1..tries) {
+            if (attempt > 1) {
+                frame = game.imageUtils.getSourceBitmap()
+                location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame, failureBubbleRegion(statName))
+            }
+            val value = location?.let { game.imageUtils.findTrainingFailureChance(frame, it) } ?: -1
+            if (value != -1) return value
+            MessageLog.w(TAG, "[WARN] readFailureChance:: No valid $statName failure chance read (attempt $attempt of $tries).")
+        }
+        return -1
     }
 
     /**
@@ -1746,7 +1787,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 return -1
             }
 
-            val retried = game.imageUtils.findTrainingFailureChance(tries = 3)
+            val retried = readFailureChance(StatName.SPEED, tries = 3)
             if (retried == -1) {
                 MessageLog.w(TAG, "[WARN] recoverAndRetryFailureChance:: Retry of findTrainingFailureChance still returned -1.")
             } else {
@@ -1775,13 +1816,12 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         var speedRead: TrainingPanelRead? = null
         if (!singleTraining) {
             game.waitForLoading()
-            val speedBitmap = game.imageUtils.getSourceBitmap()
-            val failureAnchor = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, speedBitmap)
+            val (speedBitmap, failureAnchor) = waitForFailureBubble(game.imageUtils.getSourceBitmap(), StatName.SPEED)
             if (failureAnchor != null) {
                 speedRead = game.imageUtils.readTrainingFailureAndLevel(speedBitmap, failureAnchor, levelAnchor).takeIf { it.failureChance != -1 }
             }
         }
-        var failureChance = speedRead?.failureChance ?: game.imageUtils.findTrainingFailureChance(tries = 3)
+        var failureChance = speedRead?.failureChance ?: readFailureChance(StatName.SPEED, tries = 3)
         if (failureChance == -1 && !singleTraining) {
             MessageLog.w(
                 TAG,
@@ -1835,7 +1875,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     )
                 } else {
                     // Read the hinted training's failure chance before committing to it.
-                    val hintFailureChance: Int = game.imageUtils.findTrainingFailureChance(tries = 3)
+                    val hintFailureChance: Int = readFailureChance(hintStat, tries = 3)
                     val effectiveFailureChance = if (enableRiskyTraining) riskyTrainingMaxFailureChance else maximumFailureChance
                     val bypassThreshold = isFinals || ignoreFailureChance
                     if (hintFailureChance == -1) {
@@ -1906,7 +1946,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             }
 
             // One frame with the failure bubble on it. The anchors and the reads on the threads below all use it.
-            val (sourceBitmap, failureChanceLocation) = waitForFailureBubble(firstFrame)
+            val (sourceBitmap, failureChanceLocation) = waitForFailureBubble(firstFrame, statName)
             val skillPointsLocation = skillPointsAnchor ?: LabelStatTableHeaderSkillPoints.findImageWithBitmap(game.imageUtils, sourceBitmap).also { skillPointsAnchor = it }
 
             // Record start time for elapsed time measurement.
@@ -3195,10 +3235,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             val stat = pick ?: return null
             val analyzed = cachedAnalysisResults?.find { it.name == stat } ?: return stat
             if (!iconTrainingHeaders[stat]!!.check(game.imageUtils) && !switchToFacility(stat)) return stat
-            waitForFailureBubble(game.imageUtils.getSourceBitmap())
-            // Let the bubble finish fading in, so this read cannot land mid-fade like the one it checks.
-            game.wait(0.3, skipWaitingForLoading = true)
-            val reread = game.imageUtils.findTrainingFailureChance(tries = 2)
+            // The longer settle lets the bubble finish fading in, so this read cannot land mid-fade like the one it checks.
+            val reread = readFailureChance(stat, tries = 2, settleS = FAILURE_BUBBLE_SETTLE_S + 0.3)
             if (reread <= analyzed.failureChance) return stat
             MessageLog.w(TAG, "[WARN] confirmPickedFailureChance:: $stat failure chance re-read as $reread%, above the ${analyzed.failureChance}% analyzed. Picking again.")
             analyzed.failureChance = reread
