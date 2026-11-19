@@ -189,6 +189,9 @@ enum class SelectionSource {
 
     /** Analysis returned no winner and `forceSelection=false`; first non-blacklisted returned for the caller to handle. */
     UNFORCED_DEFAULT,
+
+    /** A skill hint was tapped during analysis, which trained its facility before any scoring ran. */
+    SKILL_HINT,
 }
 
 /**
@@ -219,6 +222,13 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
     /** Records which branch of `recommendTraining` produced the most recent selection (analysis vs. fallback). */
     var lastSelectionSource: SelectionSource? = null
         private set
+
+    /** The facility a skill hint tap trained during the last analysis, or null. The tap starts the training, so nothing is left to pick or execute. */
+    var hintTrainingExecuted: StatName? = null
+        private set
+
+    /** The failure chance read on the hinted facility right before its hint was tapped. Only meaningful while [hintTrainingExecuted] is set. */
+    private var hintTrainingFailureChance: Int = -1
 
     /** Training names that cannot be picked this turn: restricted by the game (cannot-perform) or ruled out by the scenario. */
     private var restrictedTrainingNames: MutableSet<StatName> = mutableSetOf()
@@ -1556,6 +1566,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
      */
     fun analyzeTrainings(args: Map<String, Any?> = emptyMap()) {
         needsEnergyRecovery = false
+        hintTrainingExecuted = null
         val test = args["test"] as? Boolean ?: false
         val singleTraining = args["singleTraining"] as? Boolean ?: false
         val ignoreFailureChance = args["ignoreFailureChance"] as? Boolean ?: false
@@ -1841,7 +1852,9 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                             }
                         MessageLog.i(TAG, "[TRAINING] Tapping skill hint on $hintStat training because $reason. Skipping further training analysis.")
                         game.tap(firstHint.x, firstHint.y, IconStatSkillHint.template.path, taps = 3)
-                        game.wait(1.0)
+                        hintTrainingExecuted = hintStat
+                        hintTrainingFailureChance = hintFailureChance
+                        game.waitForLoading()
                         MessageLog.v(TAG, "[TRAINING] Process to execute skill hint training completed.")
                         return
                     } else {
@@ -3048,15 +3061,19 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             game.wait(0.5)
             // Acquire the percentages and stat gains for each training.
             analyzeTrainings()
+            val hintStat = hintTrainingExecuted
             trainingSelected =
-                if (forceStat != null) {
-                    MessageLog.i(TAG, "[TRAINING] forceStat override active - selecting $forceStat without running recommendTraining.")
-                    forceStat
-                } else {
-                    confirmPickedFailureChance(recommendTraining())
+                when {
+                    hintStat != null -> hintStat
+                    forceStat != null -> {
+                        MessageLog.i(TAG, "[TRAINING] forceStat override active - selecting $forceStat without running recommendTraining.")
+                        forceStat
+                    }
+                    else -> confirmPickedFailureChance(recommendTraining())
                 }
 
-            if (trainingMap.isEmpty()) {
+            // The hint taps already started their training, so backing out or tapping again would land on its animation.
+            if (hintStat == null && trainingMap.isEmpty()) {
                 // Check if we should force Wit training during the Finale instead of recovering energy.
                 // Always force Wit on turn 75 since recovering energy on the very last turn is completely useless.
                 if ((trainWitDuringFinale && campaign.date.day > 72) || campaign.date.day == 75) {
@@ -3132,22 +3149,27 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                     }
                 }
             } else {
-                // Now select the training option with the highest weight.
-                val (pickFail, pickGains) = pickedStatDetails(trainingSelected)
+                // Now select the training option with the highest weight. A hint turn skips the analysis, so the cache still holds the previous turn and only the hint's own read is current.
+                val (pickFail, pickGains) = if (hintStat != null) hintTrainingFailureChance to null else pickedStatDetails(trainingSelected)
                 campaign.decisionTracer.recordTrainingSelection(
                     selected = trainingSelected,
-                    source = if (forceStat != null) SelectionSource.FORCED_DEFAULT else lastSelectionSource,
-                    reason =
-                        if (forceStat != null) {
-                            "Caller-supplied forceStat override - executing $forceStat without analyzer re-evaluation"
-                        } else {
-                            "Selected by Training.handleTraining base flow (analyzer pick)"
+                    source =
+                        when {
+                            hintStat != null -> SelectionSource.SKILL_HINT
+                            forceStat != null -> SelectionSource.FORCED_DEFAULT
+                            else -> lastSelectionSource
                         },
-                    runnerUps = buildRunnerUps(trainingSelected),
+                    reason =
+                        when {
+                            hintStat != null -> "Skill hint tapped during analysis, which trained $hintStat"
+                            forceStat != null -> "Caller-supplied forceStat override - executing $forceStat without analyzer re-evaluation"
+                            else -> "Selected by Training.handleTraining base flow (analyzer pick)"
+                        },
+                    runnerUps = if (hintStat != null) emptyList() else buildRunnerUps(trainingSelected),
                     pickedFailureChance = pickFail,
                     pickedStatGains = pickGains,
                 )
-                executeTraining(trainingSelected)
+                if (hintStat == null) executeTraining(trainingSelected)
                 firstTrainingCheck = false
             }
 
