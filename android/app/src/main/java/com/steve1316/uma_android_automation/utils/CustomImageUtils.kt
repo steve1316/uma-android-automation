@@ -328,13 +328,17 @@ private val TRAINING_LEVEL_REGEX = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE
  * Parses a training failure chance read. Takes the digit run right before the "%" sign, falling back to the first digit run, instead of joining
  * every digit. A low-contrast 0% bubble can make the recognizer emit stray digits, and joining them made phantom values like 10 or 12.
  *
+ * When no "%" was read and the number is above 100, the "%" was most likely read as a digit ("14%" as "143"), so the first two digits are kept.
+ *
  * @param text The OCR text from the failure chance bubble.
- * @return The failure chance (0-100), or null when there are no digits or the number is above 100, which is an impossible misread.
+ * @return The failure chance (0-100), or null when there are no digits or a number read next to a "%" is above 100.
  */
 internal fun parseFailureChance(text: String): Int? {
     val normalized = text.lowercase().replace("o", "0").replace("failure", "")
-    val digits = PERCENT_DIGITS_REGEX.find(normalized)?.groupValues?.get(1) ?: DIGITS_REGEX.find(normalized)?.value
-    return digits?.trim()?.toIntOrNull()?.takeIf { it <= 100 }
+    PERCENT_DIGITS_REGEX.find(normalized)?.let { return it.groupValues[1].toIntOrNull()?.takeIf { value -> value <= 100 } }
+    val digits = DIGITS_REGEX.find(normalized)?.value ?: return null
+    val value = digits.toIntOrNull()
+    return if (value != null && value <= 100) value else digits.take(2).toIntOrNull()
 }
 
 /**
@@ -2826,9 +2830,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (energyTextLocation != null) {
             // Scenarios with the extra top-left box use a higher, narrower crop that targets the turns box above it.
+            // The crop keeps a margin above the digit. Clipping its top edge read an 8 as "38".
             val (offsetX, offsetY, width, height) =
                 if (scenarioHasCompactTopLeftBox) {
-                    listOf(-260, -137, relWidth(100), relHeight(80))
+                    listOf(-260, -147, relWidth(100), relHeight(90))
                 } else {
                     listOf(-246, -100, relWidth(140), relHeight(95))
                 }

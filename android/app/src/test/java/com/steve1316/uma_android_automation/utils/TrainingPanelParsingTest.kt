@@ -20,6 +20,15 @@ class TrainingPanelParsingTest {
     }
 
     @Test
+    @DisplayName("parseFailureChance keeps the first two digits when the percent sign was read as a digit")
+    fun testParseFailureChancePercentReadAsDigit() {
+        // Seen on device: 11% read as "115", 14% read as "143" and "1451 14".
+        assertEquals(11, parseFailureChance("115"))
+        assertEquals(14, parseFailureChance("143"))
+        assertEquals(14, parseFailureChance("1451 14"))
+    }
+
+    @Test
     @DisplayName("parseFailureChance returns null when there are no digits")
     fun testParseFailureChanceRejects() {
         assertNull(parseFailureChance(""), "empty text")

@@ -170,9 +170,10 @@ class GameDate {
          * @param turnsLeft The number turns left until the next goal. If null, [imageUtils] will detect it.
          * @param imageUtils The [CustomImageUtils] instance used for OCR detection.
          * @param scenario The current scenario name for special handling.
+         * @param previousDay The turn the bot was on before this read, which helps recover a misread Pre-Debut countdown. Null skips that recovery.
          * @return The [GameDate] object, or null if conversion failed.
          */
-        fun fromDateString(s: String? = null, turnsLeft: Int? = null, imageUtils: CustomImageUtils, scenario: String? = null): GameDate? {
+        fun fromDateString(s: String? = null, turnsLeft: Int? = null, imageUtils: CustomImageUtils, scenario: String? = null, previousDay: Int? = null): GameDate? {
             // Determine the date string from the screen if it wasn't provided.
             val dayString: String = s ?: imageUtils.determineDayString()
             if (dayString == null || dayString == "") {
@@ -186,7 +187,7 @@ class GameDate {
                 // The countdown is sometimes misread (an 8 as 38, a 6 as 0), so a count the box never shows gets one more read before the date is left unchanged.
                 repeat(2) {
                     val countdownText = imageUtils.determineTurnsRemainingText() ?: return@repeat
-                    preDebutTurnFromCountdown(countdownText)?.let { turn ->
+                    preDebutTurnFromCountdown(countdownText, previousDay)?.let { turn ->
                         // Same line the countdown read logs elsewhere, which the Remote Log Viewer reads the turns remaining from.
                         val goalNote = if (turn == PRE_DEBUT_TURNS) " (mandatory race / goal turn - 0 remaining)." else ""
                         MessageLog.i(TAG, "[INFO] Detected day for extra racing: $countdownText$goalNote")
@@ -215,15 +216,20 @@ class GameDate {
          * Works out the Pre-Debut turn from the countdown box, which shows 11 down to 1 and then the "GOAL" label on the debut race turn.
          *
          * @param countdownText The OCR text of the countdown box.
+         * @param previousDay The turn the bot was on before this read, used to recover a read with a stray digit. Null skips that recovery.
          * @return The turn, 1 to 12, or null when the read is not something the box can show.
          */
-        fun preDebutTurnFromCountdown(countdownText: String): Int? {
+        fun preDebutTurnFromCountdown(countdownText: String, previousDay: Int? = null): Int? {
             val text = countdownText.trim()
             if (text.isEmpty()) return null
             val digits = text.filter(Char::isDigit)
             if (digits.isEmpty()) return PRE_DEBUT_TURNS
-            val remaining = digits.toIntOrNull() ?: return null
-            return if (remaining in 1 until PRE_DEBUT_TURNS) PRE_DEBUT_TURNS - remaining else null
+            val remaining = digits.toIntOrNull()
+            if (remaining != null && remaining in 1 until PRE_DEBUT_TURNS) return PRE_DEBUT_TURNS - remaining
+            if (previousDay == null || previousDay !in 1..PRE_DEBUT_TURNS) return null
+            // A stray digit can join the real one (an 8 read as 38). Keep the single digit that gives the previous turn or the one after it.
+            val candidates = digits.mapNotNull { it.digitToInt().takeIf { d -> d in 1 until PRE_DEBUT_TURNS }?.let { d -> PRE_DEBUT_TURNS - d } }
+            return candidates.firstOrNull { it == previousDay + 1 } ?: candidates.firstOrNull { it == previousDay }
         }
 
         /**
@@ -511,7 +517,7 @@ class GameDate {
             updateDay(finalsDay)
         } else {
             // If not in finals, pass the cached day string to avoid doing expensive OCR operations again.
-            val tmpDate: GameDate? = fromDateString(s = cachedDayString, imageUtils = imageUtils, scenario = scenario)
+            val tmpDate: GameDate? = fromDateString(s = cachedDayString, imageUtils = imageUtils, scenario = scenario, previousDay = day)
             if (tmpDate == null) {
                 MessageLog.e(TAG, "[ERROR] GameDate.update:: fromDateString returned null.")
                 return false
