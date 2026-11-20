@@ -48,6 +48,9 @@ import org.json.JSONObject
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * Takes care of setting up internal processes such as the Accessibility and MediaProjection services, receiving and sending messages over to the Javascript frontend, and handle tests involving
@@ -62,10 +65,18 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
 
         /** How long after the screen-capture prompt is accepted the overlay counts as on, while its service is still starting. */
         private const val OVERLAY_START_GRACE_MS = 5000L
+
+        /** Most events waiting to be sent to the frontend. The oldest are dropped while it is full. */
+        private const val JS_EVENT_QUEUE_SIZE = 512
     }
 
     private val context: Context = reactContext.applicationContext
+
+    /** The id given to the next event sent to the frontend. Only the `jsEventSender` thread touches it. */
     private var messageId = 1
+
+    /** The single thread that sends events to the frontend, with a bounded queue that drops the oldest events when full. */
+    private val jsEventSender = ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(JS_EVENT_QUEUE_SIZE), ThreadPoolExecutor.DiscardOldestPolicy())
 
     /** When the overlay service was last asked to start, or 0 after a stop. */
     @Volatile private var overlayStartSentAtMs = 0L
@@ -84,6 +95,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
      */
     override fun invalidate() {
         EventBus.getDefault().unregister(this)
+        // The context is gone, so events still queued for it can only fail.
+        jsEventSender.shutdownNow()
         super.invalidate()
     }
 
@@ -723,17 +736,33 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
-     * Sends the message back to the Javascript frontend along with its event name to be listened on.
+     * Queues the message to be sent back to the Javascript frontend along with its event name to be listened on. One thread sends every event
+     * in order, so a slow bridge never holds up the caller.
      *
      * @param eventName The name of the event to be picked up on as defined in the developer's JS frontend.
      * @param message The message string to pass on.
      */
     fun sendEvent(eventName: String, message: String) {
+        jsEventSender.execute { emitEvent(eventName, message) }
+    }
+
+    /**
+     * Sends the message to the Javascript frontend on the `jsEventSender` thread.
+     *
+     * @param eventName The name of the event to be picked up on as defined in the developer's JS frontend.
+     * @param message The message string to pass on.
+     */
+    private fun emitEvent(eventName: String, message: String) {
         val params = Arguments.createMap()
         params.putString("message", message)
         params.putInt("id", messageId++)
         // React Native caches the emitter per context, so fetching it each time always targets the live context.
-        reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
+        try {
+            reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
+        } catch (e: RuntimeException) {
+            // Not through MessageLog: that would send another event that fails the same way.
+            Log.w(TAG, "sendEvent:: Could not send $eventName to the frontend: ${e.message}")
+        }
     }
 
     /**
@@ -745,6 +774,7 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     fun onJSEvent(event: JSEvent) {
         // Only send the event to the React Native frontend if it's not internal.
         // This prevents flooding the bridge during parallel operations where disableOutput is true.
+        // This runs on the logging thread inside the message log lock, so it must not wait on the bridge.
         if (!event.isInternal) {
             sendEvent(event.eventName, event.message)
         }
