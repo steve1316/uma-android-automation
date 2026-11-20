@@ -71,6 +71,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     private val context: Context = reactContext.applicationContext
+
+    /** The id given to the next event sent to the frontend. Only the `jsEventSender` thread touches it. */
     private var messageId = 1
 
     /** The single thread that sends events to the frontend, with a bounded queue that drops the oldest events when full. */
@@ -93,7 +95,8 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
      */
     override fun invalidate() {
         EventBus.getDefault().unregister(this)
-        jsEventSender.shutdown()
+        // The context is gone, so events still queued for it can only fail.
+        jsEventSender.shutdownNow()
         super.invalidate()
     }
 
@@ -733,12 +736,23 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
 
     /**
-     * Sends the message back to the Javascript frontend along with its event name to be listened on.
+     * Queues the message to be sent back to the Javascript frontend along with its event name to be listened on. One thread sends every event
+     * in order, so a slow bridge never holds up the caller.
      *
      * @param eventName The name of the event to be picked up on as defined in the developer's JS frontend.
      * @param message The message string to pass on.
      */
     fun sendEvent(eventName: String, message: String) {
+        jsEventSender.execute { emitEvent(eventName, message) }
+    }
+
+    /**
+     * Sends the message to the Javascript frontend on the `jsEventSender` thread.
+     *
+     * @param eventName The name of the event to be picked up on as defined in the developer's JS frontend.
+     * @param message The message string to pass on.
+     */
+    private fun emitEvent(eventName: String, message: String) {
         val params = Arguments.createMap()
         params.putString("message", message)
         params.putInt("id", messageId++)
@@ -760,9 +774,9 @@ class StartModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     fun onJSEvent(event: JSEvent) {
         // Only send the event to the React Native frontend if it's not internal.
         // This prevents flooding the bridge during parallel operations where disableOutput is true.
-        // This runs on the logging thread inside the message log lock, so the bridge call is made on its own thread.
+        // This runs on the logging thread inside the message log lock, so it must not wait on the bridge.
         if (!event.isInternal) {
-            jsEventSender.execute { sendEvent(event.eventName, event.message) }
+            sendEvent(event.eventName, event.message)
         }
     }
 
