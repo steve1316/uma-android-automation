@@ -21,7 +21,6 @@ class Missions(private val game: Game, override val enabled: Boolean) : DailyPar
         openMissions()
         val outcome = if (collectAll()) PartOutcome.Done("rewards collected") else PartOutcome.Skipped("nothing to collect")
         ButtonBack.click(game.imageUtils)
-        game.wait(1.0)
         return outcome
     }
 
@@ -32,7 +31,7 @@ class Missions(private val game: Game, override val enabled: Boolean) : DailyPar
      */
     private fun openMissions() {
         if (!ButtonHomeMissionsIcon.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Missions button not found")
-        game.wait(2.0)
+        game.wait(0.5)
         game.waitForAny(LabelMissionsHeader) ?: throw DailyStepFailed("Missions screen did not appear")
         game.wait(0.5)
     }
@@ -79,7 +78,7 @@ class Presents(private val game: Game, override val enabled: Boolean) : DailyPar
      */
     private fun openPresents() {
         if (!ButtonHomePresentsIcon.click(game.imageUtils, tries = 30)) throw DailyStepFailed("Presents button not found")
-        game.wait(2.0)
+        game.wait(0.5)
         game.waitForAny(ButtonCollectAll) ?: throw DailyStepFailed("Presents dialog did not appear")
         game.wait(0.5)
     }
@@ -94,6 +93,8 @@ class Presents(private val game: Game, override val enabled: Boolean) : DailyPar
         val collect = ButtonCollectAll.findImageWithBitmap(game.imageUtils, sourceBitmap)
         if (collect == null || ButtonCollectAll.checkDisabled(game.imageUtils, sourceBitmap) != false) {
             ButtonClose.click(game.imageUtils, sourceBitmap = sourceBitmap)
+            // Let the dialog close, so the trip Home does not find it still open.
+            game.wait(1.0)
             return false
         }
         game.tap(collect.x, collect.y)

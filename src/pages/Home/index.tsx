@@ -1,6 +1,6 @@
 import * as Application from "expo-application"
 import MessageLog from "../../components/MessageLog"
-import { parseRunReport, parseLiveRun, runCopyText, LiveRun, RunReport } from "../../lib/runReport"
+import { parseRunReport, parseLiveRun, reportForMode, runCopyText, LiveRun, RunReport } from "../../lib/runReport"
 import { copyToClipboard } from "../../lib/utils"
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { BotMetaContext, GeneralMiscContext, DebugContext, RacingContext, SkillsContext, TrainingContext, type RunMode } from "../../context/BotStateContext"
@@ -467,9 +467,10 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
     // Map the existing bot state to the hero card's status pill. Running takes priority. Warnings (unsupported display
     // or ABI mismatch) surface as "error". An unselected scenario lands on "stopped". Otherwise the bot is "ready".
     const heroHealth: HeroHealth = unsupportedReason !== null || abiMismatch ? "error" : canStart && deviceMetrics !== null ? "ready" : "notReady"
+    const shownReport = reportForMode(lastRun?.report ?? null, general.runMode)
     const hero = useMemo(
-        () => heroView({ overlayOn: isRunning, health: heroHealth, report: lastRun?.report ?? null, live: liveRun, runActive, runMode: general.runMode }),
-        [isRunning, heroHealth, lastRun, liveRun, runActive, general.runMode]
+        () => heroView({ overlayOn: isRunning, health: heroHealth, report: shownReport, live: liveRun, runActive, runMode: general.runMode }),
+        [isRunning, heroHealth, shownReport, liveRun, runActive, general.runMode]
     )
     const heroProfile = currentProfileName ?? DEFAULT_PROFILE_NAME
 
@@ -538,7 +539,7 @@ Note: Reinstall using the x86_64 release APK for much better performance.`)
                     profile={heroProfile}
                     runMode={general.runMode}
                     onRunModeChange={handleRunModeChange}
-                    report={lastRun?.report ?? null}
+                    report={shownReport}
                     live={liveRun}
                     arrivedLive={lastRun?.logInMemory ?? false}
                     chips={heroChips}

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Matrix
 import android.util.Log
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
@@ -44,7 +45,6 @@ import com.steve1316.uma_android_automation.components.LabelRivalRacer
 import com.steve1316.uma_android_automation.components.LabelStatMaxed
 import com.steve1316.uma_android_automation.components.LabelStatTableHeaderSkillPoints
 import com.steve1316.uma_android_automation.components.LabelStatTrackSurface
-import com.steve1316.uma_android_automation.components.LabelTrainingFailureChance
 import com.steve1316.uma_android_automation.components.Region
 import com.steve1316.uma_android_automation.types.BoundingBox
 import com.steve1316.uma_android_automation.types.StatName
@@ -112,6 +112,24 @@ private const val NUMBER_CACHE_MAX_REUSES = 5
  * @return The gray level, 0-255.
  */
 internal fun grayOf(argb: Int): Int = (((argb shr 16) and 0xFF) * 299 + ((argb shr 8) and 0xFF) * 587 + (argb and 0xFF) * 114) / 1000
+
+/**
+ * Samples the screen as gray pixels at 1/8 size, to tell when it holds still.
+ *
+ * @param sourceBitmap The screenshot.
+ * @param bandFraction Share of the screen height to sample, from the top.
+ * @return The sampled gray pixels.
+ */
+internal fun screenGray(sourceBitmap: Bitmap, bandFraction: Double = 1.0): IntArray {
+    // Crop the band before shrinking it, so only the rows that are compared get scaled.
+    val bandHeight = (sourceBitmap.height * bandFraction).toInt().coerceIn(8, sourceBitmap.height)
+    val thumbnail = Bitmap.createBitmap(sourceBitmap, 0, 0, sourceBitmap.width, bandHeight, Matrix().apply { setScale(0.125f, 0.125f) }, true)
+    val pixels = IntArray(thumbnail.width * thumbnail.height)
+    thumbnail.getPixels(pixels, 0, thumbnail.width, 0, 0, thumbnail.width, thumbnail.height)
+    thumbnail.recycle()
+    for (i in pixels.indices) pixels[i] = grayOf(pixels[i])
+    return pixels
+}
 
 /**
  * Whether two same-size gray pictures match, meaning few enough of their pixels moved by more than a gray level. Pure so it is unit-testable.
@@ -328,13 +346,20 @@ private val TRAINING_LEVEL_REGEX = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE
  * Parses a training failure chance read. Takes the digit run right before the "%" sign, falling back to the first digit run, instead of joining
  * every digit. A low-contrast 0% bubble can make the recognizer emit stray digits, and joining them made phantom values like 10 or 12.
  *
+ * When no "%" was read and the number is above 100, the "%" was most likely read as a digit ("14%" as "143"), so the first two digits are kept.
+ * That guess can be far off: a 0% bubble has been read as "133". A caller that would act on a wrong value can require the "%" sign instead.
+ *
  * @param text The OCR text from the failure chance bubble.
- * @return The failure chance (0-100), or null when there are no digits or the number is above 100, which is an impossible misread.
+ * @param requirePercent True to reject a read with no "%" sign.
+ * @return The failure chance (0-100), or null when there are no digits, a number read next to a "%" is above 100, or a required "%" is missing.
  */
-internal fun parseFailureChance(text: String): Int? {
+internal fun parseFailureChance(text: String, requirePercent: Boolean = false): Int? {
     val normalized = text.lowercase().replace("o", "0").replace("failure", "")
-    val digits = PERCENT_DIGITS_REGEX.find(normalized)?.groupValues?.get(1) ?: DIGITS_REGEX.find(normalized)?.value
-    return digits?.trim()?.toIntOrNull()?.takeIf { it <= 100 }
+    PERCENT_DIGITS_REGEX.find(normalized)?.let { return it.groupValues[1].toIntOrNull()?.takeIf { value -> value <= 100 } }
+    if (requirePercent) return null
+    val digits = DIGITS_REGEX.find(normalized)?.value ?: return null
+    val value = digits.toIntOrNull()
+    return if (value != null && value <= 100) value else digits.take(2).toIntOrNull()
 }
 
 /**
@@ -999,81 +1024,54 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
     // Training Helper Functions
 
     /**
-     * Finds the failure percentage chance for the currently selected training.
+     * Reads the failure chance from the bubble whose label sits at [anchor]. The caller finds the label, so it can limit the search to the selected
+     * facility and never read another facility's bubble.
      *
-     * @param sourceBitmap Optional source bitmap to use. Defaults to null.
-     * @param trainingSelectionLocation Optional point location of the training selection icon. Defaults to null.
-     * @param tries The number of retry attempts to make. Defaults to 1.
-     * @return Integer representing the failure percentage, or -1 if detection fails.
+     * @param sourceBitmap The frame with the bubble on it.
+     * @param anchor Where the failure chance label sits.
+     * @param requirePercent True to reject a read with no "%" sign.
+     * @return The failure chance, or -1 if the read is not a valid percentage.
      */
-    fun findTrainingFailureChance(sourceBitmap: Bitmap? = null, trainingSelectionLocation: Point? = null, tries: Int = 1): Int {
-        fun detectTrainingFailureChance(sourceBitmap: Bitmap? = null, trainingSelectionLocation: Point? = null): Int {
-            // Crop the source screenshot to hold the success percentage only.
-            // Delay for failure bubble tween.
-            game.waitForLoading()
+    fun findTrainingFailureChance(sourceBitmap: Bitmap, anchor: Point, requirePercent: Boolean = false): Int {
+        // Perform OCR with 2x scaling and no thresholding.
+        val region = failureChanceRegion(anchor)
+        val detectedText =
+            performOCROnRegion(
+                sourceBitmap,
+                region.x,
+                region.y,
+                region.w,
+                region.h,
+                useThreshold = false,
+                useGrayscale = true,
+                scale = 2.0,
+                ocrEngine = "tesseract_digits",
+                debugName = "TrainingFailureChance",
+            )
 
-            val (trainingSelectionLocation, sourceBitmap) =
-                if (sourceBitmap == null && trainingSelectionLocation == null) {
-                    LabelTrainingFailureChance.find(this)
-                } else {
-                    Pair(trainingSelectionLocation, sourceBitmap)
-                }
-
-            if (trainingSelectionLocation == null) {
-                return -1
-            }
-
-            // Perform OCR with 2x scaling and no thresholding.
-            val region = failureChanceRegion(trainingSelectionLocation)
-            val detectedText =
-                performOCROnRegion(
-                    sourceBitmap!!,
-                    region.x,
-                    region.y,
-                    region.w,
-                    region.h,
-                    useThreshold = false,
-                    useGrayscale = true,
-                    scale = 2.0,
-                    ocrEngine = "tesseract_digits",
-                    debugName = "TrainingFailureChance",
-                )
-
-            // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the retry gets a fresh bitmap.
-            val value = parseFailureChance(detectedText)
-            if (value == null) {
-                MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
-                return -1
-            }
-            return value
+        // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the caller retries on a fresh frame.
+        val value = parseFailureChanceRead(detectedText, requirePercent)
+        if (value == null) {
+            MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
+            return -1
         }
-
-        val tries: Int = maxOf(1, tries)
-        var result: Int = -1
-        for (i in 1..tries) {
-            // Use the passed parameters on the first attempt only; a retry wants a fresh source bitmap.
-            val attempt =
-                if (i == 1) {
-                    detectTrainingFailureChance(sourceBitmap, trainingSelectionLocation)
-                } else {
-                    detectTrainingFailureChance()
-                }
-
-            // Keep the first valid read and stop; an invalid one (-1, or a > 100 read rejected above) is retried with a fresh bitmap.
-            if (attempt in 0..100) {
-                result = attempt
-                break
-            }
-            MessageLog.w(TAG, "[WARN] findTrainingFailureChance:: Failed to detect a valid training failure chance (attempt $i of $tries, read=$attempt)")
-        }
-
         if (debugMode) {
-            MessageLog.i(TAG, "[INFO] Failure chance of '$result'% at $trainingSelectionLocation")
+            MessageLog.i(TAG, "[INFO] Failure chance of '$value'% at $anchor")
         } else {
-            Log.i(TAG, "[INFO] Failure chance of '$result'% at $trainingSelectionLocation")
+            Log.i(TAG, "[INFO] Failure chance of '$value'% at $anchor")
         }
-        return result
+        return value
     }
+
+    /**
+     * Parses a failure chance read and logs the raw text when it has no "%" sign, since the number is then only a guess.
+     *
+     * @param text The OCR text from the failure chance bubble.
+     * @param requirePercent True to reject a read with no "%" sign.
+     * @return The failure chance, or null when nothing valid was read.
+     */
+    private fun parseFailureChanceRead(text: String, requirePercent: Boolean = false): Int? =
+        parseFailureChance(text, requirePercent).also { if ('%' !in text) MessageLog.i(TAG, "[TRAINING] Failure chance read \"$text\" has no % sign. Parsed it as ${it ?: "nothing"}.") }
 
     /**
      * Reads a facility's failure chance and training level with one ML Kit call. Each crop keeps the filter its own read uses, so the text matches
@@ -1094,11 +1092,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
         val texts = readStackedCrops(crops)
 
+        // The combined read is ML Kit only, so it always has a "%" when it read the bubble well. A read without one, like "U70" for 0%, falls back
+        // to the separate read.
         val failureChance =
             if (failureAnchor == null) {
                 -1
             } else {
-                texts["failure"]?.let { parseFailureChance(it) } ?: findTrainingFailureChance(sourceBitmap, failureAnchor)
+                texts["failure"]?.let { parseFailureChanceRead(it, requirePercent = true) } ?: findTrainingFailureChance(sourceBitmap, failureAnchor)
             }
         val level = if (energyAnchor == null) null else texts["level"]?.let { parseTrainingLevel(it) } ?: extractTrainingLevel(sourceBitmap, energyAnchor)
         return TrainingPanelRead(failureChance, level)
@@ -2826,9 +2826,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
 
         if (energyTextLocation != null) {
             // Scenarios with the extra top-left box use a higher, narrower crop that targets the turns box above it.
+            // The crop keeps a margin above the digit. Clipping its top edge read an 8 as "38".
             val (offsetX, offsetY, width, height) =
                 if (scenarioHasCompactTopLeftBox) {
-                    listOf(-260, -137, relWidth(100), relHeight(80))
+                    listOf(-260, -147, relWidth(100), relHeight(90))
                 } else {
                     listOf(-246, -100, relWidth(140), relHeight(95))
                 }
@@ -3716,7 +3717,6 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         val croppedBitmap = createSafeBitmap(bitmap, bbox.x, bbox.y, bbox.w, bbox.h, "saveBitmapWithBbox(filename=$filename, bbox=$bbox)")
         saveBitmap(bitmap = croppedBitmap, filename = filename)
     }
-
 
     /**
      * Reads every word in an image with one ML Kit call.

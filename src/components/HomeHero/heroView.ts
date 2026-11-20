@@ -1,4 +1,4 @@
-import { formatRunReport, LiveRun, RunReport, RunTone } from "../../lib/runReport"
+import { formatRunReport, LiveRun, reportMode, RunReport, RunTone } from "../../lib/runReport"
 import type { RunMode } from "../../context/BotStateContext"
 
 /** Whether the bot can start: ready, missing a scenario or device info, or on an unsupported device. */
@@ -87,15 +87,18 @@ export function heroView({ overlayOn, health, report, live = null, runActive = f
         }
     }
     const v = formatRunReport(report)
+    const mode = reportMode(report)
     let details: HeroDetails = "none"
     if (report.outcome === "CRASHED") details = report.error ? "error" : "reason"
     else if (report.outcome === "STOPPED_BY_BOT") details = "reason"
-    else if (report.dailies) details = "dailies"
-    else if (report.summary) details = "stats"
+    else if (mode === "dailies") details = "dailies"
+    else if (mode === "career") details = "stats"
+    // While the overlay is on, the pill keeps showing it. The title and the card color still show the result.
+    const pill = overlayOn ? STATUS_PILL.overlayOn : { label: v.pill, tone: v.tone }
     return {
         cardTone: v.tone,
-        pillLabel: v.pill,
-        pillTone: v.tone,
+        pillLabel: pill.label,
+        pillTone: pill.tone,
         facts: v.facts.join(" · "),
         title: v.title,
         sub: v.sub,

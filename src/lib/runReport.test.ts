@@ -1,4 +1,4 @@
-import { parseRunReport, parseLiveRun, formatRuntime, formatRunReport, runCopyText, statFill, RunReport } from "./runReport"
+import { parseRunReport, parseLiveRun, formatRuntime, formatRunReport, reportForMode, reportMode, runCopyText, statFill, RunReport } from "./runReport"
 
 const base = (over: Partial<RunReport> = {}): RunReport => ({
     outcome: "FINISHED",
@@ -168,5 +168,27 @@ describe("parseLiveRun", () => {
         expect(parseLiveRun(null)).toBeNull()
         expect(parseLiveRun("{bad")).toBeNull()
         expect(parseLiveRun(JSON.stringify({ turn: 3 }))).toBeNull()
+    })
+})
+
+describe("reportForMode", () => {
+    const career = base()
+    const dailies = dailiesReport(["done"])
+    const unknown = base({ summary: null })
+
+    it("reads the mode from the report", () => {
+        expect([reportMode(career), reportMode(dailies), reportMode(unknown)]).toEqual(["career", "dailies", null])
+    })
+
+    it("hides a report from the other mode", () => {
+        expect(reportForMode(dailies, "career")).toBeNull()
+        expect(reportForMode(career, "dailies")).toBeNull()
+    })
+
+    it("keeps a report from the selected mode or an unknown mode", () => {
+        expect(reportForMode(dailies, "dailies")).toBe(dailies)
+        expect(reportForMode(career, "career")).toBe(career)
+        expect(reportForMode(unknown, "dailies")).toBe(unknown)
+        expect(reportForMode(null, "career")).toBeNull()
     })
 })

@@ -508,6 +508,20 @@ class GameDateTest {
         }
 
         @Test
+        fun `recovers a stray digit from the previous turn`() {
+            // "38" for an 8 after turn 3 is turn 4. The same read on turn 4 again is still turn 4.
+            assertEquals(4, GameDate.preDebutTurnFromCountdown("38", previousDay = 3))
+            assertEquals(4, GameDate.preDebutTurnFromCountdown("38", previousDay = 4))
+        }
+
+        @Test
+        fun `rejects a stray digit that does not fit the previous turn`() {
+            assertNull(GameDate.preDebutTurnFromCountdown("38", previousDay = 6))
+            assertNull(GameDate.preDebutTurnFromCountdown("0", previousDay = 5))
+            assertNull(GameDate.preDebutTurnFromCountdown("38", previousDay = 30))
+        }
+
+        @Test
         fun `rejects an empty read`() {
             assertNull(GameDate.preDebutTurnFromCountdown(""))
         }
