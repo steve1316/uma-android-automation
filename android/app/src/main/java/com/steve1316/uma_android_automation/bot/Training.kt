@@ -1567,6 +1567,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         if (location != null) {
             game.wait(settleS, skipWaitingForLoading = true)
             frame = game.imageUtils.getSourceBitmap()
+            // A label found mid-slide sits up to ~20 px off its resting place, which crops the number in half.
+            location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame, region) ?: location
         }
         return Pair(frame, location)
     }
