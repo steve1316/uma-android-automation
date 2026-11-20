@@ -307,24 +307,6 @@ const MessageLog = ({ jumpRequest }: MessageLogProps) => {
             type: "normal" as const,
         }))
 
-        // Process actual log messages and set the type based on the message content.
-        const logMessages = mlc.messageLog.map((entry, index) => {
-            let type: "normal" | "warning" | "error" = "normal"
-
-            if (entry.message.includes("[ERROR]")) {
-                type = "error"
-            } else if (entry.message.includes("[WARNING]") || entry.message.includes("[WARN]")) {
-                type = "warning"
-            }
-
-            return {
-                id: `log-${index}-${entry.message.substring(0, 20)}`,
-                text: entry.message,
-                type,
-                messageId: entry.id,
-            }
-        })
-
         /**
          * Parse timestamp from message text (format: HH:MM:SS.mmm).
          * @param text The message text to parse.
@@ -341,10 +323,29 @@ const MessageLog = ({ jumpRequest }: MessageLogProps) => {
             return -1
         }
 
+        // Process actual log messages and set the type based on the message content. The key uses the bot's message ID, so it stays the same when older lines are trimmed.
+        const logMessages = mlc.messageLog.map((entry) => {
+            let type: "normal" | "warning" | "error" = "normal"
+
+            if (entry.message.includes("[ERROR]")) {
+                type = "error"
+            } else if (entry.message.includes("[WARNING]") || entry.message.includes("[WARN]")) {
+                type = "warning"
+            }
+
+            return {
+                id: `log-${entry.id}`,
+                text: entry.message,
+                type,
+                messageId: entry.id,
+                timestamp: parseTimestamp(entry.message),
+            }
+        })
+
         // Sort log messages by timestamp (primary) and messageId (secondary/tiebreaker).
-        const sortedLogMessages = [...logMessages].sort((a, b) => {
-            const timestampA = parseTimestamp(a.text)
-            const timestampB = parseTimestamp(b.text)
+        const sortedLogMessages = logMessages.sort((a, b) => {
+            const timestampA = a.timestamp
+            const timestampB = b.timestamp
 
             // Primary sort by timestamp for chronological order.
             if (timestampA !== timestampB) {
@@ -367,8 +368,8 @@ const MessageLog = ({ jumpRequest }: MessageLogProps) => {
      */
     const filteredMessages = useMemo(() => {
         if (!searchQuery.trim()) {
-            // Always return a new array reference to ensure FlashList detects the change.
-            return [...processedMessages]
+            // `processedMessages` is already a new array whenever the log or sort changes, so FlashList sees the change without a copy.
+            return processedMessages
         }
 
         const query = searchQuery.toLowerCase()
