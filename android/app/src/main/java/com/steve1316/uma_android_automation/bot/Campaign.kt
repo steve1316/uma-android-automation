@@ -87,6 +87,7 @@ import com.steve1316.uma_android_automation.utils.LogStreamServer
 import com.steve1316.uma_android_automation.utils.ScrollList
 import com.steve1316.uma_android_automation.utils.createDialogScrollList
 import com.steve1316.uma_android_automation.utils.parseFanCount
+import com.steve1316.uma_android_automation.utils.screenGray
 import com.steve1316.uma_scoring.RankAptitudes
 import com.steve1316.uma_scoring.SkillScoreInput
 import com.steve1316.uma_scoring.estimateRank
@@ -455,6 +456,9 @@ abstract class Campaign(game: Game) : Task(game) {
 
     /** Decides when the bot is lost and should back out to the main screen or stop. Reset when resuming after a pause. */
     private val recoveryPolicy: RecoveryPolicy = RecoveryPolicy()
+
+    /** Stops the bot when the screen stops changing while no known screen is found, as on a frozen game. */
+    private val frozenScreenWatch: FrozenScreenWatch = FrozenScreenWatch()
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1208,6 +1212,7 @@ abstract class Campaign(game: Game) : Task(game) {
             MessageLog.i(TAG, "[RESYNC] Dropped the race staged before the pause, since its result was not seen.")
         }
         recoveryPolicy.reset()
+        frozenScreenWatch.reset()
         bRecovering = true
     }
 
@@ -2859,6 +2864,7 @@ abstract class Campaign(game: Game) : Task(game) {
      */
     private fun recordTick(outcome: TickOutcome): Boolean {
         if (outcome == TickOutcome.KNOWN) bRecovering = false
+        if (outcome == TickOutcome.KNOWN || outcome == TickOutcome.DIALOG) frozenScreenWatch.reset()
         // KNOWN and DIALOG ticks reset the policy so a later recovery starts clean. MISC and BLIND ticks are only counted while recovering.
         if (!bRecovering && (outcome == TickOutcome.MISC || outcome == TickOutcome.BLIND)) return true
         return when (recoveryPolicy.onTick(outcome)) {
@@ -2875,6 +2881,19 @@ abstract class Campaign(game: Game) : Task(game) {
                 false
             }
             RecoveryAction.STOP -> throw CampaignBreakpointException(STUCK_AFTER_RESUME_REASON)
+        }
+    }
+
+    /**
+     * Stops the bot when the screen has not changed for [FROZEN_SCREEN_LIMIT_MS] while no known screen was found. A frozen game keeps showing its
+     * last frame, so the blind taps never move it on, and the same-turn check on the Main screen never runs.
+     *
+     * @param frame This tick's frame.
+     * @throws BotStopException When the screen stayed the same for the whole limit.
+     */
+    private fun checkFrozenScreen(frame: Bitmap) {
+        if (frozenScreenWatch.onFrame(screenGray(frame), System.currentTimeMillis())) {
+            throw BotStopException("The game looks frozen: the screen has not changed for ${FROZEN_SCREEN_LIMIT_MS / 1000} seconds. Stopping bot...")
         }
     }
 
@@ -3025,9 +3044,11 @@ abstract class Campaign(game: Game) : Task(game) {
                 // If the bot is at the Inheritance screen, then accept the inheritance.
             } else if (performMiscChecks(miscBitmap)) {
                 MessageLog.i(TAG, "[INFO] Misc checks complete.")
+                checkFrozenScreen(miscBitmap)
                 recordTick(TickOutcome.MISC)
             } else {
                 MessageLog.i(TAG, "[INFO] Did not detect the bot being at the following screens: Main, Training Event, Inheritance, Mandatory Race Preparation, Racing and Career End.")
+                checkFrozenScreen(miscBitmap)
                 // Tap to progress any intermediate screens, unless the bot just backed out to the main screen because it was lost.
                 if (recordTick(TickOutcome.BLIND)) {
                     game.tap(350.0, 450.0, taps = 1)
