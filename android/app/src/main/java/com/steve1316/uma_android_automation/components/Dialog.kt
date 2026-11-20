@@ -123,11 +123,15 @@ object DialogUtils {
             "components/dialog/dialog_title_gradient_1",
         )
 
-    /** List of dialogs that are considered dangerous because they may involve real-world purchases. Detection of these dialogs will cause the bot to stop immediately. */
-    private val dangerousDialogs: List<DialogInterface> =
-        listOf(
-            DialogAgeConfirmation,
-            DialogPurchaseCarats,
+    /**
+     * Dialogs that stop the bot on sight, mapped to the stop message. Some may lead to real-world purchases, and the bot cannot get past the rest.
+     */
+    private val dangerousDialogs: Map<DialogInterface, String> =
+        mapOf(
+            DialogAgeConfirmation to "Stopping bot due to a dangerous dialog: ${DialogAgeConfirmation.name}",
+            DialogPurchaseCarats to "Stopping bot due to a dangerous dialog: ${DialogPurchaseCarats.name}",
+            // Its only button leaves for Google Play, so it stays up and the user sees why.
+            DialogApplicationUpdated to "The game has an update. Update it through Google Play, then start the bot again. Stopping bot...",
         )
 
     /**
@@ -253,16 +257,15 @@ object DialogUtils {
     }
 
     /**
-     * Stop the bot if the specified dialog is in the hardcoded [dangerousDialogs] list.
+     * Stop the bot if the specified dialog is in the hardcoded [dangerousDialogs] map.
      *
-     * Some dialogs are dangerous because they could lead to real-world purchases. This function throws a [BotStopException] to immediately stop the bot if a dangerous dialog is detected.
+     * This runs inside [getDialog], so it stops the bot even for callers that defer dialog handling.
      *
      * @param dialog The dialog to check.
      */
     private fun handleDangerousDialogs(dialog: DialogInterface) {
-        if (dialog in dangerousDialogs) {
-            throw BotStopException("Stopping bot due to a dangerous dialog: ${dialog.name}")
-        }
+        val message = dangerousDialogs[dialog] ?: return
+        throw BotStopException(message)
     }
 
     /**
@@ -330,6 +333,7 @@ object DialogObjects {
             DialogAutoFill,
             DialogAutoSelect,
             DialogAllRewardsEarned,
+            DialogApplicationUpdated,
             DialogBonusUmamusumeDetails,
             DialogBorrowCard,
             DialogBorrowCardConfirmation,
@@ -490,6 +494,13 @@ val DialogAutoSelect = dialog("auto_select", "Auto-Select", buttons = listOf(But
 
 /** Career (event only) */
 val DialogAllRewardsEarned = dialog("all_rewards_earned", "ALL REWARDS EARNED!", buttons = listOf(ButtonClose))
+
+/**
+ * Anywhere (ALWAYS THROW ERROR).
+ *
+ * The game needs an update. Its only button, "To Store", leaves the game for Google Play, so it is not added.
+ */
+val DialogApplicationUpdated = dialog("application_updated", "Application Updated")
 
 /** Career -> Career Profile dialog. */
 val DialogBonusUmamusumeDetails = dialog("bonus_umamusume_details", "Bonus Umamusume Details", buttons = listOf(ButtonClose))
