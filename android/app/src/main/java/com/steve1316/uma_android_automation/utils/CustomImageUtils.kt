@@ -347,13 +347,16 @@ private val TRAINING_LEVEL_REGEX = Regex("""Lvl\s*([1-5])""", RegexOption.IGNORE
  * every digit. A low-contrast 0% bubble can make the recognizer emit stray digits, and joining them made phantom values like 10 or 12.
  *
  * When no "%" was read and the number is above 100, the "%" was most likely read as a digit ("14%" as "143"), so the first two digits are kept.
+ * That guess can be far off: a 0% bubble has been read as "133". A caller that would act on a wrong value can require the "%" sign instead.
  *
  * @param text The OCR text from the failure chance bubble.
- * @return The failure chance (0-100), or null when there are no digits or a number read next to a "%" is above 100.
+ * @param requirePercent True to reject a read with no "%" sign.
+ * @return The failure chance (0-100), or null when there are no digits, a number read next to a "%" is above 100, or a required "%" is missing.
  */
-internal fun parseFailureChance(text: String): Int? {
+internal fun parseFailureChance(text: String, requirePercent: Boolean = false): Int? {
     val normalized = text.lowercase().replace("o", "0").replace("failure", "")
     PERCENT_DIGITS_REGEX.find(normalized)?.let { return it.groupValues[1].toIntOrNull()?.takeIf { value -> value <= 100 } }
+    if (requirePercent) return null
     val digits = DIGITS_REGEX.find(normalized)?.value ?: return null
     val value = digits.toIntOrNull()
     return if (value != null && value <= 100) value else digits.take(2).toIntOrNull()
@@ -1026,9 +1029,10 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
      *
      * @param sourceBitmap The frame with the bubble on it.
      * @param anchor Where the failure chance label sits.
+     * @param requirePercent True to reject a read with no "%" sign.
      * @return The failure chance, or -1 if the read is not a valid percentage.
      */
-    fun findTrainingFailureChance(sourceBitmap: Bitmap, anchor: Point): Int {
+    fun findTrainingFailureChance(sourceBitmap: Bitmap, anchor: Point, requirePercent: Boolean = false): Int {
         // Perform OCR with 2x scaling and no thresholding.
         val region = failureChanceRegion(anchor)
         val detectedText =
@@ -1046,7 +1050,7 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
             )
 
         // A read above 100% is a misread such as a stray extra digit. It is rejected rather than trimmed, and the caller retries on a fresh frame.
-        val value = parseFailureChance(detectedText)
+        val value = parseFailureChanceRead(detectedText, requirePercent)
         if (value == null) {
             MessageLog.e(TAG, "[ERROR] findTrainingFailureChance:: Could not convert \"$detectedText\" to a valid training failure chance.")
             return -1
@@ -1058,6 +1062,16 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
         return value
     }
+
+    /**
+     * Parses a failure chance read and logs the raw text when it has no "%" sign, since the number is then only a guess.
+     *
+     * @param text The OCR text from the failure chance bubble.
+     * @param requirePercent True to reject a read with no "%" sign.
+     * @return The failure chance, or null when nothing valid was read.
+     */
+    private fun parseFailureChanceRead(text: String, requirePercent: Boolean = false): Int? =
+        parseFailureChance(text, requirePercent).also { if ('%' !in text) MessageLog.i(TAG, "[TRAINING] Failure chance read \"$text\" has no % sign. Parsed it as ${it ?: "nothing"}.") }
 
     /**
      * Reads a facility's failure chance and training level with one ML Kit call. Each crop keeps the filter its own read uses, so the text matches
@@ -1078,11 +1092,13 @@ class CustomImageUtils(context: Context, private val game: Game) : ImageUtils(co
         }
         val texts = readStackedCrops(crops)
 
+        // The combined read is ML Kit only, so it always has a "%" when it read the bubble well. A read without one, like "U70" for 0%, falls back
+        // to the separate read.
         val failureChance =
             if (failureAnchor == null) {
                 -1
             } else {
-                texts["failure"]?.let { parseFailureChance(it) } ?: findTrainingFailureChance(sourceBitmap, failureAnchor)
+                texts["failure"]?.let { parseFailureChanceRead(it, requirePercent = true) } ?: findTrainingFailureChance(sourceBitmap, failureAnchor)
             }
         val level = if (energyAnchor == null) null else texts["level"]?.let { parseTrainingLevel(it) } ?: extractTrainingLevel(sourceBitmap, energyAnchor)
         return TrainingPanelRead(failureChance, level)

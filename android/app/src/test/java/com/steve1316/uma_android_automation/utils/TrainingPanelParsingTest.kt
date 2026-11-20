@@ -29,6 +29,16 @@ class TrainingPanelParsingTest {
     }
 
     @Test
+    @DisplayName("parseFailureChance rejects a read with no percent sign when the sign is required")
+    fun testParseFailureChanceRequirePercent() {
+        // Seen on device: a 0% bubble read as "133", which parsed as 13% and dropped the picked training.
+        assertNull(parseFailureChance("133", requirePercent = true), "no percent sign")
+        assertNull(parseFailureChance("U70", requirePercent = true), "a 0% bubble read with the percent sign as 70")
+        assertEquals(0, parseFailureChance("0%", requirePercent = true), "percent sign present")
+        assertEquals(13, parseFailureChance("133"), "the sign is optional by default")
+    }
+
+    @Test
     @DisplayName("parseFailureChance returns null when there are no digits")
     fun testParseFailureChanceRejects() {
         assertNull(parseFailureChance(""), "empty text")

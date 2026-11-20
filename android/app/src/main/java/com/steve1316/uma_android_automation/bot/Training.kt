@@ -1578,16 +1578,17 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
      * @param statName The selected facility.
      * @param tries The number of frames to try.
      * @param settleS How long to let the number render once the label shows.
+     * @param requirePercent True to count a read with no "%" sign as a failed try.
      * @return The failure chance, or -1 if no try gave a valid read.
      */
-    private fun readFailureChance(statName: StatName, tries: Int, settleS: Double = FAILURE_BUBBLE_SETTLE_S): Int {
+    private fun readFailureChance(statName: StatName, tries: Int, settleS: Double = FAILURE_BUBBLE_SETTLE_S, requirePercent: Boolean = false): Int {
         var (frame, location) = waitForFailureBubble(game.imageUtils.getSourceBitmap(), statName, settleS)
         for (attempt in 1..tries) {
             if (attempt > 1) {
                 frame = game.imageUtils.getSourceBitmap()
                 location = LabelTrainingFailureChance.findImageWithBitmap(game.imageUtils, frame, failureBubbleRegion(statName))
             }
-            val value = location?.let { game.imageUtils.findTrainingFailureChance(frame, it) } ?: -1
+            val value = location?.let { game.imageUtils.findTrainingFailureChance(frame, it, requirePercent) } ?: -1
             if (value != -1) return value
             MessageLog.w(TAG, "[WARN] readFailureChance:: No valid $statName failure chance read (attempt $attempt of $tries).")
         }
@@ -3236,7 +3237,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             val analyzed = cachedAnalysisResults?.find { it.name == stat } ?: return stat
             if (!iconTrainingHeaders[stat]!!.check(game.imageUtils) && !switchToFacility(stat)) return stat
             // The longer settle lets the bubble finish fading in, so this read cannot land mid-fade like the one it checks.
-            val reread = readFailureChance(stat, tries = 2, settleS = FAILURE_BUBBLE_SETTLE_S + 0.3)
+            // A re-read with no "%" sign is only a guess, so it cannot replace the analyzed value and drop a good pick.
+            val reread = readFailureChance(stat, tries = 2, settleS = FAILURE_BUBBLE_SETTLE_S + 0.3, requirePercent = true)
             if (reread <= analyzed.failureChance) return stat
             MessageLog.w(TAG, "[WARN] confirmPickedFailureChance:: $stat failure chance re-read as $reread%, above the ${analyzed.failureChance}% analyzed. Picking again.")
             analyzed.failureChance = reread
