@@ -2251,7 +2251,8 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             val effectiveFailureChance = burstExemptFailureChance(baseFailureChance, readyToBurst, unityCupBurstMaxFailureChance, readyToExtremeBurst)
 
             // A training whose failure chance could not be read is left out. Copying another facility's value once trained a 32% facility read as 1%.
-            if (!test && !ignoreFailureChance && result.failureChance < 0) {
+            // This holds on Good-Luck Charm turns too, since the charm is only used at 20% or more and an unread -1 never gets it.
+            if (!test && result.failureChance < 0) {
                 MessageLog.w(TAG, "[WARN] Skipping ${result.name} training because its failure chance could not be read.")
                 skippedTrainingMap[result.name] = result.toSkippedOption(SKIP_UNREADABLE_FAILURE_CHANCE)
                 continue
