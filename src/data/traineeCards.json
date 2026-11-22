@@ -1724,6 +1724,29 @@
             "wit": 20
         }
     },
+    "104301": {
+        "name": "Shinko Windy",
+        "title": "[Wicked Punk]",
+        "aptitudes": {
+            "turf": "F",
+            "dirt": "A",
+            "sprint": "C",
+            "mile": "A",
+            "medium": "B",
+            "long": "G",
+            "front": "G",
+            "pace": "A",
+            "late": "B",
+            "end": "F"
+        },
+        "growth": {
+            "speed": 10,
+            "stamina": 0,
+            "power": 10,
+            "guts": 10,
+            "wit": 0
+        }
+    },
     "104401": {
         "name": "Sweep Tosho",
         "title": "[Platanus Witch]",

@@ -209,6 +209,26 @@
             }
         ]
     },
+    "Bitey Menace": {
+        "name": "Bitey Menace",
+        "bullet_points": [
+            "Shinko Windy only",
+            "Win the February Stakes",
+            "Win two or more races in which you were rushing",
+            "Reach 1200 or more Power"
+        ],
+        "scenarios": [],
+        "characters": [
+            "Shinko Windy"
+        ],
+        "matchers": [
+            {
+                "type": "winRace",
+                "name": "February Stakes",
+                "displayLabel": "Win the February Stakes"
+            }
+        ]
+    },
     "Blinding Flash": {
         "name": "Blinding Flash",
         "bullet_points": [
