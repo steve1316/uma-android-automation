@@ -5720,6 +5720,89 @@
             }
         ]
     },
+    "Shinko Windy": {
+        "name": "Shinko Windy",
+        "mandatoryRaces": [
+            {
+                "turn": 36,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Unicorn Stakes",
+                        "grade": "G3",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 3500
+                    }
+                ]
+            },
+            {
+                "turn": 37,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Japan Dirt Derby",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 4500
+                    }
+                ]
+            },
+            {
+                "turn": 50,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Tokai Stakes",
+                        "grade": "G2",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 5500
+                    }
+                ]
+            },
+            {
+                "turn": 52,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "February Stakes",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            },
+            {
+                "turn": 60,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Teio Sho",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Medium",
+                        "fans": 6000
+                    }
+                ]
+            },
+            {
+                "turn": 71,
+                "isChoice": false,
+                "options": [
+                    {
+                        "raceName": "Champions Cup",
+                        "grade": "G1",
+                        "surface": "Dirt",
+                        "distanceType": "Mile",
+                        "fans": 10000
+                    }
+                ]
+            }
+        ]
+    },
     "Silence Suzuka": {
         "name": "Silence Suzuka",
         "mandatoryRaces": [

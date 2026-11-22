@@ -1731,7 +1731,7 @@
         "condition": "compete_fight_count>0&ground_type==2@compete_fight_count>0",
         "precondition": "",
         "inherited": true,
-        "community_tier": null,
+        "community_tier": 2,
         "upgrade": null,
         "downgrade": null
     },

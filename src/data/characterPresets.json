@@ -688,6 +688,19 @@
             "Dirt": "G"
         }
     },
+    "Shinko Windy": {
+        "name": "Shinko Windy",
+        "distanceAptitudes": {
+            "Sprint": "C",
+            "Mile": "A",
+            "Medium": "B",
+            "Long": "G"
+        },
+        "surfaceAptitudes": {
+            "Turf": "F",
+            "Dirt": "A"
+        }
+    },
     "Silence Suzuka": {
         "name": "Silence Suzuka",
         "distanceAptitudes": {
