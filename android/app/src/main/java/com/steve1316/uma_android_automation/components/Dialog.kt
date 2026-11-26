@@ -132,6 +132,8 @@ object DialogUtils {
             DialogPurchaseCarats to "Stopping bot due to a dangerous dialog: ${DialogPurchaseCarats.name}",
             // Its only button leaves for Google Play, so it stays up and the user sees why.
             DialogApplicationUpdated to "The game has an update. Update it through Google Play, then start the bot again. Stopping bot...",
+            // Its only button sends the game back to the title screen, which the bot cannot recover from.
+            DialogDataUpdate to "The game has new data and will return to the title screen. Start the bot again once it finishes downloading. Stopping bot...",
         )
 
     /**
@@ -354,6 +356,7 @@ object DialogObjects {
             DialogConsecutiveRaceWarning,
             DialogContinueCareer,
             DialogDailySale,
+            DialogDataUpdate,
             DialogDateChanged,
             DialogDisplaySettings,
             DialogDownloadError,
@@ -597,6 +600,13 @@ val DialogConfirmRestoreRP = dialog("confirm_restore_rp", "Confirm", buttons = l
 
 /** Team Trials, Special Events, Daily Races. */
 val DialogDailySale = dialog("daily_sale", "Daily Sale", buttons = listOf(ButtonCancel, ButtonShop), okButton = ButtonShop)
+
+/**
+ * Anywhere (ALWAYS THROW ERROR).
+ *
+ * New game data is out. Its only button, "Title Screen", leaves the current screen, so that button is not listed.
+ */
+val DialogDataUpdate = dialog("data_update", "Data Update")
 
 /** Anywhere */
 val DialogDateChanged = dialog("date_changed", "Date Changed", buttons = listOf(ButtonOk))
