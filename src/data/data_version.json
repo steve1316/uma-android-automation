@@ -1,12 +1,12 @@
 {
-    "version": "2026-11-22T19:16:11Z",
-    "label": "Shinko Windy 2026-11-21",
+    "version": "2026-11-27T20:55:26Z",
+    "label": "2026-11-27",
     "minAppVersion": "5.8.8",
     "files": {
         "characters.json": "6089b3dd8ed633f5801ca7317f856fef",
         "supports.json": "b739079cff3a53887b176a1b0c17a523",
         "skills.json": "205a530643cef6c76639dc9ff1ecb0de",
-        "epithets.json": "4c34ea217ef3c0a0fde0b88f2964cecf",
+        "epithets.json": "021e8bd6e2eac3643f1b064a345848fd",
         "characterPresets.json": "0a35918dbd288f63a61954b64cebe880",
         "character_objectives.json": "f0caf7d6c2a3316d3bc190c66a3d6143",
         "traineeCards.json": "cff3918047c0f0a819e96e5eee4d32ff",
