@@ -1025,6 +1025,16 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
             failureChance >= minFailureChance && totalStatGain < gainPerFailPercent * failureChance
 
         /**
+         * The rejected training that `forceSelection` falls back to: the highest scored one whose failure chance was read. An unread one carries -1,
+         * which the failure chance checks on a forced pick would take as safe.
+         *
+         * @param skippedScores Scores of the rejected trainings.
+         * @return The highest scored rejected training with a read failure chance, or null when there is none.
+         */
+        fun highestScoredReadableSkip(skippedScores: Map<TrainingOption, Double>): Map.Entry<TrainingOption, Double>? =
+            skippedScores.entries.filter { it.key.failureChance >= 0 }.maxByOrNull { it.value }
+
+        /**
          * Unity Cup burst exemption. An Extreme Spirit Burst is a guaranteed-success (0% fail) turn and the single best action, so it is never skipped for failure chance regardless
          * of the setting. Short of that, a training with a normal Spirit Explosion gauge ready to burst may be worth a higher failure chance than the base ceiling, so this raises
          * the ceiling to `burstMax` when a gauge is ready. No-op when no gauge is ready or when `burstMax` is below the base, keeping the default (0) a pure pass-through. Pure and
@@ -2768,7 +2778,7 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
         // Analysis produced no winning training. Pick a fallback and log which branch fired so that
         // a downstream `Selected Training: X` is never preceded by an unexplained "no training selected".
         if (forceSelection) {
-            val topSkipped = skippedScores.maxByOrNull { it.value }
+            val topSkipped = highestScoredReadableSkip(skippedScores)
             if (topSkipped != null) {
                 val pick = topSkipped.key
                 val mainGain = pick.statGains[pick.name] ?: 0
