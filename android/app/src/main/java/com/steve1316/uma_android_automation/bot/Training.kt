@@ -1743,8 +1743,11 @@ open class Training(protected val game: Game, protected val campaign: Campaign) 
                 return true
             }
 
-            // Now click on the desired stat button.
-            button.click(game.imageUtils)
+            // Now click on the desired stat button. Its spot is kept so the failure chance read only searches this facility's column.
+            button.find(game.imageUtils).first?.let { location ->
+                unselectedButtonLocations[statName] = location
+                button.tap(location.x, location.y, button.template.path)
+            }
 
             // Small delay to allow the stats to appear before checking to avoid accidental skips
             game.wait(0.1, skipWaitingForLoading = true)
