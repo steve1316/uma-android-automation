@@ -280,12 +280,12 @@
     "Born to Perform": {
         "name": "Born to Perform",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Gather a total of 1500 or more Performance tokens",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -455,12 +455,12 @@
     "Cool and Composed": {
         "name": "Cool and Composed",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Gather a total of 300 or more Mental tokens",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -838,12 +838,12 @@
     "Divine Songster": {
         "name": "Divine Songster",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Gather a total of 300 or more Vocal tokens",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -2079,11 +2079,11 @@
     "Legendary Reprise": {
         "name": "Legendary Reprise",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Hold a special Grand Live"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -2768,12 +2768,12 @@
     "Popping with Passion": {
         "name": "Popping with Passion",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Gather a total of 300 or more Passion tokens",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -2872,12 +2872,12 @@
     "Queen of Dance": {
         "name": "Queen of Dance",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Gather a total of 300 or more Dance tokens",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -3830,11 +3830,11 @@
     "The Key to Success": {
         "name": "The Key to Success",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Lead the Grand Live to great success"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -4388,12 +4388,12 @@
     "Virtuoso Vocalist": {
         "name": "Virtuoso Vocalist",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Practice 10 or more different songs",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
@@ -4434,12 +4434,12 @@
     "Visual Kei": {
         "name": "Visual Kei",
         "bullet_points": [
-            "Brighter Together Our Grand Concert scenario only",
+            "Grand Concert scenario only",
             "Gather a total of 300 or more Visual tokens",
             "Complete the Career"
         ],
         "scenarios": [
-            "Brighter Together Our Grand Concert"
+            "Grand Concert"
         ],
         "characters": [],
         "matchers": []
